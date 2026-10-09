@@ -1,6 +1,4 @@
 // Status API, shared by the Pages Functions at /api/status and /private/api/status.
-import { allTargets } from "./targets.js";
-
 export async function statusApi(req, env, wantPrivate) {
   if (wantPrivate) {
     // Cloudflare Access sets this header after login; only the owner gets the private list.
@@ -9,7 +7,9 @@ export async function statusApi(req, env, wantPrivate) {
       return new Response("Forbidden", { status: 403 });
     }
   }
-  const targets = allTargets(env).filter((t) => wantPrivate || t.public);
+  const { results: targets } = await env.DB.prepare(
+    "SELECT id, name, kind, public FROM targets WHERE seen > ? AND (? OR public = 1) ORDER BY public DESC, position"
+  ).bind(Date.now() - 3_600_000, wantPrivate ? 1 : 0).all();
   const dayAgo = Date.now() - 86_400_000;
   const out = [];
   for (const t of targets) {

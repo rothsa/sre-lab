@@ -27,6 +27,9 @@ async function runCycle(env) {
   const now = Date.now();
   const results = await Promise.all(TARGETS.map((t) => checkTarget(t, env).catch((e) => ({ ok: false, status: "error", error: String(e).slice(0, 200) }))));
   const failingNow = results.filter((r) => r && !r.skipped && !r.ok).length;
+  await env.DB.batch(TARGETS.map((t, i) =>
+    env.DB.prepare("INSERT INTO targets (id, name, kind, public, seen, position) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name, kind = excluded.kind, public = excluded.public, seen = excluded.seen, position = excluded.position")
+      .bind(t.id, t.name, t.kind, t.public ? 1 : 0, now, i)));
 
   for (let i = 0; i < TARGETS.length; i++) {
     const t = TARGETS[i];
