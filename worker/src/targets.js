@@ -6,7 +6,7 @@ export const PUBLIC_TARGETS = [
   { id: "aws", name: "AWS", kind: "http", url: "https://aws.amazon.com", public: true },
   { id: "cloudflare", name: "Cloudflare", kind: "http", url: "https://www.cloudflare.com", public: true },
   { id: "slack", name: "Slack", kind: "http", url: "https://slack.com", public: true },
-  { id: "google", name: "Google", kind: "http", url: "https://www.google.com", public: true },
+  { id: "google", name: "Google", kind: "http", url: "https://www.google.com/generate_204", expectStatus: [204], public: true },
 ];
 
 export function allTargets(env) {

@@ -96,7 +96,9 @@ async function httpCheck(t) {
     const { res, latencyMs } = await timedFetch(t.url, { redirect: "follow" });
     const expected = t.expectStatus || null;
     const ok = expected ? expected.includes(res.status) : res.status < 400;
-    return { ok, status: res.status, latencyMs };
+    // 429 means the site answered but is rate-limiting the monitor (shared Cloudflare egress IPs), not an outage.
+    const detail = res.status === 429 ? "HTTP 429: the site is rate-limiting this monitor's IP; it responded, so it is reachable" : null;
+    return { ok, status: res.status, latencyMs, detail };
   } catch (e) {
     return { ok: false, status: e.name === "AbortError" ? "timeout" : "network-error", error: String(e).slice(0, 200) };
   }

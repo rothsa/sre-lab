@@ -1,13 +1,12 @@
 name = "down-or-me"
 main = "src/index.js"
 compatibility_date = "2026-09-01"
+# No public URL: the cron job only writes to D1. The board's API lives in Pages Functions.
+workers_dev = false
 
 # Every 5 minutes
 [triggers]
 crons = ["*/5 * * * *"]
-
-# No public URL: the cron job only writes to D1. The board's API lives in Pages Functions.
-workers_dev = false
 
 [[d1_databases]]
 binding = "DB"
