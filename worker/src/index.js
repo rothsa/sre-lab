@@ -1,6 +1,5 @@
 // Down or Me: scheduled uptime checks, Jev triage for anything unusual, and a small JSON API
 // for the status board. Jev is called only from here, never from the browser.
-import { EmailMessage } from "cloudflare:email";
 import { allTargets } from "./targets.js";
 
 const CHECK_TIMEOUT_MS = 10_000;
@@ -14,10 +13,8 @@ export default {
     ctx.waitUntil(runCycle(env));
   },
 
-  async fetch(req, env) {
-    const url = new URL(req.url);
-    if (url.pathname === "/api/status") return statusApi(req, env, false);
-    if (url.pathname === "/private/api/status") return statusApi(req, env, true);
+  // No public HTTP surface: the board's API is served by Pages Functions.
+  async fetch() {
     return new Response("Not found", { status: 404 });
   },
 };
@@ -224,65 +221,25 @@ async function askJev(env, ctx) {
 // ---------- notification ----------
 
 async function notify(env, t, r, v) {
-  if (!env.NOTIFY || !env.NOTIFY_FROM || !env.NOTIFY_TO) return false;
-  const subject = `[Down or Me] ${t.name}: ${v.cause.replace("_", " ")}`;
+  if (!env.RESEND_API_KEY || !env.NOTIFY_FROM || !env.NOTIFY_TO) return false;
+  const cause = v.cause.replace("_", " ");
   const text = [
-    `${t.name} looks like: ${v.cause.replace("_", " ")} (confidence ${(v.confidence * 100).toFixed(0)}%).`,
+    `${t.name} looks like: ${cause} (confidence ${(v.confidence * 100).toFixed(0)}%).`,
     `Latest check: ${r.status}${r.latencyMs ? `, ${r.latencyMs} ms` : ""}.`,
     r.detail ? `Detail: ${r.detail}` : "",
     "",
-    `Board: https://lab.sallyroth.dev/status/`,
+    "Board: https://lab.sallyroth.dev/status/",
   ].filter(Boolean).join("\n");
-  const raw = [
-    `From: Down or Me <${env.NOTIFY_FROM}>`,
-    `To: ${env.NOTIFY_TO}`,
-    `Subject: ${subject}`,
-    `Message-ID: <${crypto.randomUUID()}@${env.NOTIFY_FROM.split("@")[1]}>`,
-    `Date: ${new Date().toUTCString()}`,
-    "MIME-Version: 1.0",
-    "Content-Type: text/plain; charset=utf-8",
-    "",
-    text,
-  ].join("\r\n");
   try {
-    await env.NOTIFY.send(new EmailMessage(env.NOTIFY_FROM, env.NOTIFY_TO, raw));
-    return true;
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: `Down or Me <${env.NOTIFY_FROM}>`, to: [env.NOTIFY_TO], subject: `[Down or Me] ${t.name}: ${cause}`, text }),
+    });
+    if (!res.ok) console.error("notify failed", res.status, (await res.text()).slice(0, 200));
+    return res.ok;
   } catch (e) {
     console.error("notify failed", String(e));
     return false;
   }
-}
-
-// ---------- status API for the board ----------
-
-async function statusApi(req, env, wantPrivate) {
-  if (wantPrivate) {
-    // Cloudflare Access sets this header after login; only the owner gets the private list.
-    const who = req.headers.get("cf-access-authenticated-user-email");
-    if (!who || !env.OWNER_EMAIL || who.toLowerCase() !== env.OWNER_EMAIL.toLowerCase()) {
-      return new Response("Forbidden", { status: 403 });
-    }
-  }
-  const targets = allTargets(env).filter((t) => wantPrivate || t.public);
-  const dayAgo = Date.now() - 86_400_000;
-  const out = [];
-  for (const t of targets) {
-    const state = await env.DB.prepare("SELECT status, since FROM state WHERE target = ?").bind(t.id).first();
-    const up = await env.DB.prepare("SELECT COUNT(*) AS n, SUM(ok) AS good, AVG(CASE WHEN ok=1 THEN latency_ms END) AS avg_ms FROM checks WHERE target = ? AND ts > ?").bind(t.id, dayAgo).first();
-    const last = await env.DB.prepare("SELECT ts, ok, status, latency_ms FROM checks WHERE target = ? ORDER BY ts DESC LIMIT 1").bind(t.id).first();
-    const verdict = await env.DB.prepare("SELECT ts, cause, confidence, notify_prob FROM verdicts WHERE target = ? ORDER BY ts DESC LIMIT 1").bind(t.id).first();
-    const spark = await env.DB.prepare("SELECT ok FROM checks WHERE target = ? ORDER BY ts DESC LIMIT 48").bind(t.id).all();
-    out.push({
-      id: t.id,
-      name: t.name,
-      status: state?.status ?? (t.kind === "wow-realm" ? "not-configured" : "unknown"),
-      since: state?.since ?? null,
-      uptime24h: up?.n ? up.good / up.n : null,
-      avgLatencyMs: up?.avg_ms ? Math.round(up.avg_ms) : null,
-      last,
-      verdict: verdict && state?.status !== "up" ? verdict : null,
-      recent: spark.results.map((r) => r.ok).reverse(),
-    });
-  }
-  return Response.json({ generatedAt: new Date().toISOString(), targets: out }, { headers: { "Cache-Control": "public, max-age=60" } });
 }

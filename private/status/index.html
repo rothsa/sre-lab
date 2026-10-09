@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Down or Me</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<style>
+/* Layout: a summary line, then one row per service with status, 24h uptime, a 4-hour strip, and Jev's verdict when something's wrong. */
+:root {
+  --bg: #f4f6f8; --panel: #ffffff; --fg: #141c24; --muted: #5b6875; --rule: #d7dee5;
+  --accent: #1f5fbf; --up: #15803d; --slow: #a16207; --down: #c2410c; --unknown: #8a96a3;
+  --font-display: "Archivo", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c; --accent: #6ea8ff; --up: #4ade80; --slow: #e0b44c; --down: #fb8a4c; --unknown: #6b7785; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c; --accent: #6ea8ff; --up: #4ade80; --slow: #e0b44c; --down: #fb8a4c; --unknown: #6b7785; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 920px; margin: 0 auto; padding-inline: 16px; padding-block: 32px 56px; }
+.kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 5vw, 44px); margin: 6px 0 8px; line-height: 1.05; }
+.lede { color: var(--muted); max-width: 64ch; margin: 0 0 18px; }
+.summary { font-family: var(--font-mono); font-size: 14px; margin-bottom: 14px; }
+.list { display: grid; gap: 10px; }
+.row { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; align-items: center; }
+.name { font-weight: 600; display: flex; align-items: center; gap: 8px; min-width: 0; }
+.dot { width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--unknown); }
+.dot.up { background: var(--up); } .dot.slow { background: var(--slow); } .dot.down { background: var(--down); }
+.meta { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.strip { grid-column: 1 / -1; display: flex; gap: 2px; height: 14px; }
+.strip i { flex: 1; border-radius: 2px; background: var(--up); opacity: .85; }
+.strip i.f { background: var(--down); }
+.verdict { grid-column: 1 / -1; font-size: 14px; border-left: 3px solid var(--slow); padding-left: 10px; }
+.verdict b { font-family: var(--font-mono); font-size: 12.5px; }
+.verdict .human { color: var(--muted); }
+.empty { color: var(--muted); }
+footer { margin-top: 26px; color: var(--muted); font-size: 14px; }
+footer a { color: var(--accent); }
+@media (max-width: 520px) { .row { grid-template-columns: 1fr; } .meta { text-align: left; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">SRE Lab · uptime</div>
+  <h1>Down or Me</h1>
+  <p class="lede">Checks these services every 5 minutes. When something looks wrong, an AI classifier (Jev) decides whether it's a real outage, degraded, planned maintenance, a blip, or a problem on the monitor's side, and how sure it is. Anything it isn't sure about is left for a human.</p>
+  <div class="summary" id="summary">Loading…</div>
+  <div class="list" id="list"></div>
+  <footer>Part of <a href="../">SRE Lab</a> by Sally Roth · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a></footer>
+</div>
+<script>
+const isPrivate = location.pathname.startsWith("/private/");
+const api = isPrivate ? "/private/api/status" : "/api/status";
+const pct = (x) => x == null ? "—" : `${(x * 100).toFixed(x > 0.999 && x < 1 ? 2 : 1)}%`;
+const label = { up: "up", slow: "slow", down: "down", unknown: "no data yet", "not-configured": "not set up" };
+const causeText = { real_outage: "real outage", degraded: "degraded", checker_side: "monitor-side problem", planned_maintenance: "planned maintenance", transient_blip: "brief blip" };
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+async function load() {
+  try {
+    const res = await fetch(api, { credentials: "same-origin" });
+    if (!res.ok) throw new Error(res.status === 403 ? "This board is private." : `Status API returned ${res.status}.`);
+    const data = await res.json();
+    const t = data.targets;
+    const bad = t.filter((x) => x.status === "down" || x.status === "slow").length;
+    document.getElementById("summary").textContent = bad === 0 ? `All ${t.length} services look fine · updated ${new Date(data.generatedAt).toLocaleTimeString()}` : `${bad} of ${t.length} services need attention · updated ${new Date(data.generatedAt).toLocaleTimeString()}`;
+    document.getElementById("list").innerHTML = t.map((x) => {
+      const v = x.verdict;
+      const verdict = v ? `<div class="verdict">Jev: <b>${esc(causeText[v.cause] || v.cause)}</b> (${Math.round(v.confidence * 100)}% sure)${v.confidence < 0.8 ? ` <span class="human">· needs a human look</span>` : ""}</div>` : "";
+      const strip = x.recent?.length ? `<div class="strip" aria-label="Last ${x.recent.length} checks">${x.recent.map((ok) => `<i class="${ok ? "" : "f"}"></i>`).join("")}</div>` : "";
+      return `<div class="row">
+        <div class="name"><span class="dot ${esc(x.status)}"></span>${esc(x.name)}</div>
+        <div class="meta">${esc(label[x.status] || x.status)} · 24h ${pct(x.uptime24h)}${x.avgLatencyMs ? ` · ${x.avgLatencyMs} ms` : ""}</div>
+        ${strip}${verdict}</div>`;
+    }).join("");
+  } catch (e) {
+    document.getElementById("summary").textContent = "";
+    document.getElementById("list").innerHTML = `<p class="empty">${esc(e.message || "Couldn't load status.")} The checker may not have run yet.</p>`;
+  }
+}
+load();
+setInterval(load, 60_000);
+</script>
+</body>
+</html>

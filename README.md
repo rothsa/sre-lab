@@ -34,14 +34,23 @@ status/index.html   Down or Me board (public at /status/, private at /private/st
 worker/             Cloudflare Worker: cron checks, Jev triage, status API
 ```
 
+## Hosting
+
+- **Pages project `sre-lab`** serves the pages and the status API (Pages Functions in `functions/`, D1 binding). Custom domain lab.sallyroth.dev via a CNAME at the DNS host.
+- **Worker `down-or-me`** runs only the 5-minute cron (no public URL) and writes to the same D1 database.
+- **Alerts** are sent with Resend. **The private board** is at `sre-lab.pages.dev/private/status/` behind Cloudflare Access.
+
 ## Setup (owner)
 
 ```bash
+npx wrangler d1 create down-or-me          # paste the id into both wrangler.toml files
 cd worker
-npx wrangler d1 create down-or-me                 # paste the id into wrangler.toml
 npx wrangler d1 migrations apply down-or-me --remote
 npx wrangler secret put JEV_API_KEY
-npx wrangler secret put OWNER_EMAIL
+npx wrangler secret put RESEND_API_KEY
 npx wrangler secret put NOTIFY_TO
+npx wrangler secret put PRIVATE_TARGETS
 npx wrangler deploy
+cd ..
+npx wrangler pages deploy .                # then set PRIVATE_TARGETS and OWNER_EMAIL on the Pages project
 ```
