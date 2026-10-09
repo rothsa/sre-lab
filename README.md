@@ -38,7 +38,7 @@ worker/             Cloudflare Worker: cron checks, Jev triage, status API
 
 - **Pages project `sre-lab`** serves the pages and the status API (Pages Functions in `functions/`, D1 binding). Custom domain lab.sallyroth.dev via a CNAME at the DNS host.
 - **Worker `down-or-me`** runs only the 5-minute cron (no public URL) and writes to the same D1 database.
-- **Alerts** are sent with Resend. **The private board** is at `sre-lab.pages.dev/private/status/` behind Cloudflare Access.
+- **Alerts** are sent with Resend. **The private board** is at `sre-lab-97p.pages.dev/private/status/` behind Cloudflare Access.
 
 ## Setup (owner)
 
