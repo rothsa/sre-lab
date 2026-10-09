@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SRE Lab</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<style>
+:root { --bg: #f4f6f8; --panel: #ffffff; --fg: #141c24; --muted: #5b6875; --rule: #d7dee5; --accent: #1f5fbf;
+  --font-display: "Archivo", "Segoe UI", system-ui, sans-serif; --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c; --accent: #6ea8ff; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c; --accent: #6ea8ff; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); line-height: 1.5; }
+.wrap { max-width: 760px; margin: 0 auto; padding-inline: 16px; padding-block: 40px 56px; }
+.kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(32px, 6vw, 50px); margin: 6px 0 10px; line-height: 1.04; }
+p { color: var(--muted); max-width: 62ch; }
+.tools { display: grid; gap: 12px; margin-top: 22px; }
+a.tool { display: grid; gap: 4px; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; color: inherit; text-decoration: none; }
+a.tool:hover, a.tool:focus-visible { border-color: var(--accent); outline: none; }
+a.tool strong { font-family: var(--font-display); font-size: 20px; }
+a.tool span { color: var(--muted); }
+footer { margin-top: 28px; color: var(--muted); font-size: 14px; }
+footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Sally Roth</div>
+  <h1>SRE Lab</h1>
+  <p>Small, working tools for reliability engineering: error budgets, uptime, and alerting that respects people's sleep.</p>
+  <div class="tools">
+    <a class="tool" href="slo/"><strong>SLO Burn Simulator</strong><span>See how fast an error budget drains, which burn-rate alerts fire and when, and get matching Prometheus rules.</span></a>
+    <a class="tool" href="status/"><strong>Down or Me</strong><span>Uptime checks with an AI classifier that decides whether a failure is real, and only alerts when it's sure.</span></a>
+  </div>
+  <footer><a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab">source</a></footer>
+</div>
+</body>
+</html>

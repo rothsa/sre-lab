@@ -1,0 +1,37 @@
+name = "down-or-me"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+# Every 5 minutes
+[triggers]
+crons = ["*/5 * * * *"]
+
+# Serve the board's API from the lab domain
+routes = [
+  { pattern = "lab.sallyroth.dev/api/*", zone_name = "sallyroth.dev" },
+  { pattern = "lab.sallyroth.dev/private/api/*", zone_name = "sallyroth.dev" },
+]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "down-or-me"
+database_id = "REPLACE_AFTER_wrangler_d1_create"
+migrations_dir = "migrations"
+
+[vars]
+JEV_MODEL = "jev-latest"
+JEV_DAILY_CAP = "200"
+NOTIFY_FROM = "status@sallyroth.dev"
+
+# Email to a verified Cloudflare Email Routing destination address.
+# Enable after verifying the destination in the Cloudflare dashboard.
+# [[send_email]]
+# name = "NOTIFY"
+
+# Secrets (set with `npx wrangler secret put NAME`, never committed):
+#   JEV_API_KEY              Jev / TypeSafe API key
+#   NOTIFY_TO                where alerts go
+#   OWNER_EMAIL              the only login allowed to see the private board
+#   PRIVATE_TARGETS          JSON array of the owner's private checks (kept out of this repo)
+#   BLIZZARD_CLIENT_ID       optional, for the WoW realm check
+#   BLIZZARD_CLIENT_SECRET   optional

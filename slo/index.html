@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SLO Burn Simulator</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<style>
+/* Layout: controls left, results right on desktop; one column on phones. The budget chart is the centerpiece. */
+:root {
+  --bg: #f4f6f8;
+  --panel: #ffffff;
+  --fg: #141c24;
+  --muted: #5b6875;
+  --rule: #d7dee5;
+  --accent: #1f5fbf;
+  --budget: #1f5fbf;
+  --page: #c2410c;
+  --ticket: #a16207;
+  --ok: #15803d;
+  --font-display: "Archivo", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c;
+    --accent: #6ea8ff; --budget: #6ea8ff; --page: #fb8a4c; --ticket: #e0b44c; --ok: #4ade80; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c;
+  --accent: #6ea8ff; --budget: #6ea8ff; --page: #fb8a4c; --ticket: #e0b44c; --ok: #4ade80; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-inline: 16px; padding-block: 32px 56px; }
+header { display: grid; gap: 6px; margin-bottom: 22px; }
+.kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 5vw, 44px); line-height: 1.05; margin: 0; text-wrap: balance; }
+.lede { color: var(--muted); max-width: 66ch; margin: 0; }
+.grid { display: grid; grid-template-columns: minmax(260px, 320px) 1fr; gap: 20px; align-items: start; }
+@media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
+.panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; min-width: 0; }
+.controls { display: grid; gap: 16px; }
+label { display: grid; gap: 6px; font-weight: 600; font-size: 14px; }
+.hint { font-weight: 400; color: var(--muted); font-size: 13px; }
+select, input[type="number"] { font: inherit; font-family: var(--font-mono); padding: 6px 8px; border: 1px solid var(--rule); border-radius: 6px; background: var(--bg); color: var(--fg); }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+.burnval { font-family: var(--font-mono); font-size: 22px; font-weight: 600; color: var(--accent); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { font-family: var(--font-mono); font-size: 12px; border: 1px solid var(--rule); background: transparent; color: var(--fg); border-radius: 999px; padding: 3px 9px; cursor: pointer; }
+.chips button:hover, .chips button:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+.results { display: grid; gap: 16px; min-width: 0; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.stat { display: grid; gap: 2px; }
+.stat .k { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.stat .v { font-family: var(--font-display); font-weight: 700; font-size: 24px; font-variant-numeric: tabular-nums; }
+.chartbox { overflow-x: auto; }
+svg { display: block; width: 100%; min-width: 520px; height: auto; }
+svg text { font-family: var(--font-mono); font-size: 11px; fill: var(--muted); }
+h2 { font-family: var(--font-display); font-weight: 700; font-size: 20px; margin: 0 0 8px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.tablebox { overflow-x: auto; }
+.pill { font-family: var(--font-mono); font-size: 11px; border-radius: 4px; padding: 1px 6px; border: 1px solid currentColor; white-space: nowrap; }
+.pill.page { color: var(--page); } .pill.ticket { color: var(--ticket); } .pill.no { color: var(--muted); } .pill.fires { color: var(--ok); }
+pre { margin: 0; background: var(--bg); border: 1px solid var(--rule); border-radius: 8px; padding: 12px; overflow-x: auto; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.5; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.copy { font: inherit; font-size: 13px; border: 1px solid var(--rule); background: var(--panel); color: var(--fg); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+.copy:focus-visible { outline: 2px solid var(--accent); }
+.explain { color: var(--muted); max-width: 70ch; margin: 0; font-size: 15px; }
+.explain b { color: var(--fg); }
+footer { margin-top: 28px; color: var(--muted); font-size: 14px; }
+footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="kicker">SRE Lab · error budgets</div>
+    <h1>SLO Burn Simulator</h1>
+    <p class="lede">Pick an SLO and how fast you're burning error budget. See how long the budget lasts, which standard multi-window burn-rate alerts would fire and when, and get Prometheus alert rules to match.</p>
+  </header>
+
+  <div class="grid">
+    <section class="panel controls" aria-label="Inputs">
+      <label for="slo">Availability SLO
+        <select id="slo">
+          <option value="0.99">99% (two nines)</option>
+          <option value="0.995">99.5%</option>
+          <option value="0.999" selected>99.9% (three nines)</option>
+          <option value="0.9995">99.95%</option>
+          <option value="0.9999">99.99% (four nines)</option>
+        </select>
+      </label>
+      <label for="window">SLO window
+        <select id="window">
+          <option value="28">28 days</option>
+          <option value="30" selected>30 days</option>
+        </select>
+      </label>
+      <label for="burn">Burn rate <span class="hint">How many times faster than "just on budget" you're failing.</span>
+        <span class="burnval" id="burnOut">14.4×</span>
+        <input type="range" id="burn" min="0" max="100" step="1" value="58" aria-describedby="burnOut">
+        <div class="chips" role="group" aria-label="Common burn rates">
+          <button type="button" data-burn="1">1×</button>
+          <button type="button" data-burn="3">3×</button>
+          <button type="button" data-burn="6">6×</button>
+          <button type="button" data-burn="14.4">14.4×</button>
+          <button type="button" data-burn="36">36×</button>
+        </div>
+      </label>
+      <label for="incident">Incident length <span class="hint">How long the bad period lasts, in minutes.</span>
+        <input type="number" id="incident" min="1" max="100000" step="1" value="60">
+      </label>
+      <p class="explain"><b>Burn rate × allowed error rate = actual error rate.</b> At 99.9%, the allowed error rate is 0.1%, so a 14.4× burn means 1.44% of requests failing.</p>
+    </section>
+
+    <section class="results" aria-label="Results">
+      <div class="panel stats">
+        <div class="stat"><span class="k">Error budget</span><span class="v" id="budget">—</span></div>
+        <div class="stat"><span class="k">Error rate at this burn</span><span class="v" id="errRate">—</span></div>
+        <div class="stat"><span class="k">Budget gone in</span><span class="v" id="exhaust">—</span></div>
+        <div class="stat"><span class="k">This incident uses</span><span class="v" id="incUse">—</span></div>
+      </div>
+
+      <div class="panel">
+        <h2>Budget remaining over time</h2>
+        <div class="chartbox"><svg id="chart" viewBox="0 0 720 300" role="img" aria-label="Error budget remaining over time"></svg></div>
+      </div>
+
+      <div class="panel">
+        <h2>Which alerts fire, and when</h2>
+        <p class="explain">Multi-window, multi-burn-rate alerts, the pattern from Google's SRE Workbook. Each alert needs both a long window (so it's sure) and a short window (so it clears quickly once you've fixed things) above its threshold.</p>
+        <div class="tablebox"><table>
+          <thead><tr><th>Alert</th><th>Threshold</th><th>Windows</th><th>At this burn</th><th>Budget used when it fires</th></tr></thead>
+          <tbody id="alerts"></tbody>
+        </table></div>
+      </div>
+
+      <div class="panel">
+        <div class="row"><h2>Prometheus alert rules</h2><button type="button" class="copy" id="copy">Copy</button></div>
+        <p class="explain">Assumes an <code>http_requests_total</code> counter with a <code>code</code> label. Swap in your own SLI.</p>
+        <pre id="rules"></pre>
+      </div>
+    </section>
+  </div>
+
+  <footer>Part of <a href="../">SRE Lab</a> by Sally Roth · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a>. Alert thresholds follow the Google SRE Workbook's recommendations for a 30-day window.</footer>
+</div>
+
+<script>
+const ALERTS = [
+  { name: "Page: fast burn", sev: "page", thr: 14.4, long: 1, short: 5 / 60, longLbl: "1h", shortLbl: "5m" },
+  { name: "Page: sustained burn", sev: "page", thr: 6, long: 6, short: 0.5, longLbl: "6h", shortLbl: "30m" },
+  { name: "Ticket: slow burn", sev: "ticket", thr: 3, long: 24, short: 2, longLbl: "1d", shortLbl: "2h" },
+  { name: "Ticket: very slow burn", sev: "ticket", thr: 1, long: 72, short: 6, longLbl: "3d", shortLbl: "6h" },
+];
+// Slider is logarithmic: 0..100 maps to 0.5x..100x
+const sliderToBurn = (v) => Math.round(0.5 * Math.pow(200, v / 100) * 10) / 10;
+const burnToSlider = (b) => Math.round(100 * Math.log(b / 0.5) / Math.log(200));
+
+const $ = (id) => document.getElementById(id);
+const fmtDur = (hours) => {
+  if (!isFinite(hours)) return "never";
+  const m = hours * 60;
+  if (m < 1) return `${Math.round(m * 60)} sec`;
+  if (m < 90) return `${Math.round(m)} min`;
+  if (hours < 48) return `${(Math.round(hours * 10) / 10)} h`;
+  return `${(Math.round(hours / 24 * 10) / 10)} days`;
+};
+const fmtPct = (x, d = 2) => `${(x * 100).toFixed(d).replace(/\.?0+$/, "")}%`;
+
+let burn = 14.4;
+
+function update() {
+  const slo = parseFloat($("slo").value);
+  const days = parseFloat($("window").value);
+  const W = days * 24;                       // window, hours
+  const allowed = 1 - slo;                   // allowed error fraction
+  const budgetMin = allowed * W * 60;        // budget in minutes of full outage
+  const incMin = Math.max(1, parseFloat($("incident").value) || 1);
+  const exhaustH = W / burn;
+  const used = Math.min(1, (burn * incMin) / (W * 60));
+
+  $("burnOut").textContent = `${burn}×`;
+  $("budget").textContent = budgetMin >= 120 ? `${(budgetMin / 60).toFixed(1)} h` : `${budgetMin.toFixed(1)} min`;
+  $("errRate").textContent = fmtPct(Math.min(1, burn * allowed), 3);
+  $("exhaust").textContent = fmtDur(exhaustH);
+  $("incUse").textContent = `${fmtPct(used, 1)} of budget`;
+
+  // Alerts: with a constant burn starting at t=0, the long-window average reaches burn*t/L,
+  // so an alert fires at t = thr*L/burn (if burn >= thr). Budget used then = burn*t/W = thr*L/W.
+  const rows = ALERTS.map((a) => {
+    const fires = burn >= a.thr;
+    const t = fires ? (a.thr * a.long) / burn : Infinity;
+    const usedAt = fires ? (burn * t) / W : null;
+    const caughtInIncident = fires && t * 60 <= incMin;
+    return { ...a, fires, t, usedAt, caughtInIncident };
+  });
+  $("alerts").innerHTML = rows.map((r) => `
+    <tr>
+      <td><span class="pill ${r.sev}">${r.sev}</span> ${r.name}</td>
+      <td>${r.thr}×</td>
+      <td>${r.longLbl} + ${r.shortLbl}</td>
+      <td>${r.fires
+        ? `<span class="pill fires">fires after ${fmtDur(r.t)}</span>${r.caughtInIncident ? "" : ` <span class="hint">(after this incident ends)</span>`}`
+        : `<span class="pill no">doesn't fire</span>`}</td>
+      <td>${r.fires ? fmtPct(r.usedAt, 1) : "—"}</td>
+    </tr>`).join("");
+
+  drawChart(W, rows);
+  $("rules").textContent = rulesYaml(slo, rows);
+}
+
+function drawChart(W, rows) {
+  const svg = $("chart");
+  const w = 720, h = 300, L = 52, R = 16, T = 16, B = 40;
+  const span = Math.min(W, Math.max(W / burn * 1.15, 1)); // hours shown
+  const x = (t) => L + (t / span) * (w - L - R);
+  const y = (frac) => T + (1 - frac) * (h - T - B);
+  const css = getComputedStyle(document.documentElement);
+  const c = (n) => css.getPropertyValue(n).trim();
+  let out = "";
+  // grid + y labels
+  for (const f of [0, 0.25, 0.5, 0.75, 1]) {
+    out += `<line x1="${L}" x2="${w - R}" y1="${y(f)}" y2="${y(f)}" stroke="${c("--rule")}" stroke-width="1"/>`;
+    out += `<text x="${L - 8}" y="${y(f) + 4}" text-anchor="end">${f * 100}%</text>`;
+  }
+  // x labels
+  const ticks = 5;
+  for (let i = 0; i <= ticks; i++) {
+    const t = (span / ticks) * i;
+    out += `<text x="${x(t)}" y="${h - 14}" text-anchor="middle">${fmtDur(t)}</text>`;
+  }
+  // budget line at 1x (dashed) and at chosen burn
+  const line = (b, color, dash) => {
+    const tEnd = Math.min(span, W / b);
+    return `<line x1="${x(0)}" y1="${y(1)}" x2="${x(tEnd)}" y2="${y(Math.max(0, 1 - (b * tEnd) / W))}" stroke="${color}" stroke-width="${dash ? 1.5 : 3}" ${dash ? 'stroke-dasharray="5 5"' : ""} fill="none"/>`;
+  };
+  out += line(1, c("--muted"), true);
+  out += `<text x="${w - R}" y="${y(1 - span / W) - 6}" text-anchor="end">1× (on budget)</text>`;
+  out += line(burn, c("--budget"), false);
+  // alert markers
+  rows.filter((r) => r.fires && r.t <= span).forEach((r, i) => {
+    const col = r.sev === "page" ? c("--page") : c("--ticket");
+    const yy = y(1 - (burn * r.t) / W);
+    out += `<line x1="${x(r.t)}" x2="${x(r.t)}" y1="${T}" y2="${h - B}" stroke="${col}" stroke-width="1" stroke-dasharray="3 3"/>`;
+    out += `<circle cx="${x(r.t)}" cy="${yy}" r="5" fill="${col}"/>`;
+    out += `<text x="${x(r.t) + 6}" y="${T + 12 + i * 14}" fill="${col}" style="fill:${col}">${r.thr}× fires</text>`;
+  });
+  svg.innerHTML = out;
+}
+
+function rulesYaml(slo, rows) {
+  const err = +(1 - slo).toFixed(6);
+  const ratio = (w) => `sum(rate(http_requests_total{code=~"5.."}[${w}])) / sum(rate(http_requests_total[${w}]))`;
+  const items = rows.map((r) => `  - alert: ErrorBudgetBurn${r.longLbl.replace(/\W/g, "")}
+    expr: |
+      (${ratio(r.longLbl)}) > (${r.thr} * ${err})
+      and
+      (${ratio(r.shortLbl)}) > (${r.thr} * ${err})
+    labels:
+      severity: ${r.sev}
+    annotations:
+      summary: "Burning error budget at ${r.thr}x or faster (${r.longLbl}/${r.shortLbl} windows)"`).join("\n");
+  return `# SLO ${(slo * 100).toFixed(2).replace(/\.?0+$/, "")}% — error budget ${err * 100}%\ngroups:\n- name: slo-burn\n  rules:\n${items}`;
+}
+
+$("burn").addEventListener("input", (e) => { burn = sliderToBurn(+e.target.value); update(); });
+document.querySelectorAll("[data-burn]").forEach((b) => b.addEventListener("click", () => {
+  burn = parseFloat(b.dataset.burn); $("burn").value = burnToSlider(burn); update();
+}));
+["slo", "window", "incident"].forEach((id) => $(id).addEventListener("input", update));
+$("copy").addEventListener("click", async () => {
+  const text = $("rules").textContent;
+  try { await navigator.clipboard.writeText(text); $("copy").textContent = "Copied"; }
+  catch { const r = document.createRange(); r.selectNodeContents($("rules")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $("copy").textContent = "Selected: press Ctrl+C"; }
+  setTimeout(() => ($("copy").textContent = "Copy"), 1800);
+});
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", update);
+$("burn").value = burnToSlider(burn);
+update();
+</script>
+
+</body>
+</html>
