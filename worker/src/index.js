@@ -1,5 +1,6 @@
 // Down or Me: scheduled uptime checks, Jev triage for anything unusual, and a small JSON API
 // for the status board. Jev is called only from here, never from the browser.
+import { connect } from "cloudflare:sockets";
 import { allTargets } from "./targets.js";
 
 const CHECK_TIMEOUT_MS = 10_000;
@@ -76,6 +77,7 @@ async function checkTarget(t, env) {
   if (t.kind === "http") return httpCheck(t);
   if (t.kind === "statuspage") return statuspageCheck(t);
   if (t.kind === "wow-realm") return wowRealmCheck(t, env);
+  if (t.kind === "minecraft") return minecraftCheck(t);
   return { skipped: true };
 }
 
@@ -117,6 +119,61 @@ async function statuspageCheck(t) {
 }
 
 // Blizzard Game Data API: realm -> connected realm -> status. Skipped without credentials.
+// Minecraft Java "server list ping" over raw TCP: the same request the multiplayer menu sends.
+// Needs no login; returns version and player counts.
+async function minecraftCheck(t) {
+  const host = t.host;
+  const port = t.port || 25565;
+  const start = Date.now();
+  let socket;
+  const varint = (n) => {
+    const out = [];
+    do { let b = n & 0x7f; n >>>= 7; if (n) b |= 0x80; out.push(b); } while (n);
+    return out;
+  };
+  const readVarint = (buf, i) => {
+    let n = 0, shift = 0;
+    while (i < buf.length) {
+      const b = buf[i++];
+      n |= (b & 0x7f) << shift;
+      if (!(b & 0x80)) return [n, i];
+      shift += 7;
+    }
+    return null; // need more bytes
+  };
+  const ping = async () => {
+    socket = connect({ hostname: host, port });
+    const writer = socket.writable.getWriter();
+    const hostBytes = [...new TextEncoder().encode(host)];
+    const hs = [...varint(0), ...varint(767), ...varint(hostBytes.length), ...hostBytes, (port >> 8) & 0xff, port & 0xff, ...varint(1)];
+    await writer.write(new Uint8Array([...varint(hs.length), ...hs, 1, 0]));
+    const reader = socket.readable.getReader();
+    let buf = new Uint8Array(0);
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) throw new Error("connection closed before status");
+      const next = new Uint8Array(buf.length + value.length);
+      next.set(buf); next.set(value, buf.length); buf = next;
+      const len = readVarint(buf, 0);
+      if (!len || buf.length < len[1] + len[0]) continue;
+      const id = readVarint(buf, len[1]);
+      const strLen = readVarint(buf, id[1]);
+      return JSON.parse(new TextDecoder().decode(buf.slice(strLen[1], strLen[1] + strLen[0])));
+    }
+  };
+  try {
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), CHECK_TIMEOUT_MS));
+    const st = await Promise.race([ping(), timeout]);
+    const latencyMs = Date.now() - start;
+    const players = st?.players ? `${st.players.online}/${st.players.max} players` : "players unknown";
+    return { ok: true, status: "online", latencyMs, detail: `${players}, ${st?.version?.name ?? "unknown version"}` };
+  } catch (e) {
+    return { ok: false, status: String(e.message) === "timeout" ? "timeout" : "unreachable", error: String(e).slice(0, 200) };
+  } finally {
+    try { socket?.close(); } catch {}
+  }
+}
+
 async function wowRealmCheck(t, env) {
   if (!env.BLIZZARD_CLIENT_ID || !env.BLIZZARD_CLIENT_SECRET) return { skipped: true };
   const tokenRes = await fetch("https://oauth.battle.net/token", {

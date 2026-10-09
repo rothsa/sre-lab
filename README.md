@@ -10,7 +10,7 @@ Small, working reliability-engineering tools, live at **lab.sallyroth.dev**.
 ## How Down or Me works
 
 ```
-cron (5 min) ─► HTTP / status-page / realm checks ─► D1 history
+cron (5 min) ─► HTTP / status-page / game-server checks ─► D1 history
                      │
                unusual? ── no ─► done (no AI call)
                      │ yes, first time or every 30 min while it lasts
