@@ -49,6 +49,10 @@ h2 { font-family: var(--font-display); font-weight: 700; font-size: 22px; margin
 .result .meta { font-family: var(--font-mono); font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
 .result .title { font-weight: 600; margin: 2px 0 4px; }
 .result p { margin: 0 0 6px; font-size: 14.5px; }
+.result .kv b { font-family: var(--font-mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-right: 6px; }
+.result details { margin: 2px 0 6px; font-size: 14px; }
+.result summary { cursor: pointer; color: var(--muted); font-size: 13.5px; }
+.result details p { margin-top: 6px; }
 .result a { color: var(--accent); font-size: 13.5px; }
 .result .both { font-family: var(--font-mono); font-size: 11px; color: var(--good); }
 mark { background: var(--mark); color: inherit; border-radius: 2px; padding: 0 1px; }
@@ -75,7 +79,8 @@ footer a { color: var(--accent); }
 <div class="wrap">
   <div class="kicker">SRE Lab · retrieval</div>
   <h1>Find the Incident</h1>
-  <p class="lede">Describe a symptom and search real, public postmortems. An embedding model (all-MiniLM-L6-v2, a small model that turns text into numbers capturing its meaning, running in your browser) and BM25 (the classic keyword ranking behind most search engines) run side by side, so you can see where each one is better. The embedding model doesn't write anything; it only ranks. No server, no API calls: after a one-time 23&nbsp;MB model download, everything happens on your device.</p>
+  <p class="lede">Mid-incident, the fastest hint is often someone else's postmortem. Describe what you're seeing, and this page ranks real public postmortems with similar symptoms, leading with what caused each one and what fixed it: a short list of things to check, and gotchas you might not have thought of. Point the same idea at every postmortem on the internet, or at your own company's, and it becomes a triage assistant.</p>
+  <p class="lede">Under the hood it compares two ways to search. An <b>embedding model</b> (all-MiniLM-L6-v2, a small model that turns text into numbers capturing its meaning) matches by meaning, and <b>BM25</b> (the classic keyword ranking behind most search engines) matches by words. Neither writes anything; they only rank. Everything runs in your browser after a one-time 23&nbsp;MB model download.</p>
 
   <form class="search" id="form" role="search">
     <input id="q" type="search" autocomplete="off" value="DNS broke everything" placeholder="Describe a symptom" aria-label="Describe the symptom">
@@ -232,7 +237,9 @@ function card(i, score, query, other) {
   return `<article class="result">
     <div class="meta"><span>${esc(d.company)} · ${esc(d.date === "unknown" ? "date not stated" : d.date)}</span><span>${score.toFixed(score < 1 ? 3 : 2)}</span></div>
     <div class="title">${highlight(d.title, query)}</div>
-    <p>${highlight(d.summary, query)}</p>
+    <p class="kv"><b>Cause</b>${highlight(d.trigger, query)}</p>
+    <p class="kv"><b>Fixed by</b>${highlight(d.fix, query)}</p>
+    <details><summary>What happened</summary><p>${highlight(d.summary, query)}</p><p class="kv"><b>Spotted by</b>${highlight(d.detection, query)}</p></details>
     <a href="${esc(d.url)}" target="_blank" rel="noopener">Read the original postmortem →</a>${other.has(i) ? ` <span class="both">· in both lists</span>` : ""}
   </article>`;
 }
