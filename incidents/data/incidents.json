@@ -118,6 +118,23 @@
   "summary": "A surge of requests from one customer in AWS us-east-1 roughly doubled Cloudflare-to-AWS traffic and filled the direct peering links in Ashburn, one of which was already running at half capacity. AWS withdrew some BGP prefixes to relieve the links, pushing traffic onto an offsite interconnect that also saturated, and Ashburn edge routers dropped high-priority packets. Customers with AWS-hosted origins saw timeouts and slow responses for almost four hours until rate limiting and route normalization."
  },
  {
+  "id": "cloudflare-2025-salesloft-drift-salesforce-breach",
+  "company": "Cloudflare",
+  "date": "2025-08-12",
+  "title": "Salesloft Drift OAuth theft exposes Cloudflare support cases",
+  "url": "https://blog.cloudflare.com/response-to-salesloft-drift-incident/",
+  "category": [
+   "security",
+   "supply-chain",
+   "third-party"
+  ],
+  "trigger": "After breaching Salesloft, threat actor GRUB1 used stolen OAuth credentials from the Drift chatbot's Salesforce integration to log into Cloudflare's Salesforce tenant.",
+  "impact": "The text of Salesforce support case objects, including customer contact details and any secrets customers had pasted into tickets, was bulk-exported, and 104 Cloudflare API tokens were found in the stolen data; Cloudflare's own systems and network were not breached.",
+  "detection": "Salesforce and Salesloft notified Cloudflare on August 23, 2025, several days after the last attacker activity on August 17.",
+  "fix": "Cloudflare disabled the Drift integration and revoked its client ID and secrets, removed Salesloft software, disconnected and re-onboarded all Salesforce integrations with new secrets, rotated the 104 exposed API tokens, and told customers to rotate any credentials shared in support cases.",
+  "summary": "In August 2025 an attacker Cloudflare calls GRUB1, armed with OAuth credentials stolen from the Salesloft Drift integration, accessed Cloudflare's Salesforce tenant on August 12, ran reconnaissance, then used a Bulk API 2.0 job on August 17 to export the text of its support cases. Those cases could include API tokens, passwords and logs customers had pasted in. Cloudflare scanned the data, rotated 104 Cloudflare API tokens, cut off the Drift integration, rotated third-party credentials, and urged customers to rotate anything shared via support."
+ },
+ {
   "id": "cloudflare-2025-workers-kv-storage",
   "company": "Cloudflare",
   "date": "2025-06-12",
@@ -183,6 +200,23 @@
   "detection": "Rising latency and job errors were spotted at 22:17 UTC and a public incident was declared at 22:35 UTC.",
   "fix": "After restarting pods and upsizing the database did not help, the team re-enabled writes on the old database and made it primary again, and now runs statistics analysis after every major version change with extra tests and checkpoints before cutover.",
   "summary": "CircleCI upgraded the Postgres database behind its workflows service using a blue/green deployment that included two major version jumps. Table statistics were rebuilt after the first jump only, so after the second the query planner made poor choices and queries went to disk. Workflow starts and cancellations slowed, some jobs were dropped, and the UI struggled to show workflows. Restoring the previous database as primary ended the incident. The report's date is inconsistent, citing both April 3 and April 4."
+ },
+ {
+  "id": "circleci-2025-manual-waf-rule-outage",
+  "company": "CircleCI",
+  "date": "2025-04-04",
+  "title": "Manual WAF rule change blocks CircleCI UI and builds",
+  "url": "https://discuss.circleci.com/t/post-incident-report-april-4-2025-circleci-ui-loading-build-triggering-issues/53208",
+  "category": [
+   "config",
+   "human-error",
+   "monitoring-gap"
+  ],
+  "trigger": "An operator who thought they were doing read-only security checks edited a WAF rule by hand, possible because an IAM role could bypass the Terraform pipeline, and the rule blocked legitimate traffic.",
+  "impact": "From 00:16 to 01:49 UTC, about 1 hour 33 minutes, customers could not load the CircleCI UI or start builds, as traffic to the api.circleci.com and circleci.com CloudFront distributions was blocked.",
+  "detection": "Monitoring flagged degraded services from 00:26, but the cause was only found at 01:35 when automated Terraform drift detection reported the WAF difference, nearly 80 minutes after the change.",
+  "fix": "The rule was reverted on both CloudFront distributions at 01:41; follow-ups include tighter IAM policies blocking out-of-band changes, faster drift alerts, WAF rule testing and monitoring, and organization-wide Security Control Policies.",
+  "summary": "On April 4, 2025 CircleCI's UI and build triggering failed for about 93 minutes after an operator, believing they were only reading configuration, manually altered a Web Application Firewall rule that then blocked real traffic to its CloudFront distributions. An IAM misconfiguration let that role skip Terraform. Responders were slowed by an unrelated incident ending at the same time and by assuming WAF changes always went through Terraform; drift detection eventually pinpointed the rule, which was reverted. CircleCI tightened IAM and WAF change controls."
  },
  {
   "id": "cloudflare-2025-r2-credential-rotation",
@@ -506,6 +540,23 @@
   "summary": "In early 2023 incident.io saw sporadic API timeouts with no obvious cause: no deploys, no traffic spike, no slow query. Traces eventually showed requests waiting on the client-side database/sql connection pool, not on Postgres itself. The culprit was transaction overuse, especially a wrapper that opened a transaction for most Slack modal submissions, which kept connections checked out. Early quick wins like indexes and a materialised view did not help; new instrumentation of connection hold time found the real issue. Exact dates are not stated."
  },
  {
+  "id": "circleci-2022-session-cookie-theft-secrets-exfil",
+  "company": "CircleCI",
+  "date": "2022-12-16",
+  "title": "Malware steals engineer SSO session, customer secrets exfiltrated",
+  "url": "https://circleci.com/blog/jan-4-2023-incident-report/",
+  "category": [
+   "security",
+   "credential-leak",
+   "supply-chain"
+  ],
+  "trigger": "Malware on an engineer's laptop, undetected by antivirus, stole a valid 2FA-backed SSO session cookie, letting the attacker impersonate the employee and use their ability to mint production access tokens.",
+  "impact": "On December 22, 2022 the attacker took customers' stored secrets from production databases, including environment variables and credentials for outside services, and pulled encryption keys from a running process; under 5 customers had reported resulting unauthorized access when the report was published.",
+  "detection": "A customer flagged suspicious GitHub OAuth activity on December 29, 2022, which led to a joint review with GitHub that uncovered the intrusion.",
+  "fix": "CircleCI cut off the compromised employee, narrowed production access, rebuilt all production hosts, revoked Project and Personal API Tokens, rotated GitHub OAuth and Bitbucket tokens, told every customer to rotate all stored secrets, and added MDM/antivirus detection plus step-up authentication for production access.",
+  "summary": "A CircleCI engineer's laptop was infected with malware on December 16, 2022, which stole a 2FA-backed SSO session cookie. Using that session, the attacker escalated into production, ran reconnaissance on December 19 and exfiltrated customer environment variables, API keys and OAuth tokens on December 22, along with encryption keys taken from memory. A customer's report of odd GitHub OAuth use started the investigation. CircleCI revoked Project and Personal API Tokens, rotated GitHub and Bitbucket tokens, rebuilt hosts and urged all customers to rotate every secret stored on the platform."
+ },
+ {
   "id": "incidentio-2022-pubsub-poison-pill",
   "company": "incident.io",
   "date": "2022-11-18",
@@ -588,6 +639,23 @@
   "detection": "Not stated in the postmortem beyond an internal incident being declared at 06:32 UTC.",
   "fix": "Engineers reverted the change, using out-of-band access where needed, and planned MCP-aware rollout testing, a policy redesign that prevents term misordering, and automated commit-confirm rollback.",
   "summary": "As part of a BGP communities standardization project, Cloudflare reordered terms in the export policy on spine routers in its newer MCP data centers. A REJECT-THE-REST term now came first, so site-local prefixes stopped being advertised and those locations dropped off the internet. The Multimog load balancer also relied on those prefixes, so smaller clusters got overloaded. Only 4% of locations were hit but they served about 50% of HTTP requests. Recovery was slowed by engineers reverting one another's changes."
+ },
+ {
+  "id": "heroku-2022-github-oauth-token-theft",
+  "company": "Heroku",
+  "date": "2022-04-07",
+  "title": "Stolen Heroku GitHub OAuth tokens used to clone private repos",
+  "url": "https://blog.heroku.com/april-2022-incident-review",
+  "category": [
+   "security",
+   "credential-leak",
+   "supply-chain"
+  ],
+  "trigger": "An attacker found a Heroku machine account token in an archived private GitHub repository, apparently reached through a third-party integration, and used it to enter Heroku's environment.",
+  "impact": "The attacker downloaded customers' GitHub integration OAuth tokens, cloned private repos of some customers and parts of Heroku's own source, and also took hashed and salted account passwords plus the configuration variables customers had set for Review Apps and Heroku CI pipelines.",
+  "detection": "GitHub spotted the suspicious activity on April 12, 2022 and alerted Salesforce's security team the following day.",
+  "fix": "Heroku disabled the compromised account within three hours, revoked every Dashboard GitHub integration token and blocked new ones, reset customer account passwords on May 5, 2022, privately warned customers whose config vars leaked, and rotated other critical credentials during a production freeze.",
+  "summary": "On April 7, 2022 an attacker who had pulled a Heroku machine account token from an archived private GitHub repo accessed a Heroku database and downloaded customers' GitHub integration OAuth tokens. With them the actor enumerated and cloned private repositories of some customers and part of Heroku's own code. They also took hashed customer passwords and the settings and secrets customers stored for Review Apps and Heroku CI. GitHub raised the alarm; Heroku revoked all GitHub integration tokens, forced customer password resets, and had affected customers rotate leaked config secrets."
  },
  {
   "id": "atlassian-2022-site-deletion-script",
@@ -1046,6 +1114,23 @@
   "summary": "Duo's DUO1 deployment was running hot after an earlier outage, and on August 29 rising load caused application servers to queue requests while waiting for database connections. The backlog grew to the point that the database could not catch up even after traffic eased, so authentications, push notifications, phone calls and SMS codes were slow or timed out for about an hour. Request limits did not help; flushing the queues did. Duo added queue caps and planned a capacity upgrade."
  },
  {
+  "id": "homebrew-2018-jenkins-github-token-leak",
+  "company": "Homebrew",
+  "date": "2018-07-31",
+  "title": "Jenkins leaks GitHub token with push rights to core Homebrew repos",
+  "url": "https://web.archive.org/web/20210813020247/https://brew.sh/2018/08/05/security-incident-disclosure/",
+  "category": [
+   "security",
+   "credential-leak",
+   "supply-chain"
+  ],
+  "trigger": "A GitHub personal access token whose scopes had recently been widened was exposed through Homebrew's Jenkins instance, granting git push to Homebrew/brew and Homebrew/homebrew-core.",
+  "impact": "Anyone holding the token could have pushed to the two main Homebrew repositories, but GitHub confirmed it was not used for any pushes, so no packages were tampered with and users needed to do nothing.",
+  "detection": "A security researcher discovered the exposed token and reported it via Homebrew's HackerOne program.",
+  "fix": "Within hours the token was revoked, replaced and scrubbed from Jenkins output; branch protection, required reviews and mandatory CI checks were added, and maintainers were asked to prune their access tokens and turn off SMS fallback for 2FA.",
+  "summary": "On 31 July 2018 a researcher reported via HackerOne that Homebrew's Jenkins was leaking a GitHub personal access token with freshly elevated scopes, enough to push directly to Homebrew/brew and Homebrew/homebrew-core. A volunteer maintainer revoked and replaced the token within hours and stopped Jenkins from revealing it again. GitHub verified the token had made no pushes, so no packages were compromised. Homebrew then locked master against direct pushes by non-admins, required passing CI on most repos, and had maintainers audit their tokens."
+ },
+ {
   "id": "allegro-2018-flash-sale-overload",
   "company": "Allegro",
   "date": "2018-07-18",
@@ -1061,6 +1146,40 @@
   "detection": "Not stated in the postmortem.",
   "fix": "Engineers scaled Listing and Search, added cluster resources and shut down non-critical services, then planned to fix oversized resource reservations, tune pools, retries and circuit breakers, and extend rate limiting.",
   "summary": "A PLN 1 phone flash sale at Allegro pushed traffic to 200-300% of normal. Misconfigured services had reserved far more CPU and RAM than they used, so new instances could not be scheduled despite free cluster capacity. Thread pools, connection pools and file descriptors saturated, a circuit breaker threshold was too high to trip, and the slow autoscaler fought a watchdog that killed unresponsive Opbox frontend instances. Retries added load, rate limiters served blank pages, and the site was down about 20 minutes."
+ },
+ {
+  "id": "eslint-2018-npm-account-takeover",
+  "company": "ESLint",
+  "date": "2018-07-12",
+  "title": "Hijacked npm account publishes token-stealing eslint-scope release",
+  "url": "https://eslint.org/blog/2018/07/postmortem-for-malicious-package-publishes",
+  "category": [
+   "security",
+   "supply-chain",
+   "credential-leak"
+  ],
+  "trigger": "An attacker logged into an ESLint maintainer's npm account with a reused password (no 2FA was enabled), created an auth token and published malicious package versions.",
+  "impact": "eslint-scope@3.7.2 and eslint-config-eslint@5.0.2 carried a postinstall script that fetched code from pastebin.com and sent the installing machine's .npmrc file, typically holding npm publish tokens, to the attacker.",
+  "detection": "A user opened issue eslint/eslint-scope#39 at 11:17 UTC, about 37 minutes after the eslint-scope release, alerting the ESLint team.",
+  "fix": "The bad versions were unpublished, the pastebin payload was taken down, a clean eslint-scope@3.7.3 was released, and npm invalidated all access tokens issued before 2018-07-12 12:30 UTC; maintainers were urged to use unique passwords, npm 2FA and lockfiles.",
+  "summary": "On July 12, 2018 an attacker took over an ESLint maintainer's npm account using a password reused from elsewhere, minted an auth token and published eslint-config-eslint@5.0.2 and eslint-scope@3.7.2. Their postinstall hook pulled a payload from pastebin.com that exfiltrated users' .npmrc files containing npm access tokens. eslint-scope is a dependency of packages such as babel-eslint and webpack. A user report triggered unpublishing, and npm revoked every access token created before 12:30 UTC that day, so affected developers had to re-authenticate."
+ },
+ {
+  "id": "gentoo-2018-github-org-takeover",
+  "company": "Gentoo",
+  "date": "2018-06-28",
+  "title": "Guessed admin password lets attacker seize Gentoo GitHub org",
+  "url": "https://wiki.gentoo.org/wiki/Github/2018-06-28",
+  "category": [
+   "security",
+   "credential-leak",
+   "human-error"
+  ],
+  "trigger": "The attacker obtained an organization admin's password, apparently guessable from a pattern after a disclosure on an unrelated site, and logged into the Gentoo GitHub organization.",
+  "impact": "All developers were removed from the org and malicious commits adding rm -rf payloads were force-pushed to gentoo/gentoo, gentoo/musl and gentoo/systemd for roughly ten hours, leaving GitHub unusable for Gentoo for about 5 days and breaking pull-request CI and history.",
+  "detection": "Developers noticed within minutes because removal from the organization triggered notification emails, and the first report reached Infra at 20:36 UTC.",
+  "fix": "GitHub froze the org, Gentoo identified and cut off the compromised account, reverted the bad commits, rotated its credentials, and followed up with mandatory 2FA, fewer org owners, audit-log streaming and hardware 2FA keys for developers.",
+  "summary": "On June 28, 2018 an attacker used a guessed password for a Gentoo GitHub organization administrator, created extra admin accounts, removed every legitimate developer and force-pushed commits inserting rm -rf commands into ebuilds and a systemd configure script. Gentoo's primary repositories on its own infrastructure were unaffected, but anyone who freshly cloned the GitHub mirrors in the affected windows was told to reclone. GitHub froze the organization; Gentoo regained control, reverted content, required 2FA to join the org and gave developers hardware 2FA keys."
  },
  {
   "id": "travisci-2018-prod-db-truncate",
@@ -1129,6 +1248,23 @@
   "detection": "Monitoring caught the complete outage at 15:09.",
   "fix": "After automatic promotion failed, engineers manually promoted the synchronous replica and repointed apps, then rebuilt the cluster and planned app-side proxies and more failure game days.",
   "summary": "GoCardless ran a three-node Postgres cluster managed by Pacemaker with virtual IPs. When the primary's disks failed, Pacemaker should have promoted the synchronous replica within a minute or two, but did not. The team later reproduced the failure only with a combination of non-zero default-resource-stickiness, a Backup VIP with a -INF colocation rule, and a Postgres subprocess crashing on the replica at the same moment. After an hour of trying, engineers promoted the replica manually and pointed Rails apps at it."
+ },
+ {
+  "id": "bintray-2017-jcenter-impersonation-malware",
+  "company": "Bintray",
+  "date": "2017-07",
+  "title": "Impersonator slips malicious packages into JCenter",
+  "url": "https://web.archive.org/web/20210421222929/https://status.bintray.com/incidents/w4dfr0rpznkt",
+  "category": [
+   "security",
+   "supply-chain",
+   "monitoring-gap"
+  ],
+  "trigger": "Someone posing as Jake Wharton submitted a technically valid but malware-laced package for JCenter inclusion, and support reviewers approved it without catching the impersonation.",
+  "impact": "Malicious artifacts under a look-alike namespace, including copies of timber, bitcoinj, litecoinj and async-http libraries, stayed available through JCenter from July 2017 until December 2018.",
+  "detection": "Community abuse reports filed in February 2018 never reached Bintray due to a technical fault in the reporting pipeline; the team only acted after Marton Braun blogged about it publicly in December 2018.",
+  "fix": "Bintray banned the fake user, deleted the uploaded files and their JCenter links, added monitoring and logging to the abuse reporting system, and set up a dedicated moderation team to vet authors and namespace claims.",
+  "summary": "In July 2017 a user impersonating Android developer Jake Wharton asked for a package to be included in JCenter; it looked legitimate but contained malicious code, and Bintray support approved it. Abuse reports sent in February 2018 were silently lost because of a failure in Bintray's reporting path. After a public blog post in December 2018, Bintray banned the account, removed the rogue artifacts, which mimicked timber, bitcoinj and async-http packages, and tightened inclusion review and abuse-report monitoring."
  },
  {
   "id": "heroku-2017-eu-router-stale-state",
@@ -1297,6 +1433,22 @@
   "detection": "The issue was escalated to engineers at 00:10 UTC and confirmed at 00:34 UTC.",
   "fix": "A patch that rejects negative timings and resets upstream performance data was canaried and rolled out globally within about two hours, servers were restarted, and Cloudflare began reviewing all code that measures time intervals.",
   "summary": "Cloudflare's Go-based authoritative DNS server, RRDNS, timed upstream resolvers by subtracting two time.Now() readings. Because that clock was not monotonic, the leap second produced negative durations that were smoothed into stored averages. When weighted server selection passed a negative value to rand.Int63n, the function panicked, breaking CNAME resolution for customers who used CNAME records. Only a small number of machines across 102 data centers were hit, and the most affected ones were patched within about 90 minutes."
+ },
+ {
+  "id": "stackexchange-2016-developer-story-pii-leak",
+  "company": "Stack Exchange",
+  "date": "2016-10-11",
+  "title": "Developer Story CV pages leak emails and phones in HTML source",
+  "url": "https://meta.stackoverflow.com/q/340960/2422776",
+  "category": [
+   "security",
+   "software-bug"
+  ],
+  "trigger": "A view originally built to render PDF CVs was reused for HTML Developer Story pages during the Careers 2.0 port, and a bug placed users' email addresses and phone numbers in the page markup for all visitors.",
+  "impact": "Contact details of users who filled out a Developer Story were present in public page source between 2016-10-11 and 2016-11-28 and got indexed by search engines, though only findable by searching an already-known email or phone number.",
+  "detection": "On 2016-11-28 a user reported that searching their phone number returned their public Stack Overflow Jobs CV as the top hit.",
+  "fix": "The bug was fixed at once, search engines and the Internet Archive were asked to suppress or purge the cached data, and the team adopted regular PII audits and tagging of PII in code and databases; users were told no action was needed.",
+  "summary": "When Stack Overflow ported legacy Careers 2.0 code, it reused a PDF CV view for HTML Developer Story pages, and a bug embedded each user's email address and phone number in the HTML source even though it was not displayed. After the public beta opened on 2016-10-11, crawlers indexed the data until a user reported it on 2016-11-28. Stack Overflow fixed the view, got major search engines and the Internet Archive to purge or suppress the pages, and introduced PII code audits; users did not need to act."
  },
  {
   "id": "buildkite-2016-db-downgrade-healthcheck",
@@ -1552,6 +1704,23 @@
   "summary": "Azure Storage shipped a config change to cut CPU on Table front ends. Contrary to standard practice it went to nearly all regions in a short window rather than in batches, and it triggered an infinite loop in Blob front ends so they stopped taking traffic. Reverting the config did not help until front ends were restarted. Storage outages cascaded to Virtual Machines, which lost RDP and SSH access, plus Websites, Service Bus, HDInsight and others, while the status dashboard was also down."
  },
  {
+  "id": "browserstack-2014-shellshock-aws-key-theft",
+  "company": "BrowserStack",
+  "date": "2014-11-09",
+  "title": "Shellshock on stale server exposes AWS keys and user emails",
+  "url": "https://www.browserstack.com/attack-and-downtime-on-9-November",
+  "category": [
+   "security",
+   "credential-leak",
+   "config"
+  ],
+  "trigger": "An unpatched, unused prototype EC2 machine running since before 2012 was breached via Shellshock, and it held BrowserStack's AWS API access and secret keys.",
+  "impact": "The attacker created an IAM user, mounted a backup disk holding the database password, partially copied a table of emails, hashed passwords and last tested URLs, and used SES to email roughly 5,000 users (under 1%) false claims of a shutdown.",
+  "detection": "The attacker's table copy locked the database table, which fired monitoring alerts; engineers then found an unknown IP in the logs and blocked it.",
+  "fix": "BrowserStack took the service down, revoked and regenerated all AWS keys and passwords, audited SSH, web and CloudTrail logs, moved to encrypted backups, added alerts on AWS actions, and suggested users change their passwords.",
+  "summary": "On 9 November 2014 an attacker exploited Shellshock on a forgotten BrowserStack prototype server that still stored AWS access keys. With those keys they made an IAM user, launched an instance, mounted a backup containing the database password, whitelisted their IP and began copying user records with bcrypt-hashed passwords. A table lock triggered alerts and the IP was blocked, but SES credentials were used to email about 5,000 users. BrowserStack rotated all AWS keys and passwords and recommended users change their passwords."
+ },
+ {
   "id": "slack-2014-reconnect-storm",
   "company": "Slack",
   "date": "2014-10-14",
@@ -1619,6 +1788,23 @@
   "summary": "After the hosting provider moved Yeller's servers to new network gear, the cluster ended up partitioned. Riak writes for some exceptions timed out and needed manual replay, and the Datomic store for user and billing data lost write capacity, blocking account changes. The operator assumed the fault was the provider's and waited about 17 hours before a suggested rolling restart fixed it, possibly by clearing cached routes. Because every node was restarted, the root cause could not be found."
  },
  {
+  "id": "bitly-2014-backup-storage-credential-leak",
+  "company": "Bitly",
+  "date": "2014-05-08",
+  "title": "Hijacked repo account exposes offsite backup keys and user database",
+  "url": "https://web.archive.org/web/20150123234319/http://blog.bitly.com/post/85260908544/more-detail",
+  "category": [
+   "security",
+   "credential-leak",
+   "data-loss"
+  ],
+  "trigger": "An intruder got into an employee's account on the hosted source code repository, which held the credentials for Bitly's offsite database backup storage, and pulled data from those backups.",
+  "impact": "A static backup of the user database was taken, exposing salted password hashes (MD5 for older accounts, BCrypt with HMAC for those active after January 8th, 2014) plus linked Facebook and Twitter credentials, while production systems and Bitlinks were untouched.",
+  "detection": "Another technology company's security team alerted Bitly on May 8, and Bitly then spotted unusual outbound traffic from its offsite backup storage that it had not initiated.",
+  "fix": "Bitly invalidated all Facebook and Twitter credentials, rotated backup storage credentials, SSL certificates and deploy credentials, forced two-factor authentication on the code host and every third-party service, and sped up two-factor login for bitly.com.",
+  "summary": "In May 2014 Bitly found that an attacker had used a compromised employee account on its hosted source code repository to obtain credentials for offsite database backup storage, then downloaded a backup of the user database. Production servers were not breached. Exposed data included salted password hashes and connected Facebook and Twitter tokens, which Bitly invalidated. The company rotated storage keys, SSL certificates and deploy credentials, mandated two-factor authentication on all third-party services, added storage logging, and encrypted sensitive credentials with GPG."
+ },
+ {
   "id": "npm-2014-varnish-backend-restart",
   "company": "NPM",
   "date": "2014-01-28",
@@ -1650,6 +1836,23 @@
   "detection": "Internal monitoring alerted the Site Reliability Team at 11:02 a.m. PST.",
   "fix": "The generator produced and pushed a correct configuration starting at 11:14 a.m., live everywhere by 11:30, and Google planned to fix and audit config generators, validate configs and add targeted monitoring.",
   "summary": "An internal Google system that generates configuration for other services hit a bug and emitted a wrong configuration, which spread to production within about 15 minutes. The bad config caused services to ignore users' requests for their own data, so Gmail, Google+, Calendar and Docs returned errors to most logged-in users for around 25 minutes. The generator later produced a correct config on its own, which fully propagated by 11:30 a.m. Follow-ups include input validation for configs."
+ },
+ {
+  "id": "circleci-2013-mongohq-database-breach",
+  "company": "CircleCI",
+  "date": "2013-10-27",
+  "title": "MongoHQ breach exposes CircleCI database of keys and tokens",
+  "url": "https://web.archive.org/web/20180121023549/http://circleci.com/blog/mongohq-security-incident-response/",
+  "category": [
+   "security",
+   "third-party",
+   "credential-leak"
+  ],
+  "trigger": "CircleCI's hosted database at provider MongoHQ was accessed by an IP linked to an intrusion at MongoHQ late on October 27 UTC.",
+  "impact": "The database held customer SSH keys, GitHub OAuth tokens, Heroku API tokens, AWS IAM keys and API tokens stored in env vars, all of which had to be treated as exposed, though CircleCI saw no evidence they were abused.",
+  "detection": "CircleCI saw an unexpected IAM key deletion on October 28, MongoHQ announced its breach on October 29, and at 5:03pm that day MongoHQ confirmed CircleCI's database had been accessed.",
+  "fix": "CircleCI shut down the site and all builds, had GitHub revoke every CircleCI OAuth token and SSH key, had Heroku and Amazon revoke API tokens and IAM keys, cleared caches and cycled its own keys, and told customers to secure anything reachable with credentials stored in CircleCI.",
+  "summary": "In October 2013 attackers who breached database host MongoHQ reached CircleCI's database, which stored customer SSH keys, GitHub OAuth tokens, Heroku API tokens and AWS IAM keys. Once MongoHQ confirmed the access, CircleCI took its website and builds offline and worked with GitHub, Heroku and Amazon to revoke all affected OAuth tokens, SSH deploy and user keys, API tokens and IAM keys within hours. Customers were told to secure systems reachable via those credentials, verify git SHA1s, and check Heroku config vars."
  },
  {
   "id": "twilio-2013-redis-billing-recharges",

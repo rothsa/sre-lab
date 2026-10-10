@@ -1,0 +1,394 @@
+[
+ {
+  "id": "config-everywhere",
+  "name": "The Config That Spread Everywhere",
+  "lore": "It starts as one small change. Minutes later it is in every region, and nothing works.",
+  "members": [
+   "crowdstrike-2024-channel-file-291",
+   "cloudflare-2025-bot-feature-file-panic",
+   "cloudflare-2025-waf-killswitch-lua-nil",
+   "google-2025-service-control-null-pointer",
+   "cloudflare-2024-ddos-rule-lua-loop",
+   "fastly-2021-customer-config-bug",
+   "pagerduty-2021-dnsmasq-k8s-dns",
+   "cloudflare-2019-waf-regex",
+   "google-2016-gce-ip-block-withdrawal",
+   "microsoft-2014-azure-storage-infinite-loop",
+   "google-2014-bad-config-logged-in-services",
+   "cloudflare-2013-flowspec-router-crash",
+   "google-2009-malware-warning-slash"
+  ],
+  "ward": [
+   {
+    "text": "Roll config and rules out in stages, canary first, the same way you ship code.",
+    "ids": [
+     "crowdstrike-2024-channel-file-291",
+     "microsoft-2014-azure-storage-infinite-loop",
+     "cloudflare-2025-waf-killswitch-lua-nil",
+     "cloudflare-2019-waf-regex",
+     "pagerduty-2021-dnsmasq-k8s-dns"
+    ]
+   },
+   {
+    "text": "Validate generated config like untrusted input: size, field counts, blanks.",
+    "ids": [
+     "cloudflare-2025-bot-feature-file-panic",
+     "crowdstrike-2024-channel-file-291",
+     "google-2025-service-control-null-pointer",
+     "google-2009-malware-warning-slash",
+     "google-2014-bad-config-logged-in-services"
+    ]
+   },
+   {
+    "text": "Keep a kill switch and a known-good file you can push in minutes.",
+    "ids": [
+     "google-2025-service-control-null-pointer",
+     "cloudflare-2025-bot-feature-file-panic",
+     "cloudflare-2019-waf-regex"
+    ]
+   },
+   {
+    "text": "Where it's safe, fail open instead of failing everything.",
+    "ids": [
+     "cloudflare-2025-waf-killswitch-lua-nil",
+     "google-2025-service-control-null-pointer"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "thundering-herd",
+  "name": "The Thundering Herd",
+  "lore": "The service comes back. So does every client, all at once, and it goes down again.",
+  "members": [
+   "launchdarkly-2025-aws-flag-delivery",
+   "datadog-2020-service-discovery-dns-storm",
+   "square-2017-multipass-redis-retries",
+   "discord-2017-redis-failover-cascade",
+   "slack-2014-reconnect-storm",
+   "spotify-2013-popcount-retry-cascade",
+   "aws-2011-ebs-remirroring-storm"
+  ],
+  "ward": [
+   {
+    "text": "Retry with exponential backoff and jitter, and audit client retry loops.",
+    "ids": [
+     "spotify-2013-popcount-retry-cascade",
+     "square-2017-multipass-redis-retries",
+     "google-2025-service-control-null-pointer"
+    ]
+   },
+   {
+    "text": "Let clients back in gradually instead of all at once.",
+    "ids": [
+     "datadog-2020-service-discovery-dns-storm",
+     "slack-2014-reconnect-storm",
+     "slack-2022-consul-rollout-cache-scatter"
+    ]
+   },
+   {
+    "text": "Cache what clients ask for, so one outage doesn't become a query flood.",
+    "ids": [
+     "spotify-2013-popcount-retry-cascade",
+     "datadog-2020-service-discovery-dns-storm"
+    ]
+   },
+   {
+    "text": "Give clients a degraded mode to fall back to.",
+    "ids": [
+     "launchdarkly-2025-aws-flag-delivery"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "ran-out-of-numbers",
+  "name": "The Counter at the End of the World",
+  "lore": "Every ID column has a last number. Nobody remembers until the inserts start failing.",
+  "members": [
+   "heroku-2023-fk-integer-overflow",
+   "mandrill-2019-postgres-xid-wraparound",
+   "basecamp-2018-int-overflow-read-only",
+   "sentry-2015-postgres-xid-wraparound"
+  ],
+  "ward": [
+   {
+    "text": "Use 64-bit keys from day one, including foreign keys that point at them.",
+    "ids": [
+     "basecamp-2018-int-overflow-read-only",
+     "heroku-2023-fk-integer-overflow"
+    ]
+   },
+   {
+    "text": "Alert on headroom: ID columns near their limit, transaction ID age.",
+    "ids": [
+     "heroku-2023-fk-integer-overflow",
+     "mandrill-2019-postgres-xid-wraparound"
+    ]
+   },
+   {
+    "text": "Tune and watch autovacuum before it's an emergency.",
+    "ids": [
+     "sentry-2015-postgres-xid-wraparound",
+     "mandrill-2019-postgres-xid-wraparound"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "clock-and-cert",
+  "name": "The Thing That Expired",
+  "lore": "A certificate, a password, a leap day. Time was always going to run out; it just picked tonight.",
+  "members": [
+   "cloudflare-2023-1111-zonemd-servfail",
+   "mozilla-2019-addons-cert-expiry",
+   "cloudflare-2017-leap-second-rrdns",
+   "travisci-2015-vsphere-janitor-vm-leak",
+   "azure-2012-leap-day-certificate"
+  ],
+  "ward": [
+   {
+    "text": "Test with future dates, expired certificates and leap days in QA.",
+    "ids": [
+     "mozilla-2019-addons-cert-expiry",
+     "azure-2012-leap-day-certificate"
+    ]
+   },
+   {
+    "text": "Alert long before anything expires, and when data quietly goes stale.",
+    "ids": [
+     "cloudflare-2023-1111-zonemd-servfail",
+     "travisci-2015-vsphere-janitor-vm-leak"
+    ]
+   },
+   {
+    "text": "Review code that measures time; reject negative durations.",
+    "ids": [
+     "cloudflare-2017-leap-second-rrdns"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "fat-finger",
+  "name": "The Command With Too Much Reach",
+  "lore": "One keystroke, one script, one wrong environment. The tool did exactly what it was told.",
+  "members": [
+   "cloudflare-2025-r2-credential-rotation",
+   "circleci-2025-manual-waf-rule-outage",
+   "atlassian-2022-site-deletion-script",
+   "facebook-2021-backbone-bgp-withdrawal",
+   "trivago-2021-aad-group-deleted-github",
+   "keepthescore-2020-prod-db-dropped",
+   "travisci-2018-prod-db-truncate",
+   "gitlab-2017-database-deletion",
+   "aws-2017-s3-us-east-1-typo",
+   "aws-2012-elb-state-data-deletion"
+  ],
+  "ward": [
+   {
+    "text": "Make tools refuse dangerous scope: minimum capacity, no bulk deletes.",
+    "ids": [
+     "aws-2017-s3-us-east-1-typo",
+     "atlassian-2022-site-deletion-script"
+    ]
+   },
+   {
+    "text": "Soft delete, and guard destructive commands against production.",
+    "ids": [
+     "atlassian-2022-site-deletion-script",
+     "travisci-2018-prod-db-truncate",
+     "keepthescore-2020-prod-db-dropped"
+    ]
+   },
+   {
+    "text": "Make the target environment explicit, and get a second reviewer.",
+    "ids": [
+     "cloudflare-2025-r2-credential-rotation",
+     "aws-2012-elb-state-data-deletion"
+    ]
+   },
+   {
+    "text": "Block changes made outside the pipeline, and alert on drift.",
+    "ids": [
+     "circleci-2025-manual-waf-rule-outage"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "shared-dependency",
+  "name": "The Thing Everything Leans On",
+  "lore": "Nobody drew it on the architecture diagram. When it fell, everything fell with it.",
+  "members": [
+   "aws-2025-dynamodb-dns-race",
+   "cloudflare-2025-workers-kv-storage",
+   "incidentio-2025-aws-us-east-1-dependencies",
+   "cloudflare-2023-pdx04-power-control-plane",
+   "cloudflare-2023-service-token-overwrite",
+   "slack-2022-consul-rollout-cache-scatter",
+   "roblox-2021-consul-streaming-boltdb",
+   "datadog-2020-service-discovery-dns-storm",
+   "buildkite-2016-db-downgrade-healthcheck",
+   "aws-2015-dynamodb-metadata-overload",
+   "pagerduty-2013-shared-peering-point"
+  ],
+  "ward": [
+   {
+    "text": "Hunt down single-provider and single-facility dependencies on purpose.",
+    "ids": [
+     "cloudflare-2023-pdx04-power-control-plane",
+     "cloudflare-2025-workers-kv-storage",
+     "incidentio-2025-aws-us-east-1-dependencies"
+    ]
+   },
+   {
+    "text": "Keep health checks shallow, so a slow database doesn't empty the load balancer.",
+    "ids": [
+     "buildkite-2016-db-downgrade-healthcheck"
+    ]
+   },
+   {
+    "text": "Separate control plane from data plane, and keep a static local fallback.",
+    "ids": [
+     "datadog-2020-service-discovery-dns-storm",
+     "aws-2015-dynamodb-metadata-overload"
+    ]
+   },
+   {
+    "text": "Don't let your monitoring depend on the system it monitors.",
+    "ids": [
+     "roblox-2021-consul-streaming-boltdb"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "leaked-key",
+  "name": "The Key Under the Mat",
+  "lore": "A token in a log, a password reused, a forgotten server. Someone else found it first.",
+  "members": [
+   "cloudflare-2025-salesloft-drift-salesforce-breach",
+   "circleci-2022-session-cookie-theft-secrets-exfil",
+   "heroku-2022-github-oauth-token-theft",
+   "gentoo-2018-github-org-takeover",
+   "eslint-2018-npm-account-takeover",
+   "homebrew-2018-jenkins-github-token-leak",
+   "bintray-2017-jcenter-impersonation-malware",
+   "sentry-2016-s3-backup-acl",
+   "bitly-2014-backup-storage-credential-leak",
+   "browserstack-2014-shellshock-aws-key-theft",
+   "circleci-2013-mongohq-database-breach"
+  ],
+  "ward": [
+   {
+    "text": "Require 2FA everywhere, hardware keys for admins, no SMS fallback.",
+    "ids": [
+     "gentoo-2018-github-org-takeover",
+     "homebrew-2018-jenkins-github-token-leak",
+     "bitly-2014-backup-storage-credential-leak"
+    ]
+   },
+   {
+    "text": "Keep owners few and tokens narrow; scrub secrets from CI output.",
+    "ids": [
+     "gentoo-2018-github-org-takeover",
+     "homebrew-2018-jenkins-github-token-leak",
+     "circleci-2022-session-cookie-theft-secrets-exfil"
+    ]
+   },
+   {
+    "text": "Have a rotate-everything runbook ready. Every one of these ended with one.",
+    "ids": [
+     "circleci-2022-session-cookie-theft-secrets-exfil",
+     "circleci-2013-mongohq-database-breach",
+     "heroku-2022-github-oauth-token-theft",
+     "cloudflare-2025-salesloft-drift-salesforce-breach",
+     "browserstack-2014-shellshock-aws-key-theft"
+    ]
+   },
+   {
+    "text": "Private-by-default buckets, encrypted backups, and no forgotten servers.",
+    "ids": [
+     "sentry-2016-s3-backup-acl",
+     "browserstack-2014-shellshock-aws-key-theft"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "backup-failover",
+  "name": "The Backup That Wasn't There",
+  "lore": "Everyone was sure it worked. Nobody had tried it.",
+  "members": [
+   "atlassian-2022-site-deletion-script",
+   "pythonanywhere-2020-ebs-volume-failure",
+   "keepthescore-2020-prod-db-dropped",
+   "gitlab-2017-database-deletion",
+   "gocardless-2017-postgres-failover",
+   "discord-2017-redis-failover-cascade",
+   "kickstarter-2013-mysql-replication-break"
+  ],
+  "ward": [
+   {
+    "text": "Monitor backups, and test restores automatically.",
+    "ids": [
+     "gitlab-2017-database-deletion"
+    ]
+   },
+   {
+    "text": "Rehearse failover in game days before you need it.",
+    "ids": [
+     "gocardless-2017-postgres-failover"
+    ]
+   },
+   {
+    "text": "Plan for how long a restore takes, not just whether one exists.",
+    "ids": [
+     "gitlab-2017-database-deletion",
+     "atlassian-2022-site-deletion-script",
+     "pythonanywhere-2020-ebs-volume-failure"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "physical-world",
+  "name": "The Storm Outside",
+  "lore": "Lightning, heat, a failing generator. The cloud is still a building.",
+  "members": [
+   "cloudflare-2024-pdx01-power-failover",
+   "cloudflare-2023-pdx04-power-control-plane",
+   "google-2022-europe-west2-cooling",
+   "amazon-2019-tokyo-cooling-control",
+   "amazon-2016-sydney-drups-power",
+   "google-2015-lightning-persistent-disk",
+   "amazon-2012-us-east-1-storm-power",
+   "amazon-2011-eu-west-power-ebs"
+  ],
+  "ward": [
+   {
+    "text": "Design to lose a whole facility, then prove it: by the second Portland outage, databases failed over on their own.",
+    "ids": [
+     "cloudflare-2023-pdx04-power-control-plane",
+     "cloudflare-2024-pdx01-power-failover"
+    ]
+   },
+   {
+    "text": "Isolate control planes per zone, with failover to another region.",
+    "ids": [
+     "amazon-2011-eu-west-power-ebs",
+     "amazon-2012-us-east-1-storm-power",
+     "cloudflare-2023-pdx04-power-control-plane"
+    ]
+   },
+   {
+    "text": "Keep manual overrides for automated power and cooling controls.",
+    "ids": [
+     "amazon-2019-tokyo-cooling-control",
+     "amazon-2011-eu-west-power-ebs"
+    ]
+   }
+  ]
+ }
+]

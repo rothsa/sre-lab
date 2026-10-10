@@ -3,110 +3,101 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Find the Incident</title>
-<meta name="description" content="Search real public postmortems by symptom. An embedding model and BM25 keyword ranking side by side, running entirely in your browser.">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<title>The Incident Files</title>
+<meta name="description" content="Real public postmortems, searchable by symptom, and the recurring failure patterns that keep coming back, with how companies warded them off.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@800;900&display=swap">
 <style>
-/* Layout: search box and example chips, a timing strip, then two result columns
-   (embedding model vs BM25) that stack on narrow screens, then the eval panel. */
+/* Layout: a case-file header, the search box with results, then a grid of recurring
+   failure patterns ("monsters") with how to ward each off, then what's missing.
+   The theme is deliberately dark: these are horror stories. */
 :root {
-  --bg: #f4f6f8; --panel: #ffffff; --fg: #141c24; --muted: #5b6875; --rule: #d7dee5;
-  --accent: #1f5fbf; --sem: #6d3fc0; --kw: #b45309; --good: #15803d; --bad: #c2410c; --mark: #fde68a;
+  --bg: #0b0a0e; --bg2: #121017; --panel: #17141d; --fg: #ece6dc; --muted: #a59d93; --rule: #2c2633;
+  --blood: #e5484d; --ember: #ff8a3d; --bone: #f3ead8; --ghost: #9d8cff; --moss: #8fd18b; --mark: #5a2a14;
   --font-display: "Archivo", "Segoe UI", system-ui, sans-serif;
+  --font-type: "Special Elite", "Courier New", monospace;
   --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
-  color-scheme: light;
+  color-scheme: dark;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c; --accent: #6ea8ff; --sem: #b49cff; --kw: #f0a24c; --good: #4ade80; --bad: #fb8a4c; --mark: #5b4a12; color-scheme: dark; }
-}
-:root[data-theme="dark"] { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c; --accent: #6ea8ff; --sem: #b49cff; --kw: #f0a24c; --good: #4ade80; --bad: #fb8a4c; --mark: #5b4a12; color-scheme: dark; }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.5; }
-.wrap { max-width: 1080px; margin: 0 auto; padding-inline: 16px; padding-block: 32px 56px; }
-.kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
-h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 5vw, 44px); margin: 6px 0 8px; line-height: 1.05; }
-h2 { font-family: var(--font-display); font-weight: 700; font-size: 22px; margin: 36px 0 8px; }
-.lede { color: var(--muted); max-width: 70ch; margin: 0 0 18px; }
-.search { display: flex; gap: 8px; }
-.search input { flex: 1; min-width: 0; font: inherit; font-size: 17px; padding: 12px 14px; border: 1px solid var(--rule); border-radius: 10px; background: var(--panel); color: var(--fg); }
-.search input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 4px; }
-.chips button { font: inherit; font-size: 13.5px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--rule); background: var(--panel); color: var(--fg); cursor: pointer; }
-.chips button:hover, .chips button:focus-visible { border-color: var(--accent); outline: none; }
-.chips .tag { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-left: 4px; }
-.timing { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); margin: 10px 0 14px; display: flex; flex-wrap: wrap; gap: 4px 16px; font-variant-numeric: tabular-nums; }
-.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.col h3 { margin: 0 0 8px; font-size: 15px; display: flex; align-items: baseline; gap: 8px; }
-.col h3 .swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
-.col.sem h3 .swatch { background: var(--sem); } .col.kw h3 .swatch { background: var(--kw); }
-.col h3 small { font-weight: 400; color: var(--muted); font-size: 13px; }
-.status { color: var(--muted); font-size: 14px; }
-.bar { height: 4px; background: var(--rule); border-radius: 2px; overflow: hidden; margin-top: 6px; }
-.bar i { display: block; height: 100%; width: 0; background: var(--sem); transition: width .2s; }
-.result { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
-.col.sem .result { border-left: 3px solid var(--sem); } .col.kw .result { border-left: 3px solid var(--kw); }
-.result .meta { font-family: var(--font-mono); font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
-.result .title { font-weight: 600; margin: 2px 0 4px; }
-.result p { margin: 0 0 6px; font-size: 14.5px; }
-.result .kv b { font-family: var(--font-mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-right: 6px; }
-.result details { margin: 2px 0 6px; font-size: 14px; }
-.result summary { cursor: pointer; color: var(--muted); font-size: 13.5px; }
-.result details p { margin-top: 6px; }
-.result a { color: var(--accent); font-size: 13.5px; }
-.result .both { font-family: var(--font-mono); font-size: 11px; color: var(--good); }
-mark { background: var(--mark); color: inherit; border-radius: 2px; padding: 0 1px; }
-.why { color: var(--muted); max-width: 75ch; font-size: 15px; }
-.scores { display: flex; flex-wrap: wrap; gap: 12px; margin: 14px 0; }
-.score { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 10px 14px; min-width: 150px; }
-.score .k { font-family: var(--font-mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
-.score .v { font-family: var(--font-display); font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; }
-.tablewrap { overflow-x: auto; }
-table { border-collapse: collapse; width: 100%; font-size: 14px; }
-th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
-th { font-family: var(--font-mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
-td.rank { font-family: var(--font-mono); white-space: nowrap; }
-tbody tr { cursor: pointer; }
-tbody tr:hover td, tbody tr:focus-visible td { background: color-mix(in srgb, var(--accent) 8%, transparent); }
-tbody tr:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-.hit { color: var(--good); } .miss { color: var(--bad); }
-footer { margin-top: 36px; color: var(--muted); font-size: 14px; }
-footer a { color: var(--accent); }
-@media (max-width: 760px) { .cols { grid-template-columns: 1fr; } }
+body { margin: 0; color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  background: radial-gradient(ellipse at 50% -10%, #2a1418 0%, transparent 55%), radial-gradient(ellipse at 100% 100%, #1a1230 0%, transparent 50%), var(--bg);
+  background-attachment: fixed; }
+a { color: var(--ember); }
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 16px; padding-block: 36px 64px; }
+.kicker { font-family: var(--font-type); font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: var(--blood); }
+h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(38px, 7vw, 68px); line-height: .95; margin: 8px 0 14px; letter-spacing: -.01em; color: var(--bone); text-shadow: 0 0 24px rgba(229, 72, 77, .25); }
+h1 span { color: var(--blood); }
+@media (prefers-reduced-motion: no-preference) {
+  h1 span { animation: flicker 7s infinite; }
+  @keyframes flicker { 0%, 92%, 100% { opacity: 1; } 93% { opacity: .35; } 94% { opacity: 1; } 96% { opacity: .55; } 97% { opacity: 1; } }
+}
+h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(24px, 4vw, 32px); margin: 48px 0 6px; color: var(--bone); }
+.sub { font-family: var(--font-type); color: var(--muted); margin: 0 0 18px; }
+.lede { color: var(--fg); max-width: 72ch; margin: 0 0 12px; font-size: 17px; }
+.lede.small { color: var(--muted); font-size: 14.5px; }
+.search { display: flex; gap: 8px; margin-top: 20px; }
+.search input { flex: 1; min-width: 0; font: inherit; font-size: 18px; padding: 13px 15px; border: 1px solid var(--rule); border-radius: 6px; background: var(--bg2); color: var(--fg); }
+.search input::placeholder { color: #6f675f; }
+.search input:focus-visible { outline: 2px solid var(--blood); outline-offset: 1px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 6px; }
+.chips button, .btn { font: inherit; font-size: 13.5px; padding: 4px 11px; border-radius: 999px; border: 1px solid var(--rule); background: var(--panel); color: var(--fg); cursor: pointer; }
+.chips button:hover, .chips button:focus-visible, .btn:hover, .btn:focus-visible { border-color: var(--blood); color: var(--bone); outline: none; }
+.status { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); min-height: 1.5em; margin: 8px 0 12px; }
+.resultsHead { font-family: var(--font-type); color: var(--muted); margin: 6px 0 10px; }
+.results { display: grid; gap: 12px; }
+.case { position: relative; background: var(--panel); border: 1px solid var(--rule); border-left: 3px solid var(--blood); border-radius: 6px; padding: 14px 16px 12px; }
+.case .meta { font-family: var(--font-type); font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.case .meta .no { color: var(--blood); }
+.case .title { font-family: var(--font-display); font-weight: 800; font-size: 18px; line-height: 1.25; margin: 4px 0 8px; color: var(--bone); }
+.case p { margin: 0 0 6px; font-size: 15px; }
+.case .kv b { font-family: var(--font-type); font-weight: 400; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--ember); margin-right: 8px; }
+.case details { margin: 4px 0 8px; font-size: 14.5px; }
+.case summary { cursor: pointer; color: var(--muted); font-size: 13.5px; font-family: var(--font-type); }
+.case details p { margin-top: 8px; color: var(--fg); }
+.case a.orig { font-size: 13.5px; }
+mark { background: var(--mark); color: var(--bone); border-radius: 2px; padding: 0 2px; }
+.monsters { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 14px; margin-top: 14px; }
+.monster { background: linear-gradient(180deg, #1b1622 0%, var(--panel) 100%); border: 1px solid var(--rule); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.monster h3 { font-family: var(--font-display); font-weight: 900; font-size: 19px; line-height: 1.2; margin: 0; color: var(--bone); }
+.monster .count { font-family: var(--font-type); color: var(--blood); font-size: 13.5px; }
+.monster .lore { font-style: italic; color: var(--muted); margin: 0; font-size: 14.5px; }
+.monster h4 { font-family: var(--font-type); font-weight: 400; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--moss); margin: 6px 0 0; }
+.monster ul { margin: 0; padding-left: 18px; display: grid; gap: 7px; font-size: 14.5px; }
+.monster .seen { display: block; font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.monster .seen a { color: var(--muted); }
+.monster .seen a:hover { color: var(--ember); }
+.monster .btn { align-self: flex-start; margin-top: auto; }
+.why { color: var(--fg); max-width: 75ch; }
+.method { color: var(--muted); font-size: 14px; max-width: 80ch; }
+footer { margin-top: 40px; border-top: 1px solid var(--rule); padding-top: 16px; color: var(--muted); font-size: 14px; }
+footer p { margin: 0 0 8px; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="kicker">SRE Lab · retrieval</div>
-  <h1>Find the Incident</h1>
-  <p class="lede">Common failures repeat: expired certificates, config pushes that go everywhere at once, retry storms, databases running out of IDs. Describe a failure mode and this page ranks real public postmortems that match, leading with what caused each one and what fixed it. It's meant for the time around incidents, not the middle of one: readiness and design reviews, on-call training, and postmortems that point to known patterns and preventions. Mid-incident, the job is capturing data from your own system, because every system is its own thing.</p>
-  <p class="lede">Under the hood it compares two ways to search. An <b>embedding model</b> (all-MiniLM-L6-v2, a small model that turns text into numbers capturing its meaning) matches by meaning, and <b>BM25</b> (the classic keyword ranking behind most search engines) matches by words. Neither writes anything; they only rank. Everything runs in your browser after a one-time 23&nbsp;MB model download.</p>
+  <div class="kicker">SRE Lab · case files</div>
+  <h1>The Incident <span>Files</span></h1>
+  <p class="sub">Real outages. Real breaches. Told by the companies that lived through them.</p>
+  <p class="lede">Common failures repeat: expired certificates, config pushes that go everywhere at once, retry storms, databases running out of IDs, keys left where someone could find them. Describe a failure mode and this page pulls the matching case files, leading with what caused each one and what fixed it. It's meant for the time around incidents, not the middle of one: readiness and design reviews, on-call training, and postmortems that point to known patterns and preventions. Mid-incident, the job is capturing data from your own system, because every system is its own thing.</p>
 
   <form class="search" id="form" role="search">
-    <input id="q" type="search" autocomplete="off" value="DNS broke everything" placeholder="Describe a symptom" aria-label="Describe the symptom">
+    <input id="q" type="search" autocomplete="off" value="DNS broke everything" placeholder="Describe a failure" aria-label="Describe a failure">
   </form>
   <div class="chips" id="chips"></div>
-  <div class="timing" id="timing" aria-live="polite"></div>
+  <div class="status" id="status" aria-live="polite">Opening the files…</div>
+  <div class="resultsHead" id="resultsHead"></div>
+  <div class="results" id="results"></div>
 
-  <div class="cols">
-    <section class="col sem" aria-label="Embedding model results">
-      <h3><span class="swatch"></span>Embedding model <small>MiniLM · matches meaning</small></h3>
-      <div id="semStatus" class="status">Loading the model…<div class="bar"><i id="bar"></i></div></div>
-      <div id="sem"></div>
-    </section>
-    <section class="col kw" aria-label="BM25 results">
-      <h3><span class="swatch"></span>BM25 <small>keyword ranking · matches words</small></h3>
-      <div id="kwStatus" class="status">Loading incidents…</div>
-      <div id="kw"></div>
-    </section>
-  </div>
+  <h2>The monsters that keep coming back</h2>
+  <p class="sub">Recurring patterns across these files, and how the companies involved warded them off afterwards.</p>
+  <div class="monsters" id="monsters"></div>
 
-  <h2>How well does each do?</h2>
-  <p class="why">Fifteen test questions, phrased the way an on-call engineer might type them, each with the postmortem a good search should find. The honest result: on a small corpus like this the embedding model and BM25 tie more often than you'd expect, because a rare term (<b>DRUPS</b>, <b>PGAudit</b>) stands out to both. They miss <i>different</i> questions, though, so combining their rankings (hybrid search, using reciprocal rank fusion) puts the right answer highest. And some questions beat every method: if a detail isn't in the text, no search can find it.</p>
-  <div id="evalOut"><p class="status">The test runs automatically once the embedding model has loaded.</p></div>
+  <h2>What's missing</h2>
+  <p class="why">Public postmortems lean toward availability incidents a company is comfortable telling: a clever root cause, a fast fix, lessons learned. Security incidents, often the costliest, are published less often, later, and with less detail, because lawyers, regulators and disclosure rules shape what gets said. This collection includes a set of credential leaks and supply-chain compromises, but like anything built from public writing, it underrepresents the failures companies would rather not discuss.</p>
 
   <footer>
-    <p>Summaries were written for this demo from each company's public postmortem; follow the links to read the originals. Postmortems found through <a href="https://github.com/danluu/post-mortems">danluu/post-mortems</a>. Model: <a href="https://huggingface.co/Xenova/all-MiniLM-L6-v2">all-MiniLM-L6-v2</a> via <a href="https://huggingface.co/docs/transformers.js">Transformers.js</a>.</p>
+    <p class="method"><b>How it works.</b> Each case file holds facts and a summary written for this page from the company's own postmortem; follow the links to read the originals. Cases were found through <a href="https://github.com/danluu/post-mortems">danluu/post-mortems</a>. Search combines a small embedding model (<a href="https://huggingface.co/Xenova/all-MiniLM-L6-v2">all-MiniLM-L6-v2</a> via <a href="https://huggingface.co/docs/transformers.js">Transformers.js</a>, which matches by meaning) with BM25 keyword ranking, merged with reciprocal rank fusion. It runs entirely in your browser after a one-time 23&nbsp;MB download; nothing you type leaves your device. Monster groupings were proposed by the same model and confirmed by hand; each warding comes from what the cited companies changed afterwards.</p>
     <p>Part of <a href="../">SRE Lab</a> by Sally Roth · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab/tree/main/incidents">source</a></p>
   </footer>
 </div>
@@ -116,52 +107,36 @@ import { pipeline, env } from "https://cdn.jsdelivr.net/npm/@huggingface/transfo
 env.allowLocalModels = false;
 
 const MODEL = "Xenova/all-MiniLM-L6-v2";
-const TOP = 5;
-// Reciprocal rank fusion: merge two rankings without comparing their incompatible scores.
-const rrf = (a, b, k = 60) => {
-  const sc = new Map();
-  for (const list of [a, b]) list.forEach(([i], r) => sc.set(i, (sc.get(i) || 0) + 1 / (k + r + 1)));
-  return [...sc].sort((x, y) => y[1] - x[1]);
-};
-const EXAMPLES = [
-  ["DNS broke everything", "symptom"],
-  ["database ran out of connections", "symptom"],
-  ["a regex melted the CPUs", "symptom"],
-  ["heatwave cooked the servers", "symptom"],
-  ["dropped prod by mistake", "symptom"],
-  ["retries made the outage worse", "symptom"],
-  ["certificate expired", "term"],
-  ["BGP", "term"],
-  ["leap second", "term"],
-];
+const TOP = 6;
+const EXAMPLES = ["DNS broke everything", "API key leaked", "certificate expired", "retries made it worse", "someone deleted production", "integer overflow", "heatwave cooked the servers", "BGP"];
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const ms = (x) => `${x < 10 ? x.toFixed(1) : Math.round(x)} ms`;
+const year = (d) => (d.date === "unknown" ? "date not stated" : d.date);
 
 // ---------- data ----------
-let docs = [], vectors = null, dim = 0;
-const timing = { model: null, embed: null, sem: null, kw: null };
-
+let docs = [], byId = new Map(), vectors = null, dim = 0, patterns = [];
 // Keep in sync with docText() in build.mjs.
 const docText = (d) => `${d.title}. ${d.trigger} ${d.impact} ${d.summary}`;
 
 async function loadData() {
-  const [incidents, index, bin] = await Promise.all([
+  const [incidents, index, bin, pats] = await Promise.all([
     fetch("data/incidents.json").then((r) => r.json()),
     fetch("data/index.json").then((r) => r.json()),
     fetch("data/embeddings.bin").then((r) => r.arrayBuffer()),
+    fetch("data/patterns.json").then((r) => r.json()),
   ]);
-  const byId = new Map(incidents.map((d) => [d.id, d]));
+  byId = new Map(incidents.map((d) => [d.id, d]));
   docs = index.ids.map((id) => byId.get(id));
   dim = index.dim;
   vectors = new Float32Array(bin);
+  patterns = pats;
 }
 
-// ---------- keyword search (BM25) ----------
+// ---------- BM25 keyword ranking ----------
 const STOP = new Set("a an and are as at be but by for from had has have in into is it its of on or that the their then there these this to was were when which while with after before during got went".split(" "));
-// Keep identifiers like us-east-1, max_connections, http/2 and 502 intact.
-const tokenize = (s) => s.toLowerCase().split(/[^a-z0-9_\-./]+/).map((t) => t.replace(/^[\-./]+|[\-./]+$/g, "")).filter((t) => t && !STOP.has(t));
+// Keep identifiers like us-east-1, max_connections and 502 intact.
+const tokenize = (s) => s.toLowerCase().split(/[^a-z0-9_\-./]+/).map((t) => t.replace(/^[\-./]+|[\-./]+$/g, "")).filter((t) => t && !STOP.has(t)).map((t) => (t.length > 3 && t.endsWith("s") && !t.endsWith("ss") ? t.slice(0, -1) : t));
 let bm = null;
 function buildBM25() {
   const k1 = 1.2, b = 0.75;
@@ -189,30 +164,13 @@ function buildBM25() {
   };
 }
 
-// ---------- embedding search ----------
+// ---------- embedding model ----------
 let extractor = null;
 async function loadModel() {
-  const t0 = performance.now();
-  const seen = {};
-  extractor = await pipeline("feature-extraction", MODEL, {
-    dtype: "q8",
-    progress_callback: (p) => {
-      if (p.status === "progress" && p.total) {
-        seen[p.file] = [p.loaded, p.total];
-        const [l, t] = Object.values(seen).reduce(([a, b], [c, d]) => [a + c, b + d], [0, 0]);
-        $("bar").style.width = `${Math.round((l / t) * 100)}%`;
-      }
-    },
-  });
-  timing.model = performance.now() - t0;
+  extractor = await pipeline("feature-extraction", MODEL, { dtype: "q8" });
 }
-async function embedQuery(q) {
-  const t0 = performance.now();
-  const out = await extractor(q, { pooling: "mean", normalize: true });
-  timing.embed = performance.now() - t0;
-  return out.data;
-}
-function cosineAll(qv) {
+async function semanticScores(q) {
+  const qv = (await extractor(q, { pooling: "mean", normalize: true })).data;
   const scores = new Float32Array(docs.length);
   for (let i = 0; i < docs.length; i++) {
     let s = 0;
@@ -223,124 +181,96 @@ function cosineAll(qv) {
   return scores;
 }
 
-// ---------- ranking + rendering ----------
+// ---------- ranking ----------
 const ranked = (scores) => [...scores].map((s, i) => [i, s]).filter(([, s]) => s > 0).sort((a, b) => b[1] - a[1]);
+// Reciprocal rank fusion: merge two rankings without comparing their incompatible scores.
+const rrf = (a, b, k = 60) => {
+  const sc = new Map();
+  // Keyword ranking counts half: it catches exact terms, but one shared word ("key") shouldn't outvote meaning.
+  [[a, 1], [b, 0.5]].forEach(([list, w]) => list.forEach(([i], r) => sc.set(i, (sc.get(i) || 0) + w / (k + r + 1))));
+  return [...sc].sort((x, y) => y[1] - x[1]);
+};
 
+// ---------- rendering ----------
 function highlight(text, query) {
-  const terms = [...new Set(tokenize(query))].filter((t) => t.length > 1).map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const terms = [...new Set(tokenize(query || ""))].filter((t) => t.length > 1).map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
   if (!terms.length) return esc(text);
-  const re = new RegExp(`\\b(${terms.join("|")})`, "gi");
-  return esc(text).replace(re, "<mark>$1</mark>");
+  return esc(text).replace(new RegExp(`\\b(${terms.join("|")})`, "gi"), "<mark>$1</mark>");
 }
-function card(i, score, query, other) {
-  const d = docs[i];
-  return `<article class="result">
-    <div class="meta"><span>${esc(d.company)} · ${esc(d.date === "unknown" ? "date not stated" : d.date)}</span><span>${score.toFixed(score < 1 ? 3 : 2)}</span></div>
+function caseFile(d, n, query) {
+  return `<article class="case">
+    <div class="meta"><span><span class="no">No. ${String(n).padStart(3, "0")}</span> · ${esc(d.company)}</span><span>${esc(year(d))}</span></div>
     <div class="title">${highlight(d.title, query)}</div>
     <p class="kv"><b>Cause</b>${highlight(d.trigger, query)}</p>
     <p class="kv"><b>Fixed by</b>${highlight(d.fix, query)}</p>
     <details><summary>What happened</summary><p>${highlight(d.summary, query)}</p><p class="kv"><b>Spotted by</b>${highlight(d.detection, query)}</p></details>
-    <a href="${esc(d.url)}" target="_blank" rel="noopener">Read the original postmortem →</a>${other.has(i) ? ` <span class="both">· in both lists</span>` : ""}
+    <a class="orig" href="${esc(d.url)}" target="_blank" rel="noopener">Read the original postmortem →</a>
   </article>`;
 }
-function renderTiming() {
-  const parts = [];
-  if (timing.model != null) parts.push(`model load ${ms(timing.model)}`);
-  if (timing.embed != null) parts.push(`query embedding ${ms(timing.embed)}`);
-  if (timing.sem != null) parts.push(`embedding search ${ms(timing.sem)}`);
-  if (timing.kw != null) parts.push(`BM25 ${ms(timing.kw)}`);
-  parts.push(`${docs.length} postmortems`);
-  $("timing").innerHTML = parts.map((p) => `<span>${p}</span>`).join("");
-}
+const caseNo = (d) => docs.indexOf(d) + 1;
 
 let seq = 0;
 async function search(query) {
   const my = ++seq;
   query = query.trim();
-  if (!query) { $("sem").innerHTML = ""; $("kw").innerHTML = ""; return; }
-  let t0 = performance.now();
-  const kwTop = ranked(bm(query)).slice(0, TOP);
-  timing.kw = performance.now() - t0;
-  let semTop = null;
+  if (!query) { $("results").innerHTML = ""; $("resultsHead").textContent = ""; return; }
+  const kw = ranked(bm(query));
+  let rows = kw;
   if (extractor) {
-    const qv = await embedQuery(query);
+    const sem = ranked(await semanticScores(query));
     if (my !== seq) return;
-    t0 = performance.now();
-    semTop = ranked(cosineAll(qv)).slice(0, TOP);
-    timing.sem = performance.now() - t0;
+    rows = rrf(sem, kw);
   }
-  const kwSet = new Set(kwTop.map(([i]) => i));
-  const semSet = new Set((semTop || []).map(([i]) => i));
-  $("kw").innerHTML = kwTop.length ? kwTop.map(([i, s]) => card(i, s, query, semSet)).join("") : `<p class="status">No postmortem contains those words. The embedding model may still find a match by meaning.</p>`;
-  if (semTop) $("sem").innerHTML = semTop.map(([i, s]) => card(i, s, query, kwSet)).join("");
-  renderTiming();
+  const top = rows.slice(0, TOP).map(([i]) => docs[i]);
+  $("resultsHead").textContent = top.length ? `${top.length} case files matching “${query}”` : "";
+  $("results").innerHTML = top.length ? top.map((d) => caseFile(d, caseNo(d), query)).join("") : `<p class="status">Nothing matches those words yet. The meaning-based search is still loading; try again in a moment.</p>`;
 }
 
-// ---------- eval ----------
-async function runEval() {
-  const cases = await fetch("data/eval.json").then((r) => r.json());
-  const idx = new Map(docs.map((d, i) => [d.id, i]));
-  const rankOf = (rows, want) => { const r = rows.findIndex(([i]) => want.has(docs[i].id)); return r < 0 ? null : r + 1; };
-  const rows = [];
-  for (const c of cases) {
-    const want = new Set(c.expect.filter((id) => idx.has(id)));
-    const semRows = ranked(cosineAll(await embedQuery(c.q)));
-    const kwRows = ranked(bm(c.q));
-    rows.push({ ...c, sem: rankOf(semRows, want), kw: rankOf(kwRows, want), hy: rankOf(rrf(semRows, kwRows), want) });
-  }
-  const hit = (k) => rows.filter((r) => r[k] && r[k] <= TOP).length;
-  const mrr = (k) => rows.reduce((a, r) => a + (r[k] && r[k] <= 10 ? 1 / r[k] : 0), 0) / rows.length;
-  const cell = (r) => r == null ? `<span class="miss">not found</span>` : `<span class="${r <= TOP ? "hit" : "miss"}">#${r}</span>`;
-  const title = (id) => { const i = idx.get(id); return i == null ? id : `${docs[i].company}: ${docs[i].title}`; };
-  $("evalOut").innerHTML = `
-    <div class="scores">
-      <div class="score"><div class="k">Embedding · found in top ${TOP}</div><div class="v" style="color:var(--sem)">${hit("sem")}/${rows.length}</div></div>
-      <div class="score"><div class="k">BM25 · found in top ${TOP}</div><div class="v" style="color:var(--kw)">${hit("kw")}/${rows.length}</div></div>
-      <div class="score"><div class="k">Embedding · MRR</div><div class="v" style="color:var(--sem)">${mrr("sem").toFixed(2)}</div></div>
-      <div class="score"><div class="k">BM25 · MRR</div><div class="v" style="color:var(--kw)">${mrr("kw").toFixed(2)}</div></div>
-      <div class="score"><div class="k">Hybrid · MRR</div><div class="v" style="color:var(--good)">${mrr("hy").toFixed(2)}</div></div>
-    </div>
-    <div class="tablewrap"><table>
-      <thead><tr><th>Question</th><th>Should find</th><th>Embedding</th><th>BM25</th><th>Hybrid</th></tr></thead>
-      <tbody>${rows.map((r) => `<tr tabindex="0" data-q="${esc(r.q)}" title="Search for this"><td>${esc(r.q)}${r.note ? `<br><small class="status">${esc(r.note)}</small>` : ""}</td><td>${esc(title(r.expect[0]))}</td><td class="rank">${cell(r.sem)}</td><td class="rank">${cell(r.kw)}</td><td class="rank">${cell(r.hy)}</td></tr>`).join("")}</tbody>
-    </table></div>
-    <p class="status">Click a question to run it in the search above. The scores are the same on every visit: same model, same data, same questions, nothing random. MRR (mean reciprocal rank) rewards putting the right answer near the top: 1.0 means always first, 0.5 means typically second.</p>`;
+function showMonster(p) {
+  seq++;
+  $("q").value = "";
+  const ds = p.members.map((id) => byId.get(id));
+  $("resultsHead").textContent = `${ds.length} sightings of ${p.name}`;
+  $("results").innerHTML = ds.map((d) => caseFile(d, caseNo(d), "")).join("");
+  $("resultsHead").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function renderMonsters() {
+  const cite = (id) => { const d = byId.get(id); return `<a href="${esc(d.url)}" target="_blank" rel="noopener" title="${esc(d.title)}">${esc(d.company)} ${esc(d.date.slice(0, 4))}</a>`; };
+  $("monsters").innerHTML = patterns.map((p) => `
+    <section class="monster" aria-labelledby="m-${p.id}">
+      <div class="count">${p.members.length} sightings</div>
+      <h3 id="m-${p.id}">${esc(p.name)}</h3>
+      <p class="lore">${esc(p.lore)}</p>
+      <h4>Ward it off</h4>
+      <ul>${p.ward.map((w) => `<li>${esc(w.text)}<span class="seen">Seen at ${w.ids.map(cite).join(", ")}</span></li>`).join("")}</ul>
+      <button class="btn" type="button" data-p="${p.id}">Open all ${p.members.length} files</button>
+    </section>`).join("");
 }
 
 // ---------- wire up ----------
-$("chips").innerHTML = EXAMPLES.map(([q, tag]) => `<button type="button" data-q="${esc(q)}">${esc(q)}<span class="tag">${tag}</span></button>`).join("");
+$("chips").innerHTML = EXAMPLES.map((q) => `<button type="button" data-q="${esc(q)}">${esc(q)}</button>`).join("");
 $("chips").addEventListener("click", (e) => { const b = e.target.closest("button[data-q]"); if (b) { $("q").value = b.dataset.q; search(b.dataset.q); } });
+$("monsters").addEventListener("click", (e) => { const b = e.target.closest("button[data-p]"); if (b) showMonster(patterns.find((p) => p.id === b.dataset.p)); });
 $("form").addEventListener("submit", (e) => { e.preventDefault(); search($("q").value); });
 let timer;
 $("q").addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(() => search($("q").value), 250); });
-const pickRow = (e) => {
-  const tr = e.target.closest("tr[data-q]");
-  if (!tr || (e.type === "keydown" && e.key !== "Enter" && e.key !== " ")) return;
-  e.preventDefault();
-  $("q").value = tr.dataset.q;
-  search(tr.dataset.q);
-  $("q").scrollIntoView({ behavior: "smooth", block: "center" });
-};
-$("evalOut").addEventListener("click", pickRow);
-$("evalOut").addEventListener("keydown", pickRow);
 
 try {
   await loadData();
   buildBM25();
-  $("kwStatus").textContent = "";
-  renderTiming();
-  if ($("q").value.trim()) search($("q").value);
+  renderMonsters();
+  $("status").textContent = `${docs.length} case files open. Loading the meaning-based search (23 MB, once)…`;
+  search($("q").value);
 } catch (e) {
-  $("kwStatus").textContent = "Couldn't load the incident data.";
+  $("status").textContent = "Couldn't open the case files.";
   throw e;
 }
-loadModel().then(async () => {
-  $("semStatus").textContent = "";
-  renderTiming();
-  await search($("q").value);
-  await runEval();
+loadModel().then(() => {
+  $("status").textContent = `${docs.length} case files. Search by meaning and by keyword, all in your browser.`;
+  search($("q").value);
 }).catch((e) => {
-  $("semStatus").textContent = "The embedding model couldn't load in this browser. BM25 still works.";
+  $("status").textContent = `${docs.length} case files. Meaning-based search couldn't load in this browser, so results are keyword-only.`;
   console.error(e);
 });
 </script>

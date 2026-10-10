@@ -5,7 +5,7 @@ Small, working reliability-engineering tools, live at **lab.sallyroth.dev**.
 | Tool | What it does |
 |---|---|
 | [SLO Burn Simulator](slo/) | Pick an SLO and a burn rate; see how long the error budget lasts, which multi-window burn-rate alerts fire (Google SRE Workbook thresholds), and copy matching Prometheus rules. Static page, no backend. |
-| [Find the Incident](incidents/) | Describe a symptom and search real public postmortems. A small embedding model (all-MiniLM-L6-v2 via Transformers.js) runs in the browser next to a BM25 keyword search, with timings and a 15-question test showing where each wins. Static page, no backend, no API calls. |
+| [The Incident Files](incidents/) | 123 real public postmortems, searchable by failure mode (an in-browser embedding model plus BM25, merged with reciprocal rank fusion), and nine recurring failure patterns with how companies prevented them. Static page, no backend, no API calls. |
 | [Down or Me](status/) | Uptime checks every 5 minutes on a Cloudflare Worker. When something looks unusual, [Jev](https://en.wikipedia.org/wiki/Jev_(AI_model)) classifies the cause (real outage, degraded, monitor-side, planned maintenance, blip) with a confidence score, and an email goes out only for confident, real problems. Uncertain calls are left for a human. |
 
 ## How Down or Me works
@@ -56,7 +56,7 @@ cd ..
 npx wrangler pages deploy .                # then set PRIVATE_TARGETS and OWNER_EMAIL on the Pages project
 ```
 
-## How Find the Incident works
+## How The Incident Files works
 
 ```
 build time (incidents/build.mjs, Node)          browser (incidents/index.html)
@@ -66,6 +66,7 @@ incidents.json ─► all-MiniLM-L6-v2 (q8) ─►      query ─► same model 
 
 - **Corpus:** real public postmortems, found through [danluu/post-mortems](https://github.com/danluu/post-mortems). Each entry holds facts (company, date, trigger, impact, detection, fix) and a short summary written for this demo, plus a link to the original. No text is copied from the sources.
 - **Same model at build time and in the browser**, pinned to Transformers.js 3.8.1, so query and document vectors are comparable.
-- **Eval:** `incidents/data/eval.json` has 15 questions with the postmortem each should find. On this small corpus the two methods score about the same but miss different questions, so a hybrid (reciprocal rank fusion) ranks best; a few questions defeat every method because the needed detail is not in the text.
+- **Ranking:** the embedding model matches by meaning, BM25 catches exact terms; reciprocal rank fusion merges them, with keyword ranks at half weight so one shared word can't outvote meaning. `incidents/data/eval.json` and `node evalnode.mjs .` score it offline.
+- **Patterns (`incidents/data/patterns.json`):** recurring failure modes proposed by the embedding model and confirmed by hand; each prevention cites the incidents whose own follow-ups it comes from.
 - Rebuild after editing the corpus: `cd incidents && npm install && node build.mjs --check`, then `node evalnode.mjs .` to score AI, keyword and hybrid search offline.
 
