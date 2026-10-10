@@ -92,6 +92,7 @@ svg.stepping .d-edge.flow path { stroke-dasharray: 7 5; animation: march .8s lin
 /* Side-by-side code */
 .codes { display: grid; gap: 10px; margin-top: 14px; grid-template-columns: 1fr; }
 @media (min-width: 900px) { .codes { grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); } }
+.codes pre { tab-size: 4; -moz-tab-size: 4; }
 .code-col { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
 .code-head { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 8px 12px; border-bottom: 1px solid var(--rule); background: var(--soft); }
 .code-col pre { margin: 0; padding: 12px; overflow-x: auto; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.5; flex: 1; }
