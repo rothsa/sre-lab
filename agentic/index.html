@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agentic Engineering, Drawn</title>
+<meta name="description" content="Software development at scale in the agentic age, in step-through diagrams: the agent loop, context engineering, verification-first workflows, orchestrating parallel agents, reviewing agent output, safety and permissions, agents in operations, and running it across an organization.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<link rel="stylesheet" href="../drawn/drawn.css">
+</head>
+<body>
+<div class="shell">
+  <nav class="toc" aria-label="Chapters">
+    <details id="tocBox" open><summary>Chapters</summary><ol id="toc"></ol></details>
+  </nav>
+  <main>
+    <div class="kicker"><a href="../">SRE Lab</a> · explainers</div>
+    <h1>Agentic Engineering, Drawn</h1>
+    <p class="lede">How software gets built when much of the code is written by agents: the agent loop, context, verification-first workflows, orchestrating many agents in parallel, reviewing their output, keeping them safe, using them in operations, and what changes when a whole organization works this way. Step through each diagram with the buttons or your arrow keys, then use the 30-second answer, the gotchas and the quiz to make it stick.</p>
+    <p class="lede">Grounded first in Lauren Tan's pstack workflow (published in Cursor's plugins repository), then in vendor engineering guides, security guidance and research on AI-assisted development. Each chapter links to its sources.</p>
+    <div id="chapters"></div>
+    <footer>
+      <p>Diagrams and wording by Sally Roth. Sources are linked in each chapter; real-world examples come from <a href="../incidents/">The Incident Files</a>.</p>
+      <p>Part of <a href="../">SRE Lab</a> · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab/tree/main/agentic">source</a></p>
+    </footer>
+  </main>
+</div>
+<script type="module">
+import { mountExplainer } from "../drawn/engine.js";
+import { CHAPTERS } from "./diagrams.js";
+await mountExplainer(CHAPTERS, { key: "agentic" });
+</script>
+</body>
+</html>
