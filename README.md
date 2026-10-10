@@ -8,6 +8,7 @@ Small, working reliability-engineering tools, live at **lab.sallyroth.dev**.
 | [The Incident Files](incidents/) | 310 real public postmortems, searchable by failure mode (an in-browser embedding model plus BM25, merged with reciprocal rank fusion), and nine recurring failure patterns with how companies prevented them. Static page, no backend, no API calls. |
 | [Kubernetes, Drawn](k8s/) | How Kubernetes works in 18 step-through diagrams (control loop, kubectl apply, scheduling, Services, DNS, storage, autoscaling, RBAC, upgrades, a troubleshooting map), each with a 30-second answer, gotchas, a quiz and links to the kubernetes.io pages it's based on. Static page; chapter specs in `k8s/parts/`, checks in `k8s/check.mjs`. |
 | [Down or Me](status/) | Uptime checks every 5 minutes on a Cloudflare Worker. When something looks unusual, [Jev](https://en.wikipedia.org/wiki/Jev_(AI_model)) classifies the cause (real outage, degraded, monitor-side, planned maintenance, blip) with a confidence score, and an email goes out only for confident, real problems. Uncertain calls are left for a human. |
+| [Plan B](planb/) | AI failover you can break on purpose: pick a fictional incident, break the primary model (bad model id or a 1 ms timeout) and watch AI Gateway fall back from Workers AI to Claude on Anthropic, with which step answered and how long each attempt took. Pages Function + D1 caps; keys stay server-side. |
 
 ## How Down or Me works
 
@@ -27,12 +28,67 @@ cron (5 min) ─► HTTP / status-page / game-server checks ─► D1 history
 - A daily cap (`JEV_DAILY_CAP`, default 200) bounds cost even if something loops.
 - The public board lists only generic services; the private board sits behind Cloudflare Access.
 
+## How Plan B works
+
+```
+page ─► POST /api/planb {incident, mode} ─► Pages Function: validate · per-IP limit · daily caps
+                                                   │
+                                     env.AI.gateway("sre-lab").run([step0, step1])   (Universal Endpoint)
+                                                   │
+                         step 0: Workers AI @cf/meta/llama-3.2-3b-instruct (1 attempt)
+                                                   │ error or timeout
+                         step 1: Anthropic v1/messages claude-haiku-5-5
+```
+
+- **Breaking it:** `down` sends step 0 to a model id that doesn't exist; `slow` gives step 0 a 1 ms timeout. Step 0 never retries, so the fallback is visible. Gateway cache is skipped on every run.
+- **Which model answered:** the gateway's `cf-aig-step` response header when present, otherwise the response shape (Anthropic `type: "message"` + `content[]` vs Workers AI `result.response`). The response says which (`stepSource`).
+- **Timings:** `totalMs` is measured around the gateway call. When the backup answers, its own time comes from the gateway log (`getLog`) when readable, and the failed attempt is total minus that; otherwise shown as unknown.
+- **No free text:** three fixed fictional incidents and a fixed prompt; the body must be exactly `{incident: 1|2|3, mode: "healthy"|"down"|"slow"}`.
+- **Honest limit:** the function and the gateway run on Cloudflare, so this shows recovery from a failed model request, not surviving a Cloudflare-wide outage. The page says so.
+- Code: `worker/src/planb.js` (logic), `functions/api/planb.js` (route), `planb/index.html` (page), `worker/migrations/0003_planb.sql` (tables).
+
+### Costs and guardrails
+
+| Guardrail | Default | Override (Pages env var) |
+|---|---|---|
+| Per visitor | 10 runs / 10 min, keyed by SHA-256(salt, UTC day, IP); raw IPs never stored, rows pruned after a day | `PLANB_IP_LIMIT`, `PLANB_IP_WINDOW_MIN` |
+| Daily runs (all visitors) | 300, atomic D1 counter (same pattern as `takeJevBudget`) | `PLANB_DAILY_RUNS` |
+| Daily Anthropic rescues | 100; broken modes reserve one before calling, healthy runs include the backup only while under the cap | `PLANB_DAILY_RESCUES` |
+| Answer length | `max_tokens` 200 | none |
+| Gateway rate limit | second net, set in the gateway's settings | dashboard |
+
+Workers AI for a run this size is a tiny fraction of the free daily neuron allowance. Claude Haiku 5.5 is $0.10 / $0.50 per million input / output tokens, so a rescue (~250 in, ≤200 out) costs about $0.0001 and 100 rescues a day about one cent. Use a dedicated Anthropic key with a low spend limit.
+
+### Setup (owner, once)
+
+1. Dashboard → AI → AI Gateway: create gateway **`sre-lab`** with rate limiting on.
+2. Secrets on the Pages project (never committed), each read from a file:
+   ```bash
+   npx wrangler pages secret put ANTHROPIC_API_KEY --project-name sre-lab < ~/.secrets/.anthropic_lab_key
+   openssl rand -hex 32 | npx wrangler pages secret put PLANB_SALT --project-name sre-lab
+   ```
+3. Migration (same flow as Down or Me): `cd worker && npx wrangler d1 migrations apply down-or-me --remote`
+4. Optional `WORKERS_AI_TOKEN` only if the spike shows the workers-ai step needs a Cloudflare API token.
+
+### Testing
+
+- Offline (no network, no AI calls; node:sqlite stands in for D1 and runs the real migration): `node worker/test-planb.mjs`
+- Spike against `wrangler pages dev` (real gateway; costs one Workers AI call and up to two Haiku calls). `.dev.vars` is gitignored:
+  ```bash
+  (umask 077; { printf 'ANTHROPIC_API_KEY='; tr -d '\r\n' < ~/.secrets/.anthropic_lab_key; printf '\nPLANB_DEBUG=1\n'; } > .dev.vars)
+  npx wrangler d1 execute down-or-me --local --file worker/migrations/0003_planb.sql
+  npx wrangler pages dev . --port 8788          # in one terminal
+  node worker/spike-planb.mjs http://localhost:8788 1   # in another
+  ```
+  `PLANB_DEBUG=1` adds the gateway's `cf-aig-*` response headers to the JSON so you can see whether `cf-aig-step` came through. Never set it on the Pages project.
+
 ## Layout
 
 ```
 index.html          lab landing page (Cloudflare Pages)
 slo/index.html      SLO Burn Simulator
 status/index.html   Down or Me board (public at /status/, private at /private/status/)
+planb/index.html    Plan B failover demo (API: functions/api/planb.js -> worker/src/planb.js)
 worker/             Cloudflare Worker: cron checks, Jev triage, status API
 ```
 
