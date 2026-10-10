@@ -19,6 +19,7 @@ html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55; }
 a { color: var(--accent); }
 .shell { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 32px 64px; display: grid; gap: 28px; }
+.shell > * { min-width: 0; } /* let wide diagrams and tables scroll inside their frames instead of widening the page on phones */
 @media (min-width: 1000px) { .shell { grid-template-columns: 240px minmax(0, 1fr); } }
 .kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
 h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(32px, 6vw, 52px); margin: 6px 0 10px; line-height: 1.02; }
@@ -47,6 +48,7 @@ figure.diagram:focus-visible { outline: 2px solid var(--accent); outline-offset:
 figcaption { padding: 12px 14px 14px; font-size: 16px; min-height: 4.2em; }
 .aids { display: grid; gap: 14px; margin-top: 14px; }
 @media (min-width: 760px) { .aids { grid-template-columns: 1fr 1fr; } }
+.aids > * { min-width: 0; } .chapter :not(pre) > code, .aid a { overflow-wrap: anywhere; } /* long identifiers wrap instead of widening the page */
 .aid { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; }
 .aid h3 { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; font-weight: 600; }
 .aid.say { grid-column: 1 / -1; border-left: 3px solid var(--accent); }
