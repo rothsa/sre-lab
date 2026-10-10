@@ -16,7 +16,7 @@ export const CHAPTERS = [
       { id: "tstore", label: "Trace store", sub: "Tempo, Jaeger", kind: "store", x: 375, y: 270, w: 170, h: 56 },
       { id: "lstore", label: "Log store", sub: "Loki, Elasticsearch", kind: "store", x: 660, y: 270, w: 170, h: 56 },
       { id: "grafana", label: "Grafana", sub: "query + correlate", kind: "actor", x: 380, y: 410, w: 160, h: 50 },
-      { id: "newsig", label: "Newer signals", sub: "profiles, events:\nstill in development", kind: "note", x: 700, y: 400, w: 200, h: 60 },
+      { id: "newsig", label: "Newer signals", sub: "profiles: alpha\nevents: in development", kind: "note", x: 700, y: 400, w: 200, h: 60 },
     ],
     edges: [
       { id: "e-m", from: "app", to: "metrics", label: "observes" },
@@ -41,7 +41,7 @@ export const CHAPTERS = [
       { text: "Logs to traces: an OpenTelemetry log record has `TraceId` and `SpanId` fields, filled automatically from the active span. In Grafana, a derived field pulls the `traceID` out of a Loki line and links to the trace.", on: ["lstore", "tstore"], flow: ["e-tid"] },
       { text: "Metrics to traces: an exemplar attaches the trace ID of one representative request to a metric sample. Grafana draws exemplars as stars on a Prometheus graph; clicking one opens that trace.", on: ["mstore", "tstore"], flow: ["e-ex"] },
       { text: "The incident loop: an alert fires on a metric, an exemplar on the latency spike opens a slow trace, and the trace ID finds that request's log lines. Metrics say something is wrong, traces say where, logs say why.", on: ["grafana", "mstore", "tstore", "lstore"], flow: ["e-qm", "e-ex", "e-tid"] },
-      { text: "OpenTelemetry supports traces, metrics and logs, plus baggage for context. Profiles (resource use at code level) and events (a kind of log) are still in development, so treat them as emerging.", on: ["newsig"] },
+      { text: "OpenTelemetry supports traces, metrics and logs, plus baggage for context. Profiles (resource use at code level) entered public Alpha in 2026. Events (a kind of log) are still in development. Treat both as emerging.", on: ["newsig"] },
     ],
     say30: "Metrics are numbers aggregated in the process, so they cost per series rather than per request. They are cheap to keep for months and ideal for dashboards and alerts, but they lose individual requests. Logs keep every event, so cost grows with traffic, and they answer why one thing happened. Traces follow one request across services as spans sharing a trace ID, and show where the time went; at volume you sample them. The power is in linking them: exemplars put a trace ID on a metric sample, and logs carry the trace and span IDs. So an alert on a latency metric jumps to a slow trace and then to that request's logs.",
     gotchas: [
@@ -157,7 +157,7 @@ export const CHAPTERS = [
     ],
     agentic: [
       "Agent and LLM telemetry rides the same SDK-to-Collector path. The GenAI conventions keep `gen_ai.input.messages`, `gen_ai.output.messages` and `gen_ai.tool.call.arguments` Opt-In because they can carry user data; if a team turns capture on, the gateway's `attributes` or `transform` processor is where you delete or hash them before any exporter ships a copy to a vendor.",
-      "Each agent step can be a span: an `invoke_agent` span, one per model call and an `execute_tool` span per tool call, so one task sends a burst of spans through `memory_limiter` and the exporter queues. Some backends bill per LLM span (Datadog LLM Observability meters LLM spans ingested), so size both the pipeline and the budget for agent loops, not single requests.",
+      "Each agent step can be a span: an `invoke_agent` span, one per model call and an `execute_tool` span per tool call, so one task sends a burst of spans through `memory_limiter` and the exporter queues. Some backends bill per LLM span (Datadog Agent Observability meters LLM spans ingested), so size both the pipeline and the budget for agent loops, not single requests.",
       "Agents draft Collector configs quickly, and a config that loads is not a correct one. Check processor order by hand (`memory_limiter` first, `k8sattributes` before `batch`) and that redaction exists in every pipeline that exports, because a misordered limiter fails only under load and a missing redaction shows up only in an audit.",
     ],
     quiz: [
@@ -228,7 +228,7 @@ service:
       { title: "Tail sampling processor README", url: "https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/tailsamplingprocessor/README.md" },
       { title: "OpenTelemetry GenAI spans", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md" },
       { title: "OpenTelemetry GenAI agent spans", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-agent-spans.md" },
-      { title: "Datadog LLM Observability", url: "https://docs.datadoghq.com/llm_observability/" },
+      { title: "Datadog Agent Observability", url: "https://docs.datadoghq.com/llm_observability/" },
     ],
   },
 

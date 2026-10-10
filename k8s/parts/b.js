@@ -430,7 +430,7 @@ export const CHAPTERS = [
       { title: "Persistent volumes", url: "https://kubernetes.io/docs/concepts/storage/persistent-volumes/" },
       { title: "Storage classes", url: "https://kubernetes.io/docs/concepts/storage/storage-classes/" },
       { title: "Volumes (CSI)", url: "https://kubernetes.io/docs/concepts/storage/volumes/" },
-      { title: "VolumeAttachment", url: "https://kubernetes.io/docs/reference/kubernetes-api/config-and-storage-resources/volume-attachment-v1/" },
+      { title: "VolumeAttachment", url: "https://kubernetes.io/docs/reference/kubernetes-api/storage/volume-attachment-v1/" },
       { title: "StatefulSets", url: "https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/" },
       { title: "Node-specific volume limits", url: "https://kubernetes.io/docs/concepts/storage/storage-limits/" },
       { title: "Cluster Autoscaler FAQ", url: "https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md" },

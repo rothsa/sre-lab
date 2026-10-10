@@ -176,7 +176,7 @@ export const CHAPTERS = [
       { title: "Claude Code: How Claude Code works", url: "https://code.claude.com/docs/en/how-claude-code-works" },
       { title: "Claude Code: Subagents", url: "https://code.claude.com/docs/en/sub-agents" },
       { title: "Cursor: Rules", url: "https://cursor.com/docs/context/rules" },
-      { title: "Model Context Protocol specification (2025-06-18)", url: "https://modelcontextprotocol.io/specification/2025-06-18" },
+      { title: "Model Context Protocol specification (2026-07-28)", url: "https://modelcontextprotocol.io/specification/2026-07-28" },
       { title: "pstack README (Lauren Tan, poteto)", url: `${PS}/README.md` },
       { title: "pstack: poteto-mode skill", url: `${PS}/skills/poteto-mode/SKILL.md` },
       { title: "pstack: guard-the-context-window principle", url: `${PS}/skills/principle-guard-the-context-window/SKILL.md` },

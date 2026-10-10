@@ -76,7 +76,7 @@ export const CHAPTERS = [
     ],
     incidents: [],
     sources: [
-      { title: "Horizontal Pod Autoscaling", url: "https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/" },
+      { title: "Horizontal Pod Autoscaling", url: "https://kubernetes.io/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/" },
       { title: "Resource metrics pipeline", url: "https://kubernetes.io/docs/tasks/debug/debug-cluster/resource-metrics-pipeline/" },
       { title: "Autoscaling workloads", url: "https://kubernetes.io/docs/concepts/workloads/autoscaling/" },
       { title: "Vertical Pod Autoscaling", url: "https://kubernetes.io/docs/concepts/workloads/autoscaling/vertical-pod-autoscale/" },

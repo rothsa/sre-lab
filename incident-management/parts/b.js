@@ -84,7 +84,7 @@ export const CHAPTERS = [
       { title: "Datadog Software Catalog: ownership", url: "https://docs.datadoghq.com/internal_developer_portal/software_catalog/set_up/ownership/" },
       { title: "PagerDuty: alert fatigue", url: "https://www.pagerduty.com/resources/digital-operations/learn/alert-fatigue/" },
       { title: "PagerDuty: SRE Agent", url: "https://support.pagerduty.com/main/docs/sre-agent" },
-      { title: "Datadog Bits AI SRE: Investigate issues", url: "https://docs.datadoghq.com/bits_ai/bits_ai_sre/investigate_issues/" },
+      { title: "Datadog Bits Investigation: Investigate issues", url: "https://docs.datadoghq.com/bits_ai/bits_investigation/investigate_issues/" },
     ],
   },
   {

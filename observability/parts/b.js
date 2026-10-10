@@ -341,7 +341,7 @@ export const CHAPTERS = [
       "The alert path itself fails: notification pipelines have dropped pages during outages. Meta-monitor Prometheus and Alertmanager and run an end-to-end check of the whole path to the pager.",
     ],
     agentic: [
-      "AI SRE agents now start from the alert: Datadog's Bits AI SRE auto-investigates only when a monitor enters alert state (not warn or no data) and can end inconclusive, and Google's SRE paper describes an AI Operator as first responder to production alerts. Routing still decides who is accountable: the page reaches a human owner, and the agent's findings arrive as evidence for that person (see Agentic Engineering, Drawn).",
+      "AI SRE agents now start from the alert: Datadog's Bits Investigation agent auto-investigates only when a monitor enters alert state (not warn or no data) and can end inconclusive, and Google's SRE paper describes an AI Operator as first responder to production alerts. Routing still decides who is accountable: the page reaches a human owner, and the agent's findings arrive as evidence for that person (see Agentic Engineering, Drawn).",
       "The products recommend, people act: New Relic's docs say Autopilot recommends actions but does not take them, and Google's autonomy levels require a human to approve each plan at L2. Keep agent identities read-only on Alertmanager too, because a silence is a write that can hide the next page.",
       "Alert on the model dependency like any third party. A Claude API 529 `overloaded_error` is retryable, but a spend-cap 429 has no `retry-after` and keeps failing until access resumes, so it should reach an owner instead of burning retries; alert on the agent's own success rate and on `gen_ai.client.operation.duration` split by `error.type`, rather than waiting for the provider's status page.",
     ],
@@ -360,7 +360,7 @@ export const CHAPTERS = [
       { title: "Alertmanager high availability", url: "https://prometheus.io/docs/alerting/latest/high_availability/" },
       { title: "Prometheus configuration (alert relabeling)", url: "https://prometheus.io/docs/prometheus/latest/configuration/configuration/" },
       { title: "Prometheus: Unit testing rules", url: "https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/" },
-      { title: "Datadog Bits AI SRE: investigate issues", url: "https://docs.datadoghq.com/bits_ai/bits_ai_sre/investigate_issues/" },
+      { title: "Datadog Bits Investigation: Investigate issues", url: "https://docs.datadoghq.com/bits_ai/bits_investigation/investigate_issues/" },
       { title: "Google SRE: AI in SRE", url: "https://sre.google/resources/practices-and-processes/ai-engineering-reliable-operations/" },
       { title: "New Relic Autopilot overview", url: "https://docs.newrelic.com/docs/agentic-ai/sre-agent/overview" },
       { title: "Claude API errors", url: "https://platform.claude.com/docs/en/api/errors" },

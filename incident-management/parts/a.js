@@ -61,7 +61,7 @@ export const CHAPTERS = [
     ],
     agentic: [
       "An AI investigation can suggest a SEV from telemetry, but severity is customer impact, so a human confirms it by asking what customers cannot do and how many. An agent that grades by the first alarming log line (\"database errors, so SEV1\") repeats the cause-based mistake from this chapter.",
-      "Datadog's Bits AI SRE starts an automatic investigation only when a monitor enters `alert`, not warn or no data. The declare-early, pick-the-higher-SEV call stays with people; the new design question is which monitors and levels should trigger an agent at all.",
+      "Datadog's Bits Investigation starts an automatic investigation only when a monitor enters `alert`, not warn or no data. The declare-early, pick-the-higher-SEV call stays with people; the new design question is which monitors and levels should trigger an agent at all.",
       "When an agent caused or worsened the impact, grade it like any other incident: by impact, not by \"the AI did it\". Record agent involvement as a field next to initial and final severity, so reviews can count those incidents instead of arguing about them.",
     ],
     quiz: [
@@ -75,7 +75,7 @@ export const CHAPTERS = [
       { title: "incident.io guide: Severities", url: "https://incident.io/guide/foundations/severities" },
       { title: "Site Reliability Engineering: Managing Incidents", url: "https://sre.google/sre-book/managing-incidents/" },
       { title: "The Site Reliability Workbook: Incident Response", url: "https://sre.google/workbook/incident-response/" },
-      { title: "Datadog Bits AI SRE: Investigate issues", url: "https://docs.datadoghq.com/bits_ai/bits_ai_sre/investigate_issues/" },
+      { title: "Datadog Bits Investigation: Investigate issues", url: "https://docs.datadoghq.com/bits_ai/bits_investigation/investigate_issues/" },
     ],
   },
   {
@@ -237,7 +237,7 @@ export const CHAPTERS = [
       { title: "Adaptive Capacity Labs: Moving past shallow incident data", url: "https://www.adaptivecapacitylabs.com/blog/2018/03/23/moving-past-shallow-incident-data/" },
       { title: "New Relic Autopilot overview", url: "https://docs.newrelic.com/docs/agentic-ai/sre-agent/overview" },
       { title: "Google Cloud: Gemini Cloud Assist investigations", url: "https://docs.cloud.google.com/cloud-assist/investigations" },
-      { title: "Datadog Bits AI SRE: Investigate issues", url: "https://docs.datadoghq.com/bits_ai/bits_ai_sre/investigate_issues/" },
+      { title: "Datadog Bits Investigation: Investigate issues", url: "https://docs.datadoghq.com/bits_ai/bits_investigation/investigate_issues/" },
     ],
   },
   {

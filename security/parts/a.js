@@ -185,7 +185,7 @@ export const CHAPTERS = [
   id-token: write
   contents: read
 steps:
-  - uses: aws-actions/configure-aws-credentials@v4
+  - uses: aws-actions/configure-aws-credentials@v6
     with:
       role-to-assume: arn:aws:iam::111122223333:role/deploy
       aws-region: eu-central-1` },
@@ -403,7 +403,7 @@ spec:
       { title: "Istio: plug in CA certificates", url: "https://istio.io/latest/docs/tasks/security/cert-management/plugin-ca-cert/" },
       { title: "Istio performance and scalability", url: "https://istio.io/latest/docs/ops/deployment/performance-and-scalability/" },
       { title: "Google Cloud: Agent Identity overview", url: "https://docs.cloud.google.com/iam/docs/agent-identity-overview" },
-      { title: "MCP Security Best Practices (spec 2025-11-25)", url: "https://modelcontextprotocol.io/specification/2025-11-25/basic/security_best_practices" },
+      { title: "MCP Security Best Practices (spec 2026-07-28)", url: "https://modelcontextprotocol.io/specification/2026-07-28/basic/security_best_practices" },
       { title: "OWASP Top 10 for Agentic Applications (announcement, 2025-12-09)", url: "https://genai.owasp.org/2025/12/09/owasp-top-10-for-agentic-applications-the-benchmark-for-agentic-security-in-the-age-of-autonomous-ai/" },
     ],
   },

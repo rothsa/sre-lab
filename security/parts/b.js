@@ -148,7 +148,7 @@ export const CHAPTERS = [
       { text: "The app's security group allows 8080 only from `sg-alb`, by referencing the group, not IP addresses. Security groups attach to network interfaces, only allow (no deny rules), evaluate all rules together, and are stateful: replies are allowed back automatically.", on: ["alb", "app"], flow: ["e-alb-app"] },
       { text: "The database's security group allows 5432 only from `sg-app`. A compromised load balancer, or anything else in the VPC, still can't open a connection to the database.", on: ["app", "db"], flow: ["e-app-db"] },
       { text: "The network ACL guards the whole subnet. It's stateless, so return traffic, including ephemeral ports, must be allowed explicitly. Rules run in number order and the first match wins, and it can deny. Use it as a coarse guardrail, for example to block a known bad range.", on: ["nacl", "app"], flow: ["e-nacl"] },
-      { text: "A trap: changing a security group rule doesn't cut connections it is already tracking; they last until idle past the tracking timeout (5 days for TCP on most instances), so an active session can stay open indefinitely. A network ACL deny cuts them immediately, which is what you want against an attacker.", on: ["nacl", "app", "alb"] },
+      { text: "A trap: changing a security group rule doesn't cut connections it is already tracking; they last until idle past the tracking timeout (TCP: 5 days on most instance types, 350 seconds on Nitro v6), so an active session can stay open. A network ACL deny cuts them immediately, which is what you want against an attacker.", on: ["nacl", "app", "alb"] },
       { text: "Egress: the app needs a third-party API. The private subnet's default route points to a NAT gateway in the public subnet, which sends traffic out through the internet gateway. Connections can only start from inside; nothing outside can initiate one.", on: ["app", "nat", "igw"], flow: ["e-app-nat", "e-nat-igw"] },
       { text: "AWS API calls (KMS, STS, S3) go through VPC endpoints instead. An interface endpoint puts network interfaces with private IPs in your subnet, and traffic stays on the AWS network. No internet gateway or NAT is needed. S3 and DynamoDB also offer gateway endpoints, which are route table entries.", on: ["app", "vpce", "svc"], flow: ["e-app-vpce", "e-vpce-svc"] },
       { text: "Egress control: the default security group allows all outbound traffic. Tighten outbound rules to the ports and destinations each tier needs, and attach endpoint policies: the default endpoint policy allows any principal to do anything through the endpoint.", on: ["app", "vpce", "nat"], flow: ["e-app-vpce", "e-app-nat"] },
@@ -203,7 +203,7 @@ export const CHAPTERS = [
       { title: "Claude Code: Sandboxing", url: "https://code.claude.com/docs/en/sandboxing" },
       { title: "Cursor Cloud Agents: Secrets and network", url: "https://cursor.com/docs/cloud-agent/security-network" },
       { title: "GitHub: Customize the Copilot cloud agent firewall", url: "https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/customize-the-agent-firewall" },
-      { title: "MCP Security Best Practices (spec 2025-11-25)", url: "https://modelcontextprotocol.io/specification/2025-11-25/basic/security_best_practices" },
+      { title: "MCP Security Best Practices (spec 2026-07-28)", url: "https://modelcontextprotocol.io/specification/2026-07-28/basic/security_best_practices" },
     ],
   },
   {

@@ -72,8 +72,8 @@ jobs:
       matrix:
         suite: [unit, integration]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
+      - uses: actions/checkout@v7
+      - uses: actions/cache@v6
         with:
           path: ~/.npm
           key: npm-\${{ hashFiles('package-lock.json') }}

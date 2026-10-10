@@ -261,8 +261,8 @@ export const CHAPTERS = [
     ],
     incidents: ["circleci-2022-session-cookie-theft-secrets-exfil", "eslint-2018-npm-account-takeover", "homebrew-2018-jenkins-github-token-leak"],
     sources: [
-      { title: "SLSA v1.0: security levels", url: "https://slsa.dev/spec/v1.0/levels" },
-      { title: "SLSA v1.0: provenance", url: "https://slsa.dev/spec/v1.0/provenance" },
+      { title: "SLSA v1.2: Build track basics", url: "https://slsa.dev/spec/v1.2/build-track-basics" },
+      { title: "SLSA v1.2: provenance", url: "https://slsa.dev/spec/v1.2/provenance" },
       { title: "Sigstore overview", url: "https://docs.sigstore.dev/about/overview/" },
       { title: "Sigstore: verifying signatures", url: "https://docs.sigstore.dev/cosign/verifying/verify/" },
       { title: "Sigstore policy-controller", url: "https://docs.sigstore.dev/policy-controller/overview/" },
@@ -330,7 +330,7 @@ export const CHAPTERS = [
       { text: "Someone has to own all of this. At scale the queue, CI and deploy tooling are a product run by a platform team, with their own reliability targets.", on: ["platform", "main"], flow: ["e-own"] },
     ],
     code: [
-      { lang: "yaml", label: "CI that a merge queue can use", src: "on:\n  pull_request:\n  merge_group:   # required, or the queue's\n                 # check never reports\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        shard: [1, 2, 3, 4]\n    steps:\n      - uses: actions/checkout@v4\n      - run: ./run-tests --shard ${{ matrix.shard }}/4" },
+      { lang: "yaml", label: "CI that a merge queue can use", src: "on:\n  pull_request:\n  merge_group:   # required, or the queue's\n                 # check never reports\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        shard: [1, 2, 3, 4]\n    steps:\n      - uses: actions/checkout@v7\n      - run: ./run-tests --shard ${{ matrix.shard }}/4" },
     ],
     codeNote: "`./run-tests` stands in for your test runner's own sharding option. Third-party CI must instead build pushes to branches starting with `gh-readonly-queue/`.",
     say30: "Trunk-based development keeps changes small and merged at least daily, but at a few hundred engineers, PR checks against a stale main let combinations break it. A merge queue fixes that: it tests each PR on top of main and the PRs ahead of it, merges only passing groups, and ejects failures. CI time becomes the bottleneck, so you shard tests and batch merges. A green main lets you deploy small changes often, through canaries. DORA measures it per application: lead time, deployment frequency and recovery time from failed deploys for throughput, change fail rate and rework rate for instability. Don't make them targets or compare teams. Prefer safer deploys to freezes, which just batch risk.",

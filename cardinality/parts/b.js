@@ -241,7 +241,7 @@ export const CHAPTERS = [
     ],
     agentic: [
       "GenAI telemetry fits the same governance. The OpenTelemetry token counters carry bounded attributes such as `gen_ai.provider.name`, `gen_ai.operation.name`, `gen_ai.request.model` and `gen_ai.token.modality`. Prompt and response content is Opt-In on spans and marked likely to contain sensitive data, so it never becomes a metric attribute.",
-      "Agent runs produce many spans (inference calls and tool calls), and some vendors bill on them: Datadog LLM Observability bills per LLM span ingested, one per request to an LLM provider, so one agent workflow produces several. Give agent services an owner, a quota and sampling like any other team, and watch their series and span counts the same way.",
+      "Agent runs produce many spans (inference calls and tool calls), and some vendors bill on them: Datadog Agent Observability bills per LLM span ingested, one per request to an LLM provider, so one agent workflow produces several. Give agent services an owner, a quota and sampling like any other team, and watch their series and span counts the same way.",
       "An agent can lint new metrics in CI, estimate series from allowed values and draft the View or drop rule; the approval threshold and any quota raise stay human decisions. The failure mode is rubber-stamping a generated estimate (see Agentic Engineering, Drawn on reviewing agent output at scale).",
     ],
     quiz: [
@@ -259,7 +259,7 @@ export const CHAPTERS = [
       { title: "Grafana Cloud: Understand your metrics invoice", url: "https://grafana.com/docs/grafana-cloud/cost-management-and-billing/understand-your-invoice/metrics-invoice/" },
       { title: "OpenTelemetry GenAI semconv: token metrics", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-token-metrics.md" },
       { title: "OpenTelemetry GenAI semconv: spans", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md" },
-      { title: "Datadog: LLM Observability", url: "https://docs.datadoghq.com/llm_observability/" },
+      { title: "Datadog: Agent Observability", url: "https://docs.datadoghq.com/llm_observability/" },
     ],
   },
 ];
