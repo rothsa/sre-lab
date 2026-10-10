@@ -67,5 +67,5 @@ incidents.json ─► all-MiniLM-L6-v2 (q8) ─►      query ─► same model 
 - **Corpus:** real public postmortems, found through [danluu/post-mortems](https://github.com/danluu/post-mortems). Each entry holds facts (company, date, trigger, impact, detection, fix) and a short summary written for this demo, plus a link to the original. No text is copied from the sources.
 - **Same model at build time and in the browser**, pinned to Transformers.js 3.8.1, so query and document vectors are comparable.
 - **Eval:** `incidents/data/eval.json` has 15 questions with the postmortem each should find. On this small corpus the two methods score about the same but miss different questions, so a hybrid (reciprocal rank fusion) ranks best; a few questions defeat every method because the needed detail is not in the text.
-- Rebuild after editing the corpus: `cd incidents && npm install && node build.mjs --check`.
+- Rebuild after editing the corpus: `cd incidents && npm install && node build.mjs --check`, then `node evalnode.mjs .` to score AI, keyword and hybrid search offline.
 
