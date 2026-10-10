@@ -30,7 +30,7 @@
   "trigger": "A security-hardening change to an internal service was applied more widely than intended, recreating the network load balancers behind Device Trust while routing still pointed at the old infrastructure.",
   "impact": "All Device Trust services (auth.kolide.com, app.kolide.com, APIs and device server) were unavailable for 100% of Device Trust customers in the US and EU from 19:28 to 20:28 UTC on July 2, 2026.",
   "detection": "Automated monitoring alerted at 19:30 UTC, two minutes after the change.",
-  "fix": "Engineers reverted the change and recreated the load balancer with its original public configuration; follow-ups require approval for destructive infra changes, map shared-component dependencies, validate against all dependent services and add routing redundancy.",
+  "fix": "Engineers reverted the change and recreated the load balancer with its original public configuration; follow-ups require approval for destructive infra changes, map shared-component dependencies, validate against all dependent services and evaluate architectural changes for redundancy in traffic routing.",
   "summary": "1Password Device Trust (the Kolide product) was completely unavailable for one hour on 2 July 2026; nobody could authenticate through auth.kolide.com or reach the admin console or API. A network configuration change meant for another service touched a shared infrastructure class, rebuilding Device Trust's Network Load Balancers while traffic routing still referenced the old resources. Unrelated certificate renewal errors slowed diagnosis. Recreating the load balancer correctly restored access, and destructive network changes will now need explicit approval."
  },
  {
@@ -118,7 +118,7 @@
  },
  {
   "id": "psf-2026-kubectl-wrong-context-scale-zero",
-  "company": "Python Software Foundation (PyPI)",
+  "company": "Python Software Foundation",
   "date": "2026-02-26",
   "title": "Wrong kubectl context scales python.org production to zero replicas",
   "url": "https://status.python.org/incidents/r47c43jw19zq",
@@ -130,8 +130,8 @@
   "trigger": "During local Kubernetes development an engineer's context was switched to a production cluster, so scale-down commands set every deployment there to zero replicas.",
   "impact": "python.org, us.pycon.org, PyPI stats, bugs.python.org and related PSF services were unavailable for about 36 minutes (20:04-20:40 UTC); PyPI.org on a separate cluster was unaffected.",
   "detection": "Not stated in the postmortem.",
-  "fix": "Infrastructure was brought back in dependency order using replica counts recovered from Kubernetes event history; actions include separate production kubeconfig files, guardrails against bulk scale-to-zero and a documented recovery runbook.",
-  "summary": "Several Python Software Foundation websites, including python.org and bugs.python.org, went offline after scaling commands meant for a local test environment ran against a production cluster due to an incorrect kubectl context switch. The script walked through all deployments and set replicas to zero, triggering cascading failures. The PSF Infrastructure Team restored services in dependency order, pulling original replica counts from the Kubernetes event log. Planned fixes include separate kubeconfigs, admission policies blocking mass scale-to-zero, and a dependency map runbook."
+  "fix": "Infrastructure was brought back in dependency order using replica counts recovered from Kubernetes event history; actions include separate production kubeconfig files, research into admission controls or policies to prevent bulk scale-to-zero, and a documented recovery runbook.",
+  "summary": "Several Python Software Foundation websites, including python.org and bugs.python.org, went offline after scaling commands meant for a local test environment ran against a production cluster due to an incorrect kubectl context switch. The script walked through all deployments and set replicas to zero, triggering cascading failures. The PSF Infrastructure Team restored services in dependency order, pulling original replica counts from the Kubernetes event log. Planned fixes include separate kubeconfigs, research into admission controls or policies to prevent bulk scale-to-zero, and a dependency map runbook."
  },
  {
   "id": "cloudflare-2026-byoip-prefix-withdrawal",
@@ -605,7 +605,7 @@
   "impact": "Every production ZenML Pro workspace server was unreachable for about 8 hours overnight, blocking workspace UIs and pipelines, while the ZenML Pro dashboard stayed up and no data was lost.",
   "detection": "Engineers found the cluster degraded when they resumed the upgrade at 06:00 after leaving it running unattended overnight.",
   "fix": "After IAM role edits failed, the node group was deleted and recreated with correct permissions; Terraform modules and EKS were brought current and the upgrade strategy is under review.",
-  "summary": "ZenML Pro workspaces went dark during a weekend upgrade of an outdated production EKS cluster. Applying KMS-based secret encryption via upgraded Terraform modules hit an undocumented bug that removed IAM permissions from worker nodes, making server pods unreachable from outside the cluster. The change had been left to run overnight after a smoother staging rehearsal at much smaller scale. Recovery required recreating the whole node group; ZenML cites skipped versions and misjudged risk as contributing factors."
+  "summary": "ZenML Pro workspaces went dark during a weekend upgrade of an outdated production EKS cluster. Applying KMS-based secret encryption via upgraded Terraform modules hit what ZenML describes as an undocumented bug, which removed IAM permissions from worker nodes, making server pods unreachable from outside the cluster. The change had been left to run overnight after a smoother staging rehearsal at much smaller scale. Recovery required recreating the whole node group; ZenML cites skipped versions and misjudged risk as contributing factors."
  },
  {
   "id": "wikimedia-2025-papal-traffic-surge",
@@ -1121,7 +1121,7 @@
   "category": [
    "config",
    "human-error",
-   "data-loss"
+   "resource-deletion"
   ],
   "trigger": "A change to a global automation config file dropped 14 resource groups believed to be unused, but they held GPU VMs and model endpoints, which the automation then deleted.",
   "impact": "From 00:00 to 23:35 UTC on 13 July 2024 some customers got 5xx errors from Azure OpenAI in 14 of its 28 regions, and customers could not create new fine-tuned model deployments in four regions until 16:54 UTC on 15 July; RAG and fine-tuning data were not lost.",
@@ -1616,10 +1616,10 @@
    "software-bug"
   ],
   "trigger": "A refactor moving S3 access to the object_store crate dropped the slash between the CDN prefix and path, so download redirects pointed to the bogus host static.crates.iocrates.",
-  "impact": "For about 13 minutes (12:17 to 12:30 UTC), every crate download failed, roughly 3.7 million failed requests at about 4,700 per second, and cargo users saw could not resolve host errors.",
+  "impact": "For about 13 minutes (12:17 to 12:30 UTC), every crate download failed, with roughly 3.7 million failed requests (including cargo's retries) at about 4,700 per second, and cargo users saw could not resolve host errors.",
   "detection": "The deploying developer saw elevated request rates in Grafana, and a community member reported the GitHub issue on Zulip about 11 minutes after deployment.",
   "fix": "The deploy was rolled back in the Heroku UI within about a minute, a corrected change with realistic tests shipped later, and crate downloads were added to the staging smoke test plan.",
-  "summary": "A crates.io pull request finished migrating S3 access to the object_store crate and refactored how download endpoints build redirect URLs. Tests used values unlike production's environment variables, so nobody noticed that the slash between the CDN host and path was lost. After deploy, cargo was redirected to static.crates.iocrates/..., failed DNS lookups, and retried, producing millions of failed downloads. The change had merged without review and staging smoke tests covered publishing only. A Heroku rollback restored service."
+  "summary": "A crates.io pull request finished migrating S3 access to the object_store crate and refactored how download endpoints build redirect URLs. Tests used values unlike production's environment variables, so nobody noticed that the slash between the CDN host and path was lost. After deploy, cargo was redirected to static.crates.iocrates/..., failed DNS lookups, and retried, producing millions of failed requests. The change had merged without review and staging smoke tests covered publishing only. A Heroku rollback restored service."
  },
  {
   "id": "aws-2023-lambda-cell-capacity-bug",
@@ -3228,7 +3228,7 @@
   "trigger": "A new WAF Managed Rule for XSS was pushed globally at once and included a regular expression prone to catastrophic backtracking, which pinned CPU on the edge.",
   "impact": "CPU on every server handling HTTP and HTTPS spiked to nearly 100% worldwide, so customer sites returned 502 errors for about 27 minutes and the dashboard and API were also unreachable.",
   "detection": "External synthetic WAF tests failed and paged on-call about three minutes after the deploy, followed by a global traffic-drop alert and reports of CPU exhaustion.",
-  "fix": "Engineers ran a global WAF kill, then re-enabled it after testing in one location, and followed up by restoring a removed CPU safeguard, auditing all rules for backtracking, adding performance tests, staged rule rollouts and a move to re2 or Rust regex.",
+  "fix": "Engineers ran a global WAF kill, then re-enabled it after testing in one location, then restored a removed CPU safeguard and inspected all WAF rules for backtracking; performance tests for every rule and a move to re2 or Rust regex were planned with target dates, and staged rule rollouts were announced as an SOP change.",
   "summary": "A WAF Managed Rule meant to detect cross-site scripting was deployed to Cloudflare's entire edge in one step. Its regular expression caused catastrophic backtracking, and although the rule was in simulate mode it still ran, consuming every CPU core serving HTTP and HTTPS traffic. Sites behind Cloudflare returned 502 errors and the dashboard was down too. A previously removed CPU-limit protection would have contained it. A global WAF termination restored traffic in about 27 minutes."
  },
  {
@@ -3939,7 +3939,7 @@
   "trigger": "While rebuilding a PostgreSQL secondary that had lost replication under heavy load, an engineer ran the data-directory wipe on the primary host instead of the secondary.",
   "impact": "GitLab.com was unavailable for about 18 hours and lost roughly six hours of database records, including about 5,000 projects, 5,000 comments and 700 user accounts; Git repositories and wikis were not lost.",
   "detection": "The engineer realized within seconds that the wrong host was being wiped, after about 300 GB was already gone.",
-  "fix": "The team restored from an LVM snapshot taken about six hours earlier, copying it over slow disks for roughly 18 hours, then added backup monitoring, automated restore testing, and an owner for data durability.",
+  "fix": "The team restored from an LVM snapshot taken about six hours earlier, copying it over slow disks for roughly 18 hours, then moved to hourly LVM snapshots, started a backup monitoring dashboard, and opened tracked issues for automated restore testing and an owner for data durability.",
   "summary": "A spike in database load pushed GitLab.com's PostgreSQL secondary so far behind that WAL segments it needed were gone, forcing a manual rebuild. During that work an engineer deleted the primary's data directory by mistake. Recovery then exposed silently broken safety nets: pg_dump backups had been failing because of a PostgreSQL version mismatch, failure emails were rejected by DMARC, and Azure disk snapshots were off. A staging LVM snapshot saved most data, but about six hours of issues, comments, projects and accounts were lost."
  },
  {

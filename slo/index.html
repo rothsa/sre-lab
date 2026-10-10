@@ -110,9 +110,10 @@ footer a { color: var(--accent); }
           <option value="28">28 days</option>
           <option value="30" selected>30 days</option>
         </select>
+        <span class="hint" id="windowNote">Alert thresholds below are the SRE Workbook's values for a 30-day window.</span>
       </label>
       <label for="burn">Burn rate <span class="hint">How many times faster than "just on budget" you're failing.</span>
-        <span class="burnval" id="burnOut">14.4×</span>
+        <span class="burnval" id="burnOut">36×</span>
         <input type="range" id="burn" min="0" max="100" step="1" value="58" aria-describedby="burnOut">
         <div class="chips" role="group" aria-label="Common burn rates">
           <button type="button" data-burn="1">1×</button>
@@ -123,16 +124,16 @@ footer a { color: var(--accent); }
         </div>
       </label>
       <label for="incident">Incident length <span class="hint">How long the bad period lasts, in minutes.</span>
-        <input type="number" id="incident" min="1" max="100000" step="1" value="60">
+        <input type="number" id="incident" min="1" max="100000" step="1" value="120">
       </label>
       <p class="explain"><b>Burn rate × allowed error rate = actual error rate.</b> At 99.9%, the allowed error rate is 0.1%, so a 14.4× burn means 1.44% of requests failing.</p>
     </section>
 
     <section class="results" aria-label="Results">
       <div class="panel stats">
-        <div class="stat"><span class="k">Error budget</span><span class="v" id="budget">—</span></div>
+        <div class="stat"><span class="k">Error budget</span><span class="v" id="budget">—</span><span class="hint">equivalent full-outage minutes under constant traffic</span></div>
         <div class="stat"><span class="k">Error rate at this burn</span><span class="v" id="errRate">—</span></div>
-        <div class="stat"><span class="k">Budget gone in</span><span class="v" id="exhaust">—</span></div>
+        <div class="stat"><span class="k">Budget gone in</span><span class="v" id="exhaust">—</span><span class="hint">if this burn continued</span></div>
         <div class="stat"><span class="k">This incident uses</span><span class="v" id="incUse">—</span></div>
       </div>
 
@@ -144,8 +145,9 @@ footer a { color: var(--accent); }
       <div class="panel">
         <h2>Which alerts fire, and when</h2>
         <p class="explain">Multi-window, multi-burn-rate alerts, the pattern from Google's SRE Workbook. Each alert needs both a long window (so it's sure) and a short window (so it clears quickly once you've fixed things) above its threshold.</p>
+        <p class="explain">Simulated for this incident: zero errors before it, the chosen burn for its full length, then zero errors, with constant traffic. An alert fires when both window ratios exceed the threshold (strict <code>&gt;</code>, same as the rules below), so a burn exactly at the threshold never fires. Real alerts also wait for the rule evaluation interval and scrape timing, which can shift firing by a minute or so.</p>
         <div class="tablebox"><table>
-          <thead><tr><th>Alert</th><th>Threshold</th><th>Windows</th><th>At this burn</th><th>Budget used when it fires</th></tr></thead>
+          <thead><tr><th>Alert</th><th>Threshold</th><th>Windows</th><th>During this incident</th><th>Budget used when it fires</th></tr></thead>
           <tbody id="alerts"></tbody>
         </table></div>
       </div>
@@ -199,7 +201,30 @@ const fmtDur = (hours) => {
 };
 const fmtPct = (x, d = 2) => `${(x * 100).toFixed(d).replace(/\.?0+$/, "")}%`;
 
-let burn = 14.4;
+let burn = 36;
+
+// BEGIN alertFiring (pure; extracted by a self-test, keep free of DOM access)
+// Multiwindow burn-rate alert for a finite incident (Google SRE Workbook, "Alerting on SLOs").
+// Model: zero errors before t=0, error ratio = burn × (1 − SLO) for 0 ≤ t < incMin, zero after; constant traffic.
+// Rolling average burn over a window of w minutes at time t (minutes from incident start):
+//   avg_w(t) = burn × overlap([t − w, t], [0, incMin]) / w
+// a trapezoid: rises as burn·t/w, plateaus at burn·min(w, incMin)/w, falls to 0 by incMin + w.
+// avg_w(t) > thr holds on the open interval (thr·w/burn, incMin + w·(1 − thr/burn)) when the plateau
+// exceeds thr, otherwise never. The alert fires when BOTH windows are over (strict >, as in the PromQL),
+// i.e. from the later of the two crossings, if that is before the earlier of the two drop-outs.
+function alertFiring(burn, thr, longMin, shortMin, incMin) {
+  const over = (w) => {
+    const peak = (burn * Math.min(w, incMin)) / w;
+    if (!(peak > thr)) return null;
+    return { from: (thr * w) / burn, to: incMin + w * (1 - thr / burn) };
+  };
+  const l = over(longMin), s = over(shortMin);
+  if (!l || !s) return { fires: false, t: Infinity };
+  const from = Math.max(l.from, s.from), to = Math.min(l.to, s.to);
+  if (!(from < to)) return { fires: false, t: Infinity };
+  return { fires: true, t: from, afterEnd: from > incMin };
+}
+// END alertFiring
 
 function update() {
   const slo = parseFloat($("slo").value);
@@ -217,14 +242,17 @@ function update() {
   $("exhaust").textContent = fmtDur(exhaustH);
   $("incUse").textContent = `${fmtPct(used, 1)} of budget`;
 
-  // Alerts: with a constant burn starting at t=0, the long-window average reaches burn*t/L,
-  // so an alert fires at t = thr*L/burn (if burn >= thr). Budget used then = burn*t/W = thr*L/W.
+  $("windowNote").textContent = days === 30
+    ? "Alert thresholds below are the SRE Workbook's values for a 30-day window."
+    : `Alert thresholds below are the SRE Workbook's values for a 30-day window; they are not rescaled for ${days} days, so treat the timings as approximate.`;
+
+  // Alerts: simulate the finite incident with alertFiring(). t is in hours for display; budget used when
+  // it fires counts only error minutes actually spent: burn × min(t, incident) / window.
   const rows = ALERTS.map((a) => {
-    const fires = burn >= a.thr;
-    const t = fires ? (a.thr * a.long) / burn : Infinity;
-    const usedAt = fires ? (burn * t) / W : null;
-    const caughtInIncident = fires && t * 60 <= incMin;
-    return { ...a, fires, t, usedAt, caughtInIncident };
+    const f = alertFiring(burn, a.thr, a.long * 60, a.short * 60, incMin);
+    const t = f.fires ? f.t / 60 : Infinity;
+    const usedAt = f.fires ? (burn * Math.min(f.t, incMin)) / (W * 60) : null;
+    return { ...a, fires: f.fires, t, usedAt, afterEnd: !!f.afterEnd };
   });
   $("alerts").innerHTML = rows.map((r) => `
     <tr>
@@ -232,19 +260,24 @@ function update() {
       <td>${r.thr}×</td>
       <td>${r.longLbl} + ${r.shortLbl}</td>
       <td>${r.fires
-        ? `<span class="pill fires">fires after ${fmtDur(r.t)}</span>${r.caughtInIncident ? "" : ` <span class="hint">(after this incident ends)</span>`}`
+        ? (r.afterEnd
+          ? `<span class="pill fires">fires at ${fmtDur(r.t)}</span> <span class="hint">(after the incident ends, while the long window still remembers it)</span>`
+          : `<span class="pill fires">fires at ${fmtDur(r.t)} into the incident</span>`)
         : `<span class="pill no">doesn't fire</span>`}</td>
       <td>${r.fires ? fmtPct(r.usedAt, 1) : "—"}</td>
     </tr>`).join("");
 
-  drawChart(W, rows);
+  drawChart(W, rows, incMin / 60);
   $("rules").textContent = rulesYaml(slo, rows);
 }
 
-function drawChart(W, rows) {
+function drawChart(W, rows, incH) {
   const svg = $("chart");
   const w = 720, h = 300, L = 52, R = 16, T = 16, B = 40;
-  const span = Math.min(W, Math.max(W / burn * 1.15, 1)); // hours shown
+  // Hours shown: zoom to the incident and its alerts, but never past the point the budget would run out.
+  const exhaustSpan = Math.min(W, Math.max(W / burn * 1.15, 1));
+  const fired = rows.filter((r) => r.fires).map((r) => r.t * 1.5);
+  const span = Math.min(exhaustSpan, Math.max(incH * 2.5, ...fired, 1));
   const x = (t) => L + (t / span) * (w - L - R);
   const y = (frac) => T + (1 - frac) * (h - T - B);
   const css = getComputedStyle(document.documentElement);
@@ -268,11 +301,18 @@ function drawChart(W, rows) {
   };
   out += line(1, c("--muted"), true);
   out += `<text x="${w - R}" y="${y(1 - span / W) - 6}" text-anchor="end">1× (on budget)</text>`;
-  out += line(burn, c("--budget"), false);
-  // alert markers
+  // chosen burn: consumes budget only while the incident lasts, then stays flat
+  const remain = (t) => Math.max(0, 1 - (burn * Math.min(t, incH)) / W);
+  const tStop = Math.min(span, incH, W / burn);
+  out += `<polyline points="${x(0)},${y(1)} ${x(tStop)},${y(remain(tStop))} ${x(span)},${y(remain(span))}" stroke="${c("--budget")}" stroke-width="3" fill="none"/>`;
+  if (incH < span) {
+    out += `<line x1="${x(incH)}" x2="${x(incH)}" y1="${T}" y2="${h - B}" stroke="${c("--muted")}" stroke-width="1" stroke-dasharray="1 3"/>`;
+    out += `<text x="${x(incH) + 4}" y="${h - B - 6}">incident ends</text>`;
+  }
+  // alert markers at the simulated firing times (only alerts that fire)
   rows.filter((r) => r.fires && r.t <= span).forEach((r, i) => {
     const col = r.sev === "page" ? c("--page") : c("--ticket");
-    const yy = y(1 - (burn * r.t) / W);
+    const yy = y(remain(r.t));
     out += `<line x1="${x(r.t)}" x2="${x(r.t)}" y1="${T}" y2="${h - B}" stroke="${col}" stroke-width="1" stroke-dasharray="3 3"/>`;
     out += `<circle cx="${x(r.t)}" cy="${yy}" r="5" fill="${col}"/>`;
     out += `<text x="${x(r.t) + 6}" y="${T + 12 + i * 14}" fill="${col}" style="fill:${col}">${r.thr}× fires</text>`;

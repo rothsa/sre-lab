@@ -59,7 +59,7 @@ export const CHAPTERS = [
     gotchas: [
       "You can't debug a ClusterIP like a normal host. Nothing listens there and only the Service's ports are handled, so test with a real request to the port, not a ping.",
       "Load balancing is per connection. A client with one long-lived HTTP/2 or gRPC connection keeps hitting the same Pod, so new Pods get no share until clients reconnect.",
-      "A Pod that isn't Ready isn't a ready endpoint, so it gets no Service traffic. A selector that matches no Pods gives an empty EndpointSlice and connections fail.",
+      "Normally a Pod that isn't Ready isn't a ready endpoint, so it gets no Service traffic; `publishNotReadyAddresses: true` deliberately publishes unready endpoints. A selector that matches no Pods gives an empty EndpointSlice and connections fail.",
       "`externalTrafficPolicy: Local` keeps the client IP but can spread load unevenly, and nodes with no local endpoint drop the traffic. For in-cluster clients, `internalTrafficPolicy: Local` does the same, and `trafficDistribution: PreferSameZone` prefers same-zone endpoints without dropping.",
     ],
     atScale: [
@@ -76,7 +76,7 @@ export const CHAPTERS = [
     ],
     quiz: [
       { q: "Which component turns a Service into something packets can use, and where does it run?", a: "kube-proxy (or a CNI plugin's replacement for it). It runs on every node, watches Services and EndpointSlices, and programs iptables or nftables rules in that node's kernel." },
-      { q: "A new Pod joins a Deployment behind a Service. What has to happen before it gets traffic?", a: "Its labels must match the selector and the Pod must become Ready: its readiness probe passes, or its containers are running if it has no probe. Then the EndpointSlice controller marks it ready in the Service's EndpointSlice, and kube-proxy on each node updates its rules to include it." },
+      { q: "A new Pod joins a Deployment behind a Service. What has to happen before it gets traffic?", a: "Its labels must match the selector and the Pod must become Ready: its readiness probes pass (or its containers are running if it has none) and any readiness gates are True. Then the EndpointSlice controller marks it ready in the Service's EndpointSlice, and kube-proxy on each node updates its rules to include it." },
       { q: "What changes between `type: ClusterIP`, `NodePort` and `LoadBalancer`?", a: "Each builds on the last. ClusterIP is internal only. NodePort also opens a port on every node into the Service. LoadBalancer also provisions an external load balancer that typically targets those node ports." },
     ],
     incidents: ["circleci-2023-kube-proxy-iptables", "preply-2020-kubernetes-dns-conntrack"],
@@ -84,6 +84,7 @@ export const CHAPTERS = [
       { title: "Service", url: "https://kubernetes.io/docs/concepts/services-networking/service/" },
       { title: "Virtual IPs and Service proxies", url: "https://kubernetes.io/docs/reference/networking/virtual-ips/" },
       { title: "EndpointSlices", url: "https://kubernetes.io/docs/concepts/services-networking/endpoint-slices/" },
+      { title: "Pod lifecycle", url: "https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/" },
       { title: "Using source IP", url: "https://kubernetes.io/docs/tutorials/services/source-ip/" },
       { title: "Kubernetes scalability thresholds", url: "https://github.com/kubernetes/community/blob/master/sig-scalability/configs-and-limits/thresholds.md" },
       { title: "K8sGPT README", url: "https://github.com/k8sgpt-ai/k8sgpt" },

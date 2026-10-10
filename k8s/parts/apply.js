@@ -66,7 +66,7 @@ export const CHAPTERS = [
       "A successful `kubectl apply` only means the object was stored. The Pods can still be rejected at creation (Pod Security, quota, webhooks), Pending, failing to pull, or never Ready. Check `kubectl rollout status` and the ReplicaSet's events.",
       "Only the API server talks to etcd. Controllers, the scheduler and kubelets all go through the API server, which is why its health matters so much.",
       "401 means the credentials you sent were rejected; 403 means you were identified, possibly as `system:anonymous`, but RBAC said no; an admission rejection comes back with the webhook's or policy's message.",
-      "A Pod that is Running but not Ready gets no Service traffic, because only Ready Pods are added as ready endpoints.",
+      "Ordinary Service routing skips a Pod that is Running but not Ready, because its endpoint isn't marked ready. Not absolute: `publishNotReadyAddresses` publishes unready endpoints, and proxies may use serving-but-terminating ones if nothing else is left.",
     ],
     atScale: [
       "Every write pays for the admission chain. Mutating webhooks run one after another (validating ones run in parallel), so one slow webhook slows every request it matches. Large clusters keep webhook timeouts small, narrow each webhook with `namespaceSelector`, `objectSelector` and `matchConditions`, and keep them off `kube-system` and node Leases.",
@@ -83,7 +83,7 @@ export const CHAPTERS = [
     quiz: [
       { q: "Which component decides which node a Pod runs on, and how does the node find out?", a: "The scheduler. It writes a binding to the API server, and the kubelet on that node, which watches for Pods assigned to it, picks it up." },
       { q: "In what order do mutating and validating admission run, and why does it matter?", a: "Mutating first, then validating. Validation sees the final object, after all defaults and injections, so policies judge what will really run." },
-      { q: "Your Pod is Running but the Service sends it no traffic. What's the first thing to check?", a: "Readiness. If the readiness probe isn't passing, the Pod isn't added as a ready endpoint in the Service's EndpointSlice. Also check that the Service selector matches the Pod's labels." },
+      { q: "Your Pod is Running but the Service sends it no traffic. What's the first thing to check?", a: "Readiness. If the Pod isn't Ready (usually a failing readiness probe, sometimes a readiness gate), it isn't added as a ready endpoint in the Service's EndpointSlice. Also check that the Service selector matches the Pod's labels." },
     ],
     incidents: [],
     sources: [
@@ -92,6 +92,7 @@ export const CHAPTERS = [
       { title: "Deployments", url: "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/" },
       { title: "Kubernetes scheduler", url: "https://kubernetes.io/docs/concepts/scheduling-eviction/kube-scheduler/" },
       { title: "EndpointSlices", url: "https://kubernetes.io/docs/concepts/services-networking/endpoint-slices/" },
+      { title: "Pod lifecycle", url: "https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/" },
       { title: "API Priority and Fairness", url: "https://kubernetes.io/docs/concepts/cluster-administration/flow-control/" },
       { title: "Admission webhook good practices", url: "https://kubernetes.io/docs/concepts/cluster-administration/admission-webhooks-good-practices/" },
       { title: "etcd: system limits", url: "https://etcd.io/docs/v3.5/dev-guide/limit/" },

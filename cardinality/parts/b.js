@@ -136,7 +136,7 @@ export const CHAPTERS = [
       { lang: "yaml", label: "Migration: ingest both", src: "scrape_configs:\n  - job_name: api\n    scrape_native_histograms: true\n    always_scrape_classic_histograms: true" },
     ],
     codeNote: "Ingest both versions during migration so classic dashboards and alerts keep working while you move queries to the native form.",
-    say30: "Each classic histogram bucket is its own series: `_bucket{le=...}` for every boundary plus `+Inf`, `_sum` and `_count`, multiplied by every label set and pod. That's why latency histograms dominate cardinality. You can still aggregate them, because buckets add up: sum the bucket rates by `le` across pods, then run `histogram_quantile`, as long as boundaries match. Summaries compute quantiles in the client, and averaging quantiles is meaningless, so they don't aggregate. Native histograms store one series per label set with sparse exponential buckets. You pick a resolution instead of boundaries, and they always merge. They are stable since Prometheus 3.8, but need protobuf scraping and explicit config, so migrate by ingesting both for a while.",
+    say30: "Each classic histogram bucket is its own series: `_bucket{le=...}` for every boundary plus `+Inf`, `_sum` and `_count`, multiplied by every label set and pod. That's why latency histograms dominate cardinality. You can still aggregate them, because buckets add up: sum the bucket rates by `le` across pods, then run `histogram_quantile`, as long as boundaries match. Summaries compute quantiles in the client, and averaging quantiles is meaningless, so they don't aggregate. Native histograms store one series per label set with sparse exponential buckets. You pick a resolution, not boundaries, and standard schemas merge at the coarser one. They are stable since Prometheus 3.8, but need protobuf scraping and explicit config, so migrate by ingesting both for a while.",
     gotchas: [
       "Classic buckets must match exactly to aggregate. Changing boundaries on half the fleet gives `histogram_quantile` mixed `le` values, and results during the rollout are wrong.",
       "`histogram_quantile` interpolates inside a bucket. If the p99 lands in a 1 s to 5 s bucket, the answer can be far off, so put boundaries near your SLO threshold.",
@@ -229,7 +229,7 @@ export const CHAPTERS = [
       "Removing an attribute with a View doesn't remove it everywhere: removed attributes can still appear as `filtered_attributes` on exemplars. If it's sensitive, turn exemplars off or use a custom filter.",
       "The SDK limit is per instrument, per process. A fleet of 1,000 processes can each stay under 2000 and still send millions of series. Backend quotas are still needed.",
       "Cumulative temporality makes the SDK remember every attribute set it has seen, so memory grows with cardinality. Delta moves that cost out of the process to whoever converts or stores it.",
-      "Exemplars only exist for sampled traces. With 1% head sampling, most points have none, and the one you need may not be there.",
+      "With the default TraceBased filter, exemplars come only from sampled spans (AlwaysOn and AlwaysOff behave differently). With 1% head sampling, most points have none, and the one you need may not be there.",
     ],
     atScale: [
       "Per-instrument SDK limits don't add up to a fleet budget: with thousands of pods each under the limit, the backend still sees millions of series. Enforce per-team or per-tenant series limits at ingest and alert when a team nears its quota.",

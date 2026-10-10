@@ -127,7 +127,7 @@ export const CHAPTERS = [
     ],
     steps: [
       { text: "Linux uses spare RAM to cache file data, and gives it back when programs need it. Press Next to follow reads and writes through the page cache, then see how `/proc/meminfo` and `free` report it." },
-      { text: "A `read()` goes through the page cache. If the file's pages are already in memory, the kernel copies them to the application and no disk I/O happens.", on: ["app", "clean"], flow: ["e-read"] },
+      { text: "A buffered `read()` goes through the page cache (direct I/O with `O_DIRECT`, and DAX, skip it). If the file's pages are already in memory, the kernel copies them to the application and no disk I/O happens.", on: ["app", "clean"], flow: ["e-read"] },
       { text: "On a miss, the kernel reads the data from disk into the page cache first, then copies it out. The pages stay cached, so the next read of that file, by any process, is served from memory.", on: ["app", "clean", "disk"], flow: ["e-read", "e-miss"] },
       { text: "A `write()` normally copies the data into the page cache, marks those pages dirty and returns. The disk hasn't been touched yet. `/proc/meminfo` counts these pages as `Dirty`.", on: ["app", "dirty"], flow: ["e-write"] },
       { text: "Kernel flusher threads write dirty pages out in the background once dirty memory passes `vm.dirty_background_ratio` (or `_bytes`), or when pages have been dirty longer than `vm.dirty_expire_centisecs`. Pages in flight count as `Writeback`.", on: ["dirty", "flusher", "disk"], flow: ["e-pick", "e-wb"] },
@@ -139,7 +139,7 @@ export const CHAPTERS = [
       { text: "`free` shows `MemFree` as free and `Buffers` + `Cached` + `SReclaimable` as buff/cache, and computes used as total minus available. Watch the available column: low free with high available is a healthy machine.", on: ["avail", "freecmd", "memfree", "cached"], flow: ["e-show"] },
       { text: "`echo 3 > /proc/sys/vm/drop_caches` throws away clean cache and reclaimable slab. It is not a fix: the kernel reclaims those on its own when memory is needed, and afterwards reads go back to disk. The docs warn it can cause performance problems.", on: ["clean", "memfree"] },
     ],
-    say30: "File reads and writes go through the page cache. Reads are served from memory when the pages are cached; writes land as dirty pages and return, then flusher threads write them back once dirty memory passes `dirty_background_ratio` or pages get old. If dirty memory nears `dirty_ratio`, the kernel throttles writers, pausing their `write()` calls until flushers catch up. So Linux keeps MemFree low on purpose: idle RAM holds cache. The number that matters is MemAvailable, the kernel's estimate of what new work could get without swapping, which counts reclaimable cache. In `free`, look at available, not free. Dropping caches doesn't fix anything; it just makes the next reads hit disk.",
+    say30: "Ordinary buffered file reads and writes go through the page cache. Reads are served from memory when the pages are cached; writes land as dirty pages and return, then flusher threads write them back once dirty memory passes `dirty_background_ratio` or pages get old. If dirty memory nears `dirty_ratio`, the kernel throttles writers, pausing their `write()` calls until flushers catch up. So Linux keeps MemFree low on purpose: idle RAM holds cache. The number that matters is MemAvailable, the kernel's estimate of what new work could get without swapping, which counts reclaimable cache. In `free`, look at available, not free. Dropping caches doesn't fix anything; it just makes the next reads hit disk.",
     gotchas: [
       "Not all of `Cached` is reclaimable. tmpfs, `/dev/shm` and other shared memory are counted there but can only be swapped out, so a full tmpfs looks like cache yet behaves like used memory.",
       "`dirty_ratio` and `dirty_background_ratio` are percentages of available memory (free plus reclaimable), not of total RAM.",
@@ -168,6 +168,7 @@ export const CHAPTERS = [
       { title: "The /proc filesystem: meminfo", url: "https://docs.kernel.org/filesystems/proc.html" },
       { title: "Documentation for /proc/sys/vm/", url: "https://docs.kernel.org/admin-guide/sysctl/vm.html" },
       { title: "Concepts overview: page cache", url: "https://docs.kernel.org/admin-guide/mm/concepts.html" },
+      { title: "iomap design (pagecache, direct I/O and DAX)", url: "https://docs.kernel.org/filesystems/iomap/design.html" },
       { title: "free(1)", url: "https://man7.org/linux/man-pages/man1/free.1.html" },
       { title: "Control Group v2", url: "https://docs.kernel.org/admin-guide/cgroup-v2.html" },
       { title: "PSI: pressure stall information", url: "https://docs.kernel.org/accounting/psi.html" },

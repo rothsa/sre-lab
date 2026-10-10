@@ -126,7 +126,7 @@ export const CHAPTERS = [
       { id: "e-drop", from: "pol", to: "dropT", dashed: true },
     ],
     steps: [
-      { text: "Two places to decide. Head sampling decides at the root, before anything has happened. Tail sampling decides in the Collector, after the whole trace has arrived." },
+      { text: "Two places to decide. Head sampling decides at the root, before anything has happened. Tail sampling decides in the Collector, after waiting a configured time for the trace's spans." },
       { text: "Head: when checkout starts a root span, its sampler decides from the trace ID and a target ratio, say 10%. The other 90% of traces are never recorded: no spans, no export cost.", on: ["svcA", "drop0"], flow: ["e-unrec"] },
       { text: "The decision travels in the sampled bit of `traceparent`. Payments runs the default `ParentBased` sampler, so it records exactly when its parent did. Whole traces are kept or dropped together.", on: ["svcA", "svcB"], flow: ["e-flag"] },
       { text: "The blind spot: the root decided before payments failed. If that trace was in the 90%, its error is gone. Head sampling can't promise you every error or every slow trace.", on: ["svcB", "drop0"] },
@@ -134,14 +134,14 @@ export const CHAPTERS = [
       { text: "Trace X always goes to sampler A, trace Y to sampler B. Without that, each sampler would see fragments and make different decisions about the same trace.", on: ["lb", "ts1", "ts2"], flow: ["e-r1", "e-r2"] },
       { text: "Each tail sampler holds spans in memory per trace and waits `decision_wait` (30s by default) for the trace to finish. Then it runs its policies.", on: ["ts1", "ts2", "pol"], flow: ["e-d1", "e-d2"] },
       { text: "Policies such as `status_code: ERROR`, `latency` over a threshold, and `probabilistic` for a baseline. Any sample vote keeps the trace unless a drop policy vetoes it. Kept traces go to Tempo.", on: ["pol", "tempo"], flow: ["e-keep"] },
-      { text: "Everything else is discarded, after you already paid to export, ship and buffer it. That's the trade: head is cheap but blind, tail is complete but costly. High-volume services often head-sample first, then tail-sample.", on: ["pol", "dropT", "drop0"], flow: ["e-drop"] },
+      { text: "Everything else is discarded, after you already paid to export, ship and buffer it. That's the trade: head is cheap but blind, tail sees more but costs more, and late, dropped or misrouted spans still leave gaps. High-volume services often head-sample first, then tail-sample.", on: ["pol", "dropT", "drop0"], flow: ["e-drop"] },
     ],
     code: [
       { lang: "yaml", label: "Tier 1: route by trace ID", src: "exporters:\n  loadbalancing:\n    routing_key: traceID\n    protocol:\n      otlp:\n        tls:\n          insecure: true\n    resolver:\n      dns:\n        hostname: tail-samplers-headless.otel.svc.cluster.local" },
       { lang: "yaml", label: "Tier 2: tail sampling", src: "processors:\n  tail_sampling:\n    decision_wait: 30s\n    num_traces: 200000\n    decision_cache:\n      sampled_cache_size: 1000000\n    policies:\n      - name: errors\n        type: status_code\n        status_code: {status_codes: [ERROR]}\n      - name: slow\n        type: latency\n        latency: {threshold_ms: 2000}\n      - name: baseline\n        type: probabilistic\n        probabilistic: {sampling_percentage: 5}" },
     ],
     codeNote: "The DNS resolver points at a headless Service so tier 1 sees every tier-2 pod. Size `num_traces` and the decision cache from your trace rate and memory, not from this example.",
-    say30: "Head sampling decides at the root span, usually a probability based on the trace ID, and puts the decision in the sampled flag of `traceparent`; downstream services use `ParentBased` to follow it, so whole traces are kept or dropped. It's cheap because unsampled spans are never recorded, but it can't know which traces will fail. Tail sampling decides in the Collector after the trace is complete, so you can keep every error and slow trace plus a small baseline. It's stateful: all spans of a trace must reach the same instance, so you run a load-balancing exporter tier keyed on trace ID in front of the samplers, and you pay to export and buffer everything first.",
+    say30: "Head sampling decides at the root span, usually a probability based on the trace ID, and puts the decision in the sampled flag of `traceparent`; downstream services use `ParentBased` to follow it, so whole traces are kept or dropped. It's cheap because unsampled spans are never recorded, but it can't know which traces will fail. Tail sampling buffers spans in the Collector, decides after a set wait, and favors error and slow traces plus a baseline; late spans and buffer limits mean no guarantee. It's stateful: all spans of a trace must reach the same instance, so you run a load-balancing exporter tier keyed on trace ID in front of the samplers, and you pay to export and buffer everything.",
     gotchas: [
       "Independent ratio samplers in each service give partial traces. Children should follow the parent's decision (`ParentBased`); only roots choose.",
       "Tail sampling with several Collector replicas and no trace-ID routing silently produces fragmented traces and inconsistent decisions.",
@@ -157,7 +157,7 @@ export const CHAPTERS = [
     ],
     agentic: [
       "Agent traces are long and wide: one task fans out into many model and tool spans and can run longer than the default 30s `decision_wait`. Tail-sampled agent traces then come out partial unless the wait, `num_traces` and the decision cache are sized for agent workloads, not web requests.",
-      "The GenAI conventions list sampling-relevant attributes to set at span creation: `gen_ai.operation.name` on every span, plus `gen_ai.agent.name` on agent and tool spans, `gen_ai.tool.name` on tool spans, and provider and model on inference spans. That lets a tail policy keep every trace with a failed `execute_tool` span (`error.type` set) while thinning routine calls; check that your instrumentation sets them at start, or a head sampler never sees them.",
+      "The GenAI conventions list sampling-relevant attributes to set at span creation: `gen_ai.operation.name` on every span, plus `gen_ai.agent.name` on agent and tool spans, `gen_ai.tool.name` on tool spans, and provider and model on inference spans. That lets a tail policy favor traces with a failed `execute_tool` span (`error.type` set) while thinning routine calls; check that your instrumentation sets them at start, or a head sampler never sees them.",
       "Never compute agent cost or failure rates from sampled traces: keep-errors policies inflate error rates, and token counts in dropped traces vanish. Spend comes from the unsampled `gen_ai.client.inference.usage.*` counters; traces explain individual runs.",
     ],
     quiz: [
@@ -317,7 +317,7 @@ export const CHAPTERS = [
       { text: "Alerts on the same route with the same `group_by` labels are batched: wait `group_wait` (30s default) for the first notification, `group_interval` (5m) between updates, `repeat_interval` (4h) to re-send.", on: ["route", "grp"], flow: ["e-grp"] },
       { text: "Inhibition mutes alerts while a related source alert fires: `ClusterDown` mutes page alerts with the same `cluster` label, so you get one page, not fifty.", on: ["grp", "inh"], flow: ["e-inh"] },
       { text: "Silences mute matching alerts for a fixed time, typically during maintenance or once someone is already on it. Always give them an expiry and a comment.", on: ["inh", "sil"], flow: ["e-sil"] },
-      { text: "Before sending, replicas stagger by cluster position (`--cluster.peer-timeout`, 15s default) and check the shared notification log, so normally only one of them notifies.", on: ["sil", "dedup", "am2"], flow: ["e-dd"] },
+      { text: "Before sending, replicas stagger by cluster position (`--cluster.peer-timeout`, 15s default) and check the shared notification log, so normally only one of them notifies. In a partition each side may notify: duplicates beat missed pages.", on: ["sil", "dedup", "am2"], flow: ["e-dd"] },
       { text: "The page reaches the payments on-call. Slow burns become tickets; low-urgency alerts go to chat. If nobody would act on it at 3am, it shouldn't page.", on: ["dedup", "pager", "ticket", "slack"], flow: ["e-page", "e-ticket", "e-slack"] },
     ],
     code: [
@@ -326,7 +326,7 @@ export const CHAPTERS = [
       { lang: "yaml", label: "promtool test rules", src: "rule_files: [slo-rules.yml]\nevaluation_interval: 1m\ntests:\n  - interval: 1m\n    input_series:\n      - series: 'http_requests_total{job=\"checkout\",code=\"500\"}'\n        values: '0+20x120'\n      - series: 'http_requests_total{job=\"checkout\",code=\"200\"}'\n        values: '0+980x120'\n    alert_rule_test:\n      - eval_time: 65m\n        alertname: CheckoutErrorBudgetBurn\n        exp_alerts:\n          - exp_labels: {severity: page, team: payments}" },
     ],
     codeNote: "The test feeds a 2% error rate (20x burn) and expects a page. The `alertname!=` matcher keeps `ClusterDown` from matching both sides of its own inhibit rule. Try different burn rates in the lab's SLO Burn Simulator.",
-    say30: "I page on symptoms users feel, measured against an SLO, using multiwindow burn-rate alerts: for a 99.9% SLO, page when the burn rate is over 14.4 across both one hour and five minutes, or over 6 across six hours and thirty minutes, and ticket on slow burns. The long window proves real budget is gone; the short one makes the alert clear quickly once it stops. Prometheus replicas send to every Alertmanager. Alertmanager routes by labels like `team` and `severity`, groups related alerts into one notification, inhibits symptoms of a known bigger failure, applies silences, and the clustered replicas dedupe so the owner gets paged once. Rules are unit-tested with `promtool` in CI.",
+    say30: "I page on symptoms users feel, measured against an SLO, using multiwindow burn-rate alerts: for a 99.9% SLO, page when the burn rate is over 14.4 across both one hour and five minutes, or over 6 across six hours and thirty minutes, and ticket on slow burns. The long window proves real budget is gone; the short one makes the alert clear quickly once it stops. Prometheus replicas send to every Alertmanager. Alertmanager routes by labels like `team` and `severity`, groups related alerts into one notification, inhibits symptoms of a known bigger failure, applies silences, and the clustered replicas dedupe, though a partition can mean duplicate pages, by design. Rules are unit-tested with `promtool` in CI.",
     gotchas: [
       "Putting a load balancer between Prometheus and Alertmanager breaks HA: each Prometheus must send every alert to every Alertmanager.",
       "HA Prometheus replicas with different external labels produce two distinct alerts unless you drop the replica label with `alert_relabel_configs`.",
@@ -347,7 +347,7 @@ export const CHAPTERS = [
     ],
     quiz: [
       { q: "Why does a multiwindow burn-rate alert need a short window as well as a long one?", a: "The long window shows enough budget was spent to matter. The short window shows it's still burning, so the alert resets within minutes after the problem stops instead of firing for the rest of the hour." },
-      { q: "Two Prometheus replicas send the same alert. Why does the on-call get one page, not two?", a: "If their label sets match (replica label dropped via alert relabeling), Alertmanager treats them as one alert. Clustered Alertmanagers share a notification log over gossip and stagger sends, so only one replica notifies." },
+      { q: "Two Prometheus replicas send the same alert. Why does the on-call get one page, not two?", a: "If their label sets match (replica label dropped via alert relabeling), Alertmanager treats them as one alert. Clustered Alertmanagers share a notification log over gossip and stagger sends, so normally only one replica notifies; a network partition can still produce a duplicate." },
       { q: "During a cluster outage you got 60 pages. Which Alertmanager features fix that?", a: "Grouping (`group_by` cluster, alertname) batches related alerts into one notification, and an inhibit rule lets a `ClusterDown` alert mute the per-service pages for the same cluster." },
     ],
     incidents: ["datadog-2016-pagerduty-notifications-skipped", "pagerduty-2017-notification-delays"],
@@ -357,6 +357,7 @@ export const CHAPTERS = [
       { title: "Alertmanager overview", url: "https://prometheus.io/docs/alerting/latest/alertmanager/" },
       { title: "Alertmanager configuration", url: "https://prometheus.io/docs/alerting/latest/configuration/" },
       { title: "Alertmanager README (high availability)", url: "https://github.com/prometheus/alertmanager/blob/main/README.md" },
+      { title: "Alertmanager high availability", url: "https://prometheus.io/docs/alerting/latest/high_availability/" },
       { title: "Prometheus configuration (alert relabeling)", url: "https://prometheus.io/docs/prometheus/latest/configuration/configuration/" },
       { title: "Prometheus: Unit testing rules", url: "https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/" },
       { title: "Datadog Bits AI SRE: investigate issues", url: "https://docs.datadoghq.com/bits_ai/bits_ai_sre/investigate_issues/" },

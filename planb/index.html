@@ -85,6 +85,7 @@ code { font-family: var(--font-mono); font-size: .92em; }
 .agentic li { margin: 8px 0; }
 .agentic h3 { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 400; margin: 16px 0 6px; }
 .agentic .sources li { margin: 4px 0; font-size: 14px; }
+.asof { font-size: 14px; color: var(--muted); }
 footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
 footer a, .prose a { color: var(--accent); }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
@@ -160,7 +161,7 @@ footer a, .prose a { color: var(--accent); }
       <li><b>Which model answered</b> comes from the gateway's <code>cf-aig-step</code> response header when it's there, and otherwise from the shape of the answer (Anthropic and Workers AI reply in different formats). The result says which one it used.</li>
       <li>The response cache is skipped, so every run is a real request. The API key for the backup stays on the server.</li>
     </ul>
-    <p>The two-step request uses AI Gateway's Universal Endpoint format, which Cloudflare now marks as deprecated but still supported. Its replacement, dynamic routing, configures the same kind of fallback in the gateway itself.</p>
+    <p>The two-step request uses AI Gateway's <a href="https://developers.cloudflare.com/ai-gateway/usage/universal/">Universal Endpoint</a> format, which Cloudflare marks as deprecated (as of 10 October 2026); existing integrations keep working. Its recommended replacement for fallbacks, dynamic routing, configures the same kind of fallback in the gateway itself.</p>
 
     <h2>What this does and doesn't show</h2>
     <p>It shows recovery from a failed <em>model request</em>: a bad model id, a provider error or a slow response. The function and the gateway both run on Cloudflare, so if Cloudflare itself had a wide outage, this page, the function and the fallback would all be down together. Plan B is a backup model, not a backup platform.</p>
@@ -190,11 +191,12 @@ footer a, .prose a { color: var(--accent); }
 
     <h2>Guardrails and cost</h2>
     <ul>
-      <li>Fixed, fictional incidents and a fixed prompt: no free text from visitors, so nothing to inject.</li>
+      <li>Fixed, fictional incidents and a fixed prompt. Visitors select fixed server-side incidents; arbitrary visitor text is not inserted into the prompt.</li>
       <li>About 10 runs per 10 minutes per visitor (a salted, daily-rotating hash of the IP; raw IPs are never stored).</li>
       <li>Daily caps: about 300 runs and 100 backup calls. When a cap is hit, Plan B rests until midnight UTC.</li>
       <li>Answers are capped at 200 tokens. Workers AI runs inside the free daily allowance; a backup call to Claude Haiku 5.5 costs a small fraction of a cent.</li>
     </ul>
+    <p class="asof">Model names, prices, the free allowance and the Universal Endpoint's deprecation status are as of 10 October 2026. Check the current vendor docs: <a href="https://platform.claude.com/docs/en/models/overview">Claude models</a>, <a href="https://platform.claude.com/docs/en/about-claude/pricing">Claude pricing</a>, <a href="https://developers.cloudflare.com/workers-ai/platform/pricing/">Workers AI pricing and free allocation</a>, <a href="https://developers.cloudflare.com/ai-gateway/usage/universal/">AI Gateway Universal Endpoint</a>.</p>
   </div>
   <footer>Part of <a href="../">SRE Lab</a> by Sally Roth · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a></footer>
 </main>
