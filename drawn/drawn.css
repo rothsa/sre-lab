@@ -60,6 +60,8 @@ figcaption { padding: 12px 14px 14px; font-size: 16px; min-height: 4.2em; }
 .aid details p { margin: 6px 0 0; color: var(--fg); }
 .aid.more { font-size: 14.5px; }
 .aid.more p { margin: 0 0 6px; }
+.aid.more details.sources summary { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.aid.more details.sources[open] summary { margin-bottom: 8px; }
 .steps-text summary { cursor: pointer; color: var(--muted); font-size: 14px; padding: 0 14px 12px; }
 .steps-text ol { margin: 0; padding: 0 14px 14px 36px; font-size: 14.5px; display: grid; gap: 4px; }
 code { font-family: var(--font-mono); font-size: .92em; background: var(--soft); padding: 1px 4px; border-radius: 4px; }

@@ -1,6 +1,7 @@
 // Shared engine for the SRE Lab "Drawn" explainers: renders chapter specs (see k8s/README.md)
 // into step-through SVG diagrams with study aids. Each explainer page calls mountExplainer().
 let KEY = "drawn";
+let COLLAPSE_OVER = Infinity; // fold "Read more" behind a summary when a chapter cites more sources than this
 
 
 const SVGNS = "http://www.w3.org/2000/svg";
@@ -176,7 +177,11 @@ function fillMore(ch) {
   const seen = (ch.incidents || []).map((id) => incidents.get(id)).filter(Boolean);
   const parts = [];
   if (seen.length) parts.push(`<h3>Seen in the wild</h3>${seen.map((d) => `<p><a href="${esc(d.url)}" target="_blank" rel="noopener">${esc(d.company)}: ${esc(d.title)}</a></p>`).join("")}`);
-  parts.push(`<h3>Read more</h3>${ch.sources.map((s) => `<p><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a></p>`).join("")}`);
+  const links = ch.sources.map((s) => `<p><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a></p>`).join("");
+  // Long source lists (one citation per fact) fold away so they don't lengthen the page.
+  parts.push(ch.sources.length > COLLAPSE_OVER
+    ? `<details class="sources"><summary>Read more · ${ch.sources.length} sources</summary>${links}</details>`
+    : `<h3>Read more</h3>${links}`);
   box.innerHTML = parts.join("");
 }
 
@@ -200,8 +205,9 @@ function mount(ch) {
 }
 
 
-export async function mountExplainer(CHAPTERS, { key = "drawn" } = {}) {
+export async function mountExplainer(CHAPTERS, { key = "drawn", collapseSourcesOver = Infinity } = {}) {
   KEY = key;
+  COLLAPSE_OVER = collapseSourcesOver;
   // ?only=<chapter id> renders a single chapter (handy for sharing one diagram, and for screenshots).
   const only = new URLSearchParams(location.search).get("only");
   const LIST = only ? CHAPTERS.filter((c) => c.id === only) : CHAPTERS;
