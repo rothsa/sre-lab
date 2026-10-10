@@ -4,45 +4,149 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>SRE Lab</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
 <style>
-:root { --bg: #f4f6f8; --panel: #ffffff; --fg: #141c24; --muted: #5b6875; --rule: #d7dee5; --accent: #1f5fbf;
-  --font-display: "Archivo", "Segoe UI", system-ui, sans-serif; --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace; color-scheme: light; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c; --accent: #6ea8ff; color-scheme: dark; } }
-:root[data-theme="dark"] { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c; --accent: #6ea8ff; color-scheme: dark; }
+/* Jungle theme: a sunlit canopy in light mode, the jungle at night (with fireflies) in dark mode.
+   Vines hang from the top; tools sit on mossy cards; planned work is "still growing". */
+:root {
+  --bg: #eef5e6; --bg2: #dcebcf; --panel: #fbfdf6; --fg: #14261a; --muted: #4a6250; --rule: #c4d9b3;
+  --accent: #1f7a3a; --leaf: #3f9a4f; --leaf2: #2d7a3c; --vine: #24563a; --flower: #d9481e; --glow: transparent;
+  --font-display: "Archivo", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #08130d; --bg2: #0d2016; --panel: #102318; --fg: #e3f0de; --muted: #9fb8a2; --rule: #21402c; --accent: #8fdc7a; --leaf: #2e6b3d; --leaf2: #1f4f2c; --vine: #1a3a26; --flower: #ff7a4d; --glow: #e8ff8a; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #08130d; --bg2: #0d2016; --panel: #102318; --fg: #e3f0de; --muted: #9fb8a2; --rule: #21402c; --accent: #8fdc7a; --leaf: #2e6b3d; --leaf2: #1f4f2c; --vine: #1a3a26; --flower: #ff7a4d; --glow: #e8ff8a; color-scheme: dark; }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); line-height: 1.5; }
-.wrap { max-width: 760px; margin: 0 auto; padding-inline: 16px; padding-block: 40px 56px; }
-.kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
-h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(32px, 6vw, 50px); margin: 6px 0 10px; line-height: 1.04; }
-p { color: var(--muted); max-width: 62ch; }
-.tools { display: grid; gap: 12px; margin-top: 22px; }
-a.tool { display: grid; gap: 4px; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; color: inherit; text-decoration: none; }
-a.tool:hover, a.tool:focus-visible { border-color: var(--accent); outline: none; }
-a.tool strong { font-family: var(--font-display); font-size: 20px; }
+body {
+  margin: 0; color: var(--fg); font-family: var(--font-body); line-height: 1.55; min-height: 100vh;
+  background:
+    radial-gradient(ellipse 80% 40% at 50% -5%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
+    linear-gradient(180deg, var(--bg2) 0%, var(--bg) 38%, var(--bg) 100%);
+  background-attachment: fixed;
+}
+.canopy { position: absolute; inset: 0 0 auto 0; height: 230px; overflow: hidden; pointer-events: none; color: var(--leaf); }
+.canopy svg { position: absolute; top: 0; height: 230px; }
+.canopy .left { left: -20px; width: 300px; }
+.canopy .right { right: -20px; width: 300px; transform: scaleX(-1); }
+@media (max-width: 700px) { .canopy .left, .canopy .right { width: 170px; height: 150px; } .canopy { height: 150px; } }
+@media (prefers-reduced-motion: no-preference) {
+  .canopy .sway { transform-origin: top center; animation: sway 7s ease-in-out infinite; }
+  .canopy .sway.b { animation-duration: 9s; animation-delay: -3s; }
+  @keyframes sway { 0%, 100% { transform: rotate(-1.4deg); } 50% { transform: rotate(1.4deg); } }
+}
+.fireflies { position: fixed; inset: 0; pointer-events: none; }
+.fireflies i { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--glow); box-shadow: 0 0 10px 3px var(--glow); opacity: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .fireflies i { animation: blink 6s ease-in-out infinite, drift 14s ease-in-out infinite alternate; }
+  @keyframes blink { 0%, 100% { opacity: 0; } 45%, 55% { opacity: .85; } }
+  @keyframes drift { to { transform: translate(40px, -60px); } }
+}
+.wrap { position: relative; max-width: 760px; margin: 0 auto; padding-inline: 16px; padding-block: 120px 56px; }
+@media (max-width: 700px) { .wrap { padding-top: 96px; } }
+.kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(40px, 8vw, 66px); margin: 6px 0 12px; line-height: .98; letter-spacing: -.01em; }
+h1 .leafy { color: var(--accent); }
+p.lede { color: var(--muted); max-width: 62ch; font-size: 17px; }
+.tools { display: grid; gap: 14px; margin-top: 24px; }
+a.tool {
+  position: relative; display: grid; gap: 4px; padding: 18px 18px 18px 58px; color: inherit; text-decoration: none;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--leaf) 10%, var(--panel)) 0%, var(--panel) 60%);
+  border: 1px solid var(--rule); border-radius: 18px 6px 18px 6px;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--leaf) 25%, transparent);
+  transition: transform .2s, border-color .2s, box-shadow .2s;
+}
+a.tool::before {
+  content: ""; position: absolute; left: 18px; top: 20px; width: 24px; height: 24px; background: var(--leaf);
+  border-radius: 0 70% 0 70%; transform: rotate(-12deg); box-shadow: inset -3px 3px 0 color-mix(in srgb, var(--leaf2) 60%, transparent);
+}
+a.tool:hover, a.tool:focus-visible { border-color: var(--accent); outline: none; box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--accent) 60%, transparent); }
+@media (prefers-reduced-motion: no-preference) { a.tool:hover, a.tool:focus-visible { transform: translateY(-2px) rotate(-.25deg); } }
+a.tool strong { font-family: var(--font-display); font-weight: 800; font-size: 21px; }
 a.tool span { color: var(--muted); }
-.tool.next { display: grid; gap: 4px; border: 1px dashed var(--rule); border-radius: 10px; padding: 16px; }
-.tool.next strong { font-family: var(--font-display); font-size: 20px; color: var(--muted); }
+.grow-head { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin: 36px 0 0; }
+.grow-head svg { width: 22px; height: 22px; color: var(--accent); }
+.tool.next { position: relative; display: grid; gap: 4px; padding: 16px 16px 16px 58px; border: 1.5px dashed var(--rule); border-radius: 18px 6px 18px 6px; background: color-mix(in srgb, var(--panel) 45%, transparent); }
+.tool.next::before { content: ""; position: absolute; left: 22px; top: 22px; width: 14px; height: 14px; border: 2px solid var(--leaf); border-radius: 0 70% 0 70%; transform: rotate(-12deg); }
+.tool.next strong { font-family: var(--font-display); font-weight: 800; font-size: 19px; color: var(--muted); }
 .tool.next span { color: var(--muted); }
-.next-head { font-family: var(--font-mono); font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 28px 0 0; }
-.tool.next em { font-family: var(--font-mono); font-style: normal; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
-footer { margin-top: 28px; color: var(--muted); font-size: 14px; }
+.tool.next em { font-family: var(--font-mono); font-style: normal; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--flower); }
+footer { margin-top: 36px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--rule); padding-top: 14px; }
 footer a { color: var(--accent); }
 </style>
 </head>
 <body>
+<div class="canopy" aria-hidden="true">
+  <svg class="left" viewBox="0 0 300 230">
+    <defs>
+      <path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/>
+    </defs>
+    <g class="sway">
+      <path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="var(--vine)" stroke-width="3"/>
+      <use href="#lf" fill="var(--leaf)" transform="translate(44,30) rotate(30)"/>
+      <use href="#lf" fill="var(--leaf2)" transform="translate(40,62) rotate(150)"/>
+      <use href="#lf" fill="var(--leaf)" transform="translate(37,96) rotate(25)"/>
+      <use href="#lf" fill="var(--leaf2)" transform="translate(36,130) rotate(160)"/>
+      <use href="#lf" fill="var(--leaf)" transform="translate(42,160) rotate(60)"/>
+      <circle cx="42" cy="172" r="5" fill="var(--flower)"/>
+    </g>
+    <g class="sway b">
+      <path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="var(--vine)" stroke-width="2.5"/>
+      <use href="#lf" fill="var(--leaf2)" transform="translate(106,22) rotate(140)"/>
+      <use href="#lf" fill="var(--leaf)" transform="translate(112,52) rotate(35)"/>
+      <use href="#lf" fill="var(--leaf2)" transform="translate(110,86) rotate(155)"/>
+      <use href="#lf" fill="var(--leaf)" transform="translate(108,114) rotate(70)"/>
+    </g>
+    <g fill="var(--leaf2)">
+      <use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/>
+      <use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/>
+      <use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/>
+      <use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/>
+    </g>
+  </svg>
+  <svg class="right" viewBox="0 0 300 230">
+    <defs>
+      <path id="lf2" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/>
+    </defs>
+    <g class="sway b">
+      <path d="M60,0 C70,50 52,100 64,150" fill="none" stroke="var(--vine)" stroke-width="3"/>
+      <use href="#lf2" fill="var(--leaf)" transform="translate(64,28) rotate(35)"/>
+      <use href="#lf2" fill="var(--leaf2)" transform="translate(60,60) rotate(150)"/>
+      <use href="#lf2" fill="var(--leaf)" transform="translate(56,96) rotate(30)"/>
+      <use href="#lf2" fill="var(--leaf2)" transform="translate(62,128) rotate(165)"/>
+      <circle cx="64" cy="152" r="5" fill="var(--flower)"/>
+    </g>
+    <g fill="var(--leaf2)">
+      <use href="#lf2" transform="translate(0,4) scale(2) rotate(15)"/>
+      <use href="#lf2" transform="translate(70,0) scale(1.7) rotate(-20)"/>
+      <use href="#lf2" transform="translate(140,2) scale(1.4) rotate(12)"/>
+    </g>
+  </svg>
+</div>
+<div class="fireflies" aria-hidden="true">
+  <i style="left:12%;top:38%;animation-delay:0s,-2s"></i>
+  <i style="left:84%;top:30%;animation-delay:1.6s,-6s"></i>
+  <i style="left:70%;top:66%;animation-delay:3.1s,-1s"></i>
+  <i style="left:22%;top:78%;animation-delay:4.4s,-9s"></i>
+  <i style="left:48%;top:18%;animation-delay:2.2s,-4s"></i>
+  <i style="left:92%;top:84%;animation-delay:5.2s,-11s"></i>
+</div>
 <div class="wrap">
   <div class="kicker">Sally Roth</div>
-  <h1>SRE Lab</h1>
-  <p>Small, working tools and explainers for reliability engineering: setting reliability targets, knowing when something is really broken, learning from the failures that keep coming back, and how Kubernetes actually works. More on the way: incident management people can follow, metric cardinality, and the same patterns in Python, Go and Ruby.</p>
+  <h1>SRE <span class="leafy">Lab</span></h1>
+  <p class="lede">Small, working tools and explainers for reliability engineering: setting reliability targets, knowing when something is really broken, learning from the failures that keep coming back, and how Kubernetes actually works. More on the way: incident management people can follow, metric cardinality, and the same patterns in Python, Go and Ruby.</p>
   <div class="tools">
     <a class="tool" href="slo/"><strong>SLO Burn Simulator</strong><span>See how fast an error budget drains, which burn-rate alerts fire and when, and get matching Prometheus rules.</span></a>
     <a class="tool" href="status/"><strong>Down or Me</strong><span>Uptime checks with an AI classifier that decides whether a failure is real, and only alerts when it's sure.</span></a>
     <a class="tool" href="incidents/"><strong>The Incident Files</strong><span>310 real postmortems, searchable by failure mode, plus the nine failure patterns that keep coming back and how companies warded them off.</span></a>
     <a class="tool" href="k8s/"><strong>Kubernetes, Drawn</strong><span>How Kubernetes works in 18 step-through diagrams, from kubectl apply to DNS, storage and upgrades, each with a 30-second answer, gotchas and a quiz.</span></a>
   </div>
-  <h2 class="next-head">Coming next</h2>
+  <h2 class="grow-head"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22V11" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M12 12C12 7 8 4 3 4c0 5 4 8 9 8Z" fill="currentColor"/><path d="M12 10c0-4 3-7 9-7 0 5-4 7-9 7Z" fill="currentColor" opacity=".7"/></svg>Still growing</h2>
   <div class="tools">
+    <div class="tool next"><em>Sprouting now</em><strong>Linux, Drawn</strong><span>What a Linux node really does with memory and packets: page cache, the OOM killer, cgroups, a packet's path, conntrack, TCP queues and the first 60 seconds of performance analysis.</span></div>
     <div class="tool next"><strong>Sane Incident Management</strong><span>Designing a response process people can actually follow: who does what, how severity is decided, and how an incident ends in learning instead of blame.</span></div>
     <div class="tool next"><strong>Taming Cardinality</strong><span>How one innocent label multiplies time series and cost, and how to keep metrics useful without the bill.</span></div>
     <div class="tool next"><strong>One Pattern, Three Languages</strong><span>Everyday patterns like retries, concurrency, error handling and config, side by side in Python, Go and Ruby.</span></div>
