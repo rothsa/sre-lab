@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kubernetes, Drawn</title>
+<meta name="description" content="How Kubernetes works, in 18 step-through diagrams: the control loop, kubectl apply, scheduling, Services, DNS, storage, autoscaling, upgrades and a troubleshooting map.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<style>
+/* Layout: a chapter list (sidebar on wide screens, collapsible on phones) and one long column of
+   chapters. Each chapter is a diagram you step through, then study aids underneath. */
+:root {
+  --bg: #f4f6f8; --panel: #ffffff; --fg: #141c24; --muted: #5b6875; --rule: #d7dee5; --soft: #eef2f6;
+  --accent: #1f5fbf; --accent-soft: #dde8fa; --store: #f3ecdc; --warn: #b45309; --good: #15803d;
+  --font-display: "Archivo", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #2a3440; --soft: #1b232d; --accent: #6ea8ff; --accent-soft: #1d2e47; --store: #2b2618; --warn: #f0a24c; --good: #4ade80; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #2a3440; --soft: #1b232d; --accent: #6ea8ff; --accent-soft: #1d2e47; --store: #2b2618; --warn: #f0a24c; --good: #4ade80; color-scheme: dark; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55; }
+a { color: var(--accent); }
+.shell { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 32px 64px; display: grid; gap: 28px; }
+@media (min-width: 1000px) { .shell { grid-template-columns: 240px minmax(0, 1fr); } }
+.kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(32px, 6vw, 52px); margin: 6px 0 10px; line-height: 1.02; }
+.lede { color: var(--muted); max-width: 68ch; margin: 0 0 8px; }
+nav.toc { position: relative; }
+@media (min-width: 1000px) { nav.toc { position: sticky; top: 16px; align-self: start; max-height: calc(100vh - 32px); overflow: auto; } }
+nav.toc details { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 10px 12px; }
+nav.toc summary { cursor: pointer; font-weight: 600; }
+nav.toc ol { margin: 8px 0 0; padding-left: 22px; display: grid; gap: 4px; font-size: 14.5px; }
+nav.toc a { color: var(--fg); text-decoration: none; }
+nav.toc a:hover, nav.toc a:focus-visible, nav.toc a[aria-current="true"] { color: var(--accent); text-decoration: underline; }
+.chapter { padding-top: 26px; border-top: 1px solid var(--rule); margin-top: 26px; scroll-margin-top: 12px; }
+.chapter h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(24px, 3.6vw, 32px); margin: 0 0 4px; }
+.chapter h2 .n { color: var(--accent); margin-right: 8px; }
+.chapter .q { color: var(--muted); margin: 0 0 14px; font-size: 17px; }
+figure.diagram { margin: 0; background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; }
+figure.diagram:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.frame { overflow-x: auto; padding: 12px; }
+.frame svg { display: block; width: 100%; min-width: 560px; height: auto; color: var(--fg); font-family: var(--font-body); }
+.controls { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--rule); background: var(--soft); flex-wrap: wrap; }
+.controls button { font: inherit; font-size: 14px; font-weight: 600; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--rule); background: var(--panel); color: var(--fg); cursor: pointer; }
+.controls button:hover:not(:disabled), .controls button:focus-visible { border-color: var(--accent); outline: none; }
+.controls button:disabled { opacity: .45; cursor: default; }
+.controls .count { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+.controls .hint { margin-left: auto; font-size: 12.5px; color: var(--muted); }
+figcaption { padding: 12px 14px 14px; font-size: 16px; min-height: 4.2em; }
+.aids { display: grid; gap: 14px; margin-top: 14px; }
+@media (min-width: 760px) { .aids { grid-template-columns: 1fr 1fr; } }
+.aid { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; }
+.aid h3 { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; font-weight: 600; }
+.aid.say { grid-column: 1 / -1; border-left: 3px solid var(--accent); }
+.aid.say p { margin: 0; font-size: 16.5px; }
+.aid ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 15px; }
+.aid details { border-top: 1px solid var(--rule); padding: 8px 0; font-size: 15px; }
+.aid details:first-of-type { border-top: 0; padding-top: 0; }
+.aid summary { cursor: pointer; font-weight: 600; }
+.aid details p { margin: 6px 0 0; color: var(--fg); }
+.aid.more { font-size: 14.5px; }
+.aid.more p { margin: 0 0 6px; }
+.steps-text summary { cursor: pointer; color: var(--muted); font-size: 14px; padding: 0 14px 12px; }
+.steps-text ol { margin: 0; padding: 0 14px 14px 36px; font-size: 14.5px; display: grid; gap: 4px; }
+code { font-family: var(--font-mono); font-size: .92em; background: var(--soft); padding: 1px 4px; border-radius: 4px; }
+footer { margin-top: 40px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--rule); padding-top: 14px; }
+
+/* Diagram elements */
+.d-node rect { fill: var(--panel); stroke: currentColor; stroke-width: 1.4; }
+.d-node.store rect { fill: var(--store); }
+.d-node.actor rect { fill: var(--soft); }
+.d-node.pod rect { stroke-dasharray: none; rx: 14; }
+.d-node.q rect { fill: var(--soft); stroke-dasharray: 5 3; }
+.d-node.note rect { fill: none; stroke: none; }
+.d-node text.lbl { font-size: 13px; font-weight: 600; fill: currentColor; text-anchor: middle; }
+.d-node text.sub { font-family: var(--font-mono); font-size: 10.5px; fill: var(--muted); text-anchor: middle; }
+.d-group rect { fill: none; stroke: var(--muted); stroke-dasharray: 6 4; stroke-width: 1.2; }
+.d-group text { font-family: var(--font-mono); font-size: 11px; fill: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+.d-edge path { fill: none; stroke: currentColor; stroke-width: 1.4; }
+.d-edge.dashed path { stroke-dasharray: 5 4; }
+.d-edge text { font-family: var(--font-mono); font-size: 10.5px; fill: currentColor; text-anchor: middle; paint-order: stroke; stroke: var(--panel); stroke-width: 4px; stroke-linejoin: round; }
+.d-el { transition: opacity .25s; }
+svg.stepping .d-el.dim { opacity: .18; }
+svg.stepping .d-node.on rect { stroke: var(--accent); stroke-width: 2.4; fill: var(--accent-soft); }
+svg.stepping .d-edge.on path { stroke: var(--accent); stroke-width: 2.2; }
+svg.stepping .d-edge.on text { fill: var(--accent); }
+svg.stepping .d-edge.flow path { stroke-dasharray: 7 5; animation: march .8s linear infinite; }
+@keyframes march { to { stroke-dashoffset: -12; } }
+@media (prefers-reduced-motion: reduce) { svg.stepping .d-edge.flow path { animation: none; } .d-el { transition: none; } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="toc" aria-label="Chapters">
+    <details id="tocBox" open><summary>18 chapters</summary><ol id="toc"></ol></details>
+  </nav>
+  <main>
+    <div class="kicker">SRE Lab · explainers</div>
+    <h1>Kubernetes, Drawn</h1>
+    <p class="lede">How Kubernetes actually works, one mechanism at a time. Step through each diagram with the buttons or your arrow keys, then use the 30-second answer, the gotchas and the quiz to make it stick. Where a real outage shows the idea, there's a link to its postmortem.</p>
+    <p class="lede">Everything here is checked against the official Kubernetes documentation; each chapter links to the pages it's based on.</p>
+    <div id="chapters"></div>
+    <footer>
+      <p>Diagrams and wording by Sally Roth. Based on the Kubernetes documentation at <a href="https://kubernetes.io/docs/">kubernetes.io</a>; real-world examples come from <a href="../incidents/">The Incident Files</a>.</p>
+      <p>Part of <a href="../">SRE Lab</a> · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab/tree/main/k8s">source</a></p>
+    </footer>
+  </main>
+</div>
+
+<script type="module">
+import { CHAPTERS } from "./diagrams.js";
+
+const SVGNS = "http://www.w3.org/2000/svg";
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+// Inline formatting for prose fields: `code` only.
+const fmt = (s) => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>");
+const store = {
+  get: (k) => { try { return sessionStorage.getItem(k); } catch { return null; } },
+  set: (k, v) => { try { sessionStorage.setItem(k, v); } catch {} },
+};
+
+// ---------- geometry ----------
+const center = (n) => [n.x + n.w / 2, n.y + n.h / 2];
+// Point where the segment from the box center toward (tx, ty) leaves the box.
+function exitPoint(n, tx, ty) {
+  const [cx, cy] = center(n);
+  const dx = tx - cx, dy = ty - cy;
+  if (dx === 0 && dy === 0) return [cx, cy];
+  const sx = dx === 0 ? Infinity : (n.w / 2) / Math.abs(dx);
+  const sy = dy === 0 ? Infinity : (n.h / 2) / Math.abs(dy);
+  const s = Math.min(sx, sy);
+  return [cx + dx * s, cy + dy * s];
+}
+function edgePoints(e, byId) {
+  const a = byId[e.from], b = byId[e.to];
+  const via = e.via || [];
+  const first = via.length ? via[0] : center(b);
+  const last = via.length ? via[via.length - 1] : center(a);
+  return [exitPoint(a, ...first), ...via, exitPoint(b, ...last)];
+}
+const pathD = (pts) => pts.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+function pointAlong(pts, f = 0.5) {
+  // Point at fraction f of the polyline's length, measured from its start (the edge's "from" node).
+  const segs = [];
+  let total = 0;
+  for (let i = 1; i < pts.length; i++) { const l = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); segs.push(l); total += l; }
+  let t = total * f;
+  for (let i = 0; i < segs.length; i++) {
+    if (t <= segs[i]) { const f = t / segs[i]; return [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * f, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * f]; }
+    t -= segs[i];
+  }
+  return pts[0];
+}
+const el = (tag, attrs = {}, text) => {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs)) if (v != null) e.setAttribute(k, v);
+  if (text != null) e.textContent = text;
+  return e;
+};
+
+// ---------- render one diagram ----------
+function renderSVG(ch) {
+  const [W, H] = ch.view;
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `${ch.title}: ${ch.question}` });
+  const defs = el("defs");
+  for (const [id, color] of [["arw", "currentColor"], ["arw-on", "var(--accent)"]]) {
+    const m = el("marker", { id: `${ch.id}-${id}`, viewBox: "0 0 10 10", refX: "9", refY: "5", markerWidth: "7", markerHeight: "7", orient: "auto-start-reverse" });
+    m.appendChild(el("path", { d: "M0,0 L10,5 L0,10 z", fill: color, style: color.startsWith("var") ? `fill:${color}` : null }));
+    defs.appendChild(m);
+  }
+  svg.appendChild(defs);
+  const byId = Object.fromEntries((ch.nodes || []).map((n) => [n.id, n]));
+  for (const g of ch.groups || []) {
+    const grp = el("g", { class: "d-el d-group", "data-id": g.id });
+    grp.appendChild(el("rect", { x: g.x, y: g.y, width: g.w, height: g.h, rx: 10 }));
+    grp.appendChild(el("text", { x: g.x + 10, y: g.y + 16 }, g.label));
+    svg.appendChild(grp);
+  }
+  for (const e of ch.edges || []) {
+    const pts = edgePoints(e, byId);
+    const g = el("g", { class: `d-el d-edge${e.dashed ? " dashed" : ""}`, "data-id": e.id });
+    const p = el("path", { d: pathD(pts), "marker-end": `url(#${ch.id}-arw)` });
+    if (e.bidir) p.setAttribute("marker-start", `url(#${ch.id}-arw)`);
+    g.appendChild(p);
+    if (e.label) {
+      const [mx, my] = e.labelAt || pointAlong(pts, e.labelPos ?? 0.5);
+      g.appendChild(el("text", { x: mx, y: my - 4 }, e.label));
+    }
+    svg.appendChild(g);
+  }
+  for (const n of ch.nodes || []) {
+    const g = el("g", { class: `d-el d-node ${n.kind || ""}`, "data-id": n.id });
+    g.appendChild(el("rect", { x: n.x, y: n.y, width: n.w, height: n.h, rx: n.kind === "pod" ? 14 : 8 }));
+    const lines = String(n.label).split("\n");
+    const subLines = n.sub ? String(n.sub).split("\n") : [];
+    const total = lines.length * 15 + subLines.length * 13;
+    let y = n.y + n.h / 2 - total / 2 + 11;
+    for (const l of lines) { g.appendChild(el("text", { class: "lbl", x: n.x + n.w / 2, y }, l)); y += 15; }
+    for (const s of subLines) { g.appendChild(el("text", { class: "sub", x: n.x + n.w / 2, y: y - 1 }, s)); y += 13; }
+    svg.appendChild(g);
+  }
+  return svg;
+}
+
+function applyStep(svg, ch, i, caption, count, prev, next) {
+  const step = ch.steps[i];
+  const on = new Set([...(step.on || []), ...(step.flow || [])]);
+  const flow = new Set(step.flow || []);
+  svg.classList.toggle("stepping", on.size > 0);
+  for (const g of svg.querySelectorAll(".d-el")) {
+    const id = g.dataset.id;
+    const isOn = on.has(id);
+    g.classList.toggle("on", isOn);
+    g.classList.toggle("flow", flow.has(id));
+    g.classList.toggle("dim", on.size > 0 && !isOn);
+    const p = g.querySelector("path[marker-end]");
+    if (p) p.setAttribute("marker-end", `url(#${ch.id}-${isOn ? "arw-on" : "arw"})`);
+  }
+  caption.innerHTML = fmt(step.text);
+  count.textContent = `Step ${i + 1} of ${ch.steps.length}`;
+  prev.disabled = i === 0;
+  next.disabled = i === ch.steps.length - 1;
+  store.set(`k8s-step-${ch.id}`, String(i));
+}
+
+// ---------- page ----------
+let incidents = new Map();
+async function loadIncidents() {
+  try {
+    const list = await fetch("../incidents/data/incidents.json").then((r) => r.json());
+    incidents = new Map(list.map((d) => [d.id, d]));
+  } catch { /* links simply won't render */ }
+}
+
+function chapterHTML(ch) {
+  return `<section class="chapter" id="${ch.id}" aria-labelledby="h-${ch.id}">
+    <h2 id="h-${ch.id}"><span class="n">${ch.n}.</span>${esc(ch.title)}</h2>
+    <p class="q">${fmt(ch.question)}</p>
+    <figure class="diagram" tabindex="0" aria-label="${esc(ch.title)} diagram. Use the left and right arrow keys to step through.">
+      <div class="frame"></div>
+      <div class="controls">
+        <button type="button" class="prev">← Back</button>
+        <button type="button" class="next">Next →</button>
+        <span class="count"></span>
+        <span class="hint">or use ← → keys</span>
+      </div>
+      <figcaption aria-live="polite"></figcaption>
+      <details class="steps-text"><summary>All steps as text</summary><ol>${ch.steps.map((s) => `<li>${fmt(s.text)}</li>`).join("")}</ol></details>
+    </figure>
+    <div class="aids">
+      <div class="aid say"><h3>Say it in 30 seconds</h3><p>${fmt(ch.say30)}</p></div>
+      <div class="aid"><h3>Gotchas</h3><ul>${ch.gotchas.map((g) => `<li>${fmt(g)}</li>`).join("")}</ul></div>
+      <div class="aid"><h3>Quiz yourself</h3>${ch.quiz.map((x) => `<details><summary>${fmt(x.q)}</summary><p>${fmt(x.a)}</p></details>`).join("")}</div>
+      <div class="aid more" data-more="${ch.id}"></div>
+    </div>
+  </section>`;
+}
+
+function fillMore(ch) {
+  const box = document.querySelector(`[data-more="${ch.id}"]`);
+  const seen = (ch.incidents || []).map((id) => incidents.get(id)).filter(Boolean);
+  const parts = [];
+  if (seen.length) parts.push(`<h3>Seen in the wild</h3>${seen.map((d) => `<p><a href="${esc(d.url)}" target="_blank" rel="noopener">${esc(d.company)}: ${esc(d.title)}</a></p>`).join("")}`);
+  parts.push(`<h3>Read more</h3>${ch.sources.map((s) => `<p><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a></p>`).join("")}`);
+  box.innerHTML = parts.join("");
+}
+
+function mount(ch) {
+  const sec = document.getElementById(ch.id);
+  const fig = sec.querySelector("figure");
+  const svg = renderSVG(ch);
+  sec.querySelector(".frame").appendChild(svg);
+  const caption = fig.querySelector("figcaption"), count = fig.querySelector(".count");
+  const prev = fig.querySelector(".prev"), next = fig.querySelector(".next");
+  let i = Math.min(Number(store.get(`k8s-step-${ch.id}`)) || 0, ch.steps.length - 1);
+  const go = (j) => { i = Math.max(0, Math.min(ch.steps.length - 1, j)); applyStep(svg, ch, i, caption, count, prev, next); };
+  prev.addEventListener("click", () => go(i - 1));
+  next.addEventListener("click", () => go(i + 1));
+  fig.addEventListener("keydown", (e) => {
+    if (e.target.closest("details")) return;
+    if (e.key === "ArrowRight") { e.preventDefault(); go(i + 1); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); go(i - 1); }
+  });
+  go(i);
+}
+
+// ?only=<chapter id> renders a single chapter (handy for sharing one diagram, and for screenshots).
+const only = new URLSearchParams(location.search).get("only");
+const LIST = only ? CHAPTERS.filter((c) => c.id === only) : CHAPTERS;
+document.getElementById("toc").innerHTML = CHAPTERS.map((c) => `<li><a href="#${c.id}">${esc(c.title)}</a></li>`).join("");
+document.getElementById("chapters").innerHTML = LIST.map(chapterHTML).join("");
+LIST.forEach(mount);
+if (matchMedia("(max-width: 999px)").matches) document.getElementById("tocBox").open = false;
+document.getElementById("toc").addEventListener("click", () => { if (matchMedia("(max-width: 999px)").matches) document.getElementById("tocBox").open = false; });
+// Highlight the chapter in view in the table of contents.
+const links = new Map([...document.querySelectorAll("#toc a")].map((a) => [a.hash.slice(1), a]));
+const io = new IntersectionObserver((entries) => {
+  for (const en of entries) if (en.isIntersecting) { for (const a of links.values()) a.removeAttribute("aria-current"); links.get(en.target.id)?.setAttribute("aria-current", "true"); }
+}, { rootMargin: "-20% 0px -70% 0px" });
+document.querySelectorAll(".chapter").forEach((s) => io.observe(s));
+await loadIncidents();
+LIST.forEach(fillMore);
+</script>
+</body>
+</html>

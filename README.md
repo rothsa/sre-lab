@@ -6,6 +6,7 @@ Small, working reliability-engineering tools, live at **lab.sallyroth.dev**.
 |---|---|
 | [SLO Burn Simulator](slo/) | Pick an SLO and a burn rate; see how long the error budget lasts, which multi-window burn-rate alerts fire (Google SRE Workbook thresholds), and copy matching Prometheus rules. Static page, no backend. |
 | [The Incident Files](incidents/) | 310 real public postmortems, searchable by failure mode (an in-browser embedding model plus BM25, merged with reciprocal rank fusion), and nine recurring failure patterns with how companies prevented them. Static page, no backend, no API calls. |
+| [Kubernetes, Drawn](k8s/) | How Kubernetes works in 18 step-through diagrams (control loop, kubectl apply, scheduling, Services, DNS, storage, autoscaling, RBAC, upgrades, a troubleshooting map), each with a 30-second answer, gotchas, a quiz and links to the kubernetes.io pages it's based on. Static page; chapter specs in `k8s/parts/`, checks in `k8s/check.mjs`. |
 | [Down or Me](status/) | Uptime checks every 5 minutes on a Cloudflare Worker. When something looks unusual, [Jev](https://en.wikipedia.org/wiki/Jev_(AI_model)) classifies the cause (real outage, degraded, monitor-side, planned maintenance, blip) with a confidence score, and an email goes out only for confident, real problems. Uncertain calls are left for a human. |
 
 ## How Down or Me works
