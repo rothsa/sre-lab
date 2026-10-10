@@ -68,6 +68,13 @@ export const CHAPTERS = [
       "401 means the credentials you sent were rejected; 403 means you were identified, possibly as `system:anonymous`, but RBAC said no; an admission rejection comes back with the webhook's or policy's message.",
       "A Pod that is Running but not Ready gets no Service traffic, because only Ready Pods are added as ready endpoints.",
     ],
+    atScale: [
+      "Every write pays for the admission chain. Mutating webhooks run one after another (validating ones run in parallel), so one slow webhook slows every request it matches. Large clusters keep webhook timeouts small, narrow each webhook with `namespaceSelector`, `objectSelector` and `matchConditions`, and keep them off `kube-system` and node Leases.",
+      "A webhook with the default `failurePolicy: Fail` turns its own outage into an outage for every matching write. Teams run several webhook replicas behind a Service and, where policy allows, let mutating webhooks fail open (`Ignore`) with a separate validating check behind them.",
+      "Thousands of kubelets, controllers and CI jobs share the API server. API Priority and Fairness sorts requests into priority levels with FlowSchemas and fair-queues inside each level, so a noisy client gets `429 Too Many Requests` instead of starving node and leader-election traffic. Alert on `apiserver_flowcontrol_rejected_requests_total`.",
+      "etcd limits each request to 1.5 MiB by default and the database to 2 GiB by default (`--quota-backend-bytes`; 8 GiB is the suggested maximum). Past the quota, etcd raises a `NOSPACE` alarm and accepts only reads and deletes, so every `kubectl apply` fails. Operators compact, defragment member by member, disarm the alarm, and alert on database size well before the quota.",
+      "The last step fans out to every node. With the old Endpoints API, a 5,000-Pod Service could need a 1.5 MB object, and on 3,000 nodes each change meant sending about 4.5 GB. EndpointSlices hold up to 100 endpoints each by default, so one Pod becoming Ready rewrites one small slice.",
+    ],
     quiz: [
       { q: "Which component decides which node a Pod runs on, and how does the node find out?", a: "The scheduler. It writes a binding to the API server, and the kubelet on that node, which watches for Pods assigned to it, picks it up." },
       { q: "In what order do mutating and validating admission run, and why does it matter?", a: "Mutating first, then validating. Validation sees the final object, after all defaults and injections, so policies judge what will really run." },
@@ -80,6 +87,11 @@ export const CHAPTERS = [
       { title: "Deployments", url: "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/" },
       { title: "Kubernetes scheduler", url: "https://kubernetes.io/docs/concepts/scheduling-eviction/kube-scheduler/" },
       { title: "EndpointSlices", url: "https://kubernetes.io/docs/concepts/services-networking/endpoint-slices/" },
+      { title: "API Priority and Fairness", url: "https://kubernetes.io/docs/concepts/cluster-administration/flow-control/" },
+      { title: "Admission webhook good practices", url: "https://kubernetes.io/docs/concepts/cluster-administration/admission-webhooks-good-practices/" },
+      { title: "etcd: system limits", url: "https://etcd.io/docs/v3.5/dev-guide/limit/" },
+      { title: "etcd: maintenance", url: "https://etcd.io/docs/v3.5/op-guide/maintenance/" },
+      { title: "Scaling Kubernetes networking with EndpointSlices", url: "https://kubernetes.io/blog/2020/09/02/scaling-kubernetes-networking-with-endpointslices/" },
     ],
   },
 ];

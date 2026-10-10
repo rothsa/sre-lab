@@ -116,9 +116,11 @@ for (const ch of CHAPTERS) {
   const used = new Set(ch.steps.flatMap((s) => [...(s.on || []), ...(s.flow || [])]));
   for (const n of ch.nodes) if (n.kind !== "note" && !used.has(n.id)) warn(c, `node ${n.id} is never highlighted`);
   if ((ch.gotchas || []).length < 2) err(c, "needs at least 2 gotchas");
+  if ((ch.atScale || []).length < 3) err(c, "needs at least 3 atScale items (what breaks at 1000+ scale)");
+  if ((ch.atScale || []).length > 6) warn(c, "more than 6 atScale items");
   if ((ch.quiz || []).length !== 3) err(c, "needs exactly 3 quiz questions");
   if (!(ch.sources || []).length) err(c, "needs at least one source");
-  for (const s of ch.sources || []) if (!/^https:\/\/kubernetes\.io\//.test(s.url) && !/^https:\/\/(github\.com\/kubernetes|karpenter\.sh|gateway-api\.sigs\.k8s\.io|www\.cni\.dev|man7\.org|kubectl\.docs\.kubernetes\.io)/.test(s.url)) warn(c, `non-official source ${s.url}`);
+  for (const s of ch.sources || []) if (!/^https:\/\/kubernetes\.io\//.test(s.url) && !/^https:\/\/(github\.com\/kubernetes|karpenter\.sh|gateway-api\.sigs\.k8s\.io|www\.cni\.dev|etcd\.io|man7\.org|kubectl\.docs\.kubernetes\.io)/.test(s.url)) warn(c, `non-official source ${s.url}`);
   for (const id of ch.incidents || []) if (incidents.size && !incidents.has(id)) err(c, `unknown incident id ${id}`);
   const words = (ch.say30 || "").split(/\s+/).length;
   if (words > 120) warn(c, `30-second answer is ${words} words (aim for 120 or fewer)`);

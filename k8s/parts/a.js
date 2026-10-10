@@ -62,6 +62,13 @@ export const CHAPTERS = [
       "kube-proxy and cloud-controller-manager are both optional. A network plugin can replace kube-proxy, and on-premises clusters usually have no cloud controller manager.",
       "Anything with direct etcd access effectively has root on the cluster, which is why only the API server should reach it.",
     ],
+    atScale: [
+      "The project documents its tested envelope: up to 5,000 nodes, no more than 110 Pods per node, 150,000 total Pods and 300,000 total containers. SIG Scalability says crossing a threshold degrades performance rather than hitting a hard wall, and the dimensions interact, so organisations that need more usually split work across several clusters.",
+      "The limits are not independent. SIG Scalability's thresholds include 10,000 namespaces, 10,000 Services and 3,000 Pods per namespace, and pushing hard on one dimension shrinks the safe range of the others. Capacity planning has to look at object counts per resource type, not just node count.",
+      "One API server is a single point of load. Large clusters run one or two control plane instances per failure zone, scale each vertically first, then add instances. Kubernetes does not route a node to an API server in its own zone; that needs a zone-aware load balancer.",
+      "Events are high-churn and can crowd out everything else in etcd. Large clusters store Event objects in a separate, dedicated etcd instance, which needs custom tooling to run and to point the API server at.",
+      "Addons are sized for small and medium clusters. At scale, single-replica addons such as DNS or metrics can be OOM-killed or CPU-throttled. Teams raise their requests and limits as the cluster grows (the Vertical Pod Autoscaler in recommender mode or the addon resizer can help) and run them with `system-cluster-critical` priority.",
+    ],
     quiz: [
       { q: "Which component is the only one that should read and write etcd?", a: "kube-apiserver. Every other component, including the scheduler, controllers and kubelets, goes through the API server." },
       { q: "How does a kubelet learn that it should run a new Pod?", a: "It watches the API server for Pods bound to its node. When the scheduler writes a binding naming that node, the kubelet sees the change and starts the Pod through the container runtime. It can also run static Pods from local manifest files; kubeadm starts the control plane this way." },
@@ -74,6 +81,8 @@ export const CHAPTERS = [
       { title: "Communication between nodes and the control plane", url: "https://kubernetes.io/docs/concepts/architecture/control-plane-node-communication/" },
       { title: "Cloud controller manager", url: "https://kubernetes.io/docs/concepts/architecture/cloud-controller/" },
       { title: "Operating etcd clusters for Kubernetes", url: "https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/" },
+      { title: "Considerations for large clusters", url: "https://kubernetes.io/docs/setup/best-practices/cluster-large/" },
+      { title: "SIG Scalability: Kubernetes scalability thresholds", url: "https://github.com/kubernetes/community/blob/master/sig-scalability/configs-and-limits/thresholds.md" },
     ],
   },
 
@@ -125,6 +134,13 @@ export const CHAPTERS = [
       "Watch history is limited. A client that falls too far behind gets `410 Gone` and must re-list, which is expensive on large clusters.",
       "A Pod with labels that match a ReplicaSet's selector and has no controlling owner can be adopted by that ReplicaSet, which may then delete it as surplus.",
     ],
+    atScale: [
+      "A controller's first list, or a re-list after `410 Gone`, can be huge on a big cluster. Clients page with `limit` and `continue`; a continue token expires after 5 minutes by default, and an expired one returns `410 Gone` and forces a restart from the beginning.",
+      "Where a list is served matters. With `resourceVersion` unset it is a consistent read that goes to etcd; with `resourceVersion=\"0\"` or `NotOlderThan` it comes from the API server's in-memory watch cache, which keeps load off etcd at the cost of possibly stale data.",
+      "Many controllers re-listing at once can overload the API server. API Priority and Fairness charges a LIST a number of seats proportional to the objects it expects to return, so a re-list storm is queued or rejected with `429` instead of crowding out other traffic.",
+      "Watch bookmarks (`allowWatchBookmarks=true`) let a watcher resume from a recent `resourceVersion` instead of falling out of the short history window. Streaming lists (`sendInitialEvents=true`) deliver the initial state over the watch, which cuts API server memory compared with a big list.",
+      "Some controllers deliberately slow down at scale. The node controller evicts from at most 1 node every 10 seconds (`--node-eviction-rate` 0.1). When at least 55% of a zone is unhealthy the rate drops to 0.01 per second, and in clusters of 50 nodes or fewer it stops, so a network partition does not trigger a mass eviction.",
+    ],
     quiz: [
       { q: "What do a controller's watch, compare and act steps actually do?", a: "Watch: an informer lists then watches objects through the API server and keeps a cache. Compare: the controller checks desired state (spec) against actual state. Act: it asks the API server to create, update or delete objects to close the gap." },
       { q: "Why does a controller that missed an event still end up correct?", a: "Because it reconciles on current state, not on the event. On restart or after a broken watch it re-lists, sees the same gap between desired and actual, and fixes it." },
@@ -136,6 +152,8 @@ export const CHAPTERS = [
       { title: "Objects in Kubernetes", url: "https://kubernetes.io/docs/concepts/overview/working-with-objects/" },
       { title: "Kubernetes API concepts: efficient detection of changes", url: "https://kubernetes.io/docs/reference/using-api/api-concepts/" },
       { title: "ReplicaSet", url: "https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/" },
+      { title: "API Priority and Fairness", url: "https://kubernetes.io/docs/concepts/cluster-administration/flow-control/" },
+      { title: "Nodes", url: "https://kubernetes.io/docs/concepts/architecture/nodes/" },
     ],
   },
 
@@ -202,6 +220,13 @@ export const CHAPTERS = [
       "Pods without a `priorityClassName` get priority 0 unless a PriorityClass has `globalDefault: true`. Adding a default class can let new workloads preempt older ones that have no priority set.",
       "Topology spread and affinity are checked only at scheduling time. Scaling down or node loss can leave Pods unbalanced; core Kubernetes never moves them back, but the Descheduler project can evict them to rebalance.",
     ],
+    atScale: [
+      "Filtering and scoring every node does not scale. Once kube-scheduler has found enough feasible nodes it stops searching and scores only those, set by `percentageOfNodesToScore`. The default falls linearly from 50% at 100 nodes to 10% at 5,000 nodes, never below 5%, and there is a hardcoded minimum of 100 nodes. Nodes are visited round robin across zones.",
+      "Lowering `percentageOfNodesToScore` raises scheduling throughput but can pick a worse node. The docs advise keeping the default on clusters of a few hundred nodes and not going below 10% unless throughput matters more than placement quality.",
+      "Bigger nodes don't mean unlimited Pods. Kubernetes is tested with no more than 110 Pods per node, and SIG Scalability's per-node threshold is the smaller of 110 and 10 times the core count.",
+      "With many teams, priority becomes a weapon: anyone who can create Pods at the highest priority can preempt everyone else. Admins cap each PriorityClass with a ResourceQuota scoped to it, and reserve `system-cluster-critical` and `system-node-critical` for components like DNS.",
+      "A wave of Pending Pods turns into a wave of new nodes. At scale the bottleneck moves to the cloud: instance, IP address and load balancer quotas, and rate limits on creating instances. Teams raise quotas ahead of time and add nodes in batches with pauses between them.",
+    ],
     quiz: [
       { q: "What are the two phases of a scheduling decision, and what happens if the first leaves no nodes?", a: "Filtering finds feasible nodes; scoring ranks them and the highest wins, with ties broken at random. If filtering leaves none, the Pod stays Pending and the scheduler may try preemption." },
       { q: "What is the difference between `NoSchedule`, `PreferNoSchedule` and `NoExecute` taints?", a: "`NoSchedule` keeps new non-tolerating Pods off but leaves running ones. `PreferNoSchedule` is a soft version. `NoExecute` also evicts running Pods that don't tolerate it; Pods that tolerate it with `tolerationSeconds` are evicted when that time runs out." },
@@ -215,6 +240,9 @@ export const CHAPTERS = [
       { title: "Pod topology spread constraints", url: "https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/" },
       { title: "Pod priority and preemption", url: "https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/" },
       { title: "Resource management for Pods and containers", url: "https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/" },
+      { title: "Scheduler performance tuning", url: "https://kubernetes.io/docs/concepts/scheduling-eviction/scheduler-perf-tuning/" },
+      { title: "Considerations for large clusters", url: "https://kubernetes.io/docs/setup/best-practices/cluster-large/" },
+      { title: "SIG Scalability: Kubernetes scalability thresholds", url: "https://github.com/kubernetes/community/blob/master/sig-scalability/configs-and-limits/thresholds.md" },
     ],
   },
 
@@ -283,6 +311,12 @@ export const CHAPTERS = [
       "Endpoint removal and SIGTERM happen in parallel, not in sequence. A short `preStop` delay is a common way to let in-flight traffic drain before the app stops.",
       "`CrashLoopBackOff` is not a phase. The Pod's phase is usually still `Running` while one container waits out its backoff.",
     ],
+    atScale: [
+      "Every readiness flip is an EndpointSlice change that kube-proxy on every node receives. Thousands of Pods with flaky readiness probes create constant churn. The EndpointSlice controller limits updates (it prefers creating one new slice to updating several), and teams keep readiness probes stable and cheap.",
+      "The kubelet pulls images one at a time by default, and never in parallel for a single Pod, so one slow pull holds up other Pods on that node. Large fleets set `serializeImagePulls: false` with a `maxParallelImagePulls` cap. Failed pulls back off up to 300 seconds, so a registry blip can stall a rollout for minutes.",
+      "When a node dies, its Pods are not replaced at once. Kubernetes adds tolerations for the `not-ready` and `unreachable` taints with `tolerationSeconds=300`, so Pods stay bound for 5 minutes, and the control plane rate-limits new taints so a network partition does not evict a whole zone. Latency-critical apps set a shorter toleration; DaemonSet Pods are never evicted for these taints.",
+      "Node liveness is a heartbeat, and at thousands of nodes its cost matters. Each kubelet renews a small Lease in `kube-node-lease` every 10 seconds, while the larger Node `.status` is written only on change or every 5 minutes by default. Splitting the two is what keeps heartbeats cheap on large clusters.",
+    ],
     quiz: [
       { q: "What happens when each of the three probes fails?", a: "Startup: the kubelet kills the container and it is handled by `restartPolicy`. Liveness: the kubelet restarts the container. Readiness: the Pod's IP is removed from matching Services' EndpointSlices, but the container keeps running." },
       { q: "How long does the kubelet wait between restarts of a crashing container?", a: "Exponential backoff, 10s, 20s, 40s and so on, capped at 300 seconds (5 minutes). It resets after the container runs for 10 minutes without problems." },
@@ -293,6 +327,10 @@ export const CHAPTERS = [
       { title: "Pod lifecycle", url: "https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/" },
       { title: "Init containers", url: "https://kubernetes.io/docs/concepts/workloads/pods/init-containers/" },
       { title: "Configure liveness, readiness and startup probes", url: "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/" },
+      { title: "EndpointSlices", url: "https://kubernetes.io/docs/concepts/services-networking/endpoint-slices/" },
+      { title: "Images", url: "https://kubernetes.io/docs/concepts/containers/images/" },
+      { title: "Taints and tolerations", url: "https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/" },
+      { title: "Node status", url: "https://kubernetes.io/docs/reference/node/node-status/" },
     ],
   },
 
@@ -354,6 +392,12 @@ export const CHAPTERS = [
       "Rollout history only records Pod template changes. Undo restores the template, not the replica count or other Deployment fields.",
       "During a rolling update old and new Pods serve traffic side by side, so both versions must work together. If they can't, use `strategy: Recreate`, which stops all old Pods first and accepts downtime.",
     ],
+    atScale: [
+      "A rollout replaces every Pod, and each replacement is an endpoint change sent to every node. With the old Endpoints API, rolling all 5,000 Pods of a Service on 3,000 nodes meant more than 22 TB of transfer. EndpointSlices keep each change to one small slice, which is why large Services depend on them.",
+      "Surge needs room. With the default 25%, a 1,000-replica Deployment may create 250 extra Pods at once, which can mean new nodes, cloud quota and rate limits. When capacity is tight, teams lower `maxSurge` or roll with `maxUnavailable` instead and accept a slower rollout.",
+      "Old ReplicaSets add up. Each Deployment keeps 10 by default (`revisionHistoryLimit`), they consume resources in etcd and crowd `kubectl get rs`, and cleanup waits until a rollout completes. With thousands of Deployments, teams keep a smaller history that still covers their rollback needs.",
+      "Many teams pushing at once collide. An update during a rollout starts a new ReplicaSet straight away and scales the previous new one down (rollover), and an autoscaler scaling mid-rollout spreads replicas proportionally across old and new. Use `kubectl rollout pause` to batch several changes into one rollout.",
+    ],
     quiz: [
       { q: "With 10 replicas and the default strategy, how many Pods can exist and how many must be available during a rollout?", a: "maxSurge 25% of 10 rounds up to 3, so at most 13 Pods. maxUnavailable 25% rounds down to 2, so at least 8 must be available." },
       { q: "A new image crashes on start. What happens to the rollout and to your traffic?", a: "New Pods never become available, so the controller stops scaling down the old ReplicaSet; the old Pods it kept keep serving. After `progressDeadlineSeconds` the Deployment shows `ProgressDeadlineExceeded`, but it does not roll back on its own." },
@@ -364,6 +408,8 @@ export const CHAPTERS = [
       { title: "Deployments", url: "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/" },
       { title: "ReplicaSet", url: "https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/" },
       { title: "Pod lifecycle", url: "https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/" },
+      { title: "Scaling Kubernetes networking with EndpointSlices", url: "https://kubernetes.io/blog/2020/09/02/scaling-kubernetes-networking-with-endpointslices/" },
+      { title: "Considerations for large clusters", url: "https://kubernetes.io/docs/setup/best-practices/cluster-large/" },
     ],
   },
 
@@ -422,6 +468,13 @@ export const CHAPTERS = [
       "OOMKilled (container over its own limit) and Evicted (node under pressure) are different events with different fixes: raise the limit or fix the leak, versus set honest requests and leave node headroom.",
       "Node-pressure eviction ignores PodDisruptionBudgets, and with hard thresholds it ignores `terminationGracePeriodSeconds` as well.",
     ],
+    atScale: [
+      "With hundreds of teams, requests are only as good as their defaults. A ResourceQuota per namespace caps what each team can claim, and a LimitRange fills in default requests so Pods without them don't land as BestEffort or get rejected by the quota.",
+      "Requests decide placement, so padded requests across thousands of Pods strand capacity the scheduler can't use. Teams compare requests with real usage and use the Vertical Pod Autoscaler in recommender mode to suggest values.",
+      "Addons ship with limits sized for small or medium clusters. On large clusters they get OOM-killed or CPU-throttled. Raise requests and limits as the cluster grows, add replicas for horizontally scaled addons, and give DaemonSets a little more headroom.",
+      "The kubelet checks eviction thresholds every 10 seconds (`housekeeping-interval`), so a fast memory spike can reach the kernel OOM killer first. Fleets reserve memory with `--kube-reserved` and `--system-reserved`, can enable `--kernel-memcg-notification`, set `eviction-minimum-reclaim` (default 0) to avoid repeated small evictions, and rely on `eviction-pressure-transition-period` (default 5m) to stop node conditions flapping.",
+      "Pod density has a ceiling regardless of node size: no more than 110 Pods per node in the tested envelope, and SIG Scalability's threshold is the smaller of 110 and 10 times the core count.",
+    ],
     quiz: [
       { q: "What QoS class does a Pod get if each container sets CPU and memory limits but no requests?", a: "Guaranteed. Requests default to the limits, so every container has requests equal to limits for both CPU and memory." },
       { q: "A container exceeds its CPU limit. Another exceeds its memory limit. What happens to each?", a: "The CPU one is throttled by the kernel and keeps running. The memory one is OOM-killed by the kernel and restarted per its restart policy, showing `OOMKilled`." },
@@ -435,6 +488,8 @@ export const CHAPTERS = [
       { title: "Reserve compute resources for system daemons", url: "https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/" },
       { title: "Limit ranges", url: "https://kubernetes.io/docs/concepts/policy/limit-range/" },
       { title: "Resource quotas", url: "https://kubernetes.io/docs/concepts/policy/resource-quotas/" },
+      { title: "Considerations for large clusters", url: "https://kubernetes.io/docs/setup/best-practices/cluster-large/" },
+      { title: "SIG Scalability: Kubernetes scalability thresholds", url: "https://github.com/kubernetes/community/blob/master/sig-scalability/configs-and-limits/thresholds.md" },
     ],
   },
 ];

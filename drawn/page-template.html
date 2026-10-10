@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{title}</title>
+<meta name="description" content="{desc}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<link rel="stylesheet" href="../drawn/drawn.css">
+</head>
+<body>
+<div class="shell">
+  <nav class="toc" aria-label="Chapters">
+    <details id="tocBox" open><summary>Chapters</summary><ol id="toc"></ol></details>
+  </nav>
+  <main>
+    <div class="kicker"><a href="../">SRE Lab</a> · explainers</div>
+    <h1>{title}</h1>
+{ledes}
+    <div id="chapters"></div>
+    <footer>
+      <p>{footer}</p>
+      <p>Part of <a href="../">SRE Lab</a> · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab/tree/main/{dir}">source</a></p>
+    </footer>
+  </main>
+</div>
+<script type="module">
+import {{ mountExplainer }} from "../drawn/engine.js";
+import {{ CHAPTERS }} from "./diagrams.js";
+await mountExplainer(CHAPTERS, {{ key: "{dir}" }});
+</script>
+</body>
+</html>
