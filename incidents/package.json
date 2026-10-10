@@ -1,0 +1,8 @@
+{
+  "name": "sre-lab-incidents-build",
+  "private": true,
+  "type": "module",
+  "description": "Build step for Find the Incident: embeds incidents.json with the same model the browser uses.",
+  "scripts": { "build": "node build.mjs" },
+  "devDependencies": { "@huggingface/transformers": "3.8.1" }
+}

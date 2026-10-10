@@ -1,0 +1,1873 @@
+[
+ {
+  "id": "cloudflare-2025-waf-killswitch-lua-nil",
+  "company": "Cloudflare",
+  "date": "2025-12-05",
+  "title": "WAF killswitch hits latent Lua nil bug, 500s on 28% of traffic",
+  "url": "https://blog.cloudflare.com/5-december-2025-outage/",
+  "category": [
+   "config",
+   "software-bug"
+  ],
+  "trigger": "While mitigating CVE-2025-55182, Cloudflare raised the WAF body buffer to 1MB and used a global killswitch to disable an internal WAF test ruleset that could not handle the larger size.",
+  "impact": "For about 25 minutes, from 08:47 to 09:12 UTC, roughly 28% of Cloudflare HTTP traffic, sites on the FL1 proxy using the Managed Ruleset, got HTTP 500 errors on nearly every request.",
+  "detection": "Automated alerts fired and an incident was declared at 08:50 UTC.",
+  "fix": "The configuration change was reverted at 09:11 UTC, and Cloudflare committed to gradual rollouts for security config, fail-open data plane handling, easier break-glass access and a network change freeze.",
+  "summary": "Responding to a React Server Components vulnerability, Cloudflare enlarged the WAF request-body buffer and switched off an internal testing ruleset through its killswitch, a change that spreads fleet-wide instantly. In the older FL1 proxy, skipping that rule meant its execute object was never built, and later Lua code indexed it anyway, throwing an attempt to index a nil value error. Affected sites served HTTP 500 for nearly all requests for 25 minutes. The Rust FL2 proxy did not have the bug."
+ },
+ {
+  "id": "cloudflare-2025-bot-feature-file-panic",
+  "company": "Cloudflare",
+  "date": "2025-11-18",
+  "title": "Oversized Bot Management feature file crashes Cloudflare's proxy",
+  "url": "https://blog.cloudflare.com/18-november-2025-outage/",
+  "category": [
+   "database",
+   "config",
+   "software-bug"
+  ],
+  "trigger": "A ClickHouse permissions change exposed extra table metadata, so the query building the Bot Management feature file returned duplicate rows and roughly doubled the file.",
+  "impact": "Core CDN and security traffic returned 5xx errors from about 11:20 UTC, with Access, Turnstile, Workers KV, the dashboard and Email Security also hit; main impact ended at 14:30 and full recovery came at 17:06 UTC.",
+  "detection": "An automated test flagged the problem at 11:31 UTC and an incident call opened at 11:35, with the team first suspecting a DDoS attack.",
+  "fix": "Engineers stopped generating new feature files, pushed a known-good file globally and restarted the proxy, then planned to validate internal config like user input, add kill switches and review proxy failure modes.",
+  "summary": "A database access change at Cloudflare made a ClickHouse query that builds the Bot Management feature file return duplicate columns from a second schema. The bigger file exceeded the 200-feature limit preallocated by the Rust FL2 proxy, causing a panic and HTTP 5xx errors across the network, while legacy FL returned zero bot scores. Because ClickHouse nodes were updated gradually, good and bad files alternated every five minutes, making the outage flap and look like an attack. The independent status page coincidentally went down too."
+ },
+ {
+  "id": "incidentio-2025-aws-us-east-1-dependencies",
+  "company": "incident.io",
+  "date": "2025-10-20",
+  "title": "AWS us-east-1 outage hits incident.io through third-party dependencies",
+  "url": "https://incident.io/blog/service-disruption-october-20th-2025",
+  "category": [
+   "third-party",
+   "cloud-provider",
+   "retry-storm"
+  ],
+  "trigger": "The AWS us-east-1 outage broke a telecom provider and Docker Hub, which incident.io relied on even though its own platform runs on Google Cloud.",
+  "impact": "SMS and phone on-call notifications were delayed from 07:20 to 09:26 UTC, SAML login was degraded for about two hours, the Scribe note taker could not join calls for several hours, and about 4% of status page traffic errored for 25 minutes.",
+  "detection": "An on-call engineer was paged at 07:21 UTC for high SMS and phone error rates, and blackbox exporters in nine regions caught the status page errors.",
+  "fix": "Once Docker Hub partly recovered the team shipped isolated notification queues and escalation fixes, then removed the Docker Hub dependency, added telecom redundancy and tuned Postgres autovacuum.",
+  "summary": "When AWS us-east-1 failed, incident.io's GCP-hosted platform stayed up but its dependencies did not. A telecom provider outage plus aggressive client retries made notification jobs run up to 60 times longer, and shared queues delayed email, Slack and push alerts too. Fixes could not ship because the build used a Docker Hub base image. Dead tuples in a Postgres escalations index made lock acquisition eat nearly half of worker capacity, and an internal rate limiter only applied to the top 10 organisations."
+ },
+ {
+  "id": "launchdarkly-2025-aws-flag-delivery",
+  "company": "LaunchDarkly",
+  "date": "2025-10-20",
+  "title": "AWS outage and SDK retry flood disrupt LaunchDarkly flag delivery",
+  "url": "https://launchdarkly.com/blog/what-happened-what-we-learned-and-how-were-improving/",
+  "category": [
+   "cloud-provider",
+   "retry-storm",
+   "load-balancer"
+  ],
+  "trigger": "The AWS us-east-1 outage degraded EC2, Lambda, DynamoDB and the Route 53 control plane, and a later internal change sent flag delivery onto a legacy path with cold caches.",
+  "impact": "Service was disrupted for roughly 24 hours; US customers could not log in or manage flags, server-side SDK connection errors reached about 99% globally, and event ingestion lost data until 3:00 PM PT on October 20.",
+  "detection": "Not stated in the postmortem.",
+  "fix": "Streaming recovered by 12:05 AM PT on October 21 after load balancers were scaled out and flag delivery was decoupled from the web app; follow-ups include a new delivery architecture, streaming-to-polling SDK failover and moving DR tooling out of us-east-1.",
+  "summary": "LaunchDarkly's outage had two phases. First, the AWS us-east-1 failure left its web app and API unable to autoscale, so US customers could not manage flags and client-side streaming stalled. Then, at 11:48 AM PT, a change meant to reduce web app load pushed the flag delivery network onto an old routing path with cold caches; SDKs retried heavily, overwhelming the streaming service and its load balancer, while ongoing EC2 capacity problems blocked scale-out until after midnight."
+ },
+ {
+  "id": "aws-2025-dynamodb-dns-race",
+  "company": "Amazon",
+  "date": "2025-10-19",
+  "title": "DynamoDB DNS automation race empties us-east-1 endpoint",
+  "url": "https://aws.amazon.com/message/101925/",
+  "category": [
+   "dns",
+   "software-bug",
+   "cascading-failure"
+  ],
+  "trigger": "A latent race condition between two DNS Enactor processes let a stale DNS plan overwrite a newer one, after which a cleanup job deleted it and removed every IP address for dynamodb.us-east-1.amazonaws.com.",
+  "impact": "Over about 14.5 hours in US-EAST-1, clients could not connect to DynamoDB for roughly three hours, EC2 launches failed with capacity errors, some Network Load Balancers returned connection errors, and Lambda, ECS, EKS, Amazon Connect, STS, IAM console sign-in and Redshift were degraded.",
+  "detection": "Engineering teams engaged as soon as errors started and traced the problem to DynamoDB DNS state by 12:38 AM PDT; NLB health check problems were caught by monitoring at 6:52 AM.",
+  "fix": "Operators manually restored the DNS records, restarted EC2 droplet lease managers and throttled requests to drain backlogs, and temporarily disabled NLB health-check failover; AWS turned off the DNS automation worldwide until the race is fixed and added velocity limits for NLB capacity removal.",
+  "summary": "A timing bug in DynamoDB's automated DNS management in US-EAST-1 published an empty record set for the regional endpoint, so anything resolving it got no addresses. The outage rippled into EC2, whose droplet lease manager depends on DynamoDB and fell into a congestive backlog that blocked new instance launches. Network propagation delays then made NLB health checks fail healthy targets. Lambda, container services, Amazon Connect and sign-in all suffered, and some Redshift clusters took until the next day to recover."
+ },
+ {
+  "id": "cloudflare-2025-dashboard-useeffect-loop",
+  "company": "Cloudflare",
+  "date": "2025-09-12",
+  "title": "Dashboard React bug floods Tenant Service, breaking API auth",
+  "url": "https://blog.cloudflare.com/deep-dive-into-cloudflares-sept-12-dashboard-and-api-outage/",
+  "category": [
+   "software-bug",
+   "retry-storm",
+   "capacity"
+  ],
+  "trigger": "A dashboard release with a React useEffect whose dependency array held an object rebuilt on every render kept calling the /organizations endpoint, colliding with a Tenant Service deploy.",
+  "impact": "From 17:57 to 19:12 UTC the Cloudflare dashboard was heavily degraded and the API failed with 5xx errors in two windows, while CDN and edge security traffic were unaffected.",
+  "detection": "Automated alerting paged the right engineers, who also saw rising Tenant Service and API traffic.",
+  "fix": "Engineers applied a global rate limit, added Tenant Service pods, reverted a bad patch and hotfixed the dashboard, then planned Argo Rollouts, jittered retries, more capacity and retry tagging.",
+  "summary": "A Cloudflare dashboard release included a React useEffect hook that re-ran on every render because an object in its dependency list was recreated each time, firing repeated calls to /organizations plus retries. The extra load overwhelmed the Tenant Service, a Go service on Kubernetes that is part of API authorization, so authorization could not be evaluated and APIs returned 5xx errors. An attempted fix that removed some error handling made things worse, causing a second outage window until it was reverted."
+ },
+ {
+  "id": "cloudflare-2025-aws-iad-congestion",
+  "company": "Cloudflare",
+  "date": "2025-08-21",
+  "title": "One customer's traffic surge congests Cloudflare-AWS links in Ashburn",
+  "url": "https://blog.cloudflare.com/cloudflare-incident-on-august-21-2025/",
+  "category": [
+   "network",
+   "capacity",
+   "bgp"
+  ],
+  "trigger": "One customer in AWS us-east-1 requested so many cached objects that the response traffic saturated Cloudflare's direct peering links with AWS in Ashburn.",
+  "impact": "Customers whose origins were in AWS us-east-1 saw high latency, packet loss, timeouts and failures reaching origins from 16:27 UTC until about 20:18 UTC, while Cloudflare's other services were unaffected.",
+  "detection": "Cloudflare's network team was alerted to Ashburn congestion at 16:44 UTC and opened a customer-impact incident at 17:45 UTC, with latency SLO probes also tracking the degradation.",
+  "fix": "Cloudflare rate-limited the customer and re-engineered traffic while AWS reverted its BGP withdrawals, and follow-ups include per-customer traffic budgets, faster interconnect upgrades and coordinated traffic engineering with AWS.",
+  "summary": "A surge of requests from one customer in AWS us-east-1 roughly doubled Cloudflare-to-AWS traffic and filled the direct peering links in Ashburn, one of which was already running at half capacity. AWS withdrew some BGP prefixes to relieve the links, pushing traffic onto an offsite interconnect that also saturated, and Ashburn edge routers dropped high-priority packets. Customers with AWS-hosted origins saw timeouts and slow responses for almost four hours until rate limiting and route normalization."
+ },
+ {
+  "id": "cloudflare-2025-workers-kv-storage",
+  "company": "Cloudflare",
+  "date": "2025-06-12",
+  "title": "Workers KV storage outage cascades to Access, WARP and more",
+  "url": "https://blog.cloudflare.com/cloudflare-service-outage-june-12-2025/",
+  "category": [
+   "third-party",
+   "storage",
+   "cascading-failure"
+  ],
+  "trigger": "The central storage backing Workers KV, part of which runs on a third-party cloud provider, failed when that provider had its own outage.",
+  "impact": "For about two and a half hours, roughly 90% of Workers KV requests failed and dependent products broke globally, including 100% of Access identity logins, WARP registrations, Gateway proxying, dashboard logins, Workers AI, Stream and Pages builds.",
+  "detection": "The WARP team saw device registration failures at 17:52 UTC and declared an incident, and Access error-rate alerts and SLO drops followed at 18:05 UTC.",
+  "fix": "Teams degraded features that depended on KV and prepared an alternate datastore until the storage recovered, then committed to removing single-provider dependence for KV, moving critical namespaces to Cloudflare infrastructure and limiting per-product blast radius.",
+  "summary": "Workers KV relies on a central source-of-truth store, part of which was hosted by a third-party cloud that suffered an outage. With that store unavailable, KV cold reads and writes failed, and because many Cloudflare products are built on KV, the failure spread: Access identity logins, WARP sign-ups, Gateway, dashboard login, Turnstile, Workers AI, Stream, Images and Pages all saw heavy errors. No data was lost. Service returned when the storage recovered, followed by cache repopulation errors."
+ },
+ {
+  "id": "google-2025-service-control-null-pointer",
+  "company": "Google",
+  "date": "2025-06-12",
+  "title": "Blank policy fields crash Google Service Control in every region",
+  "url": "https://status.cloud.google.com/incidents/ow5i3PPK96RduMcb1SsW",
+  "category": [
+   "software-bug",
+   "config",
+   "cascading-failure"
+  ],
+  "trigger": "A quota policy record with unintended blank fields was written to Spanner and replicated globally, hitting an unguarded null pointer in a new Service Control quota check added on May 29.",
+  "impact": "Google Cloud and Workspace external APIs and consoles returned elevated 503 errors worldwide for about three hours across roughly 100 Cloud and 10 Workspace products, with us-central1 and some products such as Vertex AI recovering later.",
+  "detection": "SRE triage started within two minutes and the root cause was found in about ten, but the status dashboard was itself down so the first public notice took about an hour.",
+  "fix": "A kill switch disabling the faulty code path was rolled out in about 40 minutes, task creation was throttled in us-central1, and follow-ups include fail-open checks, feature flags on critical binaries and randomized exponential backoff.",
+  "summary": "Service Control, the binary that enforces API policy and quota across Google Cloud, gained a new quota check in May with no error handling and no feature flag. On June 12 a policy update with blank fields replicated globally through Spanner within seconds, the check dereferenced a null pointer, and Service Control crash-looped in every region. External API calls to Cloud and Workspace failed with 503s. In us-central1, restarting tasks without backoff overloaded the Spanner table they relied on, slowing recovery further."
+ },
+ {
+  "id": "incidentio-2025-pgaudit-lock-hang",
+  "company": "incident.io",
+  "date": "2025-04-09",
+  "title": "PGAudit hang during migration locks incident.io database",
+  "url": "https://status.incident.io/incidents/01JRDFKAGE07YYDY0KZR137BX3/write-up",
+  "category": [
+   "database",
+   "deploy",
+   "third-party"
+  ],
+  "trigger": "A routine migration adding an empty table and an index ran shortly after a Postgres 17 upgrade, and the re-enabled PGAudit extension froze while holding critical locks.",
+  "impact": "The dashboard, mobile app, Slack app and API were slow or timing out for about 11 minutes, including a 2-minute full primary database outage, though on-call alerts and escalations were still delivered.",
+  "detection": "Monitoring alerted the team quickly.",
+  "fix": "Because the stuck PGAudit processes ignored kill signals, the team restarted the database and then disabled and removed PGAudit, with further root-cause investigation and monitoring improvements planned.",
+  "summary": "A few days after upgrading to Postgres 17, incident.io ran an ordinary schema migration. The PGAudit logging extension, switched back on after the upgrade, interacted badly with the migration and stopped responding while holding locks, so other queries piled up behind it. Users saw intermittent slowness and timeouts across the web dashboard, mobile and Slack apps, and API. Terminating the stuck backends did not work, so engineers restarted the primary database, causing two minutes of full downtime, and then removed PGAudit."
+ },
+ {
+  "id": "circleci-2025-workflows-db-stale-stats",
+  "company": "CircleCI",
+  "date": "2025-04-04",
+  "title": "Stale stats after Postgres upgrade delay CircleCI workflows",
+  "url": "https://discuss.circleci.com/t/post-incident-report-april-4-2025-delays-in-starting-workflows/53113",
+  "category": [
+   "database",
+   "deploy"
+  ],
+  "trigger": "A blue/green upgrade of the workflows service database ran ANALYZE before a second major version upgrade in the same rollout, leaving planner statistics stale.",
+  "impact": "For about 1 hour 37 minutes, starting and cancelling workflows and jobs was slow or failed, some jobs were dropped after 10 minutes of retries, and the workflows UI was hard to use.",
+  "detection": "Rising latency and job errors were spotted at 22:17 UTC and a public incident was declared at 22:35 UTC.",
+  "fix": "After restarting pods and upsizing the database did not help, the team re-enabled writes on the old database and made it primary again, and now runs statistics analysis after every major version change with extra tests and checkpoints before cutover.",
+  "summary": "CircleCI upgraded the Postgres database behind its workflows service using a blue/green deployment that included two major version jumps. Table statistics were rebuilt after the first jump only, so after the second the query planner made poor choices and queries went to disk. Workflow starts and cancellations slowed, some jobs were dropped, and the UI struggled to show workflows. Restoring the previous database as primary ended the incident. The report's date is inconsistent, citing both April 3 and April 4."
+ },
+ {
+  "id": "cloudflare-2025-r2-credential-rotation",
+  "company": "Cloudflare",
+  "date": "2025-03-21",
+  "title": "R2 credential rotation sent to wrong Worker environment",
+  "url": "https://blog.cloudflare.com/cloudflare-incident-march-21-2025/",
+  "category": [
+   "human-error",
+   "storage",
+   "security"
+  ],
+  "trigger": "During a credential rotation for the R2 Gateway Worker, the new secret was deployed without the --env flag, landing in a non-production Worker before the old credentials were deleted.",
+  "impact": "For 67 minutes, from 21:38 to 22:45 UTC, all R2 writes and about 35% of reads failed globally, and Images, Stream and Vectorize uploads failed completely, with log delivery delayed up to 70 minutes.",
+  "detection": "R2 global availability alerts fired at 21:45 UTC and an incident was declared at 21:50, though the gradual decline delayed diagnosis.",
+  "fix": "Engineers deployed the credentials to the production Worker at 22:45 UTC, and added credential ID logging, a check before deleting old keys, tooling that enforces environment selection and two-person review.",
+  "summary": "Cloudflare engineers rotating the storage credentials used by the R2 Gateway Worker ran wrangler secret put and wrangler deploy without specifying --env, so the new secret went to the default, non-production Worker. Once the old key was deleted, production R2 could no longer authenticate to storage. Writes failed outright and reads partly failed, cascading to Images, Stream, Vectorize, Cache Reserve, log delivery and billing downloads. A first retry repeated the same mistake; release history review finally exposed the wrong target. No data was lost."
+ },
+ {
+  "id": "crowdstrike-2024-channel-file-291",
+  "company": "CrowdStrike",
+  "date": "2024-07-19",
+  "title": "Faulty Falcon content update crashes Windows hosts worldwide",
+  "url": "https://www.crowdstrike.com/falcon-content-update-remediation-and-guidance-hub/",
+  "category": [
+   "deploy",
+   "config",
+   "software-bug"
+  ],
+  "trigger": "A Rapid Response Content update, Channel File 291, supplied 21 input fields to a sensor template expecting 20, causing an out-of-bounds memory read in the Falcon Windows sensor.",
+  "impact": "Windows hosts running Falcon sensor 7.11 or later that were online between 04:09 and 05:27 UTC crashed with blue screens, and recovery took days, with about 99% of sensors back online by July 29.",
+  "detection": "Not stated in detail; the hub says the problem was identified quickly and the file was reverted 78 minutes after release.",
+  "fix": "CrowdStrike reverted the channel file and guided manual and later automated host remediation, then added field-count validation, Content Interpreter bounds checks, staged deployment rings and customer control over content rollout.",
+  "summary": "CrowdStrike released a Rapid Response Content file for its Falcon Windows sensor that provided one more input field than the sensor's Content Interpreter expected. A bug in the Content Validator let it through, and the mismatch caused an out-of-bounds read that crashed Windows into a blue screen on every affected host that was online during a 78-minute window. Mac and Linux were unaffected. Many machines needed hands-on fixes such as booting to recovery and deleting the channel file."
+ },
+ {
+  "id": "cloudflare-2024-ddos-rule-lua-loop",
+  "company": "Cloudflare",
+  "date": "2024-06-20",
+  "title": "New DDoS rule triggers infinite Lua loop, pinning edge CPUs",
+  "url": "https://blog.cloudflare.com/cloudflare-incident-on-june-20-2024/",
+  "category": [
+   "software-bug",
+   "deploy",
+   "cascading-failure"
+  ],
+  "trigger": "A gradually deployed DDoS mitigation rule that rate-limited by cookie value hit a latent bug in the legacy rate-limiting code when clients sent mixed valid and invalid cookies.",
+  "impact": "For 114 minutes, many data centers served errors to 1.4-2.1% of CDN requests at peak, with total 5xx reaching 3.45% and p99 time to first byte roughly tripling.",
+  "detection": "An incident was opened automatically at 18:04 UTC when global CPU load stayed high, though engineers first blamed a concurrent backbone congestion event.",
+  "fix": "Engineers ran mass rolling restarts, fixed a Traffic Manager bug, and disabled the rule, then planned to replace the legacy rate limiter and guard against endless tail-call loops.",
+  "summary": "A new Cloudflare DDoS rule keyed rate limits on cookies, and its key-generation function ended up calling itself. Two cookie validity checks disagreed when a request had several cookies, so the function recursed forever; Lua proper tail calls kept the stack flat, meaning no overflow error ever surfaced and the process just spun at 100% CPU. One bad request poisoned a worker, and load shifted by Unimog and Traffic Manager spread failures between servers and data centers, raising error rates and latency worldwide."
+ },
+ {
+  "id": "cloudflare-2024-pdx01-power-failover",
+  "company": "Cloudflare",
+  "date": "2024-03-26",
+  "title": "Second Portland power loss tests Code Orange failover work",
+  "url": "https://blog.cloudflare.com/major-data-center-power-failure-again-cloudflare-code-orange-tested/",
+  "category": [
+   "power",
+   "cloud-provider",
+   "config"
+  ],
+  "trigger": "Four facility circuit switchboards at the Flexential PDX01 site failed together, reportedly because breaker trip settings were too low, taking out both primary and redundant power to all Cloudflare cages.",
+  "impact": "Control plane APIs and dashboards recovered in about seven minutes, but analytics stayed down until later that day; the edge network serving traffic was unaffected.",
+  "detection": "Loss of connectivity to PDX01 triggered alerts immediately, and a total facility power loss was confirmed shortly after.",
+  "fix": "Over 100 databases across more than 20 clusters failed over automatically to other Portland sites, Flexential reset and corrected the switchboards, and the top follow-up is finishing high availability for the analytics platform and eliminating remaining manual steps.",
+  "summary": "Five months after a similar outage, another full power failure hit a Cloudflare core facility in Portland when four circuit switchboards tripped at once. This time the control plane failed over on its own within minutes, thanks to work done under the Code Orange program: HA database topology, pre-provisioned capacity elsewhere, and Logpush failover to Amsterdam. Analytics, which still depended on the lost facility, was the main gap. Cold-starting the site took around 10 hours versus roughly 72 previously."
+ },
+ {
+  "id": "turso-2023-shared-backup-leak",
+  "company": "Turso",
+  "date": "2023-12-04",
+  "title": "Empty backup ID mixes free-tier database data in shared storage",
+  "url": "https://turso.tech/blog/incident-2023-12-04-data-leak-and-loss-in-some-free-tier-databases-7cba5bc7",
+  "category": [
+   "security",
+   "data-loss",
+   "storage"
+  ],
+  "trigger": "A buggy migration left some databases with an empty backup identifier, so their backups pointed at one shared storage path, and databases recreated from it after scale-to-zero picked up others' data.",
+  "impact": "About 0.07% of managed databases were affected: from 1 to 4 December 2023 they could see data from the shared location, and the fix rolled them back to 1 December backups, losing later writes.",
+  "detection": "An external researcher reported the leak at 8:10 AM UTC on 4 December 2023.",
+  "fix": "Turso patched the bug about an hour later, reran the migration with correct parameters and restored affected databases under correct IDs, and planned per-database backup isolation, ownership checks and safer migrations.",
+  "summary": "Turso free-tier databases scale to zero after an hour idle. A configuration change shipped on 20 November contained a migration bug that blanked the backup identifier for some databases, pointing their backups at a common bucket path. When fly.io lacked resources to restart such a database, Turso rebuilt it from that shared location, so customers could read data belonging to other databases. After a researcher reported it, Turso fixed the bug, restored from 1 December backups, and accepted the resulting data loss."
+ },
+ {
+  "id": "cloudflare-2023-pdx04-power-control-plane",
+  "company": "Cloudflare",
+  "date": "2023-11-02",
+  "title": "Data center power loss takes down control plane and analytics",
+  "url": "https://blog.cloudflare.com/post-mortem-on-cloudflare-control-plane-and-analytics-outage/",
+  "category": [
+   "power",
+   "cloud-provider",
+   "cascading-failure"
+  ],
+  "trigger": "Utility maintenance and a suspected transformer ground fault cut both grid and generator power at the Flexential PDX-04 facility in Oregon, and its UPS batteries ran out after roughly four minutes.",
+  "impact": "The Cloudflare dashboard, APIs and analytics were degraded for about 41 hours, raw logs were unavailable for most customers for the whole event and much Logpush data was lost, while edge traffic kept flowing.",
+  "detection": "Alerts fired when the two routers linking PDX-04 dropped offline at 11:44 UTC; the earlier switch to generator power went unnoticed and the facility operator did not notify Cloudflare until 12:28 UTC.",
+  "fix": "Cloudflare failed control plane services over to European disaster recovery sites, rate limited a thundering herd of API retries, and rebuilt PDX-04 servers from scratch, then launched a Code Orange program to remove single-facility dependencies and test full data center loss.",
+  "summary": "A power event at a single Portland-area colocation facility knocked out Cloudflare's control plane and analytics for roughly two days. Services labeled highly available still relied on Kafka and ClickHouse clusters that lived only in PDX-04, and losing an entire facility had never been rehearsed. Customers saw dashboard and API errors, missing analytics and dropped log pushes while proxy traffic stayed up. Recovery required a failover to Europe and a slow, full re-bootstrap of every server in the building."
+ },
+ {
+  "id": "cloudflare-2023-workers-kv-rollback",
+  "company": "Cloudflare",
+  "date": "2023-10-30",
+  "title": "Workers KV rollback points production at a staging build",
+  "url": "https://blog.cloudflare.com/cloudflare-incident-on-october-30-2023/",
+  "category": [
+   "deploy",
+   "software-bug",
+   "cascading-failure"
+  ],
+  "trigger": "While rolling back a KV release, a deployment tool bug that listed staging and production releases together pointed production at a version only deployed to staging.",
+  "impact": "For 37 minutes, from 19:54 to 20:31 UTC, KV returned HTTP 401 errors, breaking Pages, Access logins, WARP device posture, Workers edits, Turnstile, Images, AI Gateway and the dashboard.",
+  "detection": "Automated alerting fired right after traffic began being misrouted.",
+  "fix": "Engineers used break-glass procedures to repoint production to the previous good build, and planned standardized deployments, Access-independent rollbacks, input validation and environment checks.",
+  "summary": "A progressive rollout of a new Cloudflare Workers KV build hit a routing problem, so the team rolled back. A latent bug in the deployment tool mixed staging and production releases, so the rollback targeted a script that ran nowhere in production, black-holing traffic and making KV answer reads and writes with HTTP 401. Pages sites returned 500, Access logins and posture checks failed, Turnstile failed closed, and internal tooling broke because it depended on KV via Access, slowing the manual fix."
+ },
+ {
+  "id": "cloudflare-2023-1111-zonemd-servfail",
+  "company": "Cloudflare",
+  "date": "2023-10-04",
+  "title": "Unparseable ZONEMD record leaves 1.1.1.1 on stale, expired root zone",
+  "url": "https://blog.cloudflare.com/1-1-1-1-lookup-failures-on-october-4th-2023/",
+  "category": [
+   "dns",
+   "software-bug",
+   "time"
+  ],
+  "trigger": "The DNS root zone began carrying a ZONEMD record on 21 September, which Cloudflare's root zone parser could not handle, so updates silently stopped loading.",
+  "impact": "From 07:00 to about 10:32 UTC, the 1.1.1.1 resolver returned SERVFAIL for valid lookups, peaking at 15% of queries versus a 3% baseline, affecting WARP, Zero Trust and downstream resolvers.",
+  "detection": "Users reported unexpected SERVFAIL responses starting 07:57 UTC and an incident was declared at 08:03 UTC.",
+  "fix": "Engineers stopped 1.1.1.1 from preloading the root zone at 10:30 UTC, and planned stale-zone alerts, ingestion that tolerates new record types, parse-failure tests and a cap on stale zone use per RFC 8806.",
+  "summary": "Cloudflare's 1.1.1.1 resolver serves a local copy of the DNS root zone through a static_zone component that only swaps in a new version after a clean parse. When the root zone added a ZONEMD record, parsing failed and the 21 September copy stayed in use for two weeks. Its DNSSEC signatures expired on 4 October, so validation broke and resolvers returned SERVFAIL, mostly in large sites like Ashburn, Frankfurt and Singapore. An initial override rule failed because a tag was not forwarded between cache nodes."
+ },
+ {
+  "id": "incidentio-2023-gke-dataplane-timeouts",
+  "company": "incident.io",
+  "date": "2023-09",
+  "title": "Connection churn on GKE node causes Postgres and memcached timeouts",
+  "url": "https://incident.io/blog/clouds-caches-and-connection-conundrums",
+  "category": [
+   "network",
+   "kubernetes",
+   "software-bug"
+  ],
+  "trigger": "A recent change with an accidental database join made the app fire thousands of duplicate calls to an external third party, flooding a node with short-lived connections.",
+  "impact": "Postgres connection timeouts spiked and a small share of requests hit memcached i/o timeouts over several days; the post gives no precise duration or user count, and the incident date is not stated beyond the September 2023 publication.",
+  "detection": "An incident was declared after a spike in Postgres connection timeouts, with new connections being opened at hundreds per second.",
+  "fix": "The team fixed the accidental join, lengthened connection lifetimes, used static pool sizes and more idle memcached connections, and plans to cap outbound concurrency and use keep-alives.",
+  "summary": "Soon after moving to Google Kubernetes Engine, incident.io saw Postgres connection timeouts and sporadic memcached i/o timeouts. Connection pools were churning, reopening hundreds of connections per second, and a buggy join was making thousands of duplicate external API calls. The team's leading theory is that this burst of TCP connections drove up CPU in GKE Dataplane V2 anetd pods, dropping packets for other traffic on the same node. Deploying the join fix and stabilizing pools brought new Postgres connections down from about 200 to 1 per second."
+ },
+ {
+  "id": "honeycomb-2023-mysql-deadlock-outage",
+  "company": "Honeycomb",
+  "date": "2023-07-25",
+  "title": "Stuck cache writes trigger MySQL deadlock and full Honeycomb outage",
+  "url": "https://www.honeycomb.io/blog/incident-review-what-comes-up-must-first-go-down/",
+  "category": [
+   "database",
+   "cache",
+   "cascading-failure"
+  ],
+  "trigger": "After a routine switch between two Retriever clusters, the query engine stopped writing last-written timestamps the schema cache depended on, and a feature-flag bug kept writes disabled even after the flag was reverted.",
+  "impact": "All of Honeycomb was down for about 68 minutes (13:40 to 14:48 UTC), with no ingest or querying, and data sent during the window was lost unless customers buffered it.",
+  "detection": "A Shepherd SLO began burning slowly hours after the cluster switch, and the next morning charts showed the database update calls had stopped.",
+  "fix": "Engineers tripped circuit breakers to shed Shepherd traffic, failed the locked MySQL primary over to a replica and manually refreshed schema timestamps; the cluster migration was finished and the code able to disable cache writes removed.",
+  "summary": "Honeycomb moved traffic between Retriever clusters to dodge a bug, but the active cluster stopped updating last-written timestamps, weakening the Shepherd ingest schema cache. Flipping writes back with a feature flag failed because hosts told to stop writing never resumed until restarted, a flaw previously hidden by frequent deploys. As cache misses surged, reads piled onto the main MySQL database on RDS, a rare deadlock locked threads and exhausted connections, and every service failed. A failover to a replica restored the database."
+ },
+ {
+  "id": "rust-lang-2023-crates-download-redirect",
+  "company": "rust-lang",
+  "date": "2023-07-20",
+  "title": "Missing slash in redirect URL breaks all crates.io downloads",
+  "url": "https://blog.rust-lang.org/inside-rust/2023/07/21/crates-io-postmortem/",
+  "category": [
+   "deploy",
+   "software-bug"
+  ],
+  "trigger": "A refactor moving S3 access to the object_store crate dropped the slash between the CDN prefix and path, so download redirects pointed to the bogus host static.crates.iocrates.",
+  "impact": "For about 13 minutes (12:17 to 12:30 UTC), every crate download failed, roughly 3.7 million failed requests at about 4,700 per second, and cargo users saw could not resolve host errors.",
+  "detection": "The deploying developer saw elevated request rates in Grafana, and a community member reported the GitHub issue on Zulip about 11 minutes after deployment.",
+  "fix": "The deploy was rolled back in the Heroku UI within about a minute, a corrected change with realistic tests shipped later, and crate downloads were added to the staging smoke test plan.",
+  "summary": "A crates.io pull request finished migrating S3 access to the object_store crate and refactored how download endpoints build redirect URLs. Tests used values unlike production's environment variables, so nobody noticed that the slash between the CDN host and path was lost. After deploy, cargo was redirected to static.crates.iocrates/..., failed DNS lookups, and retried, producing millions of failed downloads. The change had merged without review and staging smoke tests covered publishing only. A Heroku rollback restored service."
+ },
+ {
+  "id": "aws-2023-lambda-cell-capacity-bug",
+  "company": "Amazon",
+  "date": "2023-06-13",
+  "title": "Latent Lambda Frontend bug hit at new cell size in us-east-1",
+  "url": "https://aws.amazon.com/message/061323/",
+  "category": [
+   "software-bug",
+   "capacity",
+   "cascading-failure"
+  ],
+  "trigger": "Routine daily scaling of the Lambda Frontend pushed one cell past a size it had never reached, exposing a latent defect in execution environment allocation.",
+  "impact": "Lambda in US-EAST-1 returned elevated errors and latency for about 3 hours 48 minutes, and STS, AWS Sign-in, EventBridge, EKS, the Management Console, Amazon Connect and Support Center were degraded.",
+  "detection": "Not stated in the postmortem; it says engineering teams engaged immediately and found the defect by 12:26 PM PDT.",
+  "fix": "Engineers scaled the Frontend fleet back below the triggering size, which restored invocations, then disabled that scaling, fixed and deployed the bug fix to all Regions and planned to bound every cell to a tested size.",
+  "summary": "As Lambda's Frontend fleet grew to meet normal afternoon traffic, one US-EAST-1 cell crossed a capacity threshold never seen before. A latent bug then caused execution environments to be allocated but never used, so Lambda could not provision environments for new invocations. Synchronous calls failed until about 1:45 PM PDT and async backlogs drained by 3:37 PM. Services built on Lambda, including STS, console sign-in and EventBridge, also saw errors."
+ },
+ {
+  "id": "heroku-2023-fk-integer-overflow",
+  "company": "Heroku",
+  "date": "2023-06-08",
+  "title": "Foreign key type overflow breaks Heroku logins and deploys",
+  "url": "https://status.heroku.com/api/v4/incidents/2558",
+  "category": [
+   "integer-overflow",
+   "database"
+  ],
+  "trigger": "A foreign key column used a smaller integer type than the primary key it pointed to, and once the primary key outgrew it new authorizations failed.",
+  "impact": "All customers were unable to log in or deploy for about 1 hour 45 minutes, followed by roughly 2 hours of full outage of the Heroku API, Dashboard and CLI; running apps stayed up.",
+  "detection": "Not stated in the postmortem beyond a public notice at 15:57 UTC reporting global authentication failures, with users seeing HTTP 500 Application error pages.",
+  "fix": "Engineers migrated the column to the correct type, which wiped Postgres statistics and slowed queries, so they ran the API read-only until statistics were rebuilt, and plan schema-mismatch monitoring, alerts on columns nearing type limits, and playbook updates to refresh statistics.",
+  "summary": "Heroku's platform API went down when a primary key grew past the range of a narrower foreign key column referencing it, stopping new OAuth authorizations and therefore logins and deploys. Fixing the column type with a migration reset Postgres table statistics, and the resulting slow query plans escalated a partial failure into a full API, Dashboard and CLI outage. Running dynos were unaffected. Service returned once statistics were refreshed."
+ },
+ {
+  "id": "openai-2023-redis-py-data-leak",
+  "company": "OpenAI",
+  "date": "2023-03-20",
+  "title": "redis-py connection bug shows ChatGPT users other users' data",
+  "url": "https://web.archive.org/web/20240426015133/https://openai.com/blog/march-20-chatgpt-outage",
+  "category": [
+   "security",
+   "cache",
+   "software-bug"
+  ],
+  "trigger": "A server change at 1 a.m. Pacific raised Redis request cancellations, exposing a redis-py asyncio bug that left cancelled connections holding stale responses for the next request.",
+  "impact": "Some users saw other users' chat titles, and payment details such as name, email, address and card last four digits of 1.2% of ChatGPT Plus subscribers active in a nine-hour window may have been exposed; ChatGPT was taken offline and a few hours of history were lost.",
+  "detection": "Not stated in the postmortem.",
+  "fix": "OpenAI took ChatGPT offline, patched redis-py with the Redis maintainers, added checks that cached data matches the requesting user, notified affected users and hardened its Redis Cluster.",
+  "summary": "ChatGPT caches user data in Redis Cluster via the asyncio redis-py client. If a request was cancelled after being sent but before its reply was read, the pooled connection kept the orphaned reply and handed it to the next unrelated request. A change on March 20 sharply increased cancellations, so some users saw other people's conversation titles, and some subscription emails and account pages exposed other Plus users' names, emails, addresses and partial card details. Full card numbers were never exposed."
+ },
+ {
+  "id": "circleci-2023-kube-proxy-iptables",
+  "company": "CircleCI",
+  "date": "2023-03-14",
+  "title": "Kubernetes upgrade corrupts iptables, CircleCI jobs stop starting",
+  "url": "https://status.circleci.com/incidents/dcqb3fykhgvg",
+  "category": [
+   "kubernetes",
+   "network",
+   "dns"
+  ],
+  "trigger": "An in-progress Kubernetes upgrade of the main production cluster led to kube-proxy sync failures that left iptables rules corrupted on many nodes.",
+  "impact": "Docker, Machine, macOS and Windows jobs were delayed and then stopped starting, and the UI and API degraded, from about 18:00 UTC on March 14 until about 01:27 UTC on March 15, with follow-on RabbitMQ and GitHub checks problems later that day.",
+  "detection": "Engineers noticed rising service-to-service communication errors around 18:00 UTC; the postmortem does not describe a specific alert.",
+  "fix": "The team restarted services, every node and the rest of the infrastructure, then RabbitMQ nodes to clear corrupted queues, and added kube-proxy sync error alerts while reworking the upgrade process.",
+  "summary": "During a Kubernetes version upgrade of CircleCI's main cluster, kube-proxy repeatedly failed to sync and left broken iptables rules on multiple nodes, causing widespread internal networking failures. Restarting node-local DNS and CoreDNS made name resolution fail entirely, and full recovery needed restarts of every node and later of RabbitMQ to fix corrupted queues. Jobs across executors stopped starting for about seven hours. The postmortem notes there was no single trigger."
+ },
+ {
+  "id": "reddit-2023-pi-day-k8s-upgrade",
+  "company": "Reddit",
+  "date": "2023-03-14",
+  "title": "Kubernetes 1.24 upgrade drops label, breaking Calico route reflectors",
+  "url": "https://web.archive.org/web/20230727225235/https://www.reddit.com/r/RedditEng/comments/11xx5o0/you_broke_reddit_the_piday_outage/",
+  "category": [
+   "kubernetes",
+   "network",
+   "deploy"
+  ],
+  "trigger": "Upgrading the legacy Kubernetes cluster from 1.23 to 1.24 removed the node-role.kubernetes.io/master label that the Calico route reflector configuration selected on.",
+  "impact": "Reddit was broken for 314 minutes on the afternoon of March 14 in US hours, with error pages or empty home feeds.",
+  "detection": "The site halted about two minutes after the upgrade began and an incident was opened immediately; the cluster had lost its metrics, so engineers relied on CDN edge stats.",
+  "fix": "After failing to fix forward, the team restored the control plane from backup, regenerated TLS certificates for a hostname mismatch, and ramped traffic back in steps; follow-ups target safer, more uniform cluster upgrades.",
+  "summary": "On Pi Day 2023 an in-place upgrade of Reddit's largest, hand-built Kubernetes cluster to 1.24 knocked out pod networking. Calico route reflectors were configured years earlier to run on nodes carrying the master label, which 1.24 removes, so all routes dropped and in-cluster and Consul DNS stopped resolving. With no supported downgrade, engineers restored etcd from an outdated backup procedure, hit AWS instance capacity limits and certificate errors, then reopened traffic gradually from 1% to 100%."
+ },
+ {
+  "id": "rust-lang-2023-crates-dns-terraform",
+  "company": "rust-lang",
+  "date": "2023-01-25",
+  "title": "Terraform deploy deletes static.crates.io DNS during cert swap",
+  "url": "https://blog.rust-lang.org/inside-rust/2023/02/08/dns-outage-portmortem/",
+  "category": [
+   "dns",
+   "deploy",
+   "certificate"
+  ],
+  "trigger": "A single Terraform apply bundled a new CDN TLS certificate with DNS record changes, deleting the old records first and waiting about 10 minutes for the certificate before recreating them.",
+  "impact": "For an estimated 10 to 15 minutes from about 09:15 UTC, static.crates.io failed to resolve, so Rust builds that needed to download crates failed, with some users affected longer due to resolver caching.",
+  "detection": "Not stated in the postmortem.",
+  "fix": "The outage ended when Terraform recreated the DNS record, and the team committed to documenting deploys, shipping staged changes one at a time, and deploying on merge to avoid drift.",
+  "summary": "crates.io infrastructure is managed with Terraform, and production lagged behind the main branch. A deploy therefore applied two separately tested changes together: a new TLS certificate for the CDN and updated DNS records. Terraform removed the existing certificate and DNS entries, spent around 10 minutes issuing the certificate, and only then wrote the new records. During that gap static.crates.io had no DNS entry, so cargo builds needing crate downloads failed until propagation finished around 09:40 UTC."
+ },
+ {
+  "id": "cloudflare-2023-service-token-overwrite",
+  "company": "Cloudflare",
+  "date": "2023-01-24",
+  "title": "Access service token change blanks secrets, breaking many products",
+  "url": "https://blog.cloudflare.com/cloudflare-incident-on-january-24th-2023/",
+  "category": [
+   "software-bug",
+   "deploy",
+   "database"
+  ],
+  "trigger": "A release adding a last seen timestamp to Access service tokens wrote tokens back after reading them with the client secret redacted, saving empty secrets.",
+  "impact": "For 121 minutes, from 17:50 to 19:51 UTC, WARP, Zero Trust, Gateway, R2, Cache Reserve, Cache Purge, Images and parts of the API failed, with Gateway peaking above 50,000 extra 5XX errors per minute.",
+  "detection": "An internal alert fired when WARP device posture uploads fell to zero, followed by alerts from Cache Purge, R2, Images and Cache Reserve.",
+  "fix": "Engineers restored correct token values for the affected internal accounts and then restored them from a database backup, and planned unit tests, auth failure alerts, faster table rollbacks and empty-string checks.",
+  "summary": "A Cloudflare Access feature to show when service tokens were last used read each token through a path that redacts the client secret, then saved it, leaving an empty secret. A not-null constraint did not catch the empty string. Four internal accounts used by WARP, Gateway, R2, Cache Reserve, Cache Purge and Images lost working credentials as updates propagated, so devices failed posture checks and lost Internet access, R2 requests errored, and purges failed. A later bad update briefly restarted the API impact."
+ },
+ {
+  "id": "incidentio-2023-connection-pool-timeouts",
+  "company": "incident.io",
+  "date": "2023",
+  "title": "Hidden transaction pile-up starves Go DB pools and times out API",
+  "url": "https://incident.io/blog/database-performance",
+  "category": [
+   "database",
+   "software-bug",
+   "monitoring-gap"
+  ],
+  "trigger": "Many short-lived database transactions, including a needless one opened on most Slack modal submissions, held connections in the Go database/sql pools.",
+  "impact": "Over about two weeks, some API requests timed out intermittently while waiting up to around 20 seconds for a connection, with each episode clearing in about a minute; request counts are not given.",
+  "detection": "A customer report and a spike of context canceled errors in Sentry, followed by Grafana dashboards and traces showing time spent waiting on the pool.",
+  "fix": "The team added a one-second lock timeout, moved Slack event handling to async PubSub, built per-operation connection-hold metrics, and finally removed the unnecessary transaction so only code needing atomicity opens one.",
+  "summary": "In early 2023 incident.io saw sporadic API timeouts with no obvious cause: no deploys, no traffic spike, no slow query. Traces eventually showed requests waiting on the client-side database/sql connection pool, not on Postgres itself. The culprit was transaction overuse, especially a wrapper that opened a transaction for most Slack modal submissions, which kept connections checked out. Early quick wins like indexes and a materialised view did not help; new instrumentation of connection hold time found the real issue. Exact dates are not stated."
+ },
+ {
+  "id": "incidentio-2022-pubsub-poison-pill",
+  "company": "incident.io",
+  "date": "2022-11-18",
+  "title": "Poison-pill Pub/Sub message repeatedly crashes incident.io Go app",
+  "url": "https://incident.io/blog/intermittent-downtime",
+  "category": [
+   "software-bug",
+   "queue"
+  ],
+  "trigger": "A Pub/Sub message for a welcome-message subscription caused a panic in a goroutine spawned by the Google Cloud Pub/Sub client, where the existing recover() did not reach.",
+  "impact": "The app was down for 13 minutes within a 32-minute window (15:40 to 16:12 GMT), with Heroku reporting H10 App crashed errors.",
+  "detection": "Heroku H10 errors paged the on-call engineer through PagerDuty.",
+  "fix": "The team purged subscriptions holding unacknowledged messages and disabled non-critical async features, then added recover() to the shared Pub/Sub handler and split web, worker and cron into separate Heroku dyno tiers.",
+  "summary": "incident.io ran web, worker and cron code in one Go binary on Heroku. A message that crashed its handler kept being redelivered by GCP Pub/Sub, and because the client's Receive runs handlers in fresh goroutines, the panic escaped recovery and killed the whole process, so the app crash-looped. Diagnosis was slow because Heroku dropped the huge goroutine dump, log rate limits hid lines before each crash, and Sentry never got the error. Purging subscriptions stopped the crashes."
+ },
+ {
+  "id": "google-2022-filestore-global-quota",
+  "company": "Google",
+  "date": "2022-09-13",
+  "title": "Internal service exhausts global Filestore API quota for all customers",
+  "url": "https://status.cloud.google.com/incidents/X8SNkK2BPyCrc1sveeiu",
+  "category": [
+   "capacity",
+   "cloud-provider",
+   "software-bug"
+  ],
+  "trigger": "A malfunctioning internal Google service that manages many GCP projects flooded the Cloud Filestore API with requests and used up a global request limit.",
+  "impact": "Customers in every region got HTTP 429 errors on read-only Filestore calls such as List and GetOperation via Console, gcloud and the API for about three hours (07:30 to 10:42 US/Pacific), with no workaround.",
+  "detection": "Automated alerts paged Google engineers at 07:47 US/Pacific, about nine minutes after the incident began.",
+  "fix": "Engineers manually paused the misbehaving internal service, and follow-ups aim to remove the global quotas and improve alerting on internal limits.",
+  "summary": "Cloud Filestore protects itself with a single global cap on API requests. When an internal Google backend that manages a large fleet of projects went haywire and hammered the API, it consumed that shared cap, so Filestore throttled everyone. For roughly three hours, customers worldwide saw 429 errors on read operations like ListInstances in the Console and gcloud, although create and update calls still worked. Recovery came only after engineers shut the internal service down by hand."
+ },
+ {
+  "id": "honeycomb-2022-shepherd-cache-lock",
+  "company": "Honeycomb",
+  "date": "2022-09-08",
+  "title": "Schema cache lock contention crash-loops Honeycomb ingest for hours",
+  "url": "https://www.honeycomb.io/blog/incident-review-shepherd-cache-delays/",
+  "category": [
+   "cache",
+   "cascading-failure",
+   "capacity"
+  ],
+  "trigger": "The original trigger was never identified; Shepherd ingest hosts entered a persistent loop of running out of memory and restarting.",
+  "impact": "Ingest was disrupted for more than eight and a half hours in total, and the team estimates that most customers ingesting during that window saw at least partial impact.",
+  "detection": "Engineers recognized a familiar shark fin pattern in latency graphs, but unlike past episodes it did not clear within about 15 minutes.",
+  "fix": "Engineers reduced lock contention in the schema cache and pre-filled it before Shepherd hosts took traffic, then added Refinery capacity; longer-term work targets cache contention and ingest re-architecture.",
+  "summary": "Honeycomb's Shepherd edge hosts validate incoming events against an in-memory schema cache whose updates took a table-wide lock, so backfilling a missing entry stalled unrelated requests. On September 8 Shepherds fell into a metastable cycle of memory exhaustion and restarts, which also crashed the Refinery cluster sampling their traces. Scaling, slower deploys and aggressive sampling did not help, the autoscaler added hosts in response to crash-loop CPU, and an unpinned chart change redeployed mid-incident. Pre-warming the cache at boot finally stabilized ingest."
+ },
+ {
+  "id": "google-2022-europe-west2-cooling",
+  "company": "Google",
+  "date": "2022-07-19",
+  "title": "London heatwave cooling failure powers down part of europe-west2-a",
+  "url": "https://status.cloud.google.com/incidents/fmEL9i2fArADKawkZAa2",
+  "category": [
+   "hardware",
+   "cloud-provider",
+   "cascading-failure"
+  ],
+  "trigger": "Several redundant cooling systems, including two chillers, failed simultaneously during record outside temperatures at a data center hosting zone europe-west2-a.",
+  "impact": "Over roughly a day and a half, about 35% of Compute Engine VMs in the zone were terminated, 38% of zonal Persistent Disk volumes went unavailable, 57% of GKE nodes in the zone dropped out, and dozens of other services including Cloud SQL, Bigtable, BigQuery and Cloud Storage reported errors.",
+  "detection": "Automated temperature monitoring flagged rising heat in the data center and engineers were paged soon after.",
+  "fix": "Engineers deliberately powered down part of the zone to protect hardware, shifted load away, then restarted services in sequence after cooling was repaired, with follow-ups to fix zonal failover automation, shed thermal load gradually, and audit cooling equipment globally.",
+  "summary": "During the July 2022 UK heatwave, chillers at a Google Cloud data center in London failed and temperatures climbed until engineers shut down a portion of zone europe-west2-a. VMs were terminated, disks and GKE nodes became unreachable, and caches in Memorystore were flushed. A legacy Cloud Storage placement scheme put three storage clusters in the same failure domain, and a mistaken routing change briefly blocked replicas in other zones too. Restoring the long tail of instances took many extra hours after cooling returned."
+ },
+ {
+  "id": "cloudflare-2022-mcp-bgp-policy-reorder",
+  "company": "Cloudflare",
+  "date": "2022-06-21",
+  "title": "BGP policy term reorder withdraws prefixes at 19 Cloudflare sites",
+  "url": "https://blog.cloudflare.com/cloudflare-outage-on-june-21-2022/",
+  "category": [
+   "bgp",
+   "config",
+   "network"
+  ],
+  "trigger": "A change to prefix advertisement policies on spine routers in Multi-Colo PoP data centers moved a REJECT-THE-REST term ahead of the site-local terms.",
+  "impact": "Nineteen data centers carrying about half of Cloudflare's HTTP traffic became unreachable for many users from 06:27 UTC, with all sites working again by 07:42 UTC.",
+  "detection": "Not stated in the postmortem beyond an internal incident being declared at 06:32 UTC.",
+  "fix": "Engineers reverted the change, using out-of-band access where needed, and planned MCP-aware rollout testing, a policy redesign that prevents term misordering, and automated commit-confirm rollback.",
+  "summary": "As part of a BGP communities standardization project, Cloudflare reordered terms in the export policy on spine routers in its newer MCP data centers. A REJECT-THE-REST term now came first, so site-local prefixes stopped being advertised and those locations dropped off the internet. The Multimog load balancer also relied on those prefixes, so smaller clusters got overloaded. Only 4% of locations were hit but they served about 50% of HTTP requests. Recovery was slowed by engineers reverting one another's changes."
+ },
+ {
+  "id": "atlassian-2022-site-deletion-script",
+  "company": "Atlassian",
+  "date": "2022-04-05",
+  "title": "Cleanup script deletes 883 Atlassian cloud sites",
+  "url": "https://www.atlassian.com/engineering/post-incident-review-april-2022-outage",
+  "category": [
+   "human-error",
+   "data-loss",
+   "deploy"
+  ],
+  "trigger": "A script meant to remove a legacy Insight app was given site IDs instead of app IDs, and the deletion API accepted them without checks.",
+  "impact": "883 cloud sites belonging to 775 customers were deleted, taking down Jira, Confluence, Opsgenie, Statuspage and Atlassian Access for those customers for up to 14 days.",
+  "detection": "Internal monitoring missed it because the deletions used a normal workflow; a customer support ticket arrived 8 minutes after the script started and the incident was confirmed about an hour later.",
+  "fix": "Atlassian restored sites from point-in-time backups over two restore approaches finishing April 18, blocked bulk site deletion, and committed to universal soft deletes, automated multi-site disaster recovery and better incident communication tooling.",
+  "summary": "A maintenance script to retire the legacy Insight asset management app was run with cloud site identifiers rather than app identifiers. The deletion API treated them as valid and permanently removed 883 entire customer sites, including contact details needed to reach those customers. Restoring was manual and slow because tooling was built for single-site recovery, so some customers waited two weeks. Atlassian met its one-hour recovery point objective but missed its recovery time objective."
+ },
+ {
+  "id": "slack-2022-consul-rollout-cache-scatter",
+  "company": "Slack",
+  "date": "2022-02-22",
+  "title": "Consul agent rollout empties caches, scatter queries swamp Vitess",
+  "url": "https://slack.engineering/slacks-incident-on-2-22-22/",
+  "category": [
+   "cache",
+   "cascading-failure",
+   "database"
+  ],
+  "trigger": "A percentage-based Consul agent upgrade restarted agents on cache nodes, and Mcrib replaced each one with an empty memcached node, lowering the hit rate at peak.",
+  "impact": "Many users could not connect to Slack and client boot calls were slow or failed from just after 6 a.m. Pacific; exact counts and duration are not stated.",
+  "detection": "Support tickets, internal user reports, and pages to several engineering teams all arrived at roughly the same time.",
+  "fix": "Slack paused the Consul rollout, throttled client boots, changed the query to fetch only missing data from Vitess replicas, and raised limits as caches refilled; follow-ups moved the query to a channel-sharded table and changed the rollout process.",
+  "summary": "Restarting Consul agents during an upgrade caused Slack's Mcrib cache control plane to swap in empty memcached nodes. Group DM membership lookups on cache miss became scatter queries across every Vitess shard, because the keyspace was sharded by user. Database load grew faster than the miss rate, queries timed out before refilling the cache, and client retries plus Mcrib's quick node replacement deepened the cascading failure. Boot throttling, raised too fast at first, eventually let the cache recover."
+ },
+ {
+  "id": "pagerduty-2021-dnsmasq-k8s-dns",
+  "company": "PagerDuty",
+  "date": "2021-12-15",
+  "title": "DNS config change breaks name resolution in container cluster",
+  "url": "https://web.archive.org/web/20230504222958/https://status.pagerduty.com/incidents/vbp7ht2647l8",
+  "category": [
+   "dns",
+   "config",
+   "kubernetes"
+  ],
+  "trigger": "A DNS configuration change deployed at 00:17 UTC contained a defect, believed to be a dnsmasq misconfiguration, that left every service in the container orchestration cluster unable to resolve DNS.",
+  "impact": "From 00:22 to 03:14 UTC on 15 December 2021, PagerDuty's web UI, mobile app, REST API and Events API in both US and EU regions could not reliably ingest events or send notifications on time; most US function returned by 01:30 and EU by about 02:00.",
+  "detection": "Internal monitoring flagged the problem within one minute.",
+  "fix": "Engineers deployed a fix to a subset of production, verified it, then rolled it out region by region, and planned stronger pre-deploy config testing and better canaries.",
+  "summary": "PagerDuty pushed a DNS configuration change to the infrastructure behind its container orchestration cluster, and a defect missed in test environments, likely in dnsmasq settings, stopped all containerised services from resolving hostnames. Event ingestion, notification delivery, the web and mobile UIs and the REST API degraded at once in both US and EU service regions for nearly three hours. Monitoring caught it within a minute; a corrected config was canaried and then rolled out sequentially with verification."
+ },
+ {
+  "id": "google-2021-gfe-load-balancer-bug",
+  "company": "Google",
+  "date": "2021-11-12",
+  "title": "Latent load balancer bug breaks Google Front End in Europe",
+  "url": "https://status.cloud.google.com/incidents/1xkAB1KmLrh5g3v9ZEZ7",
+  "category": [
+   "load-balancer",
+   "software-bug",
+   "deploy"
+  ],
+  "trigger": "A newly enabled infrastructure feature activated a latent bug in internal network load balancer code used by Google Front End load balancing.",
+  "impact": "For about 1 hour 44 minutes (00:30 to 02:14 US/Pacific), mostly European customers could not load Cloud Console and saw failures in Container Registry, Bigtable, Spanner, Endpoints, Cloud SQL, Eventarc and App Engine, with some spillover to us-central1; no customer counts are given.",
+  "detection": "Automated safety systems caught the errors within about 4 minutes and slowed the rollout.",
+  "fix": "Engineers pushed a change that disabled the vulnerable code path, and a root cause fix was scheduled to finish rolling out later the same day.",
+  "summary": "Google Front End, the load balancing layer in front of many Google Cloud services, failed in Europe after a new infrastructure feature exercised a dormant bug in internal network load balancer code. Customers saw the Cloud Console time out, Container Registry API connections fail, Bigtable and Spanner return unavailable errors, and Cloud Run, Cloud Functions and App Engine drop traffic. Automated safety checks noticed within minutes; disabling the buggy code path mitigated the outage after about 1 hour 44 minutes."
+ },
+ {
+  "id": "circleci-2021-distributor-schema-change",
+  "company": "CircleCI",
+  "date": "2021-11-08",
+  "title": "Incompatible schema change leaves CircleCI jobs stuck not running",
+  "url": "https://discuss.circleci.com/t/incident-report-november-8-2021-jobs-stuck-in-a-not-running-state/41890",
+  "category": [
+   "deploy",
+   "database",
+   "software-bug"
+  ],
+  "trigger": "An 18:50 UTC deploy changed a column type in the work distribution database in a way that was not backwards compatible.",
+  "impact": "Jobs on all executor types sat stuck without starting for about 53 minutes, with queue times staying elevated until 20:19 UTC, especially for machine and Mac executors.",
+  "detection": "Errors and alerts fired right after the deploy, with error counts spiking and incoming work falling off.",
+  "fix": "After a rollback failed to help, engineers hand-deployed a change making the distributor ignore the bad field and scaled compute manually, and planned better testing and tolerant handling of unexpected data.",
+  "summary": "A CircleCI deploy altered a field type in the PostgreSQL database behind its job distribution service. Both new and older work items then broke distribution, and because the distributor halts on bad data and restarts from the beginning, it looped on the same records. Rolling back made rows written in between unreadable, so jobs could not start for nearly an hour. A manual patch to skip the field restored flow, but node health checks and provider rate limits slowed the catch-up."
+ },
+ {
+  "id": "roblox-2021-consul-streaming-boltdb",
+  "company": "Roblox",
+  "date": "2021-10-28",
+  "title": "73-hour Roblox outage from Consul streaming contention and BoltDB",
+  "url": "https://web.archive.org/web/2024/https://blog.roblox.com/2022/01/roblox-return-to-service-10-28-10-31-2021/",
+  "category": [
+   "software-bug",
+   "cascading-failure",
+   "monitoring-gap"
+  ],
+  "trigger": "A newly enabled Consul streaming feature, extended a day earlier to a traffic-routing service, caused heavy contention under high read and write load, compounded by a BoltDB freelist performance problem.",
+  "impact": "Roblox was fully down for 73 hours from October 28 to October 31, 2021, with no user data lost.",
+  "detection": "Engineers noticed degraded Vault performance and one Consul server with high CPU, before players were affected.",
+  "fix": "Streaming was disabled, slow Consul leaders were kept from staying elected, BoltDB was later compacted, and players were let back in via DNS steering; follow-ups removed the telemetry dependency on Consul and added a second datacenter and dedicated Consul clusters.",
+  "summary": "Roblox depends on a single Consul cluster for service discovery, which Nomad and Vault also rely on. KV write latency jumped from under 300ms to about 2 seconds, and online players fell to half before the whole platform went offline. Swapping hardware, restoring a snapshot and shedding load did not help. Profiling traced kernel spin-lock contention to Consul streaming, and HashiCorp later found BoltDB writing a 7.8MB freelist on each Raft append. Monitoring that depended on Consul made triage harder."
+ },
+ {
+  "id": "facebook-2021-backbone-bgp-withdrawal",
+  "company": "Facebook",
+  "date": "2021-10-04",
+  "title": "Maintenance command severs Facebook backbone; DNS withdraws BGP routes",
+  "url": "https://engineering.fb.com/2021/10/05/networking-traffic/outage-details/",
+  "category": [
+   "network",
+   "bgp",
+   "dns"
+  ],
+  "trigger": "A routine maintenance command meant to measure global backbone capacity disconnected every backbone link, and a bug in the audit tool failed to block it.",
+  "impact": "Facebook services were unreachable worldwide; the postmortem does not give user counts or total duration.",
+  "detection": "Not stated in the postmortem.",
+  "fix": "Engineers physically went to data centers to restore the backbone, then brought services back gradually using storm drill practice, and planned to add backbone outage scenarios to future drills.",
+  "summary": "During routine maintenance, a command to assess Facebook's backbone capacity accidentally took down all backbone connections, cutting data centers off from each other and the internet. An audit tool should have rejected the command but had a bug. Edge DNS servers, unable to reach the data centers, withdrew their BGP advertisements, so Facebook's authoritative name servers vanished from the internet. Internal tools also relied on DNS and out-of-band access was down, so engineers had to work on site, slowed by security controls."
+ },
+ {
+  "id": "trivago-2021-aad-group-deleted-github",
+  "company": "trivago",
+  "date": "2021-09-07",
+  "title": "Deleted Azure AD group de-provisions all users from GitHub org",
+  "url": "https://web.archive.org/web/2024/https://tech.trivago.com/post/2021-10-05-postmortem-removing-all-users-from-github-trivago",
+  "category": [
+   "human-error",
+   "security"
+  ],
+  "trigger": "While re-inviting one employee, an admin deleted the Azure Active Directory security group behind GitHub SCIM provisioning instead of removing the user from it.",
+  "impact": "Employees lost access to the trivago GitHub organization for at least 1 hour 19 minutes and had to accept new invites and re-enable SSH keys and tokens for SSO.",
+  "detection": "Users reported lost access in Slack within four minutes, and the owning team found the group missing at 16:23.",
+  "fix": "A new group was created, admins were assigned to the enterprise app directly, and users found via provisioning logs and mail traces were re-added; follow-ups include automated group membership backups and tighter permissions for destructive actions.",
+  "summary": "trivago syncs GitHub organization membership from an Azure AD security group via SAML SSO and SCIM. After 2FA enforcement removed some accounts, re-inviting one user meant removing and re-adding them to the group, but the whole group was deleted by mistake. SCIM then de-provisioned every synced user from GitHub and sent removal emails. AAD groups cannot be restored, so the team used a sync bot account to restore admins, rebuilt the group, and relied on GitHub to restore previous repository permissions."
+ },
+ {
+  "id": "honeycomb-2021-scaling-limits-retro",
+  "company": "Honeycomb",
+  "date": "2021-09",
+  "title": "Honeycomb retro on a run of scaling incidents after ingest growth",
+  "url": "https://www.honeycomb.io/blog/incident-resolution-september-retrospective/",
+  "category": [
+   "capacity",
+   "queue",
+   "human-error"
+  ],
+  "trigger": "Ingest volume grew around 40% in a few weeks, pushing Kafka, the Beagle SLO processor, retrievers and the dogfood environment past previously unknown limits at the same time.",
+  "impact": "Over September and early October there were five public incidents and more than 20 internal issues, including user-visible data delays of up to about five minutes and an SLO processing outage.",
+  "detection": "Problems surfaced through redundant alerting, cross-environment component alerts and Beagle's own warnings that it was falling behind.",
+  "fix": "The team vertically scaled Kafka brokers, tuned Beagle consumer buffers, fixed a runbook typo, and committed to mapping system limits and revisiting each component's scaling model.",
+  "summary": "This review covers a cluster of Honeycomb incidents driven by fast ingest growth. Kafka brokers hit AWS network allowance limits and were moved to bigger instances; Beagle, which processes SLO data, autoscaled on CPU, a poor signal, and slowed when the Sarama Kafka client shared one connection per broker leader. A retriever scale-up runbook, never tested in production, inserted an SLO record with an underscore instead of a hyphen in a topic name, crash-looping Beagle and causing a public SLO delay outage."
+ },
+ {
+  "id": "incidentio-2021-postgres-sequence-gaps",
+  "company": "incident.io",
+  "date": "2021-07",
+  "title": "Postgres sequence caching makes incident numbers skip by 32",
+  "url": "https://incident.io/blog/one-two-skip-a-few",
+  "category": [
+   "database",
+   "software-bug"
+  ],
+  "trigger": "The team upgraded its database by promoting a follower to primary, and the new primary resumed Postgres sequences up to 32 values ahead.",
+  "impact": "A significant share of organizations saw gaps of 32 in their customer-facing INC incident numbers, for example jumping from INC-7 to INC-39; no data was lost or misattributed.",
+  "detection": "Customers reported the skipped numbers, and the team then audited the database and its sequences.",
+  "fix": "Per-organization sequences were replaced by a before-insert trigger that sets the external ID to the organization's current maximum plus one, backed by an index.",
+  "summary": "Customers of incident.io noticed their incident identifiers jumping unexpectedly, such as a team with 20 incidents whose newest was numbered 52. The cause was Postgres sequence behaviour: values are pre-logged in blocks of 32, so after a crash or a follower promotion the new primary can start further ahead. A recent database upgrade via failover triggered exactly that. The team switched to computing the next number with a trigger and recommends keeping user-visible IDs separate from internal keys. The exact incident date is not given."
+ },
+ {
+  "id": "fastly-2021-customer-config-bug",
+  "company": "Fastly",
+  "date": "2021-06-08",
+  "title": "Latent bug triggered by one customer config takes down Fastly edge",
+  "url": "https://www.fastly.com/blog/summary-of-june-8-outage",
+  "category": [
+   "software-bug",
+   "config",
+   "deploy"
+  ],
+  "trigger": "A customer pushed a legitimate configuration change that hit a dormant bug introduced by a Fastly software release rolled out starting May 12.",
+  "impact": "Around 85% of the Fastly network served errors worldwide from 09:47 UTC; most services were back within about 49 minutes and the incident was mitigated at 12:35 UTC.",
+  "detection": "Fastly monitoring spotted the global disruption at 09:48 UTC, one minute after onset.",
+  "fix": "Engineers identified and disabled the triggering customer configuration, then began deploying a permanent code fix at 17:25 UTC and committed to reviewing why testing missed the bug.",
+  "summary": "A software deployment Fastly started on May 12 carried a hidden bug that only fired under a specific customer configuration. On June 8 a customer made a valid config change matching those conditions, and roughly 85% of Fastly's global CDN began returning errors, knocking many large websites offline. Monitoring caught it within a minute, the offending config was found at 10:27 UTC and disabled, most traffic recovered by 11:00, and a permanent fix rolled out that evening."
+ },
+ {
+  "id": "circleci-2021-rabbitmq-consumer-timeout",
+  "company": "CircleCI",
+  "date": "2021-05-21",
+  "title": "RabbitMQ upgrade strands VM cleanup queue, blocking CircleCI jobs",
+  "url": "https://discuss.circleci.com/t/postmortem-may-21-2021-delay-in-starting-docker-jobs-machine-remote-docker-environments-blocked/40274",
+  "category": [
+   "queue",
+   "third-party",
+   "cascading-failure"
+  ],
+  "trigger": "A routine RabbitMQ upgrade introduced a consumer acknowledgment timeout that, contrary to the changelog, applied to all queue types and disconnected consumers of the VM deletion queue.",
+  "impact": "Docker, machine executor and remote Docker jobs were delayed or blocked for about 12 hours, from 13:30 UTC on May 21 to 01:18 UTC on May 22, and some workflows were cancelled to free resources.",
+  "detection": "An overnight alert for a queue with zero consumers led only to pod restarts, a later backlog alert was misconfigured and did not page, and the incident was declared after job-start-delay pages at 13:00 UTC.",
+  "fix": "Engineers obtained a GCP quota increase, manually deleted old VMs, restored queue consumers, scaled up RDS and brought components back one at a time, then planned more robust provisioning, better RabbitMQ observability and batched GCP API calls.",
+  "summary": "After CircleCI upgraded RabbitMQ, a new acknowledgment timeout kicked consumers off the queue responsible for destroying finished VMs. With nobody consuming it, old VMs piled up and saturated GCP CPU quotas, so new jobs could not get machines, and automatic retries added load. RDS databases then ran out of burst balance, causing connection and I/O failures. Docker, Windows, macOS, Arm and GPU jobs were delayed or stuck for roughly half a day."
+ },
+ {
+  "id": "slack-2021-transit-gateway-overload",
+  "company": "Slack",
+  "date": "2021-01-04",
+  "title": "Overloaded AWS Transit Gateway drops packets on post-holiday Monday",
+  "url": "https://slack.engineering/slacks-outage-on-january-4th-2021/",
+  "category": [
+   "cloud-provider",
+   "network",
+   "capacity"
+  ],
+  "trigger": "A surge of returning users with cold client caches overloaded an AWS Transit Gateway that did not scale fast enough, causing packet loss across Slack's VPCs.",
+  "impact": "Slack became unavailable around 7:00 AM PST on January 4, 2021, stayed degraded after 9:15 AM, and network conditions were normal again by 10:40 AM PST.",
+  "detection": "An external monitoring service paged on-call as error rates climbed, and Slack's own dashboards and alerting then failed because they depended on the same Transit Gateways.",
+  "fix": "Slack disabled autoscaling downscaling and repaired provision-service while AWS manually raised Transit Gateway capacity; follow-ups include pre-holiday TGW upscaling requests, colocating monitoring with its databases, and load testing provision-service.",
+  "summary": "On the first workday of 2021, Slack's traffic spike saturated an AWS Transit Gateway, and the resulting packet loss slowed calls from the web tier to backends. Failing health checks and autoscaling tried to start about 1,200 servers in 15 minutes, but provision-service, on the same degraded network, hit a Linux open-files limit and an AWS quota. Monitoring dashboards lived in a separate VPC from their databases and went dark. Load balancer panic mode and retries kept some traffic flowing."
+ },
+ {
+  "id": "aws-2020-kinesis-thread-limit",
+  "company": "Amazon",
+  "date": "2020-11-25",
+  "title": "Kinesis front-end capacity add exceeds OS thread limit in us-east-1",
+  "url": "https://aws.amazon.com/message/11201/",
+  "category": [
+   "capacity",
+   "cascading-failure",
+   "software-bug"
+  ],
+  "trigger": "A small capacity addition to the Kinesis Data Streams front-end fleet pushed every front-end server past the operating system thread limit.",
+  "impact": "Kinesis put and get calls failed in US-EAST-1 for roughly five hours, and dependent services such as Cognito, CloudWatch, Lambda, Auto Scaling, EventBridge, ECS and EKS saw errors or delays, with some not fully recovered until mid-afternoon.",
+  "detection": "Alarms on Kinesis put and get record errors fired at 5:15 AM PST.",
+  "fix": "AWS removed the new capacity, changed front-end servers to bootstrap shard maps from the authoritative metadata store and restarted the fleet gradually, then planned larger servers, thread alarms, higher OS limits and a dedicated shard-map cache fleet.",
+  "summary": "Each Kinesis front-end server keeps threads open to every other front-end server to build its shard-map cache. Adding a few servers raised the per-host thread count beyond an OS limit, so cache construction failed and servers could not route requests to back-end clusters. Kinesis errors spread to CloudWatch, Cognito, Lambda and others, and even status page updates stalled because the posting tool relied on Cognito. Recovery was slow because servers could only rejoin a few hundred per hour."
+ },
+ {
+  "id": "keepthescore-2020-prod-db-dropped",
+  "company": "Keepthescore",
+  "date": "2020-10-17",
+  "title": "Local reset script drops the production database",
+  "url": "https://web.archive.org/web/20201101133510/https://keepthescore.co/blog/posts/deleting_the_production_database/",
+  "category": [
+   "human-error",
+   "database",
+   "data-loss"
+  ],
+  "trigger": "A developer helper function meant to drop and recreate local tables ran against the production database during late-night coding, for reasons the author had not yet determined.",
+  "impact": "Every scoreboard and its data was wiped; the site was down about 30 minutes, and roughly 7 hours of scoreboard data created on 17 October 2020 was permanently lost.",
+  "detection": "The developer realised immediately because the function was run by hand; no monitoring is described.",
+  "fix": "The site went into maintenance mode and was restored from DigitalOcean's daily managed backup, and the team concluded such a destructive function should not exist.",
+  "summary": "Keepthescore, a small online scoreboard side project, lost its production PostgreSQL data when a Python helper that drops and recreates tables, hardcoded to connect to localhost, somehow wiped production instead. Around 10:45pm CET every scoreboard disappeared. The site was put into maintenance mode and restored from DigitalOcean's once-daily managed database backup within about 30 minutes, but scores entered between 15:47 and 23:21 CET that day were gone for good. The root cause of the wrong connection was still unknown."
+ },
+ {
+  "id": "datadog-2020-service-discovery-dns-storm",
+  "company": "Datadog",
+  "date": "2020-09-24",
+  "title": "DNS query flood topples Datadog's service discovery in US region",
+  "url": "https://www.datadoghq.com/blog/2020-09-25-infrastructure-connectivity-issue/",
+  "category": [
+   "dns",
+   "cascading-failure",
+   "retry-storm"
+  ],
+  "trigger": "Scaling a small latency-measuring cluster down and up left it briefly missing, and a large intake cluster flooded service discovery with repeated DNS lookups for it.",
+  "impact": "The US region was degraded from 14:27 UTC on September 24, with web tier error rates of about 60-90% and services recovering between 20:18 UTC and 03:00 UTC the next day.",
+  "detection": "Engineers noticed intermittent intake cluster failures and opened an internal incident a few minutes later.",
+  "fix": "The service discovery team isolated the cluster and readmitted clients gradually while other teams switched to static local config, with plans to split control and data planes and cache discovery queries.",
+  "summary": "A Datadog migration had quietly switched an intake cluster from a local hosts file to a local DNS resolver that does not cache NXDOMAIN answers. When a small latency-measuring cluster was briefly removed, intake clients kept re-querying it, multiplying DNS load tenfold in ten seconds. The consensus-based service discovery cluster lost quorum, and as caches expired a thundering herd followed, so services could not find dependencies or load runtime configuration. Dashboards and APIs failed for hours though incoming data kept being ingested."
+ },
+ {
+  "id": "pythonanywhere-2020-ebs-volume-failure",
+  "company": "PythonAnywhere",
+  "date": "2020-07-07",
+  "title": "Failed EBS volume on file server takes hosted sites offline",
+  "url": "https://blog.pythonanywhere.com/189/",
+  "category": [
+   "storage",
+   "cloud-provider",
+   "hardware"
+  ],
+  "trigger": "An AWS EBS volume behind the oldest file server, livefile1, suffered multiple component failures that stalled its redundant disk array.",
+  "impact": "Websites, scheduled tasks and always-on tasks for the roughly 20% of accounts on livefile1 were down for about three to nearly four hours, and nearly all users were affected at some point because the main site slowed and other sites could not be reloaded.",
+  "detection": "Monitoring paged the support team at 16:06 UTC with alerts from multiple machines.",
+  "fix": "The team rebuilt the file server volumes from backup snapshots, cleared stale NFS mounts with a rolling cluster reboot, and planned to script storage rebuilds, detect hung volumes faster, and contain failures to one file server's users.",
+  "summary": "One of PythonAnywhere's NFS file servers lost its underlying AWS EBS storage when a volume failed in a way AWS later confirmed was unrecoverable. Web app worker processes blocked waiting on storage, so the PythonAnywhere site itself became slow and threw errors, and users across the platform could not start or reload web apps. Engineers restored the volumes from snapshots, then rebooted servers to clear hung NFS mounts. No data was lost, but restored volumes stayed slow for hours while they warmed up."
+ },
+ {
+  "id": "amazon-2019-tokyo-cooling-control",
+  "company": "Amazon",
+  "date": "2019-08-23",
+  "title": "Cooling control system bug overheats servers in a Tokyo AZ",
+  "url": "https://aws.amazon.com/message/56489/",
+  "category": [
+   "hardware",
+   "third-party",
+   "software-bug"
+  ],
+  "trigger": "During a control host failover, a bug in third-party datacenter control software flooded devices with traffic, the system hung, and cooling units shut down instead of falling back to maximum cooling.",
+  "impact": "A small share of EC2 servers in part of one AP-NORTHEAST-1 Availability Zone overheated and shut down from 12:36 PM JST, degrading EBS and dependent services like RDS, Redshift and ElastiCache, with most recovered by 6:30 PM JST and some hardware retired.",
+  "detection": "Not stated in the postmortem.",
+  "fix": "Operators manually reset the control equipment and PLCs and forced maximum cooling, restoring cooling by 3:21 PM JST, then disabled the failover mode and changed controls so purge mode can bypass the PLCs.",
+  "summary": "In the AWS Tokyo Region, the datacenter control system that manages cooling was failing over between hosts when a bug in vendor logic caused excessive device communication and the system became unresponsive. Air handlers in part of one Availability Zone shut off rather than going to safe maximum cooling, and the manual purge fallback also failed because PLCs hung. EC2 servers overheated, EBS volumes slowed, RunInstances calls errored, and some multi-AZ ALB users with WAF or sticky sessions saw extra errors."
+ },
+ {
+  "id": "cloudflare-2019-waf-regex",
+  "company": "Cloudflare",
+  "date": "2019-07-02",
+  "title": "WAF regex with catastrophic backtracking pins CPU globally",
+  "url": "https://blog.cloudflare.com/details-of-the-cloudflare-outage-on-july-2-2019/",
+  "category": [
+   "deploy",
+   "config",
+   "software-bug"
+  ],
+  "trigger": "A new WAF Managed Rule for XSS was pushed globally at once and included a regular expression prone to catastrophic backtracking, which pinned CPU on the edge.",
+  "impact": "CPU on every server handling HTTP and HTTPS spiked to nearly 100% worldwide, so customer sites returned 502 errors for about 27 minutes and the dashboard and API were also unreachable.",
+  "detection": "External synthetic WAF tests failed and paged on-call about three minutes after the deploy, followed by a global traffic-drop alert and reports of CPU exhaustion.",
+  "fix": "Engineers ran a global WAF kill, then re-enabled it after testing in one location, and followed up by restoring a removed CPU safeguard, auditing all rules for backtracking, adding performance tests, staged rule rollouts and a move to re2 or Rust regex.",
+  "summary": "A WAF Managed Rule meant to detect cross-site scripting was deployed to Cloudflare's entire edge in one step. Its regular expression caused catastrophic backtracking, and although the rule was in simulate mode it still ran, consuming every CPU core serving HTTP and HTTPS traffic. Sites behind Cloudflare returned 502 errors and the dashboard was down too. A previously removed CPU-limit protection would have contained it. A global WAF termination restored traffic in about 27 minutes."
+ },
+ {
+  "id": "google-2019-network-maintenance-automation",
+  "company": "Google",
+  "date": "2019-06-02",
+  "title": "Maintenance automation deschedules network control plane in US regions",
+  "url": "https://status.cloud.google.com/incident/cloud-networking/19009",
+  "category": [
+   "network",
+   "bgp",
+   "config"
+  ],
+  "trigger": "A bug in maintenance automation descheduled network control plane jobs across several physical locations at once, and after a few minutes of fail-static operation BGP routes between those sites were withdrawn.",
+  "impact": "For about four hours, six GCP regions including us-central1 and us-east1 saw heavy congestion: Cloud Storage errors reached 96% in us-west2, Spanner was down in three regions, Compute Engine saw up to 33% packet loss, and Interconnect saw 50-100% loss.",
+  "detection": "Engineers were paged two minutes after the failure began, but debugging was slowed because monitoring tools ran over the same congested network.",
+  "fix": "Engineers halted the automation, rebuilt lost control plane configuration and restored capacity, then hardened cluster management to reject multi-location deschedules, made the control plane persist its config and lengthened fail-static time.",
+  "summary": "Maintenance automation meant for one location had a bug that let it deschedule logical clusters in several locations together, and the network control plane jobs there were configured to stop during maintenance. The network ran in fail-static mode briefly, then BGP routes were withdrawn and capacity collapsed. Compute Engine, App Engine, Cloud VPN, Interconnect, Pub/Sub, Spanner, Cloud Storage and BigQuery all degraded in several US and South American regions. Recovery was slow because control plane config had been lost and monitoring shared the congested network."
+ },
+ {
+  "id": "mozilla-2019-addons-cert-expiry",
+  "company": "Mozilla",
+  "date": "2019-05",
+  "title": "Expired signing certificate disables Firefox add-ons",
+  "url": "https://hacks.mozilla.org/2019/07/add-ons-outage-post-mortem-result/",
+  "category": [
+   "certificate",
+   "human-error",
+   "monitoring-gap"
+  ],
+  "trigger": "The intermediate certificate used to sign Firefox add-ons was allowed to expire because its owners believed Firefox did not check expiration dates.",
+  "impact": "Add-ons stopped working for many Firefox users; the post gives no user counts or exact duration, and fixes rolled out over weeks through eight system add-on versions and six dot releases.",
+  "detection": "Not stated in the postmortem.",
+  "fix": "Mozilla pushed a fix through the Studies (Normandy) system and later dot releases, and committed to documenting certificate behaviour, testing expiry and future dates in QA, and building a fast update channel independent of Telemetry.",
+  "summary": "In 2019 the certificate that signs Firefox add-ons expired, and Firefox rejected extensions it could no longer verify. The signing team knew the date was coming but misunderstood how Firefox validated intermediate certificates, partly because of an earlier change to end-entity checks. QA had never tested certificate expiry or clocks set in the future. The quickest fix path ran through Studies, which required Telemetry, so some users had to enable data collection to get the patch."
+ },
+ {
+  "id": "google-2019-gcs-blob-metadata-overload",
+  "company": "Google",
+  "date": "2019-03-12",
+  "title": "Config change overloads blob lookup service, Cloud Storage errors",
+  "url": "https://status.cloud.google.com/incident/storage/19002",
+  "category": [
+   "config",
+   "cascading-failure",
+   "storage"
+  ],
+  "trigger": "A configuration change meant to cut metadata storage use in Google's internal blob service overloaded the component that locates blob data.",
+  "impact": "For about 4 hours 10 minutes, internal blob storage averaged 20% errors (31% peak), Cloud Storage averaged 4.8% errors across all locations, App Engine deployments hit 90% errors, and Gmail, Photos and Drive saw elevated errors.",
+  "detection": "SREs were alerted at 18:56 PDT, about 16 minutes after impact began.",
+  "fix": "SREs halted the job applying the config and manually throttled traffic so blob service tasks could restart without crashing, then planned better regional isolation, faster provisioning, config-change safeguards and load shedding.",
+  "summary": "After noticing growing metadata storage in Google's internal blob service, SREs pushed a config change to shrink it. The change unexpectedly piled load onto the blob location lookup component and set off a cascading failure. Google Cloud Storage returned elevated errors and tail latency in every region and storage class, App Engine Blobstore and deployments failed heavily, Stackdriver struggled to read historical metrics, and Gmail, Drive and Photos saw errors softened by caching. Recovery required stopping the change and manually reducing traffic."
+ },
+ {
+  "id": "mandrill-2019-postgres-xid-wraparound",
+  "company": "Mandrill",
+  "date": "2019-02-04",
+  "title": "Postgres transaction ID wraparound halts Mandrill email sending",
+  "url": "https://mailchimp.com/what-we-learned-from-the-recent-mandrill-outage/",
+  "category": [
+   "database",
+   "monitoring-gap",
+   "storage"
+  ],
+  "trigger": "A hot Postgres shard (shard4) ran out of transaction IDs because autovacuum fell behind or failed, and the database entered its protective shutdown mode.",
+  "impact": "Mandrill email sending was impaired for about 33 hours from 05:35 UTC on February 4, only 80% of queued mail went out during the outage, and app servers nearly filled their disks with queued jobs.",
+  "detection": "The first exception was buried among unrelated errors; engineers began investigating at 11:58 UTC and identified XID wraparound at 12:56 UTC.",
+  "fix": "After slow VACUUM and dump-and-restore attempts, the team truncated the huge Search and Url tables so the vacuum could finish, resumed sending at 21:36 UTC on February 5, added wraparound alerting and refunded customers.",
+  "summary": "Mandrill stores data in Postgres shards acting as one key/value store, and uneven hashing made shard4 the busiest. Its autovacuum did not keep up, the 32-bit transaction ID counter neared wraparound, and Postgres stopped accepting writes. Failed jobs piled up on app server disks while retries added load. A plain VACUUM was estimated to take up to 40 days, so after a day of attempts engineers dropped the terabyte-scale Search and Url tables, letting the vacuum finish and sending resume."
+ },
+ {
+  "id": "elastic-2019-zookeeper-treecache-storm",
+  "company": "Elastic",
+  "date": "2019-01-18",
+  "title": "ZooKeeper overload cascades into Elastic Cloud eu-west-1 proxy outage",
+  "url": "https://web.archive.org/web/2024/https://www.elastic.co/blog/elastic-cloud-january-18-2019-incident-report",
+  "category": [
+   "cascading-failure",
+   "retry-storm",
+   "cache"
+  ],
+  "trigger": "The leader node of the three-node ZooKeeper ensemble backing the coordination layer in AWS eu-west-1 hit very high CPU and began dropping client connections.",
+  "impact": "Elastic Cloud customers in AWS eu-west-1 had badly degraded cluster access for about three hours, including roughly 20 minutes (12:42 to 13:02 UTC) when every deployment in the region was unreachable.",
+  "detection": "On-call SREs were alerted to coordination-layer degradation at 09:35 UTC, about 26 minutes after the CPU spike began.",
+  "fix": "SREs scaled the proxy layer up and out, forced a ZooKeeper leader election to stabilize the ensemble, and accelerated replacing Curator TreeCache with an in-house TreeWatcher in the proxies.",
+  "summary": "In Elastic Cloud's AWS eu-west-1 region, the ZooKeeper leader ran hot and clients disconnected. The routing proxies used Apache Curator TreeCache, which on every reconnect re-reads and re-watches every znode in one huge batch, so flaky connections made proxies flood ZooKeeper, deepen its GC pauses and run out of memory themselves. Proxies degraded, customer Elasticsearch and Kibana clusters became hard to reach for about three hours, and the whole region was down for around 20 minutes before recovery."
+ },
+ {
+  "id": "amazon-2018-seoul-dns-resolver",
+  "company": "Amazon",
+  "date": "2018-11-22",
+  "title": "Config update shrinks EC2 DNS resolver fleet in Seoul region",
+  "url": "https://aws.amazon.com/message/74876-2/",
+  "category": [
+   "config",
+   "dns",
+   "capacity"
+  ],
+  "trigger": "A configuration update dropped the minimum healthy host setting for the EC2 DNS resolver fleet in AP-NORTHEAST-2, so a very low default took effect.",
+  "impact": "DNS lookups made from inside EC2 instances in the Seoul region failed for about 84 minutes, from 8:19 to 9:43 AM KST, while external DNS and network connectivity kept working.",
+  "detection": "Engineers were alerted at 8:21 AM KST, two minutes after impact started.",
+  "fix": "AWS stopped healthy hosts from being taken out of service and rebuilt resolver capacity, then audited capacity settings in all regions and began adding semantic config validation and hourly limits on capacity removal.",
+  "summary": "In the AWS Seoul region, a configuration change to the EC2 DNS resolver service lost the value defining how many healthy hosts must stay in service. The system fell back to a very low default and removed hosts, leaving too little capacity, so recursive DNS queries from EC2 instances started failing. Outside resolution and instance networking were unaffected. The cause was found within half an hour, but restoring fleet capacity took most of the 84-minute outage. Follow-ups include semantic validation and throttled scale-down."
+ },
+ {
+  "id": "basecamp-2018-int-overflow-read-only",
+  "company": "Basecamp",
+  "date": "2018-11-09",
+  "title": "Events table hits 32-bit ID limit, Basecamp 3 goes read-only",
+  "url": "https://signalvnoise.com/postmortem-on-the-read-only-outage-of-basecamp-on-november-9th-2018/",
+  "category": [
+   "integer-overflow",
+   "database"
+  ],
+  "trigger": "The primary key on the events table, which logs nearly every user action, reached the 32-bit integer maximum of 2,147,483,647.",
+  "impact": "Basecamp 3 was read-only for about five hours, from 7:21am to 12:11pm CST, so users could view content but not create or edit anything.",
+  "detection": "Not stated in the postmortem.",
+  "fix": "The team widened the table key to a 64-bit integer, and acknowledged it had underestimated how fast headroom was shrinking and missed the earlier Rails 5.1 default change as a warning.",
+  "summary": "Basecamp 3 stores almost all user activity in a single events table whose primary key was a signed 32-bit integer. When the ID sequence hit 2,147,483,647, inserts failed and nearly every write path stopped, leaving the app in a read-only state where messages, to-dos and files could be viewed but not changed. Work to widen the column was already in progress but too late. Migrating the key to bigint restored writes after about five hours."
+ },
+ {
+  "id": "duo-2018-duo1-db-queue-latency",
+  "company": "Duo",
+  "date": "2018-08-29",
+  "title": "Database connection queue buildup slows Duo DUO1 authentications",
+  "url": "https://status.duo.com/incidents/4w07bmvnt359",
+  "category": [
+   "database",
+   "capacity",
+   "queue"
+  ],
+  "trigger": "Load on the DUO1 deployment, already above acceptable levels, caused requests to queue waiting for database connections until the database could not recover.",
+  "impact": "All customer applications on DUO1 saw slow authentications, intermittent timeouts and degraded push, phone call and SMS delivery from 14:11 to 15:13 UTC.",
+  "detection": "Not stated in the postmortem.",
+  "fix": "Duo flushed application server queues, added a maximum queue size with queue-depth alerting and moved some customers off DUO1, then scheduled a doubling of database capacity and a database tier redesign.",
+  "summary": "Duo's DUO1 deployment was running hot after an earlier outage, and on August 29 rising load caused application servers to queue requests while waiting for database connections. The backlog grew to the point that the database could not catch up even after traffic eased, so authentications, push notifications, phone calls and SMS codes were slow or timed out for about an hour. Request limits did not help; flushing the queues did. Duo added queue caps and planned a capacity upgrade."
+ },
+ {
+  "id": "allegro-2018-flash-sale-overload",
+  "company": "Allegro",
+  "date": "2018-07-18",
+  "title": "PLN 1 phone promotion overloads Allegro's service cluster",
+  "url": "https://blog.allegro.tech/2018/08/postmortem-why-allegro-went-down.html",
+  "category": [
+   "capacity",
+   "cascading-failure",
+   "retry-storm"
+  ],
+  "trigger": "A noon promotion selling 100 Honor 7C phones for PLN 1 drew a traffic spike two to three times the prior day's level, much of it from bots.",
+  "impact": "The marketplace was largely unavailable for roughly 20 minutes around midday, with many users getting blank pages and some buyers having their transactions aborted.",
+  "detection": "Not stated in the postmortem.",
+  "fix": "Engineers scaled Listing and Search, added cluster resources and shut down non-critical services, then planned to fix oversized resource reservations, tune pools, retries and circuit breakers, and extend rate limiting.",
+  "summary": "A PLN 1 phone flash sale at Allegro pushed traffic to 200-300% of normal. Misconfigured services had reserved far more CPU and RAM than they used, so new instances could not be scheduled despite free cluster capacity. Thread pools, connection pools and file descriptors saturated, a circuit breaker threshold was too high to trip, and the slow autoscaler fought a watchdog that killed unresponsive Opbox frontend instances. Retries added load, rate limiters served blank pages, and the site was down about 20 minutes."
+ },
+ {
+  "id": "travisci-2018-prod-db-truncate",
+  "company": "TravisCI",
+  "date": "2018-03-13",
+  "title": "Test suite truncates production database via stale DATABASE_URL",
+  "url": "https://www.traviscistatus.com/incidents/z2b3lz2kwcfp",
+  "category": [
+   "human-error",
+   "database",
+   "security"
+  ],
+  "trigger": "A developer ran a test suite using the Database Cleaner gem in an old terminal whose DATABASE_URL still pointed at the production primary, truncating its tables.",
+  "impact": "travis-ci.com was unusable for about 5.5 hours from 12:14 UTC plus about 3.5 hours of build backlog; users saw blank profiles, some were logged in as other accounts because reused IDs collided, and about 15 minutes of data was lost.",
+  "detection": "Alerts fired right after the truncation, and customer reports of missing data at 12:45 UTC confirmed it.",
+  "fix": "Apps were taken offline and the database restored from that morning's snapshot, affected tokens were revoked, and follow-ups included revoking truncate rights, DATABASE_URL guards in spec helpers and shell prompts, and an easy follower alias.",
+  "summary": "A Travis CI developer had pointed a terminal at the production PostgreSQL primary days earlier to inspect data and later ran tests there; Database Cleaner truncated all tables. The API kept serving a nearly empty database for about 30 minutes, and because truncation does not reset sequences, new user rows got IDs belonging to old users, so some people logged in as someone else and could have seen build logs. The team restored from a snapshot, revoked sessions and notified affected customers and GitHub admins."
+ },
+ {
+  "id": "epicgames-2018-fortnite-3-4m-ccu",
+  "company": "Epic Games",
+  "date": "2018-02-04",
+  "title": "Fortnite services buckle at 3.4M concurrent players",
+  "url": "https://web.archive.org/web/20220430011642/https://www.epicgames.com/fortnite/en-US/news/postmortem-of-service-outage-at-3-4m-ccu",
+  "category": [
+   "capacity",
+   "database",
+   "load-balancer"
+  ],
+  "trigger": "Record load of 3.4 million concurrent players over February 3 and 4 exposed MongoDB write queuing, Memcached saturation and a memory leak in the XMPP cluster.",
+  "impact": "Six incidents caused partial and full Fortnite disruptions, including matchmaking failures, blocked sign-ins from 18:30 to 20:20 UTC on February 4 and friends showing offline from 22:00 UTC to 00:15 UTC.",
+  "detection": "Not stated for most incidents; the post says monitoring alerted the team quickly to AWS instance limits, and CPU sampling diagnosed thread pool starvation.",
+  "fix": "Engineers repeatedly failed over the matchmaking database, rolled back a thread pool change and switched XMPP clusters, then planned to route traffic around Nginx, add Memcached capacity, fix subnet sizing, monitor cloud limits and rearchitect MCP and messaging.",
+  "summary": "When Fortnite hit 3.4 million concurrent players, several backend systems failed. The MongoDB shard holding matchmaking data began queuing writes until it hung, forcing manual failovers several times an hour. Memcached instability tied up Nginx workers in front of the Account Service, so health checks failed and the load balancer pulled every node, blocking logins. A blue-green switch of a leaking XMPP cluster overloaded the Friends Service load balancer, whose subnet lacked spare IPs, so everyone appeared offline."
+ },
+ {
+  "id": "discord-2017-redis-failover-cascade",
+  "company": "Discord",
+  "date": "2017-10-13",
+  "title": "Redis failover and bad cache rule cascade into full Discord restart",
+  "url": "https://discordstatus.com/incidents/qk9cdgnqnhcn",
+  "category": [
+   "cascading-failure",
+   "cache",
+   "cloud-provider"
+  ],
+  "trigger": "Google Cloud live-migrated the Redis primary of a key API cluster, which wrongly dropped offline and failed over, and API instances mishandled the failover due to a known bug.",
+  "impact": "Users saw guilds appear unavailable and connection problems from about 14:01 to 16:52 PDT, and a full service restart reconnected millions of clients over roughly 20 minutes.",
+  "detection": "Real-time metrics and monitoring alerted engineers at 14:01, and user reports were escalated at 15:42.",
+  "fix": "Engineers restarted API instances, fixed the caching rule, recovered Cassandra, removed bad guilds nodes and restarted the whole service, then prioritized the Redis failover fix and added monitoring for early cascade signals.",
+  "summary": "A Google Cloud migration knocked a Redis primary offline and API servers handled the failover badly. A misconfigured edge caching rule then let clients hammer an expensive API route, overloading a Cassandra cluster, while faulty nodes in the guilds and sessions clusters ran out of memory. A mistyped reconnection setting made things worse. Guilds showed as unavailable and Discord had to restart the entire service. The postmortem says the exact path to full system failure was not determined."
+ },
+ {
+  "id": "gocardless-2017-postgres-failover",
+  "company": "GoCardless",
+  "date": "2017-10-10",
+  "title": "Pacemaker fails to promote Postgres replica after disk failure",
+  "url": "https://gocardless.com/blog/incident-review-api-and-dashboard-outage-on-10th-october/",
+  "category": [
+   "database",
+   "hardware",
+   "software-bug"
+  ],
+  "trigger": "The RAID controller on the primary Postgres node reported three disks lost at once, and the filesystem went read-only.",
+  "impact": "Every GoCardless API and Dashboard request failed for 1 hour 50 minutes, from 15:09 to 16:59 BST, with no data corruption found afterward.",
+  "detection": "Monitoring caught the complete outage at 15:09.",
+  "fix": "After automatic promotion failed, engineers manually promoted the synchronous replica and repointed apps, then rebuilt the cluster and planned app-side proxies and more failure game days.",
+  "summary": "GoCardless ran a three-node Postgres cluster managed by Pacemaker with virtual IPs. When the primary's disks failed, Pacemaker should have promoted the synchronous replica within a minute or two, but did not. The team later reproduced the failure only with a combination of non-zero default-resource-stickiness, a Backup VIP with a -INF colocation rule, and a Postgres subprocess crashing on the replica at the same moment. After an hour of trying, engineers promoted the replica manually and pointed Rails apps at it."
+ },
+ {
+  "id": "heroku-2017-eu-router-stale-state",
+  "company": "Heroku",
+  "date": "2017-04-03",
+  "title": "Misconfigured instance after EU maintenance causes H10 routing errors",
+  "url": "https://status.heroku.com/api/v4/incidents/1091",
+  "category": [
+   "config",
+   "human-error",
+   "monitoring-gap"
+  ],
+  "trigger": "During scheduled EU maintenance, a remote reconfiguration step silently hit a new security timeout, leaving one instance misconfigured so the routing fleet could miss dyno start and stop updates.",
+  "impact": "From April 3 17:20 UTC to April 6 10:00 UTC, about 12% of EU apps (only those that created new releases) saw H10, H19, H21 and H26 errors and became unreachable at times, affecting under 1% of EU requests.",
+  "detection": "Engineers noticed elevated H10 errors, but a 30-minute router connection cycling window made symptoms move between apps and led to false leads.",
+  "fix": "Engineers repeatedly flushed routing caches to limit impact, eventually traced the stale routing data to one instance via internal logs and corrected its config, and planned better monitoring, an H99 error for this case, and timeout-aware automation.",
+  "summary": "A trusted automation tool used during Heroku's EU database maintenance timed out on one instance because of a newly added strict timeout for admin sessions, and the tool did not surface the failure. The misconfigured instance fed stale state to the routing layer, so web dynos looked crashed and apps that deployed or changed config vars got H10 App Crashed and related errors. Because routers reconnected every 30 minutes, errors hopped between apps, making diagnosis take about three days."
+ },
+ {
+  "id": "discord-2017-presence-split-brain",
+  "company": "Discord",
+  "date": "2017-03-20",
+  "title": "Presence cluster split-brain stalls Discord connections",
+  "url": "https://discordstatus.com/incidents/dj3l6lw926kl",
+  "category": [
+   "cascading-failure",
+   "cloud-provider",
+   "software-bug"
+  ],
+  "trigger": "A presence service node on Google Cloud suffered CPU soft lockups, and a known but undeployed bug made the presence cluster split-brain when it lost that node.",
+  "impact": "About a third of user connections stalled and stopped receiving messages and events, direct messages went undelivered for a time and message sending was disabled globally at points, across two episodes from about 11:38 until the afternoon.",
+  "detection": "Engineers noticed service degradation at 11:39, one minute after impact began.",
+  "fix": "Discord patched the API to limit connections and sending, restarted the whole service, rebooted the faulty VM onto another host, deployed the split-brain fix overnight and added a cap on in-flight session-to-presence connections.",
+  "summary": "Discord's presence service, which tracks who is online, lost a node to hypervisor-level CPU soft lockups on Google Cloud. A known bug caused the presence cluster to split-brain, and session servers holding client websockets all tried to reconnect at once, overloading it. Without presence data, sessions stalled and buffered events in memory until many ran out of memory and crashed. A third of users stopped receiving messages, and the failure recurred later in the day before the VM was moved."
+ },
+ {
+  "id": "square-2017-multipass-redis-retries",
+  "company": "Square",
+  "date": "2017-03-16",
+  "title": "Unbounded Redis transaction retries overload Square auth service",
+  "url": "https://web.archive.org/web/20210818034431/https://medium.com/square-corner-blog/incident-summary-2017-03-16-2f65be39297",
+  "category": [
+   "retry-storm",
+   "software-bug",
+   "cascading-failure"
+  ],
+  "trigger": "A deploy of the Roster identity service in one datacenter coincided with the Multipass authentication service retrying Redis optimistic transactions up to 500 times with no backoff, saturating its Redis.",
+  "impact": "Most Square products, including payments, Point of Sale, Dashboard, Appointments and Payroll, were down from 10:02 to 11:55 a.m. PDT, and SMS 2FA codes failed until 1:12 p.m.",
+  "detection": "Multipass began reporting timeouts to on-call at 10:02, and external monitoring reported api.squareup.com down at 10:08.",
+  "fix": "Engineers deployed a Multipass change to cut Redis transaction retries and relaxed cgroup limits for critical services; follow-ups audit retry logic and cgroup limits, add a Redis runbook, and review SMS capacity.",
+  "summary": "Square's merchant authentication service, Multipass, became unrecoverably overloaded right after a Roster deployment. Rolling back Roster and restarting Multipass did not help. Redis SLOWLOG and MONITOR pointed to a code path retrying optimistic transactions up to 500 times without backoff, a feedback loop that maxed out Redis. A fix reducing retries restored payments at 11:48. A burst of logins then overwhelmed outbound SMS for two-factor codes until the vendor rebalanced sending numbers."
+ },
+ {
+  "id": "aws-2017-s3-us-east-1-typo",
+  "company": "Amazon",
+  "date": "2017-02-28",
+  "title": "Mistyped playbook command takes down S3 in us-east-1",
+  "url": "https://aws.amazon.com/message/41926/",
+  "category": [
+   "human-error",
+   "storage",
+   "cascading-failure"
+  ],
+  "trigger": "While debugging slow S3 billing, an engineer ran a playbook command with a wrong input that removed far more servers than intended, including capacity for the index and placement subsystems.",
+  "impact": "S3 in US-EAST-1 was unavailable or impaired for about 4 hours 17 minutes, which also broke the S3 console, new EC2 launches, EBS volumes restoring from snapshots, Lambda and the AWS Service Health Dashboard.",
+  "detection": "Not stated in the postmortem.",
+  "fix": "AWS fully restarted the index subsystem and then the placement subsystem, and afterwards slowed the removal tool, blocked removals below minimum capacity, audited other tools, and accelerated partitioning into smaller cells.",
+  "summary": "An authorized S3 engineer mistyped a parameter in a capacity-removal command, pulling servers that backed the index and placement subsystems for the whole US-EAST-1 region. Both had to be fully restarted, and their metadata integrity checks took far longer than expected because the region had grown massively since its last full restart. GET, LIST, PUT and DELETE requests all failed during the restarts. AWS could not even update its own status dashboard, which depended on S3, so it posted updates on Twitter."
+ },
+ {
+  "id": "cloudflare-2017-cloudbleed-parser-leak",
+  "company": "Cloudflare",
+  "date": "2017-02-18",
+  "title": "HTML parser buffer overrun leaks memory into responses (Cloudbleed)",
+  "url": "https://blog.cloudflare.com/incident-report-on-memory-leak-caused-by-cloudflare-parser-bug/",
+  "category": [
+   "security",
+   "software-bug"
+  ],
+  "trigger": "A pointer overrun in Cloudflare's Ragel-based HTML parser, exposed when the new cf-html parser changed buffer handling, caused pages ending in an unfinished tag to read past the buffer end.",
+  "impact": "About 1 in 3.3 million HTTP requests could have leaked uninitialized memory such as cookies, headers, POST bodies and tokens between September 2016 and February 18, 2017, with 770 URIs on 161 domains cached by search engines.",
+  "detection": "Tavis Ormandy of Google Project Zero reported corrupted HTTP responses to Cloudflare.",
+  "fix": "Cloudflare disabled Email Obfuscation, Automatic HTTPS Rewrites and Server-Side Excludes within hours, shipped a bounds-check fix globally, purged search engine caches, and added pointer checks, fuzzing and code review of the generated parser.",
+  "summary": "Three Cloudflare features that rewrite HTML, Email Obfuscation, Server-Side Excludes and Automatic HTTPS Rewrites, shared a parser chain whose generated code checked buffer end with equality instead of greater-or-equal. When malformed pages ended mid-tag, the parser ran past the buffer and wrote neighbouring process memory into responses, exposing other sites' cookies, API keys and OAuth tokens. Some leaked pages were cached by search engines. Cloudflare killed the features within hours, purged caches and found no evidence of malicious use."
+ },
+ {
+  "id": "gitlab-2017-database-deletion",
+  "company": "GitLab",
+  "date": "2017-01-31",
+  "title": "Engineer wipes GitLab.com primary database during replica rebuild",
+  "url": "https://about.gitlab.com/2017/02/10/postmortem-of-database-outage-of-january-31/",
+  "category": [
+   "database",
+   "human-error",
+   "data-loss"
+  ],
+  "trigger": "While rebuilding a PostgreSQL secondary that had lost replication under heavy load, an engineer ran the data-directory wipe on the primary host instead of the secondary.",
+  "impact": "GitLab.com was unavailable for about 18 hours and lost roughly six hours of database records, including about 5,000 projects, 5,000 comments and 700 user accounts; Git repositories and wikis were not lost.",
+  "detection": "The engineer realized within seconds that the wrong host was being wiped, after about 300 GB was already gone.",
+  "fix": "The team restored from an LVM snapshot taken about six hours earlier, copying it over slow disks for roughly 18 hours, then added backup monitoring, automated restore testing, and an owner for data durability.",
+  "summary": "A spike in database load pushed GitLab.com's PostgreSQL secondary so far behind that WAL segments it needed were gone, forcing a manual rebuild. During that work an engineer deleted the primary's data directory by mistake. Recovery then exposed silently broken safety nets: pg_dump backups had been failing because of a PostgreSQL version mismatch, failure emails were rejected by DMARC, and Azure disk snapshots were off. A staging LVM snapshot saved most data, but about six hours of issues, comments, projects and accounts were lost."
+ },
+ {
+  "id": "google-2017-gce-canary-timeout",
+  "company": "Google",
+  "date": "2017-01-30",
+  "title": "Stuck network canary leaves new GCE VMs unreachable",
+  "url": "https://status.cloud.google.com/incident/compute/17003#5660850647990272",
+  "category": [
+   "network",
+   "load-balancer",
+   "config"
+  ],
+  "trigger": "A big batch of changes to a seldom-touched load balancer setup hit an inefficient code path, so the canary test for public address changes timed out.",
+  "impact": "New or live-migrated Compute Engine instances, new Cloud VPN tunnels and new network load balancers had no public IP reachability for about 2 hours 8 minutes, while existing resources were fine.",
+  "detection": "Not stated in the postmortem; the first public notice went out at 11:13 Pacific and new metrics and alerting were listed as a follow-up.",
+  "fix": "Engineers restarted the jobs that program the load balancers so the queue drained in a batch avoiding the slow path, rolled out zone by zone, and planned a longer canary timeout, code fixes, broader tests, and a move to decentralized routing.",
+  "summary": "Google Compute Engine sends inbound traffic through shared layer 2 load balancers whose address changes are canaried before global rollout. A large set of edits to an uncommon config made the canary time out, and that blocked every queued public address change behind it. As a result, VMs created or live-migrated during the window, along with new VPN tunnels and network load balancers, could not be reached via public IPs and could not send outbound traffic. Europe-west1 was the last region to recover."
+ },
+ {
+  "id": "skyliner-2017-memoize-heap-exhaustion",
+  "company": "Skyliner",
+  "date": "2017-01-19",
+  "title": "Unbounded memoize cache in AWS library exhausts JVM heap twice",
+  "url": "https://web.archive.org/web/2018/https://blog.skyliner.io/post-mortem-outages-on-1-19-17-and-1-23-17-3f65cc6f693e",
+  "category": [
+   "software-bug",
+   "third-party"
+  ],
+  "trigger": "An unbounded, never-evicting memoize cache in the Amazonica library kept piling up AWS SDK client objects for short-lived credentials until the JVM heap ran out.",
+  "impact": "Customers could not deploy through Skyliner for 27 minutes on January 19 and 7 minutes on January 23, 2017, with their own infrastructure unaffected.",
+  "detection": "External monitoring alerted on the first outage; on the second, automated exception reports showed heap exhaustion before the monitoring alarm fired.",
+  "fix": "Instances were restarted, then a heap dump located the leak and a patch was deployed on January 24; follow-ups add latency and GC-failure alerting and PagerDuty paging.",
+  "summary": "Skyliner, a multi-tenant deploy service, uses brief AWS credentials across 14 regions. A clojure.core/memoize cache inside Amazonica stored a client object per credential set and never evicted, so hundreds of thousands of objects built up until garbage collection spiraled and requests timed out. The first outage lacked forensic data; the team then enabled GC logging, fixed jmap tooling, enlarged disks to capture a full heap dump, found the cache, patched it and reported it upstream."
+ },
+ {
+  "id": "mailgun-2017-mongodb-secondary-overload",
+  "company": "Mailgun",
+  "date": "2017-01-12",
+  "title": "MongoDB connection surge and botched rollback cause Mailgun errors",
+  "url": "https://status.mailgun.com/incidents/p9nxxql8g9rh",
+  "category": [
+   "database",
+   "config",
+   "human-error"
+  ],
+  "trigger": "MongoDB configuration changes made the previous day were followed by a steady rise in connections that overloaded the secondaries serving most reads.",
+  "impact": "In one region the Control Panel, API, SMTP, website and click and open tracking saw timeouts and errors for about six and a half hours, with the API at roughly 75% of normal throughput for part of it.",
+  "detection": "Alerts fired at 14:09 UTC on the click and open tracking services and the primary MongoDB clusters.",
+  "fix": "Engineers rolled back the config, resized MongoDB servers and added server and per-service connection limits, then ran tracking in two regions and permanently enlarged the primary cluster.",
+  "summary": "In one Mailgun region, MongoDB secondaries handling most reads became overloaded after a gradual connection increase that followed configuration changes made the day before. While rolling those changes back, a human error pointed API and SMTP reads at the primary, which could not cope, so error rates climbed across the API, SMTP and website. Engineers resized the cluster, imposed connection caps and restored secondary reads, and the region was healthy again at 20:35 UTC."
+ },
+ {
+  "id": "cloudflare-2017-leap-second-rrdns",
+  "company": "Cloudflare",
+  "date": "2017-01-01",
+  "title": "Leap second makes Go DNS server panic on negative duration",
+  "url": "https://blog.cloudflare.com/how-and-why-the-leap-second-affected-cloudflare-dns/",
+  "category": [
+   "time",
+   "dns",
+   "software-bug"
+  ],
+  "trigger": "The leap second at midnight UTC on New Year's Day 2017 moved the wall clock backwards on Cloudflare's RRDNS servers.",
+  "impact": "For up to about 6 hours 45 minutes, CNAME lookups failed on some machines, peaking at around 0.2% of DNS queries and under 1% of HTTP requests returning errors.",
+  "detection": "The issue was escalated to engineers at 00:10 UTC and confirmed at 00:34 UTC.",
+  "fix": "A patch that rejects negative timings and resets upstream performance data was canaried and rolled out globally within about two hours, servers were restarted, and Cloudflare began reviewing all code that measures time intervals.",
+  "summary": "Cloudflare's Go-based authoritative DNS server, RRDNS, timed upstream resolvers by subtracting two time.Now() readings. Because that clock was not monotonic, the leap second produced negative durations that were smoothed into stored averages. When weighted server selection passed a negative value to rand.Int63n, the function panicked, breaking CNAME resolution for customers who used CNAME records. Only a small number of machines across 102 data centers were hit, and the most affected ones were patched within about 90 minutes."
+ },
+ {
+  "id": "buildkite-2016-db-downgrade-healthcheck",
+  "company": "Buildkite",
+  "date": "2016-08-22",
+  "title": "Database downgrade and DB-coupled health checks take down Buildkite",
+  "url": "https://buildkite.com/blog/outage-post-mortem-for-august-22nd",
+  "category": [
+   "database",
+   "capacity",
+   "load-balancer"
+  ],
+  "trigger": "To save AWS costs, the production RDS PostgreSQL instance was downsized without load testing, and its CPU maxed out under US peak traffic.",
+  "impact": "The Buildkite dashboard, login, build logs and docs were unavailable or very slow for about 5 hours 50 minutes, although builds kept running and PR statuses still updated.",
+  "detection": "The paging alert never reached anyone because of misconfigured PagerDuty settings and silenced phones; the team learned of the outage from customer emails, tweets and Slack after waking up.",
+  "fix": "The team moved servers between load balancers, upgraded the database again, reverted to per-host pgbouncer and switched Auto Scaling to EC2 health checks, then planned load testing, simpler health checks, alert testing and storing the deploy revision in S3.",
+  "summary": "Buildkite shrank its RDS PostgreSQL instance and added a central pgbouncer without load testing. Under peak load database CPU hit 100%, and because web health checks queried the database, load balancers pulled every server. Auto Scaling replacements booted from a stale AMI pointing at a retired shard, failed checks too, and churned until EC2 request limits were hit. With on-call paging misconfigured, nobody responded for hours; users could not log in or view build logs for nearly six hours."
+ },
+ {
+  "id": "reddit-2016-autoscaler-zookeeper-migration",
+  "company": "Reddit",
+  "date": "2016-08-11",
+  "title": "Puppet re-enables autoscaler mid-ZooKeeper migration, killing servers",
+  "url": "https://web.archive.org/web/20221029203405/https://www.reddit.com/r/announcements/comments/4y0m56/why_reddit_was_down_on_aug_11/",
+  "category": [
+   "config",
+   "human-error",
+   "cascading-failure"
+  ],
+  "trigger": "During a ZooKeeper migration, the configuration management system restored the manually stopped autoscaler, which read half-migrated data and terminated application and cache servers.",
+  "impact": "Reddit and its API were down on every official platform from 15:24 to 16:52 PDT and degraded until 18:19 PDT, about 3 hours in total.",
+  "detection": "Engineers saw servers being shut down at 15:24 PDT, roughly a minute after the autoscaler came back on.",
+  "fix": "The site was put in down mode while servers were rebuilt, then recovered as empty caches warmed; follow-ups include limiting how many servers the autoscaler may terminate at once.",
+  "summary": "Reddit stopped its autoscaler by hand while moving ZooKeeper, which tracks server health, to new AWS infrastructure. Puppet saw the manual change as drift and turned the autoscaler back on. Seeing only half-moved ZooKeeper state, it shut down a large share of app and cache servers within 16 seconds, taking the site and API offline. After servers were restored, cold caches pushed heavy load onto the databases, so latency stayed high for another 1.5 hours."
+ },
+ {
+  "id": "tarsnap-2016-log-fills-filesystem",
+  "company": "Tarsnap",
+  "date": "2016-07-24",
+  "title": "Runaway free-block log fills disk after repeated S3 write failures",
+  "url": "https://mail.tarsnap.com/tarsnap-announce/msg00035.html",
+  "category": [
+   "storage",
+   "third-party",
+   "monitoring-gap"
+  ],
+  "trigger": "A background job that frees unreferenced blocks kept aborting on S3 write failures and restarting, so its on-disk change log grew until it filled the filesystem.",
+  "impact": "For 85 minutes (about 10:15 to 11:40 UTC) no Tarsnap archives could be created or retrieved, in-progress backups failed, and no data was lost.",
+  "detection": "Monitoring sent a text and phone call within minutes, but the operator only woke on a second call over an hour later.",
+  "fix": "The runaway log was deleted and the server restarted; follow-ups include hourly repeat alerts, planned internal metrics like free disk space, and more S3 failure logging.",
+  "summary": "From late June, retried Amazon S3 requests were failing far more often, with InternalError responses after about 4.88 seconds. Tarsnap's block-freeing job logged every change to disk, aborted 142 times in a week because of these failures, and restarted each time. The log eventually filled the filesystem, other writes failed, and the server code shut itself down as designed. The operator missed the first alerts, then removed the log and restarted service, and credited affected users two days of storage."
+ },
+ {
+  "id": "stackexchange-2016-regex-backtracking",
+  "company": "Stack Exchange",
+  "date": "2016-07-20",
+  "title": "Whitespace-trim regex on a malformed post takes Stack Overflow down",
+  "url": "https://web.archive.org/web/20160720200842/https://stackstatus.net/post/147710624694/outage-postmortem-july-20-2016",
+  "category": [
+   "software-bug",
+   "load-balancer"
+  ],
+  "trigger": "A post with about 20,000 consecutive whitespace characters made a trim regular expression run in quadratic time on every home page view.",
+  "impact": "Stack Overflow was unavailable for 34 minutes starting 14:44 UTC on July 20, 2016.",
+  "detection": "Not stated in the postmortem.",
+  "fix": "The regex was replaced with a substring function; follow-ups included auditing regexes and post validation, a way to disable the load balancer health check, and an outage checklist.",
+  "summary": "A malformed Stack Overflow post on the home page contained roughly 20,000 spaces that were not at the end of a line. The regular expression used to trim Unicode whitespace backtracked through about 200 million character checks per render, an O(n squared) blowup, pinning web server CPU. The home page also served as the load balancer health check, so every server was pulled from rotation and the whole site went down. Diagnosis took 10 minutes, the fix 14, and rollout 10."
+ },
+ {
+  "id": "sentry-2016-s3-backup-acl",
+  "company": "Sentry",
+  "date": "2016-06-12",
+  "title": "Misconfigured S3 ACL exposes database backup bucket",
+  "url": "https://web.archive.org/web/20240609150644/https://blog.sentry.io/security-incident-june-12-2016/",
+  "category": [
+   "security",
+   "config",
+   "cloud-provider"
+  ],
+  "trigger": "Two conflicting S3 bucket policies meant the bucket holding partial database backups was readable and writable by any authenticated AWS account that knew its name.",
+  "impact": "Backups containing user accounts, bcrypt password hashes, API tokens and integration settings were exposed, users had to re-authenticate SSO and had passwords force-expired, but the investigation found no evidence of third-party access.",
+  "detection": "An external security report arrived at 10:13 PDT on 12 June 2016 and was confirmed seven minutes later.",
+  "fix": "Sentry revoked bucket credentials, rotated SSO provider secrets, moved to unguessable bucket names with correct ACLs and pre-encrypted backups, and planned MFA, encrypted tokens, OAuth integrations and a HackerOne bounty program.",
+  "summary": "A researcher told Sentry that one of its S3 buckets had wrong permissions. The bucket stored partial database backups, and conflicting ACL policies let any logged-in AWS user read or modify it if they guessed the name. Sentry locked the bucket within minutes, rotated Google and GitHub SSO credentials, forced password resets, alerted integration partners such as Atlassian because JIRA plugin passwords were stored in plaintext, and began encrypting backups before upload. Two days later it confirmed no outside access had occurred."
+ },
+ {
+  "id": "amazon-2016-sydney-drups-power",
+  "company": "Amazon",
+  "date": "2016-06-04",
+  "title": "Sydney storm voltage sag drains DRUPS and drops an AZ",
+  "url": "https://aws.amazon.com/message/4372T8/",
+  "category": [
+   "power",
+   "hardware",
+   "software-bug"
+  ],
+  "trigger": "A storm-related substation failure produced a long voltage sag, and breakers isolating the DRUPS units opened too slowly, so their stored energy drained into the grid before generators took over.",
+  "impact": "A significant number of EC2 instances and EBS volumes in one Sydney Availability Zone lost power from 10:25 PM PDT; over 80% returned by 1:00 AM, nearly all by 8:00 AM, and under 0.01% of EBS volumes were unrecoverable.",
+  "detection": "Not stated in the postmortem.",
+  "fix": "Technicians manually re-engaged power at 11:46 PM PDT and engineers recovered hosts and shifted API traffic away, with follow-ups for faster breakers, a fix for a latent recovery bug, and more resilient launch APIs.",
+  "summary": "A severe weather event cut a regional substation feeding several AWS Sydney facilities. In one, the utility fault was a sustained voltage sag rather than a clean loss, and slow breakers let DRUPS energy flow back to the grid, so instances lost both primary and backup power. Internal DNS errors lingered, a latent bug in instance management slowed recovery, launch and Auto Scaling calls failed until traffic moved, and a few EBS volumes were lost when both replicas' drives failed."
+ },
+ {
+  "id": "google-2016-gce-ip-block-withdrawal",
+  "company": "Google",
+  "date": "2016-04-11",
+  "title": "Config bug withdraws all GCE IP blocks from BGP",
+  "url": "https://status.cloud.google.com/incident/compute/16007",
+  "category": [
+   "config",
+   "bgp",
+   "software-bug"
+  ],
+  "trigger": "Removing an unused GCE IP block left two config files inconsistent, and the management software responded by dropping every GCE IP block from the new configuration.",
+  "impact": "Inbound internet traffic to Compute Engine saw over 95% loss for 18 minutes until 19:27 PT, also breaking Cloud VPN and L3 network load balancers; Google offered service credits.",
+  "detection": "Internal monitoring alerted on an asia-east1 VPN failure and rising latency, then dozens of alerts fired once traffic loss became visible.",
+  "fix": "Engineers reverted recent network config changes and froze changes, and planned announcement comparisons, semantic config checks and monitoring for lost redundancy.",
+  "summary": "Google engineers removed an unused IP block from Compute Engine's network configuration. A timing issue made two config files disagree, and a bug in the management software reacted by stripping all GCE IP blocks rather than falling back to the last good config. A canary flagged the result as unsafe, but a second bug stopped that verdict reaching the rollout system, so sites progressively stopped announcing GCE prefixes over BGP. Inbound traffic to VMs, VPNs and network load balancers failed for 18 minutes."
+ },
+ {
+  "id": "circleci-2015-build-queue-db-overload",
+  "company": "CircleCI",
+  "date": "2015-10-14",
+  "title": "Database overload backs up Linux build queue for 17 hours",
+  "url": "https://status.circleci.com/incidents/8rklh3qqckp1",
+  "category": [
+   "database",
+   "queue",
+   "capacity"
+  ],
+  "trigger": "Rising demand pushed CircleCI's primary database into overload, with queued operations it could not catch up on; no single definitive trigger was identified.",
+  "impact": "Linux builds were delayed or blocked for roughly 17 hours, the site was down for about an hour, all builds were cancelled at one point, and some builds were left in a broken state.",
+  "detection": "Operations staff saw that usual capacity tools were not shrinking the backlog and escalated to engineering; customer reports after a premature all-clear prompted further work.",
+  "fix": "The team rolled back recent changes, failed over the database primary, added capacity, force-promoted builds to runnable, fixed throttle logic, and planned a rebuilt queue model plus further database isolation.",
+  "summary": "On October 14, 2015 CircleCI's Linux build queue stopped draining as the primary database became overloaded. Builds could not move to the runnable state, and scheduling throttles kept backing off even as conditions normalised, which slowed recovery. Engineers failed over the database, cancelled everything in the queue, and pushed builds through manually and then with batch tooling, leaving some builds inconsistent. An early all-clear proved premature. The company noted a similar load incident in July of that year."
+ },
+ {
+  "id": "aws-2015-dynamodb-metadata-overload",
+  "company": "Amazon",
+  "date": "2015-09-20",
+  "title": "DynamoDB metadata service overload cascades through US East",
+  "url": "https://aws.amazon.com/message/5467D2/",
+  "category": [
+   "database",
+   "retry-storm",
+   "capacity"
+  ],
+  "trigger": "A short network disruption made some DynamoDB storage servers re-request their partition membership from the metadata service at the same moment.",
+  "impact": "DynamoDB request errors in US East reached about 55% for several hours, and dependent services including SQS, EC2 Auto Scaling, CloudWatch metrics and Console sign-in degraded, with a small residual error rate lasting into the following Monday.",
+  "detection": "Not stated for the initial spike; the lingering Monday error rate was recognized late, after customers opened support cases.",
+  "fix": "Engineers paused metadata requests to stop the retry load, added metadata service capacity and let storage servers rejoin, then planned membership-size monitoring, longer processing allowances and splitting the metadata service into multiple instances.",
+  "summary": "After a brief network blip, DynamoDB storage servers in US East asked the metadata service for their membership lists. Those lists had grown large as Global Secondary Index adoption added partitions, so replies exceeded the servers' time limits and the servers dropped out of service. Their retries overloaded the metadata service, causing even healthy servers to fail renewals. DynamoDB error rates hit about 55%, breaking SQS, Auto Scaling, CloudWatch and Console logins until capacity was added and requests resumed."
+ },
+ {
+  "id": "google-2015-lightning-persistent-disk",
+  "company": "Google",
+  "date": "2015-08-13",
+  "title": "Lightning strikes cause Persistent Disk errors and data loss",
+  "url": "https://status.cloud.google.com/incident/compute/15056#5719570367119360",
+  "category": [
+   "power",
+   "storage",
+   "data-loss"
+  ],
+  "trigger": "Four consecutive lightning strikes on the local power grid briefly cut power to storage systems backing Persistent Disk in zone europe-west1-b.",
+  "impact": "About 5% of Standard Persistent Disks in the zone saw at least one failed read or write over several days, and a tiny fraction of disk space (under one millionth of a percent) suffered permanent data loss.",
+  "detection": "Not stated in the postmortem; the first public notice reported customers seeing read errors.",
+  "fix": "Engineers ran manual data recovery and told customers to restore from snapshots, with follow-ups to move to storage hardware more resilient to power loss and to add further durability schemes for Persistent Disk.",
+  "summary": "Repeated lightning strikes near a Google Compute Engine data center in europe-west1-b caused short power interruptions to the storage layer. Power came back automatically, but recently written blocks held on storage vulnerable to repeated battery drain were not all safely committed. Standard Persistent Disks returned I/O errors and snapshot operations failed for days, and a very small amount of data was lost for good. SSD disks, Local SSDs and snapshots were not affected, and Google urged multi-zone designs."
+ },
+ {
+  "id": "travisci-2015-vsphere-janitor-vm-leak",
+  "company": "TravisCI",
+  "date": "2015-08-04",
+  "title": "Expired vSphere password lets OS X build VMs leak for days",
+  "url": "https://www.traviscistatus.com/incidents/khzk8bg4p9sy",
+  "category": [
+   "capacity",
+   "monitoring-gap",
+   "config"
+  ],
+  "trigger": "vSphere credentials were rotated on 31 July under a 90-day password policy but the vsphere-janitor config was not updated, so finished build VMs were never deleted.",
+  "impact": "OS X builds on travis-ci.com and .org were queued, paused and run at reduced capacity from 4 August 17:45 UTC until resolution on 7 August, with over 6,000 VMs on a cluster expecting about 200 peak.",
+  "detection": "Operators noticed unusually high build re-queue rates and power-on errors in VM creation logs; alerts stayed silent because the janitor kept reporting its last known VM count.",
+  "fix": "The team updated janitor credentials, ran an aggressive cleanup that deleted 6,326 leaked VMs, replaced vSphere CPU reservations with VM sizing, load tested, and planned better VM lifecycle metrics.",
+  "summary": "Travis CI runs OS X builds as VMs on a vSphere cluster hosted at MacStadium, and a vsphere-janitor service deletes finished VMs. After a scheduled password rotation, the janitor could no longer authenticate and silently stopped cleaning up, while its metric froze at a normal-looking value. Over four days thousands of VMs leaked until new builds failed to power on. Cleanup exposed a second problem: CPU reservation settings stopped the cluster from booting its configured maximum of VMs under backlog load."
+ },
+ {
+  "id": "sentry-2015-postgres-xid-wraparound",
+  "company": "Sentry",
+  "date": "2015-07-20",
+  "title": "Postgres transaction ID wraparound protection halts Sentry writes",
+  "url": "https://web.archive.org/web/20250203065759/https://blog.sentry.io/transaction-id-wraparound-in-postgres/",
+  "category": [
+   "database",
+   "config"
+  ],
+  "trigger": "Autovacuum did not keep pace on the write-heavy primary database, so Postgres hit its transaction ID (XID) wraparound safeguard and refused writes.",
+  "impact": "Hosted Sentry was unavailable for much of a business day in the US, ran read-only from replicas, and the queued event backlog was discarded.",
+  "detection": "Not stated in the postmortem.",
+  "fix": "After roughly three hours of autovacuum left one huge event-mapping table unfinished, the team truncated it and service returned in about five minutes; follow-ups included more memory and vacuum workers, retuned autovacuum settings, and plans to split relations across databases.",
+  "summary": "Sentry's main Postgres database, with very large and heavily written tables, reached the transaction ID wraparound limit, where Postgres stops accepting commands to avoid reusing XIDs. The site ran read-only off replicas while the team let in-progress autovacuums finish on newly provisioned hardware, and dropped the event backlog to protect Redis buffers. One very large table that maps events to rollups still blocked recovery, so it was truncated. Settings such as autovacuum_freeze_max_age and vacuum delays were changed afterward."
+ },
+ {
+  "id": "circleci-2015-build-queue-db-contention",
+  "company": "CircleCI",
+  "date": "2015-07-07",
+  "title": "GitHub hook surge overwhelms CircleCI build queue database",
+  "url": "https://circleci.statuspage.io/incidents/hr0mm9xmm3x6",
+  "category": [
+   "database",
+   "queue",
+   "capacity"
+  ],
+  "trigger": "GitHub push hooks paused and then resumed at several times normal peak volume during US daytime, flooding the database-backed build queue with inserts.",
+  "impact": "The build queue nearly stopped, dequeuing about one build per minute instead of many per second, so builds across the platform were delayed or cancelled until stuck work was cleared the next day.",
+  "detection": "Engineers saw the familiar pattern of missing GitHub hooks, then a growing queue while build throughput stayed far below capacity.",
+  "fix": "After throttling and a failed database failover, the team live-patched slow queries, drained the queues with scripts and moved to larger database hardware, with unspecified architectural and capacity work to follow.",
+  "summary": "CircleCI's build queue lived in its main shared database. When GitHub hooks came back in a burst far above normal peak, rapid build inserts created heavy write contention and some queries with poor plans degraded as the queue grew, taking the database from healthy to unresponsive in about two minutes. Throttling at the load balancer briefly made the site unreachable, and promoting a secondary failed under the same load. Recovery required live REPL patches, queue draining and new database hardware."
+ },
+ {
+  "id": "stackexchange-2015-stackegg-haproxy-sessions",
+  "company": "Stack Exchange",
+  "date": "2015-03-31",
+  "title": "StackEgg April Fools game exhausts HAProxy session limit",
+  "url": "https://web.archive.org/web/20150404235419/https://stackstatus.net/post/115305251014/outage-postmortem-march-31-2015",
+  "category": [
+   "load-balancer",
+   "capacity",
+   "deploy"
+  ],
+  "trigger": "Turning on the StackEgg game for all logged-in users added an extra AJAX request per page, and with 15-second HTTP Keep-Alive this pushed concurrent sessions past the HAProxy cap of 40,000.",
+  "impact": "Stack Overflow had a 6-minute public outage plus a period of general slowness across the network.",
+  "detection": "Site slowness was observed at 11:32 UTC, SREs spotted load balancer traffic bouncing at 11:55, and Pingdom later reported Stack Overflow offline.",
+  "fix": "The team raised the HAProxy session limit via Puppet, embedded game data in pages and leaned on websockets, briefly disabled StackEgg, and the next day cut Keep-Alive from 15s to 5s.",
+  "summary": "Stack Exchange's StackEgg April Fools game generated up to 3,444 extra requests per second. Because HAProxy kept connections open for 15 seconds, this implied around 51,660 more concurrent sessions, against a frontend cap of 40,000. New TCP connections queued and load oscillated, causing slowness and a 6-minute Stack Overflow outage. Engineers raised the cap, reduced the game's requests, and the following morning shortened Keep-Alive, dropping sessions from about 59,500 to roughly 19,000."
+ },
+ {
+  "id": "microsoft-2014-azure-storage-infinite-loop",
+  "company": "Microsoft",
+  "date": "2014-11-19",
+  "title": "Azure Storage config pushed everywhere at once hits Blob infinite loop",
+  "url": "https://azure.microsoft.com/en-us/blog/update-on-azure-storage-service-interruption/",
+  "category": [
+   "deploy",
+   "config",
+   "software-bug"
+  ],
+  "trigger": "A storage performance config change, tested for weeks on some Table front ends, was rolled to most production regions at once and exposed a bug that put Blob front ends into an infinite loop.",
+  "impact": "From 00:51 UTC on 19 November 2014, Blob, Table and Queue customers in 12 regions saw timeouts and connection failures until about 11:45 UTC, with dependent services such as VMs, Websites, Service Bus and SQL also affected and a subset hit until 22 November.",
+  "detection": "The bug surfaced during the rollout after the change had already reached many regions; the status dashboard itself was impaired for about three hours.",
+  "fix": "The change was reverted and storage front ends were restarted, and Microsoft committed to enforcing incremental batch deployment in tooling, fixing the loop bug and hardening the Service Health Dashboard.",
+  "summary": "Azure Storage shipped a config change to cut CPU on Table front ends. Contrary to standard practice it went to nearly all regions in a short window rather than in batches, and it triggered an infinite loop in Blob front ends so they stopped taking traffic. Reverting the config did not help until front ends were restarted. Storage outages cascaded to Virtual Machines, which lost RDP and SSH access, plus Websites, Service Bus, HDInsight and others, while the status dashboard was also down."
+ },
+ {
+  "id": "slack-2014-reconnect-storm",
+  "company": "Slack",
+  "date": "2014-10-14",
+  "title": "Bad deploys trigger mass reconnects that overwhelm Slack databases",
+  "url": "https://web.archive.org/web/20181208123409/https://slackhq.com/this-was-not-normal-really",
+  "category": [
+   "deploy",
+   "retry-storm",
+   "database"
+  ],
+  "trigger": "An automation fault during routine maintenance pushed corrupted code to web servers and job queue workers, and a day later a buggy build of the message servers made for the SSLv3/POODLE change caused a heavily used server to crash.",
+  "impact": "All users were locked out for 14 minutes and 13% then had poor or no service for up to two hours, with 5% disconnected that long; a second incident the next day affected a subset of users for about an hour.",
+  "detection": "The bad deploy was spotted internally right away; detection of the second incident is not stated.",
+  "fix": "The bad code was fixed within 14 minutes and the affected database cluster recovered; Slack added database capacity and optimized how clients reconnect.",
+  "summary": "Two separate October 2014 incidents disconnected large groups of Slack users, and both were made worse by reconnection surges. Corrupted code from a maintenance automation fault knocked 13% of users offline, and their simultaneous reconnects exhausted database capacity, so the failures cascaded. The next day, a message server build for disabling SSLv3 contained a crash bug, and a client change that cleared caches and reloaded full history added more database load during the reconnect wave."
+ },
+ {
+  "id": "stack-overflow-2014-iptables-haproxy",
+  "company": "Stack Overflow",
+  "date": "2014-08-25",
+  "title": "Misleading iptables comment leads to change that blocks load balancers",
+  "url": "https://web.archive.org/web/20201020103424/https://stackstatus.net/post/96025967369/outage-post-mortem-august-25th-2014",
+  "category": [
+   "config",
+   "network",
+   "load-balancer"
+  ],
+  "trigger": "A Puppet-managed iptables change on the HAProxy load balancers, prompted by an inaccurate note in the rules file, blocked SYN/ACK replies from the IIS web servers.",
+  "impact": "All Stack Exchange Q&A sites and Careers were down for about 6 minutes, from 19:26 to 19:32 UTC.",
+  "detection": "The on-call pager fired and staff noticed within a minute of the primary load balancer applying the change.",
+  "fix": "The commit was reverted and Puppet reapplied rules to both load balancers; follow-ups were cleaning up comments, enabling changes to hit the inactive balancer first, and moving rules to the Puppet firewall module.",
+  "summary": "Stack Exchange engineers wanted web servers to reach internal API endpoints directly instead of through ASA firewalls. An inaccurate note in the HAProxy load balancers' iptables rules prompted a change that dropped the SYN/ACK return traffic from IIS web servers, so HAProxy could not complete connections. The rule was pushed via Git and applied by Puppet about 25 minutes later, taking every Stack Exchange site offline. A revert propagated through TeamCity and Puppet within six minutes."
+ },
+ {
+  "id": "gitlab-2014-drbd-wrong-filesystem",
+  "company": "GitLab",
+  "date": "2014-07-08",
+  "title": "GitLab.com reboot leads to services starting on the wrong filesystem",
+  "url": "https://docs.google.com/document/d/1ScqXAdb6BjhsDzCo3qdPYbt1uULzgZqPO8zHeHHarS0/preview?sle=true&hl=en&forcehl=1#heading=h.dfbilqgnc5sf",
+  "category": [
+   "hardware",
+   "human-error",
+   "monitoring-gap"
+  ],
+  "trigger": "An I/O brownout on the primary server caused its hardware watchdog to force a reboot, after which neither node of the DRBD pair was primary and the production filesystem was not mounted.",
+  "impact": "GitLab.com was down for most of the night, roughly 01:00 to 09:29 CEST on July 8, with background jobs not processing until later and some repositories corrupted.",
+  "detection": "Pingdom and PagerDuty raised alerts at about 01:13 CEST, but the pages were missed because of phone and notification settings, and user reports arrived by email and Twitter.",
+  "fix": "Engineers stopped the database, rsynced the data directory and restarted unicorn, Sidekiq and Redis on the production filesystem; follow-ups changed the failover script to restart services and added a mountpoint check so services refuse to start without the production volume.",
+  "summary": "GitLab.com ran on two servers replicated with DRBD. Disk lockup on the primary triggered an HP watchdog hard reset, leaving both nodes secondary. Responders ran gitlab-ctl start, which brought up PostgreSQL and other services against empty staging data on the root filesystem, so the app returned 502 errors and the database looked like 6 MB. Promoting the node mounted production data underneath processes that still held old files, prolonging the confusion for hours. Missed PagerDuty pages also delayed the response."
+ },
+ {
+  "id": "yeller-2014-datacenter-network-partition",
+  "company": "Yeller",
+  "date": "2014-07",
+  "title": "Host network maintenance partitions cluster, delaying exceptions",
+  "url": "https://web.archive.org/web/20201018145502/http://yellerapp.com/posts/2014-08-04-postmortem1.html",
+  "category": [
+   "network",
+   "cloud-provider"
+  ],
+  "trigger": "Planned hosting provider maintenance to move servers onto new network infrastructure left Yeller's internal network split into several partitions.",
+  "impact": "For roughly 18 to 19 hours, 42 exceptions were delayed by up to 7 hours and users could not sign up, change passwords or billing, or invite teammates, though the site stayed readable.",
+  "detection": "Alerting paged the operator within seconds of the partition, while he was already watching the maintenance.",
+  "fix": "A rolling restart of the whole cluster cleared the partition and timed-out writes were reprocessed by hand; follow-ups include a hosted status page, scheduled outage updates, better retry logic, and keeping a broken node for forensics.",
+  "summary": "After the hosting provider moved Yeller's servers to new network gear, the cluster ended up partitioned. Riak writes for some exceptions timed out and needed manual replay, and the Datomic store for user and billing data lost write capacity, blocking account changes. The operator assumed the fault was the provider's and waited about 17 hours before a suggested rolling restart fixed it, possibly by clearing cached routes. Because every node was restarted, the root cause could not be found."
+ },
+ {
+  "id": "npm-2014-varnish-backend-restart",
+  "company": "NPM",
+  "date": "2014-01-28",
+  "title": "Varnish VCL restart sends npm registry traffic to the wrong backend",
+  "url": "https://blog.npmjs.org/post/74949623024/2014-01-28-outage-postmortem.html",
+  "category": [
+   "config",
+   "cache",
+   "third-party"
+  ],
+  "trigger": "A simplification of the Varnish VCL on Fastly set req.backend in vcl_fetch and then called restart, which reset the backend to Manta for every request.",
+  "impact": "Package metadata requests meant for CouchDB went to Manta and returned 403 Forbidden, and uncached errors caused a thundering herd; duration and user counts are not stated.",
+  "detection": "Not stated in the postmortem.",
+  "fix": "The team found the cause with Fastly support, and committed to always setting req.backend explicitly in vcl_recv and staging VCL changes on a separate Varnish instance.",
+  "summary": "The npm registry served tarballs from Joyent Manta and package metadata from CouchDB behind Fastly's Varnish CDN. A VCL cleanup chose the backend in vcl_fetch and then used restart, but a restart resets req.backend to the first listed backend, Manta. Requests for package names like /pkgname therefore hit Manta, which answered 403 Forbidden. Since Fastly did not cache error responses, the flood of misses created a thundering herd that took time to calm down."
+ },
+ {
+  "id": "google-2014-bad-config-logged-in-services",
+  "company": "Google",
+  "date": "2014-01-24",
+  "title": "Faulty generated config breaks Gmail, Calendar and Docs",
+  "url": "https://blog.google/topics/inside-google/todays-outage-for-several-google/",
+  "category": [
+   "config",
+   "software-bug"
+  ],
+  "trigger": "A bug in an internal configuration generator produced a bad configuration at 10:55 a.m. PST that rolled out to live services over about 15 minutes.",
+  "impact": "Most users could not reach logged-in services such as Gmail, Google+, Calendar and Documents for about 25 minutes, and about 10% of users were affected for up to 30 minutes longer.",
+  "detection": "Internal monitoring alerted the Site Reliability Team at 11:02 a.m. PST.",
+  "fix": "The generator produced and pushed a correct configuration starting at 11:14 a.m., live everywhere by 11:30, and Google planned to fix and audit config generators, validate configs and add targeted monitoring.",
+  "summary": "An internal Google system that generates configuration for other services hit a bug and emitted a wrong configuration, which spread to production within about 15 minutes. The bad config caused services to ignore users' requests for their own data, so Gmail, Google+, Calendar and Docs returned errors to most logged-in users for around 25 minutes. The generator later produced a correct config on its own, which fully propagated by 11:30 a.m. Follow-ups include input validation for configs."
+ },
+ {
+  "id": "twilio-2013-redis-billing-recharges",
+  "company": "Twilio",
+  "date": "2013-07-18",
+  "title": "Redis billing balance loss triggers repeated customer card charges",
+  "url": "https://www.twilio.com/blog/2013/07/billing-incident-post-mortem-breakdown-analysis-and-root-cause.html",
+  "category": [
+   "database",
+   "data-loss",
+   "config"
+  ],
+  "trigger": "Billing Redis replicas lost contact with the master and all requested full resyncs at once, and a restart of the overloaded master loaded a wrong config that wiped all balances.",
+  "impact": "About 1.4% of customers with auto-recharge were charged repeatedly or suspended, and billing was offline for much of July 18-19, 2013.",
+  "detection": "Monitoring alerted on the Redis cluster failure at 2:42 AM PDT and on a billing anomaly at 3:28 AM PDT.",
+  "fix": "Billing was shut off, balances were rebuilt from the separate double-entry relational database and erroneous charges refunded; follow-ups disabled master restarts in favor of replica promotion and added fail-safes against charging on missing balances.",
+  "summary": "Twilio's billing system kept in-flight account balances in a Redis cluster. After a network blip, replicas simultaneously requested full resync and overloaded the master. Engineers restarted it on a misdiagnosis, and it came up with a bad configuration, tried to recover from a nonexistent AOF file, lost all balance data, and became a read-only replica of itself. Zero balances made auto-recharge bill customer cards again and again, and some accounts were suspended. Affected customers were refunded and credited."
+ },
+ {
+  "id": "spotify-2013-popcount-retry-cascade",
+  "company": "Spotify",
+  "date": "2013-04-27",
+  "title": "Client retries and new dependency overload Popcount, hitting Europe",
+  "url": "https://engineering.atspotify.com/2013/06/04/incident-management-at-spotify",
+  "category": [
+   "retry-storm",
+   "cascading-failure",
+   "deploy"
+  ],
+  "trigger": "A Discovery feature rollout added an unintended dependency from the Bartender service to an underprovisioned Popcount, while legacy desktop clients retried Popcount on every timeout without backoff.",
+  "impact": "A large share of European users had slow playback and some could not log in for a few hours on a busy Saturday night.",
+  "detection": "Engineers chatting on IRC noticed Popcount was unhealthy again.",
+  "fix": "A hotfix removed the Bartender dependency, Accesspoints were hard-reset and firewalled off so clients backed off, and follow-ups added Discovery data caching with a TTL, fixed client retry logic, and rate-limited Accesspoint logging.",
+  "summary": "Spotify's Popcount service, which stores subscriber lists for over a billion playlists, became slow after the Discovery rollout added load from Bartender. Desktop clients retried without backoff, requests piled up on the Accesspoints that clients connect to, and verbose error logging saturated their disk I/O. The cascade caused high playback latency and login failures across Europe. Engineers firewalled the Accesspoints so client exponential backoff could relieve them, then reopened traffic. A similar but smaller Popcount incident had occurred two months earlier."
+ },
+ {
+  "id": "pagerduty-2013-shared-peering-point",
+  "company": "PagerDuty",
+  "date": "2013-04-13",
+  "title": "Shared peering point takes out two AWS regions, halting notifications",
+  "url": "https://web.archive.org/web/20211019062735/https://www.pagerduty.com/blog/outage-post-mortem-april-13-2013/",
+  "category": [
+   "network",
+   "cloud-provider",
+   "config"
+  ],
+  "trigger": "A degraded network peering point in Northern California cut connectivity for the two AWS regions PagerDuty treated as independent datacenters.",
+  "impact": "Notification dispatch was fully stopped for 18 minutes (8:35 to 8:53 am Pacific) after a period of higher latency and errors, while the events API kept accepting events.",
+  "detection": "The on-call engineer was paged at 8:11 am about a failing notification dispatch node, and monitoring flagged multi-provider notification failures at 8:18 am.",
+  "fix": "The dispatch cluster regained quorum once latency eased and drained queued notifications; follow-ups included better logging, auto-restart of coordinator processes, an inter-host connectivity dashboard, Cassandra and ZooKeeper training, and evaluating a move off one AWS region.",
+  "summary": "PagerDuty ran across three datacenters (two AWS regions plus Linode) and was built to survive losing one. Both AWS regions, however, relied on the same Northern California peering point, and when it degraded, high inter-node latency kept the notification dispatch system from forming a quorum. Alerts slowed and then stopped entirely for 18 minutes while API intake continued. A misconfigured coordinator service slowed recovery, and many coordinator processes had to be restarted by hand."
+ },
+ {
+  "id": "kickstarter-2013-mysql-replication-break",
+  "company": "Kickstarter",
+  "date": "2013-03-07",
+  "title": "MySQL ORDER BY bug silently diverges Kickstarter replicas",
+  "url": "https://web.archive.org/web/20170728131458/https://kickstarter.engineering/the-day-the-replication-died-e543ba45f262",
+  "category": [
+   "database",
+   "software-bug"
+  ],
+  "trigger": "A later unsafe query switched MIXED-mode replication to row-based events, which collided with backer sequence rows that had quietly diverged between master and replicas.",
+  "impact": "All MySQL read replicas, which serve most Kickstarter traffic, stopped applying updates with duplicate-key error 1062 on the backings table; the post gives no duration or user numbers and notes the problem then recurred.",
+  "detection": "Engineers noticed the replicas had stopped updating, and SHOW SLAVE STATUS reported the duplicate entry error.",
+  "fix": "The team kept the site stable, limited the effect of stale replicas and recovered, but the post does not describe the specific remediation beyond tracing the cause to a MySQL bug.",
+  "summary": "Kickstarter used Amazon RDS MySQL with the default MIXED replication mode. A background job numbered backers per project with a user variable and an ORDER BY, replicated as a statement. Hung transactions committed out of order, and a MySQL bug that sometimes ignores ORDER BY meant master and replicas assigned different sequence numbers. The divergence sat unnoticed for weeks until an unsafe query forced row-based replication, which then hit unique-key conflicts and halted replication on every replica at once."
+ },
+ {
+  "id": "cloudflare-2013-flowspec-router-crash",
+  "company": "Cloudflare",
+  "date": "2013-03-03",
+  "title": "Flowspec rule crashes Cloudflare's Juniper edge routers worldwide",
+  "url": "https://blog.cloudflare.com/todays-outage-post-mortem-82515/",
+  "category": [
+   "network",
+   "bgp",
+   "hardware"
+  ],
+  "trigger": "While fighting a DDoS attack on a customer's DNS, an operator pushed a Flowspec rule to drop port 53 packets sized around 99,971 to 99,985 bytes, larger than any packet the network could carry.",
+  "impact": "Every Cloudflare service and customer site went offline across 23 data centers in 14 countries for about an hour, from 09:47 to 10:49 UTC, with users seeing DNS errors and no route to host.",
+  "detection": "Internal and external network monitoring alerted the ops and network teams immediately.",
+  "fix": "The rule was removed and staff hard-rebooted routers that could not be reached remotely, and Cloudflare planned to work with Juniper, test Flowspec filters more, scope rules to needed sites, and issue SLA credits.",
+  "summary": "Cloudflare used Flowspec over BGP to distribute a packet filter targeting an attack on a customer's DNS servers. The rule matched impossible packet sizes, yet when the Juniper routers at the edge received it they exhausted RAM and crashed, dropping the whole Anycast network. Sites behind Cloudflare returned DNS errors and pings failed with no route to host. Automatic reboots did not recover every router and management ports were unreachable, so data center staff power-cycled devices by hand. Some sites briefly failed again when traffic returned."
+ },
+ {
+  "id": "aws-2012-elb-state-data-deletion",
+  "company": "Amazon",
+  "date": "2012-12-24",
+  "title": "Maintenance job deletes ELB state data on Christmas Eve",
+  "url": "https://aws.amazon.com/message/680587/",
+  "category": [
+   "human-error",
+   "data-loss",
+   "load-balancer"
+  ],
+  "trigger": "A developer with standing production access accidentally ran a maintenance process against live Elastic Load Balancing state data, logically removing part of it.",
+  "impact": "Up to 6.8% of running ELB load balancers in US East were misconfigured and served errors or degraded performance, while others could not be scaled or changed, from 12:24 PM PST on December 24 until normal operation at 12:05 PM PST on December 25.",
+  "detection": "Engineers first saw rising ELB API errors and latency, and only later linked degraded load balancers to the missing state data.",
+  "fix": "AWS paused scaling and other control plane workflows, restored a usable snapshot of the state data and merged in later changes before re-enabling APIs, then required per-incident change approval for production data access and planned automatic reconciliation of load balancer state.",
+  "summary": "On Christmas Eve a maintenance process was mistakenly executed against production Elastic Load Balancing state data in US East, deleting part of it. Because the ELB control plane relied on that data, every scaling action or customer modification applied bad configuration to the affected load balancers, which then returned errors. A first restore attempt took hours and failed; a second method recovered a snapshot early on December 25. AWS removed persistent developer access to the data and tightened change management."
+ },
+ {
+  "id": "knightcapital-2012-power-peg-deploy",
+  "company": "Knight Capital",
+  "date": "2012-08-01",
+  "title": "Partial deploy revives dead Power Peg code, losing $460M",
+  "url": "https://dougseven.com/2014/04/17/knightmare-a-devops-cautionary-tale/",
+  "category": [
+   "deploy",
+   "human-error",
+   "software-bug"
+  ],
+  "trigger": "A manual rollout of new SMARS order-router code for the NYSE Retail Liquidity Program missed one of eight servers, and a repurposed flag switched on long-dead Power Peg logic there.",
+  "impact": "In about 45 minutes Knight sent millions of child orders, executing around 4 million trades in 154 stocks for over 397 million shares, built roughly $3.5B long and $3.15B short positions, and lost about $460M.",
+  "detection": "SMARS sent 97 automated emails mentioning Power Peg before the open but they were not treated as alerts; abnormal volume was noticed by 9:31 AM, and there was no kill switch.",
+  "fix": "Staff removed the new code from the seven updated servers, which made things worse by enabling Power Peg everywhere, before the system was finally halted; Knight then needed emergency capital and was acquired months later.",
+  "summary": "Knight Capital's high-speed router SMARS was updated to support a new NYSE program by reusing a flag that once enabled Power Peg, test code unused for years whose fill tracking had been removed. One server never received the new build, so when trading opened it kept firing child orders without noticing parents were filled. With no written deploy procedure, no second reviewer and no kill switch, the firm took 45 minutes to stop it, and its rollback spread the fault to all eight servers."
+ },
+ {
+  "id": "amazon-2012-us-east-1-storm-power",
+  "company": "Amazon",
+  "date": "2012-06-29",
+  "title": "Storm and failed generators knock out a US East-1 AZ",
+  "url": "https://aws.amazon.com/message/67457/",
+  "category": [
+   "power",
+   "load-balancer",
+   "queue"
+  ],
+  "trigger": "An electrical storm caused a voltage spike, and generators in one datacenter failed to stabilise and carry load, so UPS batteries drained and servers lost power at 8:04pm PDT.",
+  "impact": "About 7% of EC2 instances and a similar share of EBS volumes in the Region lost power, region-wide launch and volume APIs failed for about an hour, and most instances returned between 11:15pm and just after midnight.",
+  "detection": "Not stated in the postmortem.",
+  "fix": "Staff manually started generators and UPS units, EBS volumes were checked before release, and follow-ups included generator repair, longer stabilisation waits, an automated control plane datastore failover and splitting the ELB control plane queue.",
+  "summary": "On 29 June 2012 a severe storm in Northern Virginia disrupted utility power to one US East-1 Availability Zone. In one facility the generators never stabilised voltage, UPS batteries ran out, and servers went down. Beyond lost EC2 and EBS capacity, region-wide control planes stalled because the datastore failover needed manual steps, some RDS Multi-AZ failovers hit a bug, and an ELB scaling bug after power return flooded a shared queue, delaying traffic shifts for Elastic Load Balancers."
+ },
+ {
+  "id": "azure-2012-leap-day-certificate",
+  "company": "Microsoft Azure",
+  "date": "2012-02-29",
+  "title": "Leap day certificate bug cascades across Azure compute",
+  "url": "https://azure.microsoft.com/en-us/blog/summary-of-windows-azure-service-disruption-on-feb-29th-2012/",
+  "category": [
+   "time",
+   "certificate",
+   "cascading-failure"
+  ],
+  "trigger": "The Guest Agent inside VMs built a transfer certificate expiring one year later by bumping the year, producing the invalid date February 29, 2013, so it crashed.",
+  "impact": "For about 34 hours Windows Azure Compute and dependent services such as Access Control Service, Service Bus and the SQL Azure Portal were disrupted, service management was disabled worldwide, and seven clusters lost VM networking in a secondary outage; customers received a 33% credit.",
+  "detection": "Critical alarms on clusters being updated halted the rollout and alerted operations, and on-call developers pinpointed the bug at 6:38 PM PST.",
+  "fix": "Microsoft disabled service management globally, shipped a fixed Guest Agent, redeployed a corrected host agent package to the seven clusters, and committed to better date testing, separating agent faults from hardware faults, and finer-grained management controls.",
+  "summary": "On February 29, 2012 the Azure Guest Agent failed to generate a certificate because adding one year yielded a date that does not exist. Host agents timed out waiting for it, and after three failures the Fabric Controller wrongly marked servers as having hardware faults. Service healing moved VMs to new hosts where the same bug fired, spreading the failure. A rushed rollback package then cut network access to every VM in seven clusters. Azure Storage and SQL Azure were unaffected."
+ },
+ {
+  "id": "amazon-2011-eu-west-power-ebs",
+  "company": "Amazon",
+  "date": "2011-08-07",
+  "title": "EU West transformer and generator failure takes down an AZ",
+  "url": "https://aws.amazon.com/message/2329B7/",
+  "category": [
+   "power",
+   "storage",
+   "cloud-provider"
+  ],
+  "trigger": "A utility 110kV transformer failed, and a PLC that should have brought backup generators online did not finish, likely due to a detected ground fault, so UPS batteries drained.",
+  "impact": "Nearly all EC2 instances and 58% of EBS volumes in one EU West Availability Zone lost power from 10:41 AM PDT on 7 August, launch APIs degraded region-wide, and EBS recovery snapshots ran until 10 August.",
+  "detection": "Not stated in the postmortem for the power event; a separate snapshot deletion bug was noticed when a customer snapshot returned an error.",
+  "fix": "Power and networking were restored manually and EBS volumes recovered via re-mirroring and recovery snapshots, with follow-ups for PLC redundancy, per-AZ control plane isolation, in-place EBS recovery and safer snapshot cleanup.",
+  "summary": "In the AWS EU West (Dublin) Region, a utility transformer failure cut power to most of one Availability Zone, and a PLC failed to start the backup generators. EC2 instances and many EBS volumes went dark, network gear lost power, and EC2 management servers kept queuing RunInstances calls for the dead zone until launches across the region slowed. EBS re-mirroring exhausted spare capacity, forcing slow snapshot-based recovery. An unrelated EBS cleanup bug had also deleted blocks still referenced by customer snapshots."
+ },
+ {
+  "id": "aws-2011-ebs-remirroring-storm",
+  "company": "Amazon",
+  "date": "2011-04-21",
+  "title": "Botched network change triggers EBS re-mirroring storm in US East",
+  "url": "https://aws.amazon.com/message/65648/",
+  "category": [
+   "network",
+   "storage",
+   "cascading-failure"
+  ],
+  "trigger": "During a capacity upgrade in one US East Availability Zone, primary traffic was wrongly shifted onto the low-capacity backup EBS network, cutting many storage nodes off from both networks.",
+  "impact": "Roughly 13% of EBS volumes in the zone became stuck at peak, up to 45% of single-AZ RDS instances lost I/O, other zones saw API errors and launch failures for about 11 hours, and full recovery took until April 24 with 0.07% of volumes unrecoverable in a consistent state.",
+  "detection": "Not stated in the postmortem beyond noting that alarms were too coarse to separate a specific control plane API failure from the general EBS errors.",
+  "fix": "AWS fenced off the degraded cluster from the control plane, tuned timeouts and throttled node chatter, added fresh capacity and restored leftover volumes from snapshots, then committed to automating network changes, larger capacity buffers, better backoff and a fix for an EBS node race condition.",
+  "summary": "An incorrect traffic shift during a network upgrade isolated a large set of EBS storage nodes in one US East Availability Zone. When connectivity returned, the nodes all hunted for free space to re-mirror their data at once, exhausting cluster capacity and leaving volumes stuck. Long-running create-volume calls exhausted threads in the regional EBS control plane, so API errors spread to other zones, and a race condition crashed more nodes. EC2 and RDS customers saw hung disks and failed launches for days."
+ },
+ {
+  "id": "google-2009-malware-warning-slash",
+  "company": "Google",
+  "date": "2009-01-31",
+  "title": "Every search result flagged as harmful after bad blocklist entry",
+  "url": "https://web.archive.org/web/2024/https://googleblog.blogspot.com/2009/01/this-site-may-harm-your-computer-on.html",
+  "category": [
+   "config",
+   "human-error",
+   "deploy"
+  ],
+  "trigger": "A routine update to the list of malware-hosting sites included a lone slash as a URL entry, which matched every URL on the web.",
+  "impact": "For roughly 40 minutes per user, between about 6:27 and 7:25 a.m. PST, every Google Search result carried a malware warning, and site owners saw their pages wrongly labelled.",
+  "detection": "The on-call site reliability team spotted the problem quickly; the post gives no further detail on how.",
+  "fix": "SREs reverted the list file, and Google committed to adding stronger validation checks on such files before release.",
+  "summary": "Google Search maintains a blocklist of sites known to install malware, built with StopBadware criteria, and shows a This site may harm your computer warning on matching results. A periodic list update was checked in with the path / as an entry, and because / matches every URL, the warning appeared on every single search result. The update rolled out in a staggered way, so each user saw it for about 40 minutes until SREs reverted the file. Google promised more robust file checks."
+ },
+ {
+  "id": "gocardless-postgres-fk-lock-queue",
+  "company": "GoCardless",
+  "date": "unknown",
+  "title": "Foreign key migration queues behind long read and stalls API",
+  "url": "https://gocardless.com/blog/zero-downtime-postgres-migrations-the-hard-parts/",
+  "category": [
+   "database",
+   "deploy"
+  ],
+  "trigger": "A planned schema migration renamed unused invoicing tables and recreated their foreign keys, which needed an AccessExclusive lock on a heavily used parent table.",
+  "impact": "The GoCardless API stopped serving requests for about 15 seconds and clients timed out; no request or merchant counts are given.",
+  "detection": "Alerts on API request timeouts fired as soon as the migration started.",
+  "fix": "The migration finished on its own after about 15 seconds; recommended follow-ups include removing long-running queries, enabling log_lock_waits and log_min_duration_statement, and setting lock_timeout in migrations so they abort instead of blocking traffic.",
+  "summary": "A schema change that should have been instant caused a short GoCardless API outage. Re-adding a foreign key in Postgres takes an exclusive lock on the referenced table as well, even with NOT VALID. The ALTER TABLE waited behind a long-running read on that busy table, and every subsequent query lined up behind the pending lock, so API calls hung. Replaying the migration on a backup ran in milliseconds, showing lock contention rather than work was the problem. The post gives late January but no year."
+ }
+]

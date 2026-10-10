@@ -1,0 +1,120 @@
+[
+ {
+  "q": "fat-fingered command took down object storage",
+  "expect": [
+   "aws-2017-s3-us-east-1-typo"
+  ],
+  "note": "symptom in plain words"
+ },
+ {
+  "q": "primary key maxed out and the app went read only",
+  "expect": [
+   "basecamp-2018-int-overflow-read-only",
+   "heroku-2023-fk-integer-overflow"
+  ],
+  "note": "symptom in plain words"
+ },
+ {
+  "q": "a regex melted the CPUs",
+  "expect": [
+   "cloudflare-2019-waf-regex",
+   "stackexchange-2016-regex-backtracking"
+  ],
+  "note": "symptom in plain words"
+ },
+ {
+  "q": "customers saw someone else's account details",
+  "expect": [
+   "openai-2023-redis-py-data-leak",
+   "cloudflare-2017-cloudbleed-parser-leak",
+   "turso-2023-shared-backup-leak"
+  ],
+  "note": "symptom in plain words"
+ },
+ {
+  "q": "algo trading firm blew up after a botched rollout",
+  "expect": [
+   "knightcapital-2012-power-peg-deploy"
+  ],
+  "note": "symptom in plain words"
+ },
+ {
+  "q": "heatwave cooked the servers",
+  "expect": [
+   "google-2022-europe-west2-cooling",
+   "amazon-2019-tokyo-cooling-control"
+  ],
+  "note": "symptom in plain words"
+ },
+ {
+  "q": "dropped prod by mistake",
+  "expect": [
+   "gitlab-2017-database-deletion",
+   "keepthescore-2020-prod-db-dropped",
+   "travisci-2018-prod-db-truncate"
+  ],
+  "note": "symptom in plain words"
+ },
+ {
+  "q": "thundering herd when it came back up",
+  "expect": [
+   "spotify-2013-popcount-retry-cascade",
+   "square-2017-multipass-redis-retries",
+   "launchdarkly-2025-aws-flag-delivery",
+   "slack-2014-reconnect-storm",
+   "discord-2017-redis-failover-cascade"
+  ],
+  "note": "symptom in plain words"
+ },
+ {
+  "q": "card charged again and again",
+  "expect": [
+   "twilio-2013-redis-billing-recharges"
+  ],
+  "note": "symptom in plain words"
+ },
+ {
+  "q": "every search result marked as dangerous",
+  "expect": [
+   "google-2009-malware-warning-slash"
+  ],
+  "note": "symptom in plain words"
+ },
+ {
+  "q": "nobody could even badge into the office",
+  "expect": [
+   "facebook-2021-backbone-bgp-withdrawal"
+  ],
+  "note": "needs a fact the summary doesn't contain"
+ },
+ {
+  "q": "DRUPS",
+  "expect": [
+   "amazon-2016-sydney-drups-power"
+  ],
+  "note": "exact term"
+ },
+ {
+  "q": "PGAudit",
+  "expect": [
+   "incidentio-2025-pgaudit-lock-hang"
+  ],
+  "note": "exact term"
+ },
+ {
+  "q": "H10 errors",
+  "expect": [
+   "heroku-2017-eu-router-stale-state"
+  ],
+  "note": "exact error code"
+ },
+ {
+  "q": "BGP",
+  "expect": [
+   "facebook-2021-backbone-bgp-withdrawal",
+   "google-2016-gce-ip-block-withdrawal",
+   "cloudflare-2022-mcp-bgp-policy-reorder"
+  ],
+  "note": "exact term"
+ }
+]

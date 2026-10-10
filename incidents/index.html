@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Find the Incident</title>
+<meta name="description" content="Search real public postmortems by symptom. AI (semantic) search and keyword (BM25) search side by side, running entirely in your browser.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<style>
+/* Layout: search box and example chips, a timing strip, then two result columns
+   (AI search vs keyword search) that stack on narrow screens, then the eval panel. */
+:root {
+  --bg: #f4f6f8; --panel: #ffffff; --fg: #141c24; --muted: #5b6875; --rule: #d7dee5;
+  --accent: #1f5fbf; --sem: #6d3fc0; --kw: #b45309; --good: #15803d; --bad: #c2410c; --mark: #fde68a;
+  --font-display: "Archivo", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c; --accent: #6ea8ff; --sem: #b49cff; --kw: #f0a24c; --good: #4ade80; --bad: #fb8a4c; --mark: #5b4a12; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c; --accent: #6ea8ff; --sem: #b49cff; --kw: #f0a24c; --good: #4ade80; --bad: #fb8a4c; --mark: #5b4a12; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-inline: 16px; padding-block: 32px 56px; }
+.kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 5vw, 44px); margin: 6px 0 8px; line-height: 1.05; }
+h2 { font-family: var(--font-display); font-weight: 700; font-size: 22px; margin: 36px 0 8px; }
+.lede { color: var(--muted); max-width: 70ch; margin: 0 0 18px; }
+.search { display: flex; gap: 8px; }
+.search input { flex: 1; min-width: 0; font: inherit; font-size: 17px; padding: 12px 14px; border: 1px solid var(--rule); border-radius: 10px; background: var(--panel); color: var(--fg); }
+.search input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 4px; }
+.chips button { font: inherit; font-size: 13.5px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--rule); background: var(--panel); color: var(--fg); cursor: pointer; }
+.chips button:hover, .chips button:focus-visible { border-color: var(--accent); outline: none; }
+.chips .tag { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-left: 4px; }
+.timing { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); margin: 10px 0 14px; display: flex; flex-wrap: wrap; gap: 4px 16px; font-variant-numeric: tabular-nums; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.col h3 { margin: 0 0 8px; font-size: 15px; display: flex; align-items: baseline; gap: 8px; }
+.col h3 .swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.col.sem h3 .swatch { background: var(--sem); } .col.kw h3 .swatch { background: var(--kw); }
+.col h3 small { font-weight: 400; color: var(--muted); font-size: 13px; }
+.status { color: var(--muted); font-size: 14px; }
+.bar { height: 4px; background: var(--rule); border-radius: 2px; overflow: hidden; margin-top: 6px; }
+.bar i { display: block; height: 100%; width: 0; background: var(--sem); transition: width .2s; }
+.result { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
+.col.sem .result { border-left: 3px solid var(--sem); } .col.kw .result { border-left: 3px solid var(--kw); }
+.result .meta { font-family: var(--font-mono); font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.result .title { font-weight: 600; margin: 2px 0 4px; }
+.result p { margin: 0 0 6px; font-size: 14.5px; }
+.result a { color: var(--accent); font-size: 13.5px; }
+.result .both { font-family: var(--font-mono); font-size: 11px; color: var(--good); }
+mark { background: var(--mark); color: inherit; border-radius: 2px; padding: 0 1px; }
+.why { color: var(--muted); max-width: 75ch; font-size: 15px; }
+button.run { font: inherit; font-weight: 600; padding: 9px 16px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
+button.run:disabled { opacity: .55; cursor: default; }
+.scores { display: flex; flex-wrap: wrap; gap: 12px; margin: 14px 0; }
+.score { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 10px 14px; min-width: 150px; }
+.score .k { font-family: var(--font-mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.score .v { font-family: var(--font-display); font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-family: var(--font-mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+td.rank { font-family: var(--font-mono); white-space: nowrap; }
+.hit { color: var(--good); } .miss { color: var(--bad); }
+footer { margin-top: 36px; color: var(--muted); font-size: 14px; }
+footer a { color: var(--accent); }
+@media (max-width: 760px) { .cols { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">SRE Lab · retrieval</div>
+  <h1>Find the Incident</h1>
+  <p class="lede">Describe a symptom and search real, public postmortems. AI search (a small embedding model running in your browser) and plain keyword search run side by side, so you can see where each one is better. No server, no API calls: after a one-time 23&nbsp;MB model download, everything happens on your device.</p>
+
+  <form class="search" id="form" role="search">
+    <input id="q" type="search" autocomplete="off" value="DNS broke everything" placeholder="Describe a symptom" aria-label="Describe the symptom">
+  </form>
+  <div class="chips" id="chips"></div>
+  <div class="timing" id="timing" aria-live="polite"></div>
+
+  <div class="cols">
+    <section class="col sem" aria-label="AI search results">
+      <h3><span class="swatch"></span>AI search <small>embeddings · meaning</small></h3>
+      <div id="semStatus" class="status">Loading the model…<div class="bar"><i id="bar"></i></div></div>
+      <div id="sem"></div>
+    </section>
+    <section class="col kw" aria-label="Keyword search results">
+      <h3><span class="swatch"></span>Keyword search <small>BM25 · exact words</small></h3>
+      <div id="kwStatus" class="status">Loading incidents…</div>
+      <div id="kw"></div>
+    </section>
+  </div>
+
+  <h2>How well does each do?</h2>
+  <p class="why">Fifteen test questions, phrased the way an on-call engineer might type them, each with the postmortem a good search should find. The honest result: on a small corpus like this the two methods tie more often than you'd expect, because a rare term (<b>DRUPS</b>, <b>PGAudit</b>) stands out to both. They miss <i>different</i> questions, though, so combining their rankings (hybrid search, using reciprocal rank fusion) puts the right answer highest. And some questions beat every method: if a detail isn't in the text, no search can find it.</p>
+  <button class="run" id="run" disabled>Run the test</button>
+  <div id="evalOut"></div>
+
+  <footer>
+    <p>Summaries were written for this demo from each company's public postmortem; follow the links to read the originals. Postmortems found through <a href="https://github.com/danluu/post-mortems">danluu/post-mortems</a>. Model: <a href="https://huggingface.co/Xenova/all-MiniLM-L6-v2">all-MiniLM-L6-v2</a> via <a href="https://huggingface.co/docs/transformers.js">Transformers.js</a>.</p>
+    <p>Part of <a href="../">SRE Lab</a> by Sally Roth · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab/tree/main/incidents">source</a></p>
+  </footer>
+</div>
+
+<script type="module">
+import { pipeline, env } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1";
+env.allowLocalModels = false;
+
+const MODEL = "Xenova/all-MiniLM-L6-v2";
+const TOP = 5;
+// Reciprocal rank fusion: merge two rankings without comparing their incompatible scores.
+const rrf = (a, b, k = 60) => {
+  const sc = new Map();
+  for (const list of [a, b]) list.forEach(([i], r) => sc.set(i, (sc.get(i) || 0) + 1 / (k + r + 1)));
+  return [...sc].sort((x, y) => y[1] - x[1]);
+};
+const EXAMPLES = [
+  ["DNS broke everything", "symptom"],
+  ["database ran out of connections", "symptom"],
+  ["a regex melted the CPUs", "symptom"],
+  ["heatwave cooked the servers", "symptom"],
+  ["dropped prod by mistake", "symptom"],
+  ["retries made the outage worse", "symptom"],
+  ["certificate expired", "term"],
+  ["BGP", "term"],
+  ["leap second", "term"],
+];
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const ms = (x) => `${x < 10 ? x.toFixed(1) : Math.round(x)} ms`;
+
+// ---------- data ----------
+let docs = [], vectors = null, dim = 0;
+const timing = { model: null, embed: null, sem: null, kw: null };
+
+// Keep in sync with docText() in build.mjs.
+const docText = (d) => `${d.title}. ${d.trigger} ${d.impact} ${d.summary}`;
+
+async function loadData() {
+  const [incidents, index, bin] = await Promise.all([
+    fetch("data/incidents.json").then((r) => r.json()),
+    fetch("data/index.json").then((r) => r.json()),
+    fetch("data/embeddings.bin").then((r) => r.arrayBuffer()),
+  ]);
+  const byId = new Map(incidents.map((d) => [d.id, d]));
+  docs = index.ids.map((id) => byId.get(id));
+  dim = index.dim;
+  vectors = new Float32Array(bin);
+}
+
+// ---------- keyword search (BM25) ----------
+const STOP = new Set("a an and are as at be but by for from had has have in into is it its of on or that the their then there these this to was were when which while with after before during got went".split(" "));
+// Keep identifiers like us-east-1, max_connections, http/2 and 502 intact.
+const tokenize = (s) => s.toLowerCase().split(/[^a-z0-9_\-./]+/).map((t) => t.replace(/^[\-./]+|[\-./]+$/g, "")).filter((t) => t && !STOP.has(t));
+let bm = null;
+function buildBM25() {
+  const k1 = 1.2, b = 0.75;
+  const tfs = docs.map((d) => {
+    const tf = new Map();
+    for (const t of tokenize(`${d.company} ${d.category.join(" ")} ${docText(d)} ${d.detection} ${d.fix}`)) tf.set(t, (tf.get(t) || 0) + 1);
+    return tf;
+  });
+  const lens = tfs.map((tf) => [...tf.values()].reduce((a, c) => a + c, 0));
+  const avg = lens.reduce((a, c) => a + c, 0) / lens.length;
+  const df = new Map();
+  for (const tf of tfs) for (const t of tf.keys()) df.set(t, (df.get(t) || 0) + 1);
+  const N = docs.length;
+  const idf = (t) => Math.log(1 + (N - (df.get(t) || 0) + 0.5) / ((df.get(t) || 0) + 0.5));
+  bm = (query) => {
+    const terms = [...new Set(tokenize(query))];
+    return tfs.map((tf, i) => {
+      let s = 0;
+      for (const t of terms) {
+        const f = tf.get(t);
+        if (f) s += idf(t) * (f * (k1 + 1)) / (f + k1 * (1 - b + b * lens[i] / avg));
+      }
+      return s;
+    });
+  };
+}
+
+// ---------- AI search ----------
+let extractor = null;
+async function loadModel() {
+  const t0 = performance.now();
+  const seen = {};
+  extractor = await pipeline("feature-extraction", MODEL, {
+    dtype: "q8",
+    progress_callback: (p) => {
+      if (p.status === "progress" && p.total) {
+        seen[p.file] = [p.loaded, p.total];
+        const [l, t] = Object.values(seen).reduce(([a, b], [c, d]) => [a + c, b + d], [0, 0]);
+        $("bar").style.width = `${Math.round((l / t) * 100)}%`;
+      }
+    },
+  });
+  timing.model = performance.now() - t0;
+}
+async function embedQuery(q) {
+  const t0 = performance.now();
+  const out = await extractor(q, { pooling: "mean", normalize: true });
+  timing.embed = performance.now() - t0;
+  return out.data;
+}
+function cosineAll(qv) {
+  const scores = new Float32Array(docs.length);
+  for (let i = 0; i < docs.length; i++) {
+    let s = 0;
+    const o = i * dim;
+    for (let j = 0; j < dim; j++) s += qv[j] * vectors[o + j];
+    scores[i] = s;
+  }
+  return scores;
+}
+
+// ---------- ranking + rendering ----------
+const ranked = (scores) => [...scores].map((s, i) => [i, s]).filter(([, s]) => s > 0).sort((a, b) => b[1] - a[1]);
+
+function highlight(text, query) {
+  const terms = [...new Set(tokenize(query))].filter((t) => t.length > 1).map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  if (!terms.length) return esc(text);
+  const re = new RegExp(`\\b(${terms.join("|")})`, "gi");
+  return esc(text).replace(re, "<mark>$1</mark>");
+}
+function card(i, score, query, other) {
+  const d = docs[i];
+  return `<article class="result">
+    <div class="meta"><span>${esc(d.company)} · ${esc(d.date === "unknown" ? "date not stated" : d.date)}</span><span>${score.toFixed(score < 1 ? 3 : 2)}</span></div>
+    <div class="title">${highlight(d.title, query)}</div>
+    <p>${highlight(d.summary, query)}</p>
+    <a href="${esc(d.url)}" target="_blank" rel="noopener">Read the original postmortem →</a>${other.has(i) ? ` <span class="both">· in both lists</span>` : ""}
+  </article>`;
+}
+function renderTiming() {
+  const parts = [];
+  if (timing.model != null) parts.push(`model load ${ms(timing.model)}`);
+  if (timing.embed != null) parts.push(`query embedding ${ms(timing.embed)}`);
+  if (timing.sem != null) parts.push(`AI search ${ms(timing.sem)}`);
+  if (timing.kw != null) parts.push(`keyword search ${ms(timing.kw)}`);
+  parts.push(`${docs.length} postmortems`);
+  $("timing").innerHTML = parts.map((p) => `<span>${p}</span>`).join("");
+}
+
+let seq = 0;
+async function search(query) {
+  const my = ++seq;
+  query = query.trim();
+  if (!query) { $("sem").innerHTML = ""; $("kw").innerHTML = ""; return; }
+  let t0 = performance.now();
+  const kwTop = ranked(bm(query)).slice(0, TOP);
+  timing.kw = performance.now() - t0;
+  let semTop = null;
+  if (extractor) {
+    const qv = await embedQuery(query);
+    if (my !== seq) return;
+    t0 = performance.now();
+    semTop = ranked(cosineAll(qv)).slice(0, TOP);
+    timing.sem = performance.now() - t0;
+  }
+  const kwSet = new Set(kwTop.map(([i]) => i));
+  const semSet = new Set((semTop || []).map(([i]) => i));
+  $("kw").innerHTML = kwTop.length ? kwTop.map(([i, s]) => card(i, s, query, semSet)).join("") : `<p class="status">No postmortem contains those words. Try AI search, or different wording.</p>`;
+  if (semTop) $("sem").innerHTML = semTop.map(([i, s]) => card(i, s, query, kwSet)).join("");
+  renderTiming();
+}
+
+// ---------- eval ----------
+async function runEval() {
+  $("run").disabled = true;
+  const cases = await fetch("data/eval.json").then((r) => r.json());
+  const idx = new Map(docs.map((d, i) => [d.id, i]));
+  const rankOf = (rows, want) => { const r = rows.findIndex(([i]) => want.has(docs[i].id)); return r < 0 ? null : r + 1; };
+  const rows = [];
+  for (const c of cases) {
+    const want = new Set(c.expect.filter((id) => idx.has(id)));
+    const semRows = ranked(cosineAll(await embedQuery(c.q)));
+    const kwRows = ranked(bm(c.q));
+    rows.push({ ...c, sem: rankOf(semRows, want), kw: rankOf(kwRows, want), hy: rankOf(rrf(semRows, kwRows), want) });
+  }
+  const hit = (k) => rows.filter((r) => r[k] && r[k] <= TOP).length;
+  const mrr = (k) => rows.reduce((a, r) => a + (r[k] && r[k] <= 10 ? 1 / r[k] : 0), 0) / rows.length;
+  const cell = (r) => r == null ? `<span class="miss">not found</span>` : `<span class="${r <= TOP ? "hit" : "miss"}">#${r}</span>`;
+  const title = (id) => { const i = idx.get(id); return i == null ? id : `${docs[i].company}: ${docs[i].title}`; };
+  $("evalOut").innerHTML = `
+    <div class="scores">
+      <div class="score"><div class="k">AI search · found in top ${TOP}</div><div class="v" style="color:var(--sem)">${hit("sem")}/${rows.length}</div></div>
+      <div class="score"><div class="k">Keyword · found in top ${TOP}</div><div class="v" style="color:var(--kw)">${hit("kw")}/${rows.length}</div></div>
+      <div class="score"><div class="k">AI search · MRR</div><div class="v" style="color:var(--sem)">${mrr("sem").toFixed(2)}</div></div>
+      <div class="score"><div class="k">Keyword · MRR</div><div class="v" style="color:var(--kw)">${mrr("kw").toFixed(2)}</div></div>
+      <div class="score"><div class="k">Hybrid · MRR</div><div class="v" style="color:var(--good)">${mrr("hy").toFixed(2)}</div></div>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Question</th><th>Should find</th><th>AI</th><th>Keyword</th><th>Hybrid</th></tr></thead>
+      <tbody>${rows.map((r) => `<tr><td>${esc(r.q)}${r.note ? `<br><small class="status">${esc(r.note)}</small>` : ""}</td><td>${esc(title(r.expect[0]))}</td><td class="rank">${cell(r.sem)}</td><td class="rank">${cell(r.kw)}</td><td class="rank">${cell(r.hy)}</td></tr>`).join("")}</tbody>
+    </table></div>
+    <p class="status">MRR (mean reciprocal rank) rewards putting the right answer near the top: 1.0 means always first, 0.5 means typically second.</p>`;
+  $("run").disabled = false;
+  renderTiming();
+}
+
+// ---------- wire up ----------
+$("chips").innerHTML = EXAMPLES.map(([q, tag]) => `<button type="button" data-q="${esc(q)}">${esc(q)}<span class="tag">${tag}</span></button>`).join("");
+$("chips").addEventListener("click", (e) => { const b = e.target.closest("button[data-q]"); if (b) { $("q").value = b.dataset.q; search(b.dataset.q); } });
+$("form").addEventListener("submit", (e) => { e.preventDefault(); search($("q").value); });
+let timer;
+$("q").addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(() => search($("q").value), 250); });
+$("run").addEventListener("click", runEval);
+
+try {
+  await loadData();
+  buildBM25();
+  $("kwStatus").textContent = "";
+  renderTiming();
+  if ($("q").value.trim()) search($("q").value);
+} catch (e) {
+  $("kwStatus").textContent = "Couldn't load the incident data.";
+  throw e;
+}
+loadModel().then(() => {
+  $("semStatus").textContent = "";
+  $("run").disabled = false;
+  renderTiming();
+  search($("q").value);
+}).catch((e) => {
+  $("semStatus").textContent = "The AI model couldn't load in this browser. Keyword search still works.";
+  console.error(e);
+});
+</script>
+</body>
+</html>
