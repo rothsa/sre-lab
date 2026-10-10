@@ -112,3 +112,6 @@ svg.stepping .d-edge.flow path { stroke-dasharray: 7 5; animation: march .8s lin
 .cmp ul { margin: 0 0 6px; padding-left: 0; list-style: none; display: grid; gap: 4px; font-size: 14px; }
 .cmp-good li::before { content: "+ "; color: var(--ok, #3fb950); font-weight: 700; }
 .cmp-bad li::before { content: "\2212  "; color: var(--warn); font-weight: 700; }
+
+/* Shared site nav lines up with the explainer shell */
+nav.site-nav { max-width: 1180px; }

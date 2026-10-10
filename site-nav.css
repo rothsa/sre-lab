@@ -1,0 +1,15 @@
+/* Shared site navigation: the same terminal-path strip on resume.sallyroth.dev and lab.sallyroth.dev.
+   Uses each page's own tokens where present, with jungle fallbacks. */
+.site-nav { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto; padding: 12px 16px 0;
+  display: flex; flex-wrap: wrap; gap: 4px 18px; font-family: "IBM Plex Mono", "JetBrains Mono", ui-monospace, Consolas, monospace;
+  font-size: 13px; line-height: 1.6; }
+.site-nav a { color: var(--muted, #4a6250); text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor); background-position: 0 100%; background-repeat: no-repeat;
+  background-size: 0% 1px; transition: background-size .25s ease, color .25s ease; }
+.site-nav a:hover, .site-nav a:focus-visible { color: var(--accent, #1f7a3a); background-size: 100% 1px; outline: none; }
+.site-nav a:focus-visible { outline: 2px solid var(--accent, #1f7a3a); outline-offset: 2px; }
+.site-nav a[aria-current="page"] { color: var(--accent, #1f7a3a); font-weight: 600; }
+.site-nav a.hire { color: var(--flower, #d9481e); }
+@media (prefers-color-scheme: dark) { .site-nav a.hire { color: var(--flower, #ff7a4d); } }
+@media (prefers-reduced-motion: reduce) { .site-nav a { transition: none; } }
+.wrap > .site-nav { padding: 0 0 8px; margin: 0; }
