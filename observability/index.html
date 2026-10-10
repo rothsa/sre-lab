@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Observability, Drawn</title>
+<meta name="description" content="How telemetry flows: metrics, logs and traces, OpenTelemetry SDKs and the Collector, Prometheus scraping and storage, tracing and sampling, and how to alert on symptoms.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<link rel="stylesheet" href="../drawn/drawn.css">
+</head>
+<body>
+<div class="shell">
+  <nav class="toc" aria-label="Chapters">
+    <details id="tocBox" open><summary>Chapters</summary><ol id="toc"></ol></details>
+  </nav>
+  <main>
+    <div class="kicker"><a href="../">SRE Lab</a> · explainers</div>
+    <h1>Observability, Drawn</h1>
+    <p class="lede">How telemetry actually flows from your code to a dashboard and an alert: OpenTelemetry, the Collector, Prometheus, traces and sampling, logs, and the alerting that wakes the right person. Step through each diagram with the buttons or your arrow keys, then use the 30-second answer, the gotchas and the quiz to make it stick.</p>
+    <p class="lede">Based on the OpenTelemetry, Prometheus and Grafana documentation; each chapter links to its sources. For the cost side, see <a href="../cardinality/">Taming Cardinality</a>.</p>
+    <div id="chapters"></div>
+    <footer>
+      <p>Diagrams and wording by Sally Roth. Based on the <a href="https://opentelemetry.io/docs/">OpenTelemetry</a>, <a href="https://prometheus.io/docs/">Prometheus</a> and <a href="https://grafana.com/docs/">Grafana</a> documentation.</p>
+      <p>Part of <a href="../">SRE Lab</a> · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab/tree/main/observability">source</a></p>
+    </footer>
+  </main>
+</div>
+<script type="module">
+import { mountExplainer } from "../drawn/engine.js";
+import { CHAPTERS } from "./diagrams.js";
+await mountExplainer(CHAPTERS, { key: "observability" });
+</script>
+</body>
+</html>

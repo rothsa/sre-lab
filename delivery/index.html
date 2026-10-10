@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Delivery, Drawn</title>
+<meta name="description" content="How code gets to production safely: CI pipelines, artifacts and promotion, GitOps with Argo CD, progressive delivery with canaries and feature flags, rollbacks, and supply-chain basics.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<link rel="stylesheet" href="../drawn/drawn.css">
+</head>
+<body>
+<div class="shell">
+  <nav class="toc" aria-label="Chapters">
+    <details id="tocBox" open><summary>Chapters</summary><ol id="toc"></ol></details>
+  </nav>
+  <main>
+    <div class="kicker"><a href="../">SRE Lab</a> · explainers</div>
+    <h1>Delivery, Drawn</h1>
+    <p class="lede">From commit to production: what a good pipeline does at each stage, how GitOps keeps clusters in sync with git, how canaries and feature flags limit the blast radius, and how to roll back fast. Step through each diagram with the buttons or your arrow keys, then use the 30-second answer, the gotchas and the quiz to make it stick.</p>
+    <p class="lede">Based on the official documentation of the tools shown (GitHub Actions, GitLab CI, Argo CD, Argo Rollouts, SLSA, Sigstore); each chapter links to its sources.</p>
+    <div id="chapters"></div>
+    <footer>
+      <p>Diagrams and wording by Sally Roth. Sources are linked in each chapter; real-world examples come from <a href="../incidents/">The Incident Files</a>.</p>
+      <p>Part of <a href="../">SRE Lab</a> · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab/tree/main/delivery">source</a></p>
+    </footer>
+  </main>
+</div>
+<script type="module">
+import { mountExplainer } from "../drawn/engine.js";
+import { CHAPTERS } from "./diagrams.js";
+await mountExplainer(CHAPTERS, { key: "delivery" });
+</script>
+</body>
+</html>
