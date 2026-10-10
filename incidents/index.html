@@ -53,8 +53,6 @@ h2 { font-family: var(--font-display); font-weight: 700; font-size: 22px; margin
 .result .both { font-family: var(--font-mono); font-size: 11px; color: var(--good); }
 mark { background: var(--mark); color: inherit; border-radius: 2px; padding: 0 1px; }
 .why { color: var(--muted); max-width: 75ch; font-size: 15px; }
-button.run { font: inherit; font-weight: 600; padding: 9px 16px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
-button.run:disabled { opacity: .55; cursor: default; }
 .scores { display: flex; flex-wrap: wrap; gap: 12px; margin: 14px 0; }
 .score { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 10px 14px; min-width: 150px; }
 .score .k { font-family: var(--font-mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
@@ -64,6 +62,9 @@ table { border-collapse: collapse; width: 100%; font-size: 14px; }
 th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
 th { font-family: var(--font-mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
 td.rank { font-family: var(--font-mono); white-space: nowrap; }
+tbody tr { cursor: pointer; }
+tbody tr:hover td, tbody tr:focus-visible td { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+tbody tr:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .hit { color: var(--good); } .miss { color: var(--bad); }
 footer { margin-top: 36px; color: var(--muted); font-size: 14px; }
 footer a { color: var(--accent); }
@@ -97,8 +98,7 @@ footer a { color: var(--accent); }
 
   <h2>How well does each do?</h2>
   <p class="why">Fifteen test questions, phrased the way an on-call engineer might type them, each with the postmortem a good search should find. The honest result: on a small corpus like this the two methods tie more often than you'd expect, because a rare term (<b>DRUPS</b>, <b>PGAudit</b>) stands out to both. They miss <i>different</i> questions, though, so combining their rankings (hybrid search, using reciprocal rank fusion) puts the right answer highest. And some questions beat every method: if a detail isn't in the text, no search can find it.</p>
-  <button class="run" id="run" disabled>Run the test</button>
-  <div id="evalOut"></div>
+  <div id="evalOut"><p class="status">The test runs automatically once the AI model has loaded.</p></div>
 
   <footer>
     <p>Summaries were written for this demo from each company's public postmortem; follow the links to read the originals. Postmortems found through <a href="https://github.com/danluu/post-mortems">danluu/post-mortems</a>. Model: <a href="https://huggingface.co/Xenova/all-MiniLM-L6-v2">all-MiniLM-L6-v2</a> via <a href="https://huggingface.co/docs/transformers.js">Transformers.js</a>.</p>
@@ -271,7 +271,6 @@ async function search(query) {
 
 // ---------- eval ----------
 async function runEval() {
-  $("run").disabled = true;
   const cases = await fetch("data/eval.json").then((r) => r.json());
   const idx = new Map(docs.map((d, i) => [d.id, i]));
   const rankOf = (rows, want) => { const r = rows.findIndex(([i]) => want.has(docs[i].id)); return r < 0 ? null : r + 1; };
@@ -296,11 +295,9 @@ async function runEval() {
     </div>
     <div class="tablewrap"><table>
       <thead><tr><th>Question</th><th>Should find</th><th>AI</th><th>Keyword</th><th>Hybrid</th></tr></thead>
-      <tbody>${rows.map((r) => `<tr><td>${esc(r.q)}${r.note ? `<br><small class="status">${esc(r.note)}</small>` : ""}</td><td>${esc(title(r.expect[0]))}</td><td class="rank">${cell(r.sem)}</td><td class="rank">${cell(r.kw)}</td><td class="rank">${cell(r.hy)}</td></tr>`).join("")}</tbody>
+      <tbody>${rows.map((r) => `<tr tabindex="0" data-q="${esc(r.q)}" title="Search for this"><td>${esc(r.q)}${r.note ? `<br><small class="status">${esc(r.note)}</small>` : ""}</td><td>${esc(title(r.expect[0]))}</td><td class="rank">${cell(r.sem)}</td><td class="rank">${cell(r.kw)}</td><td class="rank">${cell(r.hy)}</td></tr>`).join("")}</tbody>
     </table></div>
-    <p class="status">MRR (mean reciprocal rank) rewards putting the right answer near the top: 1.0 means always first, 0.5 means typically second.</p>`;
-  $("run").disabled = false;
-  renderTiming();
+    <p class="status">Click a question to run it in the search above. The scores are the same on every visit: same model, same data, same questions, nothing random. MRR (mean reciprocal rank) rewards putting the right answer near the top: 1.0 means always first, 0.5 means typically second.</p>`;
 }
 
 // ---------- wire up ----------
@@ -309,7 +306,16 @@ $("chips").addEventListener("click", (e) => { const b = e.target.closest("button
 $("form").addEventListener("submit", (e) => { e.preventDefault(); search($("q").value); });
 let timer;
 $("q").addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(() => search($("q").value), 250); });
-$("run").addEventListener("click", runEval);
+const pickRow = (e) => {
+  const tr = e.target.closest("tr[data-q]");
+  if (!tr || (e.type === "keydown" && e.key !== "Enter" && e.key !== " ")) return;
+  e.preventDefault();
+  $("q").value = tr.dataset.q;
+  search(tr.dataset.q);
+  $("q").scrollIntoView({ behavior: "smooth", block: "center" });
+};
+$("evalOut").addEventListener("click", pickRow);
+$("evalOut").addEventListener("keydown", pickRow);
 
 try {
   await loadData();
@@ -321,11 +327,11 @@ try {
   $("kwStatus").textContent = "Couldn't load the incident data.";
   throw e;
 }
-loadModel().then(() => {
+loadModel().then(async () => {
   $("semStatus").textContent = "";
-  $("run").disabled = false;
   renderTiming();
-  search($("q").value);
+  await search($("q").value);
+  await runEval();
 }).catch((e) => {
   $("semStatus").textContent = "The AI model couldn't load in this browser. Keyword search still works.";
   console.error(e);
