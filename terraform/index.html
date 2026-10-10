@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Terraform, Five Years On</title>
+<meta name="description" content="What changed in Terraform and OpenTofu from 2021 to 2026, in step-through diagrams: moved, import and removed blocks, checks and tests, the license change and OpenTofu, provider functions, ephemeral values, and Stacks.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<link rel="stylesheet" href="../drawn/drawn.css">
+</head>
+<body>
+<div class="shell">
+  <nav class="toc" aria-label="Chapters">
+    <details id="tocBox" open><summary>Chapters</summary><ol id="toc"></ol></details>
+  </nav>
+  <main>
+    <div class="kicker"><a href="../">SRE Lab</a> · explainers</div>
+    <h1>Terraform, Five Years On</h1>
+    <p class="lede">Terraform changed a lot after 1.0: refactoring without state surgery, config-driven imports, built-in testing, a license change and an open-source fork, and new ways to keep secrets out of state. Step through each diagram with the buttons or your arrow keys, then use the 30-second answer, the gotchas and the quiz to make it stick.</p>
+    <p class="lede">Facts come from HashiCorp's and OpenTofu's own documentation and release notes; each chapter links to them.</p>
+    <div id="chapters"></div>
+    <footer>
+      <p>Diagrams and wording by Sally Roth. Based on the <a href="https://developer.hashicorp.com/terraform">Terraform</a> and <a href="https://opentofu.org/docs/">OpenTofu</a> documentation.</p>
+      <p>Part of <a href="../">SRE Lab</a> · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab/tree/main/terraform">source</a></p>
+    </footer>
+  </main>
+</div>
+<script type="module">
+import { mountExplainer } from "../drawn/engine.js";
+import { CHAPTERS } from "./diagrams.js";
+await mountExplainer(CHAPTERS, { key: "terraform" });
+</script>
+</body>
+</html>

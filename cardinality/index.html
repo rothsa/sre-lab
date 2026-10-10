@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Taming Cardinality</title>
+<meta name="description" content="How metric labels multiply time series and cost, how Prometheus stores them, how to find the culprits, and how to keep metrics useful without the bill.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<link rel="stylesheet" href="../drawn/drawn.css">
+</head>
+<body>
+<div class="shell">
+  <nav class="toc" aria-label="Chapters">
+    <details id="tocBox" open><summary>Chapters</summary><ol id="toc"></ol></details>
+  </nav>
+  <main>
+    <div class="kicker"><a href="../">SRE Lab</a> · explainers</div>
+    <h1>Taming Cardinality</h1>
+    <p class="lede">Every label value creates a new time series, and series are what you pay for in memory, storage and dollars. This explainer shows how cardinality grows, where it hurts, and the techniques that keep it in check. Step through each diagram with the buttons or your arrow keys, then use the 30-second answer, the gotchas and the quiz to make it stick.</p>
+    <p class="lede">Based on the Prometheus and OpenTelemetry documentation and vendor docs where noted; each chapter links to its sources.</p>
+    <div id="chapters"></div>
+    <footer>
+      <p>Diagrams and wording by Sally Roth. Based on the <a href="https://prometheus.io/docs/">Prometheus</a> and <a href="https://opentelemetry.io/docs/">OpenTelemetry</a> documentation.</p>
+      <p>Part of <a href="../">SRE Lab</a> · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab/tree/main/cardinality">source</a></p>
+    </footer>
+  </main>
+</div>
+<script type="module">
+import { mountExplainer } from "../drawn/engine.js";
+import { CHAPTERS } from "./diagrams.js";
+await mountExplainer(CHAPTERS, { key: "cardinality" });
+</script>
+</body>
+</html>
