@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Find the Incident</title>
-<meta name="description" content="Search real public postmortems by symptom. AI (semantic) search and keyword (BM25) search side by side, running entirely in your browser.">
+<meta name="description" content="Search real public postmortems by symptom. An embedding model and BM25 keyword ranking side by side, running entirely in your browser.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
 <style>
 /* Layout: search box and example chips, a timing strip, then two result columns
-   (AI search vs keyword search) that stack on narrow screens, then the eval panel. */
+   (embedding model vs BM25) that stack on narrow screens, then the eval panel. */
 :root {
   --bg: #f4f6f8; --panel: #ffffff; --fg: #141c24; --muted: #5b6875; --rule: #d7dee5;
   --accent: #1f5fbf; --sem: #6d3fc0; --kw: #b45309; --good: #15803d; --bad: #c2410c; --mark: #fde68a;
@@ -75,7 +75,7 @@ footer a { color: var(--accent); }
 <div class="wrap">
   <div class="kicker">SRE Lab · retrieval</div>
   <h1>Find the Incident</h1>
-  <p class="lede">Describe a symptom and search real, public postmortems. AI search (a small embedding model running in your browser) and plain keyword search run side by side, so you can see where each one is better. No server, no API calls: after a one-time 23&nbsp;MB model download, everything happens on your device.</p>
+  <p class="lede">Describe a symptom and search real, public postmortems. An embedding model (all-MiniLM-L6-v2, a small model that turns text into numbers capturing its meaning, running in your browser) and BM25 (the classic keyword ranking behind most search engines) run side by side, so you can see where each one is better. The embedding model doesn't write anything; it only ranks. No server, no API calls: after a one-time 23&nbsp;MB model download, everything happens on your device.</p>
 
   <form class="search" id="form" role="search">
     <input id="q" type="search" autocomplete="off" value="DNS broke everything" placeholder="Describe a symptom" aria-label="Describe the symptom">
@@ -84,21 +84,21 @@ footer a { color: var(--accent); }
   <div class="timing" id="timing" aria-live="polite"></div>
 
   <div class="cols">
-    <section class="col sem" aria-label="AI search results">
-      <h3><span class="swatch"></span>AI search <small>embeddings · meaning</small></h3>
+    <section class="col sem" aria-label="Embedding model results">
+      <h3><span class="swatch"></span>Embedding model <small>MiniLM · matches meaning</small></h3>
       <div id="semStatus" class="status">Loading the model…<div class="bar"><i id="bar"></i></div></div>
       <div id="sem"></div>
     </section>
-    <section class="col kw" aria-label="Keyword search results">
-      <h3><span class="swatch"></span>Keyword search <small>BM25 · exact words</small></h3>
+    <section class="col kw" aria-label="BM25 results">
+      <h3><span class="swatch"></span>BM25 <small>keyword ranking · matches words</small></h3>
       <div id="kwStatus" class="status">Loading incidents…</div>
       <div id="kw"></div>
     </section>
   </div>
 
   <h2>How well does each do?</h2>
-  <p class="why">Fifteen test questions, phrased the way an on-call engineer might type them, each with the postmortem a good search should find. The honest result: on a small corpus like this the two methods tie more often than you'd expect, because a rare term (<b>DRUPS</b>, <b>PGAudit</b>) stands out to both. They miss <i>different</i> questions, though, so combining their rankings (hybrid search, using reciprocal rank fusion) puts the right answer highest. And some questions beat every method: if a detail isn't in the text, no search can find it.</p>
-  <div id="evalOut"><p class="status">The test runs automatically once the AI model has loaded.</p></div>
+  <p class="why">Fifteen test questions, phrased the way an on-call engineer might type them, each with the postmortem a good search should find. The honest result: on a small corpus like this the embedding model and BM25 tie more often than you'd expect, because a rare term (<b>DRUPS</b>, <b>PGAudit</b>) stands out to both. They miss <i>different</i> questions, though, so combining their rankings (hybrid search, using reciprocal rank fusion) puts the right answer highest. And some questions beat every method: if a detail isn't in the text, no search can find it.</p>
+  <div id="evalOut"><p class="status">The test runs automatically once the embedding model has loaded.</p></div>
 
   <footer>
     <p>Summaries were written for this demo from each company's public postmortem; follow the links to read the originals. Postmortems found through <a href="https://github.com/danluu/post-mortems">danluu/post-mortems</a>. Model: <a href="https://huggingface.co/Xenova/all-MiniLM-L6-v2">all-MiniLM-L6-v2</a> via <a href="https://huggingface.co/docs/transformers.js">Transformers.js</a>.</p>
@@ -184,7 +184,7 @@ function buildBM25() {
   };
 }
 
-// ---------- AI search ----------
+// ---------- embedding search ----------
 let extractor = null;
 async function loadModel() {
   const t0 = performance.now();
@@ -240,8 +240,8 @@ function renderTiming() {
   const parts = [];
   if (timing.model != null) parts.push(`model load ${ms(timing.model)}`);
   if (timing.embed != null) parts.push(`query embedding ${ms(timing.embed)}`);
-  if (timing.sem != null) parts.push(`AI search ${ms(timing.sem)}`);
-  if (timing.kw != null) parts.push(`keyword search ${ms(timing.kw)}`);
+  if (timing.sem != null) parts.push(`embedding search ${ms(timing.sem)}`);
+  if (timing.kw != null) parts.push(`BM25 ${ms(timing.kw)}`);
   parts.push(`${docs.length} postmortems`);
   $("timing").innerHTML = parts.map((p) => `<span>${p}</span>`).join("");
 }
@@ -264,7 +264,7 @@ async function search(query) {
   }
   const kwSet = new Set(kwTop.map(([i]) => i));
   const semSet = new Set((semTop || []).map(([i]) => i));
-  $("kw").innerHTML = kwTop.length ? kwTop.map(([i, s]) => card(i, s, query, semSet)).join("") : `<p class="status">No postmortem contains those words. Try AI search, or different wording.</p>`;
+  $("kw").innerHTML = kwTop.length ? kwTop.map(([i, s]) => card(i, s, query, semSet)).join("") : `<p class="status">No postmortem contains those words. The embedding model may still find a match by meaning.</p>`;
   if (semTop) $("sem").innerHTML = semTop.map(([i, s]) => card(i, s, query, kwSet)).join("");
   renderTiming();
 }
@@ -287,14 +287,14 @@ async function runEval() {
   const title = (id) => { const i = idx.get(id); return i == null ? id : `${docs[i].company}: ${docs[i].title}`; };
   $("evalOut").innerHTML = `
     <div class="scores">
-      <div class="score"><div class="k">AI search · found in top ${TOP}</div><div class="v" style="color:var(--sem)">${hit("sem")}/${rows.length}</div></div>
-      <div class="score"><div class="k">Keyword · found in top ${TOP}</div><div class="v" style="color:var(--kw)">${hit("kw")}/${rows.length}</div></div>
-      <div class="score"><div class="k">AI search · MRR</div><div class="v" style="color:var(--sem)">${mrr("sem").toFixed(2)}</div></div>
-      <div class="score"><div class="k">Keyword · MRR</div><div class="v" style="color:var(--kw)">${mrr("kw").toFixed(2)}</div></div>
+      <div class="score"><div class="k">Embedding · found in top ${TOP}</div><div class="v" style="color:var(--sem)">${hit("sem")}/${rows.length}</div></div>
+      <div class="score"><div class="k">BM25 · found in top ${TOP}</div><div class="v" style="color:var(--kw)">${hit("kw")}/${rows.length}</div></div>
+      <div class="score"><div class="k">Embedding · MRR</div><div class="v" style="color:var(--sem)">${mrr("sem").toFixed(2)}</div></div>
+      <div class="score"><div class="k">BM25 · MRR</div><div class="v" style="color:var(--kw)">${mrr("kw").toFixed(2)}</div></div>
       <div class="score"><div class="k">Hybrid · MRR</div><div class="v" style="color:var(--good)">${mrr("hy").toFixed(2)}</div></div>
     </div>
     <div class="tablewrap"><table>
-      <thead><tr><th>Question</th><th>Should find</th><th>AI</th><th>Keyword</th><th>Hybrid</th></tr></thead>
+      <thead><tr><th>Question</th><th>Should find</th><th>Embedding</th><th>BM25</th><th>Hybrid</th></tr></thead>
       <tbody>${rows.map((r) => `<tr tabindex="0" data-q="${esc(r.q)}" title="Search for this"><td>${esc(r.q)}${r.note ? `<br><small class="status">${esc(r.note)}</small>` : ""}</td><td>${esc(title(r.expect[0]))}</td><td class="rank">${cell(r.sem)}</td><td class="rank">${cell(r.kw)}</td><td class="rank">${cell(r.hy)}</td></tr>`).join("")}</tbody>
     </table></div>
     <p class="status">Click a question to run it in the search above. The scores are the same on every visit: same model, same data, same questions, nothing random. MRR (mean reciprocal rank) rewards putting the right answer near the top: 1.0 means always first, 0.5 means typically second.</p>`;
@@ -333,7 +333,7 @@ loadModel().then(async () => {
   await search($("q").value);
   await runEval();
 }).catch((e) => {
-  $("semStatus").textContent = "The AI model couldn't load in this browser. Keyword search still works.";
+  $("semStatus").textContent = "The embedding model couldn't load in this browser. BM25 still works.";
   console.error(e);
 });
 </script>
