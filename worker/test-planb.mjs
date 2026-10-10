@@ -45,8 +45,15 @@ function fakeAI(behaviour = "step0", header = true) {
 const post = (body, ip = "203.0.113.7", ctype = "application/json") => new Request("http://x/api/planb", {
   method: "POST", headers: { "content-type": ctype, "cf-connecting-ip": ip }, body: typeof body === "string" ? body : JSON.stringify(body),
 });
-const env = (o = {}) => ({ DB: fakeD1(), AI: fakeAI(), ANTHROPIC_API_KEY: FAKE_KEY, PLANB_SALT: "test-salt", ...o });
-const call = async (e, req) => { const res = await onRequest({ request: req, env: e }); const text = await res.text(); return { res, text, body: JSON.parse(text) }; };
+const env = (o = {}) => ({ DB: fakeD1(), AI: fakeAI(), ANTHROPIC_API_KEY: FAKE_KEY, WORKERS_AI_TOKEN: "fake-cf-token", PLANB_ACCOUNT_ID: "acct", PLANB_SALT: "test-salt", ...o });
+// planb.js calls the gateway REST endpoint with fetch; route that to the fake gateway for this env.
+const call = async (e, req) => {
+  globalThis.fetch = async (url, init) => {
+    if (!String(url).startsWith("https://gateway.ai.cloudflare.com/v1/acct/")) throw new Error("unexpected fetch " + url);
+    return e.AI.gateway().run(JSON.parse(init.body), { gateway: { skipCache: init.headers["cf-aig-skip-cache"] === "true" } });
+  };
+  const res = await onRequest({ request: req, env: e }); const text = await res.text(); return { res, text, body: JSON.parse(text) };
+};
 
 let n = 0;
 const test = async (name, fn) => { await fn(); n++; console.log(`ok - ${name}`); };

@@ -208,7 +208,7 @@ export async function planbApi(request, env) {
     r.headers.set("Allow", "POST");
     return r;
   }
-  if (!env.DB || !env.AI) return fail(503, "not_configured", "Plan B isn't set up on this deployment yet.");
+  if (!env.DB || !env.AI || !env.PLANB_ACCOUNT_ID || !env.WORKERS_AI_TOKEN) return fail(503, "not_configured", "Plan B isn't set up on this deployment yet.");
   const ctype = request.headers.get("content-type") || "";
   if (!ctype.toLowerCase().includes("application/json")) return fail(400, "bad_request", "Send Content-Type: application/json.");
   const declared = Number(request.headers.get("content-length") || 0);
@@ -250,7 +250,14 @@ export async function planbApi(request, env) {
   const t0 = Date.now();
   let res, body;
   try {
-    res = await withTimeout(env.AI.gateway(gatewayId).run(steps, { gateway: { skipCache: true } }), OVERALL_TIMEOUT_MS);
+    // Direct call to the gateway's Universal Endpoint (REST). The env.AI.gateway().run() binding
+    // returned 401 for the workers-ai step in testing; the REST endpoint works and sets cf-aig-step.
+    const url = `https://gateway.ai.cloudflare.com/v1/${env.PLANB_ACCOUNT_ID}/${gatewayId}`;
+    res = await withTimeout(fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "cf-aig-skip-cache": "true" },
+      body: JSON.stringify(steps),
+    }), OVERALL_TIMEOUT_MS);
     body = await res.clone().json().catch(() => null);
   } catch (e) {
     console.log("planb: gateway call threw", String(e?.message || e).slice(0, 120));
