@@ -62,6 +62,13 @@ export const CHAPTERS = [
       "A Pod that isn't Ready isn't a ready endpoint, so it gets no Service traffic. A selector that matches no Pods gives an empty EndpointSlice and connections fail.",
       "`externalTrafficPolicy: Local` keeps the client IP but can spread load unevenly, and nodes with no local endpoint drop the traffic. For in-cluster clients, `internalTrafficPolicy: Local` does the same, and `trafficDistribution: PreferSameZone` prefers same-zone endpoints without dropping.",
     ],
+    atScale: [
+      "Tens of thousands of Services and endpoints: in `iptables` mode kube-proxy writes a few rules per Service and per endpoint, so each sync gets slow. The docs say `nftables` mode handles endpoint changes faster and processes packets more efficiently, though the packet gain only shows with tens of thousands of Services. Large clusters set `mode: nftables` explicitly (kernel 5.13 or later).",
+      "`ipvs` is no longer the scale answer. It's deprecated since v1.35, will be disabled by default from v1.40 and removed in v1.43; the docs point to `nftables` instead.",
+      "Endpoint churn costs every node, because each EndpointSlice change is sent to kube-proxy everywhere. Slices hold at most 100 endpoints by default (`--max-endpoints-per-slice`, up to 1000), so one Pod change resends one small slice. The legacy Endpoints object truncates past 1000 endpoints and gets `endpoints.kubernetes.io/over-capacity: truncated`, so clients must read EndpointSlices.",
+      "Rolling a big Deployment bursts updates. kube-proxy's `minSyncPeriod` (default `1s`) batches them; if `sync_proxy_rules_duration_seconds` averages well above 1 second, raise it. Since v1.28 iptables mode only rewrites what changed, so remove old large overrides first.",
+      "SIG Scalability's thresholds are 10000 Services per cluster, 5000 per namespace and 250 endpoints per Service. They aren't hard limits: past them performance degrades, and they shrink as other dimensions approach their maximum.",
+    ],
     quiz: [
       { q: "Which component turns a Service into something packets can use, and where does it run?", a: "kube-proxy (or a CNI plugin's replacement for it). It runs on every node, watches Services and EndpointSlices, and programs iptables or nftables rules in that node's kernel." },
       { q: "A new Pod joins a Deployment behind a Service. What has to happen before it gets traffic?", a: "Its labels must match the selector and the Pod must become Ready: its readiness probe passes, or its containers are running if it has no probe. Then the EndpointSlice controller marks it ready in the Service's EndpointSlice, and kube-proxy on each node updates its rules to include it." },
@@ -73,6 +80,7 @@ export const CHAPTERS = [
       { title: "Virtual IPs and Service proxies", url: "https://kubernetes.io/docs/reference/networking/virtual-ips/" },
       { title: "EndpointSlices", url: "https://kubernetes.io/docs/concepts/services-networking/endpoint-slices/" },
       { title: "Using source IP", url: "https://kubernetes.io/docs/tutorials/services/source-ip/" },
+      { title: "Kubernetes scalability thresholds", url: "https://github.com/kubernetes/community/blob/master/sig-scalability/configs-and-limits/thresholds.md" },
     ],
   },
 
@@ -139,6 +147,12 @@ export const CHAPTERS = [
       "Pod, Service and node IP ranges must not overlap with each other or with networks the cluster needs to reach.",
       "Since Kubernetes 1.24 the kubelet no longer manages CNI. The container runtime loads the plugin, with config usually in `/etc/cni/net.d`, so look there, not at kubelet flags, when Pod network setup fails.",
     ],
+    atScale: [
+      "Pod IP space caps node count. With `--allocate-node-cidrs`, each node gets a slice of the cluster CIDR, `/24` by default for IPv4 (`--node-cidr-mask-size`). A `/16` cluster CIDR then holds only 256 node ranges, so size the CIDR for the node count you plan to reach.",
+      "Pod density has a ceiling: the large-cluster docs say no more than 110 Pods per node, 5,000 nodes and 150,000 Pods, and SIG Scalability uses `min(110, 10*#cores)` Pods per node. Raising `maxPods` beyond that is outside the tested envelope.",
+      "Conntrack fills up. Every NATed flow takes a kernel conntrack entry, and kube-proxy sizes the table at 32768 entries per core with a floor of 131072 (`--conntrack-max-per-core`, `--conntrack-min`). Busy nodes with many short-lived flows, UDP DNS especially, start dropping packets when it's full; raise the limits or cut UDP flows with NodeLocal DNSCache.",
+      "Per-node network agents run as DaemonSets, and addon default limits are based on small or medium clusters. At scale they get OOM-killed or CPU-throttled, so raise requests and limits; the VPA in recommender mode can suggest values.",
+    ],
     quiz: [
       { q: "Who calls the CNI plugin when a Pod starts, and what does the plugin do?", a: "The container runtime (containerd or CRI-O) calls it while creating the Pod sandbox. The plugin adds a network interface in the Pod's namespace, assigns an IP and sets up routes." },
       { q: "What are the two common ways Pod traffic crosses between nodes?", a: "Native routing, where the network knows which node owns each Pod range, or an overlay, where packets are encapsulated between node IPs (for example VXLAN). The plugin and its config decide." },
@@ -152,6 +166,10 @@ export const CHAPTERS = [
       { title: "Network policies", url: "https://kubernetes.io/docs/concepts/services-networking/network-policies/" },
       { title: "kube-controller-manager", url: "https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/" },
       { title: "CNI bridge plugin", url: "https://www.cni.dev/plugins/current/main/bridge/" },
+      { title: "kube-proxy", url: "https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/" },
+      { title: "Considerations for large clusters", url: "https://kubernetes.io/docs/setup/best-practices/cluster-large/" },
+      { title: "Kubernetes scalability thresholds", url: "https://github.com/kubernetes/community/blob/master/sig-scalability/configs-and-limits/thresholds.md" },
+      { title: "Using NodeLocal DNSCache", url: "https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/" },
     ],
   },
 
@@ -204,6 +222,12 @@ export const CHAPTERS = [
       "Pods with `hostNetwork: true` need `dnsPolicy: ClusterFirstWithHostNet`, or they fall back to the node's resolver.",
       "On nodes using systemd-resolved, `/etc/resolv.conf` points at a local stub, which can make CoreDNS forward to itself in a loop. The kubelet's `--resolv-conf` should point at the real file.",
     ],
+    atScale: [
+      "CoreDNS replicas must grow with the cluster. The cluster-proportional-autoscaler's linear mode sets replicas to max(ceil(cores / `coresPerReplica`), ceil(nodes / `nodesPerReplica`)), with defaults 256 and 16. At 1000 small nodes that's 63 replicas; with many-core nodes the core term wins.",
+      "Conntrack pressure: each UDP query to the `kube-dns` ClusterIP is DNATed and tracked, and UDP entries stay until `nf_conntrack_udp_timeout` (30 seconds by default) expires. Conntrack races drop queries, and a dropped query can stall up to 30s (3 retries + 10s timeout). NodeLocal DNSCache runs a cache on every node, skips the DNAT and talks TCP to CoreDNS.",
+      "Cross-node hops: Pods with the highest DNS QPS may have to reach a CoreDNS Pod on another node. A node-local cache answers locally, adds per-node DNS metrics, and can re-enable negative caching to cut queries to CoreDNS.",
+      "CoreDNS memory grows with the Services and endpoints it serves, and its cache defaults to 10000 entries (about 30 MB when full). Addon defaults come from small and medium clusters, so raise its limits as you grow and run it with `system-cluster-critical` priority so it isn't preempted.",
+    ],
     quiz: [
       { q: "A Pod in namespace `prod` looks up `api`. What name is actually resolved and who answers?", a: "The search list makes the first try `api.prod.svc.cluster.local`. The query goes to the `kube-dns` Service IP, gets DNATed to a CoreDNS Pod, and the `kubernetes` plugin answers with the Service's ClusterIP." },
       { q: "Why does `curl https://api.example.com` from a Pod generate extra DNS traffic, and how do you avoid it?", a: "The name has fewer dots than `ndots:5`, so the resolver tries it with each search domain appended first and gets NXDOMAINs. Use `api.example.com.` with a trailing dot, or lower `ndots` in the Pod's `dnsConfig`." },
@@ -217,6 +241,8 @@ export const CHAPTERS = [
       { title: "Using NodeLocal DNSCache", url: "https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/" },
       { title: "resolv.conf(5)", url: "https://man7.org/linux/man-pages/man5/resolv.conf.5.html" },
       { title: "hostname(7)", url: "https://man7.org/linux/man-pages/man7/hostname.7.html" },
+      { title: "Autoscale the DNS service in a cluster", url: "https://kubernetes.io/docs/tasks/administer-cluster/dns-horizontal-autoscaling/" },
+      { title: "Considerations for large clusters", url: "https://kubernetes.io/docs/setup/best-practices/cluster-large/" },
     ],
   },
 
@@ -277,6 +303,13 @@ export const CHAPTERS = [
       "TLS hosts must match the rule hosts; TLS does not work on the default rule. Behind the controller, traffic is plain HTTP unless you configure otherwise.",
       "Gateway API is installed as CRDs, not built into the API server. A Gateway accepts routes only from its own namespace unless `allowedRoutes` says otherwise, and a route can send to a Service in another namespace only if a `ReferenceGrant` there allows it.",
     ],
+    atScale: [
+      "One cloud load balancer per `LoadBalancer` Service gets expensive with hundreds of apps. An Ingress or Gateway fans many hosts and paths out from one IP, keeping the number of load balancers down.",
+      "Many teams, one entry point: Ingress puts hosts, TLS and routing in one object with no split between who runs the entry point and who owns routes. Gateway API splits the Gateway (platform team) from HTTPRoutes (app teams); a listener accepts routes only from its own namespace by default, and `allowedRoutes` with a namespace `Selector` opens it to chosen teams.",
+      "A single Gateway holds at most 64 listeners. ListenerSet (GA, in the Standard channel since v1.5.0) lets teams attach their own listeners and certificates to a shared Gateway beyond that, once the Gateway opts in with `spec.allowedListeners`.",
+      "The controller is an addon that watches every Ingress, Service and TLS Secret it serves. Addon default limits are sized for small or medium clusters, so at scale it gets OOM-killed or throttled; raise its limits and split load across several IngressClasses or Gateways.",
+      "With several controllers, mark exactly one IngressClass as default. If more than one has `ingressclass.kubernetes.io/is-default-class: true`, new Ingresses without `ingressClassName` are rejected.",
+    ],
     quiz: [
       { q: "What is an ingress controller, physically?", a: "Pods running a reverse proxy, plus logic that watches Ingress, Service, EndpointSlice and Secret objects through the API server and rewrites the proxy config, usually sending straight to Pod IPs. It's usually exposed with a LoadBalancer Service." },
       { q: "Where does TLS terminate with a standard Ingress, and where does the certificate come from?", a: "At the ingress controller, on port 443. The certificate and key come from a Secret of type `kubernetes.io/tls` named in the Ingress `tls` section." },
@@ -289,6 +322,8 @@ export const CHAPTERS = [
       { title: "Gateway API: API overview", url: "https://gateway-api.sigs.k8s.io/docs/concepts/api-overview/" },
       { title: "Gateway API: roles and personas", url: "https://gateway-api.sigs.k8s.io/docs/concepts/roles-and-personas/" },
       { title: "Gateway API: security model", url: "https://gateway-api.sigs.k8s.io/docs/concepts/security/" },
+      { title: "Considerations for large clusters", url: "https://kubernetes.io/docs/setup/best-practices/cluster-large/" },
+      { title: "Gateway API: ListenerSet", url: "https://gateway-api.sigs.k8s.io/reference/api-types/listenerset/" },
     ],
   },
 
@@ -347,6 +382,12 @@ export const CHAPTERS = [
       "Dynamically provisioned volumes inherit the StorageClass `reclaimPolicy`, which defaults to `Delete`: deleting the PVC deletes the data.",
       "Deleting or scaling down a StatefulSet leaves its PVCs behind by default. That's for data safety, but it also means scaling back up reuses old data.",
     ],
+    atScale: [
+      "Attach limits per node: the scheduler's defaults are 39 volumes for EBS, 16 for Google PD and 16 for Azure Disk. Dynamic limits are type-aware: 25 EBS volumes on M5, C5, R5, T3 and Z1D, up to 127 on GCE and up to 64 on Azure. Dense nodes running many stateful Pods run out of attach slots before CPU or memory.",
+      "CSI drivers report their own per-node limit through `NodeGetInfo`, and the scheduler honors it. With `MutableCSINodeAllocatableCount`, the kubelet refreshes it every `nodeAllocatableUpdatePeriodSeconds` (minimum 10 seconds), and an attach that fails with `ResourceExhausted` marks the Pod Failed so its controller recreates it instead of it hanging in `ContainerCreating`.",
+      "Cluster Autoscaler only accounts for CSI volume limits with `--enable-csi-node-aware-scheduling=true`. Without it, don't set the CSIDriver's `preventPodSchedulingIfMissing: true`, or it may fail to scale up for Pending Pods with CSI volumes.",
+      "Zonal disks pin StatefulSet Pods to a zone. The node autoscaler needs a node group per zone (Cluster Autoscaler's advice, with `--balance-similar-node-groups`) so a rescheduled Pod can get a node next to its disk.",
+    ],
     quiz: [
       { q: "Why would you use `volumeBindingMode: WaitForFirstConsumer`?", a: "So the volume is provisioned or bound only after a Pod using it is scheduled, in a topology (such as a zone) that node can reach. With `Immediate`, a zonal disk can end up where the Pod can't run." },
       { q: "What's the difference between attach and mount for a CSI volume?", a: "Attach makes the volume available to the node, driven by a VolumeAttachment and the driver's controller side. Mount happens on the node: the kubelet calls the CSI node plugin to stage and publish the volume into the Pod's directory." },
@@ -359,6 +400,8 @@ export const CHAPTERS = [
       { title: "Volumes (CSI)", url: "https://kubernetes.io/docs/concepts/storage/volumes/" },
       { title: "VolumeAttachment", url: "https://kubernetes.io/docs/reference/kubernetes-api/config-and-storage-resources/volume-attachment-v1/" },
       { title: "StatefulSets", url: "https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/" },
+      { title: "Node-specific volume limits", url: "https://kubernetes.io/docs/concepts/storage/storage-limits/" },
+      { title: "Cluster Autoscaler FAQ", url: "https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md" },
     ],
   },
 
@@ -415,6 +458,12 @@ export const CHAPTERS = [
       "Turning on encryption only affects new writes. Rewrite existing Secrets (for example `kubectl get secrets -A -o json | kubectl replace -f -`) to encrypt them.",
       "Updating a ConfigMap doesn't restart anything. Env vars stay stale until restart, `subPath` mounts never update, and normal mounts update with a delay.",
       "Every read verb on Secrets returns values: `get` for one named Secret, `list` or `watch` for all of them. Pod-create rights in a namespace, including via Deployments, imply read access to its Secrets.",
+    ],
+    atScale: [
+      "Watch load: the kubelet watches every Secret and ConfigMap its Pods mount. With tens of thousands of unique mounts, marking them `immutable: true` closes those watches and significantly reduces kube-apiserver load. It can't be undone, so publish a new versioned object and roll the Pods.",
+      "Each Secret is capped at 1MiB so large ones can't exhaust API server and kubelet memory, but many small Secrets can too. Cap the count per namespace with a ResourceQuota.",
+      "Propagation delay: a mounted ConfigMap or Secret updates after the kubelet sync period plus cache delay. `configMapAndSecretChangeDetectionStrategy` picks watch (default), TTL cache, or a direct get per sync; the cheaper options for the API server trade off freshness.",
+      "KMS at scale: KMS v1 is deprecated since v1.28 and disabled by default since v1.29. KMS v2 derives a single-use DEK per encryption locally and caches unwrapped DEKs, so cached keys decrypt without a KMS call; the docs call its performance significantly better.",
     ],
     quiz: [
       { q: "You update a ConfigMap used both as env vars and as a mounted volume. What does the running Pod see?", a: "The env vars keep the old values until the container restarts. The mounted files are updated eventually by the kubelet, unless they're `subPath` mounts, and the app must re-read them." },

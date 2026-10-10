@@ -57,6 +57,13 @@ export const CHAPTERS = [
       "Don't run the HPA and the VPA on the same metric (CPU or memory) for one workload; they fight. Splitting them, or HPA on custom metrics, is fine.",
       "Remove `spec.replicas` from the Deployment manifest once an HPA owns it, or every `kubectl apply` resets the count. Remove it with `kubectl apply edit-last-applied` first, or the next apply drops the Deployment to 1 replica.",
     ],
+    atScale: [
+      "Thousands of HPAs: the controller loops every 15 seconds (`--horizontal-pod-autoscaler-sync-period`) and syncs 5 HPAs at a time by default (`--concurrent-horizontal-pod-autoscaler-syncs`). Raise it for responsiveness, at more CPU and network cost in the controller manager.",
+      "metrics-server's default requests (100m CPU, 200MiB) cover about 100 nodes, 70 Pods per node and 100 Deployments with HPAs. Above 100 nodes, add 1m CPU and 2MiB memory per node; it claims support up to 5,000 nodes.",
+      "Cluster Autoscaler is tested up to 1000 nodes running 30 Pods each, with scale-up latency under 60 seconds (about 15 on average) at 100 to 1000 nodes, but only if no Pod uses affinity or anti-affinity, whose check is about three orders of magnitude slower. Give it a full CPU core; nothing beyond 1000 nodes was performance-tested.",
+      "Shrinking is slow: a node must be unneeded for 10 minutes, non-empty nodes go one at a time, and empty ones in batches of up to 10 (`--max-empty-bulk-delete`). Karpenter consolidation is capped by disruption budgets, `nodes: 10%` by default.",
+      "Multi-zone fleets: Cluster Autoscaler wants one node group per zone with identical nodes, plus `--balance-similar-node-groups`, and a cloud quota check before raising maximums.",
+    ],
     quiz: [
       { q: "An HPA targets 50% CPU. 3 Pods each request 200m and use 300m. What does it do?", a: "Utilization is 300m / 200m = 150%. desired = ceil(3 × 150/50) = 9 Pods, capped at `maxReplicas`. The default scale-up rate (100% or 4 Pods per 15s, whichever is more) gets it there in two steps: 7, then 9." },
       { q: "Traffic drops sharply. Why do Pods stay for several minutes?", a: "The scale-down stabilization window (300 seconds by default): the HPA acts on the highest recommendation in that window, so it scales down only after the lower load has lasted." },
@@ -72,6 +79,8 @@ export const CHAPTERS = [
       { title: "Cluster Autoscaler FAQ", url: "https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md" },
       { title: "VPA known limitations", url: "https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/known-limitations.md" },
       { title: "Karpenter: disruption", url: "https://karpenter.sh/docs/concepts/disruption/" },
+      { title: "metrics-server", url: "https://github.com/kubernetes-sigs/metrics-server" },
+      { title: "kube-controller-manager", url: "https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/" },
     ],
   },
 
@@ -135,6 +144,13 @@ export const CHAPTERS = [
       "A RoleBinding to a ClusterRole is namespace-scoped. Only a ClusterRoleBinding grants across all namespaces or on cluster-scoped resources like nodes.",
       "Pod Security `enforce` applies to Pods, not Deployments. The Deployment is accepted, and its ReplicaSet then fails to create Pods; look at the ReplicaSet's events. Set `warn` to the same level to get a warning at apply time.",
     ],
+    atScale: [
+      "Hundreds of teams: grant per namespace with RoleBindings, not ClusterRoleBindings. Avoid wildcards, which also cover CRDs added later, and keep everyone out of `system:masters`, which bypasses RBAC and can't be revoked by removing bindings.",
+      "Admission webhooks sit on the write path of every matching request. Mutating webhooks run one after another, validating ones in parallel. The timeout defaults to 10 seconds (allowed 1 to 30); set it small and scope calls with `namespaceSelector`, `objectSelector` and `matchConditions`. The project prefers CEL-based admission policies where they fit.",
+      "`failurePolicy` defaults to `Fail`, so a webhook outage rejects every matching write. Run webhooks HA behind a Service, don't match `kube-system` or node Leases, and watch for two webhooks that each need the other's Pods to start.",
+      "One noisy client must not starve the rest. API Priority and Fairness splits the API server's concurrency (`--max-requests-inflight` 400 plus `--max-mutating-requests-inflight` 200 by default) across priority levels, uses `ByUser` or `ByNamespace` flows and shuffle sharding, and counts rejections in `apiserver_flowcontrol_rejected_requests_total`.",
+      "In multi-tenant clusters, create rights alone can exhaust etcd by object size or count. Cap object counts per namespace with ResourceQuota, and review bindings periodically: a new user with a deleted user's name inherits their bindings.",
+    ],
     quiz: [
       { q: "You bind the ClusterRole `edit` to a user with a RoleBinding in namespace `dev`. What can they edit?", a: "Only objects in `dev`. A RoleBinding grants the referenced ClusterRole's permissions within its own namespace." },
       { q: "How does a Pod authenticate to the API server, and as whom?", a: "With the projected ServiceAccount token the kubelet mounted, sent as a bearer token. It authenticates as `system:serviceaccount:<namespace>:<name>`." },
@@ -148,6 +164,10 @@ export const CHAPTERS = [
       { title: "Service accounts", url: "https://kubernetes.io/docs/concepts/security/service-accounts/" },
       { title: "kubectl auth can-i", url: "https://kubernetes.io/docs/reference/kubectl/generated/kubectl_auth/kubectl_auth_can-i/" },
       { title: "Pod Security Admission", url: "https://kubernetes.io/docs/concepts/security/pod-security-admission/" },
+      { title: "Role based access control good practices", url: "https://kubernetes.io/docs/concepts/security/rbac-good-practices/" },
+      { title: "Admission webhook good practices", url: "https://kubernetes.io/docs/concepts/cluster-administration/admission-webhooks-good-practices/" },
+      { title: "Dynamic admission control", url: "https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/" },
+      { title: "API Priority and Fairness", url: "https://kubernetes.io/docs/concepts/cluster-administration/flow-control/" },
     ],
   },
 
@@ -205,6 +225,13 @@ export const CHAPTERS = [
       "Deleting a CRD deletes all objects of that type, cluster-wide. Treat CRDs as data, not just as config.",
       "Operators need RBAC like any client: their ServiceAccount must be allowed to manage the custom resource, its `/status`, and every kind they create.",
     ],
+    atScale: [
+      "Every controller starts with a LIST and then a WATCH of its types. On large clusters big LISTs cost control-plane RAM, and APF charges LISTs extra seats in proportion to the objects returned. Scope informers by namespace or label, and use streaming lists (`sendInitialEvents=true`).",
+      "etcd keeps about 5 minutes of change history by default. A watch that falls further behind gets `410 Gone` and must relist everything, and many controllers relisting at once spikes load. Request `allowWatchBookmarks=true` so the resume point stays fresh.",
+      "APF puts requests from controllers running in Pods (any ServiceAccount) in `workload-low`, so a chatty operator is queued and throttled instead of starving built-in controllers or leader election. If an operator seems slow, check `apiserver_flowcontrol_rejected_requests_total`.",
+      "Custom resources live in etcd like everything else. SIG Scalability's envelope is 150'000 objects per resource type (non-Event) and 1.5MB per object, so an operator that creates one object per tenant or bloats `status` eats into it. Cap counts with ResourceQuota.",
+      "Run two or more replicas with Lease-based leader election, as kube-controller-manager and kube-scheduler do, so exactly one reconciles while the rest stand by.",
+    ],
     quiz: [
       { q: "You apply a CRD and a custom resource, and nothing happens. Why?", a: "A CRD only adds an API type. Something has to watch and act on the objects: the operator (custom controller) must be installed and running." },
       { q: "What does the status subresource change?", a: "Writes to the main resource ignore `status` and writes to `/status` ignore everything but `status`. Users own spec, the controller owns status, and RBAC can grant them separately." },
@@ -218,6 +245,11 @@ export const CHAPTERS = [
       { title: "Controllers", url: "https://kubernetes.io/docs/concepts/architecture/controller/" },
       { title: "Finalizers", url: "https://kubernetes.io/docs/concepts/overview/working-with-objects/finalizers/" },
       { title: "Garbage collection", url: "https://kubernetes.io/docs/concepts/architecture/garbage-collection/" },
+      { title: "Kubernetes API concepts", url: "https://kubernetes.io/docs/reference/using-api/api-concepts/" },
+      { title: "API Priority and Fairness", url: "https://kubernetes.io/docs/concepts/cluster-administration/flow-control/" },
+      { title: "Kubernetes scalability thresholds", url: "https://github.com/kubernetes/community/blob/master/sig-scalability/configs-and-limits/thresholds.md" },
+      { title: "Leases", url: "https://kubernetes.io/docs/concepts/architecture/leases/" },
+      { title: "Role based access control good practices", url: "https://kubernetes.io/docs/concepts/security/rbac-good-practices/" },
     ],
   },
 
@@ -287,6 +319,13 @@ export const CHAPTERS = [
       "Uncordon doesn't rebalance. After a rolling node upgrade, the last node you drained is often nearly empty until Pods are rescheduled or redeployed.",
       "Managed upgrades change more than the kubelet. Check release notes, removed labels and APIs, and cloud-side settings like security groups and IAM.",
     ],
+    atScale: [
+      "1000 nodes one at a time takes too long. kubeadm says one or a few nodes at a time without dropping below the capacity workloads need; parallel `kubectl drain` runs are fine because PDBs are still respected across them. Managed and Karpenter fleets replace nodes in waves; Karpenter's default disruption budget is `nodes: 10%`.",
+      "One bad PDB stalls a whole wave: `minAvailable` equal to replicas, or Pods that never become Ready, make drain retry forever. Audit PDBs before upgrading, set `unhealthyPodEvictionPolicy: AlwaysAllow`, and know that Karpenter's `terminationGracePeriod` force-deletes Pods once it elapses.",
+      "Removed APIs across hundreds of teams: the API server sets `apiserver_requested_deprecated_apis` with a `removed_release` label, and audit events get `k8s.io/deprecated`. Join it with `apiserver_request_total` to find callers, then fix manifests (`kubectl convert`) before the upgrade.",
+      "No skipping minors: upgrades go one minor version at a time, control plane nodes one at a time. Fleets of many clusters need a steady cadence or they fall behind the supported window.",
+      "For zero-risk upgrades some teams fail over to a complete replica cluster. It avoids downtime but doubles nodes and needs orchestration; PDBs plus disruption-tolerant apps are the cheaper default.",
+    ],
     quiz: [
       { q: "Your API server is 1.37. Which kubelet versions are within the skew policy?", a: "1.37 down to 1.34: never newer than the API server, at most three minor versions older." },
       { q: "`kubectl drain` keeps printing that it can't evict a Pod. What's going on?", a: "The eviction would violate a PodDisruptionBudget, so the API server returns 429 and drain retries. Check the PDB and whether the app's other Pods are Ready." },
@@ -300,6 +339,9 @@ export const CHAPTERS = [
       { title: "kubectl drain", url: "https://kubernetes.io/docs/reference/kubectl/generated/kubectl_drain/" },
       { title: "API-initiated eviction", url: "https://kubernetes.io/docs/concepts/scheduling-eviction/api-eviction/" },
       { title: "Disruptions", url: "https://kubernetes.io/docs/concepts/workloads/pods/disruptions/" },
+      { title: "Deprecated API migration guide", url: "https://kubernetes.io/docs/reference/using-api/deprecation-guide/" },
+      { title: "Warning: Helpful Warnings Ahead (blog)", url: "https://kubernetes.io/blog/2020/09/03/warnings/" },
+      { title: "Karpenter: disruption", url: "https://karpenter.sh/docs/concepts/disruption/" },
     ],
   },
 
@@ -368,6 +410,13 @@ export const CHAPTERS = [
       "A Service name resolves in DNS even with no endpoints, so a working lookup doesn't prove there are backends. Compare `kubectl get pods -l <selector>` with the Service selector.",
       "`kubectl exec` fails on images without a shell. Use `kubectl debug` to attach an ephemeral container instead.",
     ],
+    atScale: [
+      "`kubectl get pods -A` on a cluster with 150000 Pods is a huge LIST. kubectl pages it in chunks of 500 by default (`--chunk-size`); narrow it with `-l` or `--field-selector spec.nodeName=<node>`.",
+      "Events expire after 1 hour (`--event-ttl`), so `describe` shows nothing for this morning's failure. Ship Events to your log store; large clusters can keep them in a separate etcd via `--etcd-servers-overrides`.",
+      "Pending or ContainerCreating can be a per-node ceiling, not your Pod: 110 Pods per node, a full `/24` Pod range, or the volume attach limit (39 EBS volumes by default). Compare the node's `Allocatable` and events.",
+      "Intermittent DNS timeouts across many Pods point at conntrack or CoreDNS capacity, not at one Pod. Check conntrack usage on the node and the CoreDNS replica count; NodeLocal DNSCache is the usual fix.",
+      "If `kubectl` itself is slow or rejected, the API server may be shedding load. APF rejections show in `apiserver_flowcontrol_rejected_requests_total`; find the noisy client before retrying in a loop.",
+    ],
     quiz: [
       { q: "A Pod is Pending and its events report insufficient memory on every node. Two fixes?", a: "Lower the Pod's memory request if it's oversized, or add capacity (more or bigger nodes, or let a node autoscaler do it). Freeing space by removing other Pods also works." },
       { q: "A container restarts with exit code 137 and reason OOMKilled. What happened?", a: "It used more memory than its limit and was killed with SIGKILL (128 + 9). Raise the limit or fix the memory use." },
@@ -385,6 +434,12 @@ export const CHAPTERS = [
       { title: "Debug Services", url: "https://kubernetes.io/docs/tasks/debug/debug-application/debug-service/" },
       { title: "Debugging DNS resolution", url: "https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/" },
       { title: "Organizing cluster access using kubeconfig", url: "https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/" },
+      { title: "kubectl get", url: "https://kubernetes.io/docs/reference/kubectl/generated/kubectl_get/" },
+      { title: "kube-apiserver", url: "https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/" },
+      { title: "API Priority and Fairness", url: "https://kubernetes.io/docs/concepts/cluster-administration/flow-control/" },
+      { title: "Node-specific volume limits", url: "https://kubernetes.io/docs/concepts/storage/storage-limits/" },
+      { title: "Considerations for large clusters", url: "https://kubernetes.io/docs/setup/best-practices/cluster-large/" },
+      { title: "Using NodeLocal DNSCache", url: "https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/" },
     ],
   },
 ];
