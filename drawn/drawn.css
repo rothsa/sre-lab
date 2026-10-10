@@ -102,3 +102,13 @@ svg.stepping .d-edge.flow path { stroke-dasharray: 7 5; animation: march .8s lin
 /* "What breaks at scale" aid */
 .aid.scale { grid-column: 1 / -1; border-left: 3px solid var(--warn); }
 .aid.scale h3 { color: var(--warn); }
+
+/* "How the languages differ" aid */
+.aid.compare { margin-top: 14px; border-left: 3px solid var(--accent); }
+.cmps { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 900px) { .cmps { grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); } }
+.cmp h4 { margin: 0 0 4px; font-size: 15px; }
+.cmp-idiom { margin: 0 0 8px; font-size: 14.5px; }
+.cmp ul { margin: 0 0 6px; padding-left: 0; list-style: none; display: grid; gap: 4px; font-size: 14px; }
+.cmp-good li::before { content: "+ "; color: var(--ok, #3fb950); font-weight: 700; }
+.cmp-bad li::before { content: "\2212  "; color: var(--warn); font-weight: 700; }

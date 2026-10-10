@@ -12,3 +12,5 @@ Chapter spec format: see `../k8s/README.md`. In addition, a chapter may have:
 Pages accept `?only=<chapter id>` to render a single chapter.
 - `atScale`: 3-6 short items, each a concrete thing that breaks at 1000+ nodes, services, series, teams or
   requests per second, and what people do about it (shown as "What breaks at scale").
+- `compare`: up to 3 entries `{ lang, idiom, good: [], bad: [] }`, shown under the code as "How the languages
+  differ": the structure each language reaches for, and its strengths and weaknesses for this task.

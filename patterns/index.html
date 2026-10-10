@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>One Pattern, Three Languages</title>
-<meta name="description" content="Everyday reliability patterns side by side in Python, Go and Ruby: retries with backoff, timeouts and cancellation, concurrency, error handling, configuration, graceful shutdown and more.">
+<meta name="description" content="Everyday SRE scripting tasks solved in Python, Go and Ruby, to compare how each language approaches the same problem: errors, iteration, concurrency, cleanup and the libraries people actually use, plus what breaks at scale.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
 <link rel="stylesheet" href="../drawn/drawn.css">
 </head>
@@ -16,8 +16,8 @@
   <main>
     <div class="kicker"><a href="../">SRE Lab</a> · explainers</div>
     <h1>One Pattern, Three Languages</h1>
-    <p class="lede">The same reliability patterns in Python, Go and Ruby, side by side, with a diagram of what the pattern does and the traps each language sets. Step through each diagram with the buttons or your arrow keys, then use the 30-second answer, the gotchas and the quiz to make it stick.</p>
-    <p class="lede">Code uses each language's standard library where it can, and is written to read clearly in an interview rather than to be clever. Sources are each language's official documentation.</p>
+    <p class="lede">Everyday SRE tasks (parsing logs, calling APIs, cleaning up cloud resources, querying Kubernetes and Prometheus, checking a fleet, writing an exporter) done in Python, Go and Ruby. The point is the contrast: how each language structures the same job, what that buys you, and what it costs. Step through each diagram with the buttons or your arrow keys, then use the 30-second answer, the gotchas and the quiz to make it stick.</p>
+    <p class="lede">Every chapter starts with the no-code option, because often <code>jq</code>, <code>kubectl</code> or an existing exporter is the right answer. The code uses the libraries the industry already uses, never hand-rolled versions. Sources are the official docs for each language and library.</p>
     <div id="chapters"></div>
     <footer>
       <p>Diagrams, code and wording by Sally Roth. Based on the <a href="https://docs.python.org/3/">Python</a>, <a href="https://go.dev/doc/">Go</a> and <a href="https://docs.ruby-lang.org/">Ruby</a> documentation.</p>

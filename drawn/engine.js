@@ -126,6 +126,17 @@ async function loadIncidents() {
 }
 
 // Side-by-side code (used by explainers that compare languages or show config).
+function compareHTML(ch) {
+  if (!ch.compare || !ch.compare.length) return "";
+  const cols = ch.compare.map((c) => `<div class="cmp">
+      <h4>${esc(c.lang)}</h4>
+      <p class="cmp-idiom">${fmt(c.idiom)}</p>
+      <ul class="cmp-good">${(c.good || []).map((g) => `<li>${fmt(g)}</li>`).join("")}</ul>
+      <ul class="cmp-bad">${(c.bad || []).map((g) => `<li>${fmt(g)}</li>`).join("")}</ul>
+    </div>`).join("");
+  return `<div class="aid compare"><h3>How the languages differ</h3><div class="cmps" style="--cols:${ch.compare.length}">${cols}</div></div>`;
+}
+
 function codeHTML(ch) {
   if (!ch.code || !ch.code.length) return "";
   const cols = ch.code.map((c) => `<div class="code-col"><div class="code-head">${esc(c.label || c.lang)}</div><pre><code class="lang-${esc(c.lang)}">${esc(c.src)}</code></pre></div>`).join("");
@@ -148,6 +159,7 @@ function chapterHTML(ch) {
       <details class="steps-text"><summary>All steps as text</summary><ol>${ch.steps.map((s) => `<li>${fmt(s.text)}</li>`).join("")}</ol></details>
     </figure>
     ${codeHTML(ch)}
+    ${compareHTML(ch)}
     <div class="aids">
       <div class="aid say"><h3>Say it in 30 seconds</h3><p>${fmt(ch.say30)}</p></div>
       ${ch.atScale && ch.atScale.length ? `<div class="aid scale"><h3>What breaks at scale</h3><ul>${ch.atScale.map((g) => `<li>${fmt(g)}</li>`).join("")}</ul></div>` : ""}

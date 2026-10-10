@@ -118,6 +118,8 @@ for (const ch of CHAPTERS) {
   for (const x of ch.code || []) if (!x.lang || !x.src) err(c, "code entries need lang and src");
   if ((ch.code || []).length > 3) err(c, "at most 3 code columns");
   if ((ch.gotchas || []).length < 2) err(c, "needs at least 2 gotchas");
+  if ((ch.compare || []).length !== 3) err(c, "needs a compare entry for each of the 3 languages");
+  for (const x of ch.compare || []) if (!x.lang || !x.idiom || !(x.good || []).length || !(x.bad || []).length) err(c, "compare entries need lang, idiom, good and bad");
   if ((ch.atScale || []).length < 3) err(c, "needs at least 3 atScale items (what breaks at 1000+ scale)");
   if ((ch.atScale || []).length > 6) warn(c, "more than 6 atScale items");
   if ((ch.quiz || []).length !== 3) err(c, "needs exactly 3 quiz questions");
