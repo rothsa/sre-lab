@@ -4,18 +4,23 @@
   "name": "The Config That Spread Everywhere",
   "lore": "It starts as one small change. Minutes later it is in every region, and nothing works.",
   "members": [
-   "crowdstrike-2024-channel-file-291",
-   "cloudflare-2025-bot-feature-file-panic",
    "cloudflare-2025-waf-killswitch-lua-nil",
+   "cloudflare-2025-bot-feature-file-panic",
+   "microsoft-azure-2025-front-door-config-crash",
+   "cloudflare-2025-1111-topology-withdrawal",
    "google-2025-service-control-null-pointer",
+   "crowdstrike-2024-channel-file-291",
    "cloudflare-2024-ddos-rule-lua-loop",
-   "fastly-2021-customer-config-bug",
    "pagerduty-2021-dnsmasq-k8s-dns",
+   "bunnynet-2021-binarypack-dns-crash",
+   "fastly-2021-customer-config-bug",
    "cloudflare-2019-waf-regex",
+   "google-2017-https-lb-stale-config",
    "google-2016-gce-ip-block-withdrawal",
    "microsoft-2014-azure-storage-infinite-loop",
    "google-2014-bad-config-logged-in-services",
    "cloudflare-2013-flowspec-router-crash",
+   "cloudflare-2012-dns-database-deleted",
    "google-2009-malware-warning-slash"
   ],
   "ward": [
@@ -62,9 +67,11 @@
   "lore": "The service comes back. So does every client, all at once, and it goes down again.",
   "members": [
    "launchdarkly-2025-aws-flag-delivery",
+   "railway-2024-io-pressure-retry-storm",
+   "buildkite-2022-build-matrix-retry-explosion",
    "datadog-2020-service-discovery-dns-storm",
-   "square-2017-multipass-redis-retries",
    "discord-2017-redis-failover-cascade",
+   "square-2017-multipass-redis-retries",
    "slack-2014-reconnect-storm",
    "spotify-2013-popcount-retry-cascade",
    "aws-2011-ebs-remirroring-storm"
@@ -107,8 +114,10 @@
   "lore": "Every ID column has a last number. Nobody remembers until the inserts start failing.",
   "members": [
    "heroku-2023-fk-integer-overflow",
+   "buildkite-2020-postgres-analyze-wraparound",
    "mandrill-2019-postgres-xid-wraparound",
    "basecamp-2018-int-overflow-read-only",
+   "joyent-2015-manta-postgres-wraparound",
    "sentry-2015-postgres-xid-wraparound"
   ],
   "ward": [
@@ -140,25 +149,48 @@
   "name": "The Thing That Expired",
   "lore": "A certificate, a password, a leap day. Time was always going to run out; it just picked tonight.",
   "members": [
+   "teamdynamix-2026-internal-tls-cert-expiry",
+   "jamf-2025-securedns-cert-expiry",
+   "lootlocker-2025-db-provider-cert-expiry",
+   "render-2024-expired-mtls-certs",
    "cloudflare-2023-1111-zonemd-servfail",
+   "squiz-2023-edge-cert-expiry",
+   "pypi-2022-vault-tls-cert-expiry",
+   "mongodb-2020-expired-cross-signed-ca",
+   "scorm-cloud-2020-client-cert-expiry",
    "mozilla-2019-addons-cert-expiry",
    "cloudflare-2017-leap-second-rrdns",
+   "wikimedia-2016-globalsign-ocsp-revocation",
    "travisci-2015-vsphere-janitor-vm-leak",
-   "azure-2012-leap-day-certificate"
+   "microsoft-azure-2013-storage-ssl-cert-expiry",
+   "azure-2012-leap-day-certificate",
+   "pagekite-2011-frontend-cert-expiry"
   ],
   "ward": [
+   {
+    "text": "Alert long before anything expires, including internal and mTLS certificates, and check the whole chain.",
+    "ids": [
+     "teamdynamix-2026-internal-tls-cert-expiry",
+     "microsoft-azure-2013-storage-ssl-cert-expiry",
+     "pagekite-2011-frontend-cert-expiry",
+     "jamf-2025-securedns-cert-expiry",
+     "mongodb-2020-expired-cross-signed-ca",
+     "render-2024-expired-mtls-certs"
+    ]
+   },
+   {
+    "text": "Automate issuance and rotation; manual renewals are where these hide.",
+    "ids": [
+     "render-2024-expired-mtls-certs",
+     "scorm-cloud-2020-client-cert-expiry",
+     "squiz-2023-edge-cert-expiry"
+    ]
+   },
    {
     "text": "Test with future dates, expired certificates and leap days in QA.",
     "ids": [
      "mozilla-2019-addons-cert-expiry",
      "azure-2012-leap-day-certificate"
-    ]
-   },
-   {
-    "text": "Alert long before anything expires, and when data quietly goes stale.",
-    "ids": [
-     "cloudflare-2023-1111-zonemd-servfail",
-     "travisci-2015-vsphere-janitor-vm-leak"
     ]
    },
    {
@@ -174,23 +206,38 @@
   "name": "The Command With Too Much Reach",
   "lore": "One keystroke, one script, one wrong environment. The tool did exactly what it was told.",
   "members": [
-   "cloudflare-2025-r2-credential-rotation",
+   "psf-2026-kubectl-wrong-context-scale-zero",
+   "cloudflare-2026-byoip-prefix-withdrawal",
+   "linode-2025-kubernetes-control-plane-rebuild",
    "circleci-2025-manual-waf-rule-outage",
+   "cloudflare-2025-r2-credential-rotation",
+   "cloudflare-2025-r2-gateway-disabled",
+   "microsoft-azure-2024-storage-traffic-manager-deletion",
+   "linear-2024-truncate-cascade-data-loss",
+   "microsoft-azure-2023-wan-igp-purge-command",
    "atlassian-2022-site-deletion-script",
    "facebook-2021-backbone-bgp-withdrawal",
    "trivago-2021-aad-group-deleted-github",
    "keepthescore-2020-prod-db-dropped",
+   "cloudflare-2020-dashboard-api-patch-panel",
    "travisci-2018-prod-db-truncate",
-   "gitlab-2017-database-deletion",
    "aws-2017-s3-us-east-1-typo",
-   "aws-2012-elb-state-data-deletion"
+   "gitlab-2017-database-deletion",
+   "travisci-2016-gce-vm-images-deleted",
+   "allegro-2014-task-queue-wrong-server-restart",
+   "joyent-2014-us-east-1-mass-reboot",
+   "aws-2012-elb-state-data-deletion",
+   "cloudflare-2012-dns-database-deleted"
   ],
   "ward": [
    {
     "text": "Make tools refuse dangerous scope: minimum capacity, no bulk deletes.",
     "ids": [
      "aws-2017-s3-us-east-1-typo",
-     "atlassian-2022-site-deletion-script"
+     "atlassian-2022-site-deletion-script",
+     "cloudflare-2026-byoip-prefix-withdrawal",
+     "joyent-2014-us-east-1-mass-reboot",
+     "psf-2026-kubectl-wrong-context-scale-zero"
     ]
    },
    {
@@ -198,14 +245,16 @@
     "ids": [
      "atlassian-2022-site-deletion-script",
      "travisci-2018-prod-db-truncate",
-     "keepthescore-2020-prod-db-dropped"
+     "keepthescore-2020-prod-db-dropped",
+     "linear-2024-truncate-cascade-data-loss"
     ]
    },
    {
     "text": "Make the target environment explicit, and get a second reviewer.",
     "ids": [
      "cloudflare-2025-r2-credential-rotation",
-     "aws-2012-elb-state-data-deletion"
+     "aws-2012-elb-state-data-deletion",
+     "psf-2026-kubectl-wrong-context-scale-zero"
     ]
    },
    {
@@ -221,13 +270,20 @@
   "name": "The Thing Everything Leans On",
   "lore": "Nobody drew it on the architecture diagram. When it fell, everything fell with it.",
   "members": [
+   "1password-2026-device-trust-nlb-config",
+   "clerk-2026-dns-provider-outage",
+   "incidentio-2025-aws-us-east-1-dependencies",
    "aws-2025-dynamodb-dns-race",
    "cloudflare-2025-workers-kv-storage",
-   "incidentio-2025-aws-us-east-1-dependencies",
+   "mongodb-2025-atlas-dns-nameserver-change",
+   "digitalocean-2024-spaces-domain-clienthold",
    "cloudflare-2023-pdx04-power-control-plane",
    "cloudflare-2023-service-token-overwrite",
+   "spotify-2022-traffic-director-login-outage",
    "slack-2022-consul-rollout-cache-scatter",
+   "amazon-2021-us-east-1-internal-network-congestion",
    "roblox-2021-consul-streaming-boltdb",
+   "cloudflare-2020-switch-etcd-control-plane",
    "datadog-2020-service-discovery-dns-storm",
    "buildkite-2016-db-downgrade-healthcheck",
    "aws-2015-dynamodb-metadata-overload",
@@ -268,16 +324,17 @@
   "name": "The Key Under the Mat",
   "lore": "A token in a log, a password reused, a forgotten server. Someone else found it first.",
   "members": [
+   "xubuntu-2025-website-download-compromise",
    "cloudflare-2025-salesloft-drift-salesforce-breach",
    "circleci-2022-session-cookie-theft-secrets-exfil",
    "heroku-2022-github-oauth-token-theft",
-   "gentoo-2018-github-org-takeover",
-   "eslint-2018-npm-account-takeover",
    "homebrew-2018-jenkins-github-token-leak",
+   "eslint-2018-npm-account-takeover",
+   "gentoo-2018-github-org-takeover",
    "bintray-2017-jcenter-impersonation-malware",
    "sentry-2016-s3-backup-acl",
-   "bitly-2014-backup-storage-credential-leak",
    "browserstack-2014-shellshock-aws-key-theft",
+   "bitly-2014-backup-storage-credential-leak",
    "circleci-2013-mongohq-database-breach"
   ],
   "ward": [
@@ -321,12 +378,14 @@
   "name": "The Backup That Wasn't There",
   "lore": "Everyone was sure it worked. Nobody had tried it.",
   "members": [
+   "linear-2024-truncate-cascade-data-loss",
    "atlassian-2022-site-deletion-script",
-   "pythonanywhere-2020-ebs-volume-failure",
    "keepthescore-2020-prod-db-dropped",
-   "gitlab-2017-database-deletion",
-   "gocardless-2017-postgres-failover",
+   "pythonanywhere-2020-ebs-volume-failure",
+   "razorpay-2019-rds-failover-data-loss",
    "discord-2017-redis-failover-cascade",
+   "gocardless-2017-postgres-failover",
+   "gitlab-2017-database-deletion",
    "kickstarter-2013-mysql-replication-break"
   ],
   "ward": [
@@ -363,6 +422,7 @@
    "amazon-2019-tokyo-cooling-control",
    "amazon-2016-sydney-drups-power",
    "google-2015-lightning-persistent-disk",
+   "amazon-2013-sa-east-1-power-loss",
    "amazon-2012-us-east-1-storm-power",
    "amazon-2011-eu-west-power-ebs"
   ],
