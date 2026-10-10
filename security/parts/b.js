@@ -63,6 +63,11 @@ export const CHAPTERS = [
       "Lease volume: short TTLs times thousands of pods means a lot of leases. PyPI's Vault crashed on startup under a backlog of expired leases. Reuse tokens through the agent, pick TTLs deliberately, and watch the lease count.",
       "KMS has per-second quotas on cryptographic operations. Calling KMS for every record at high request rates hits them; envelope encryption means one KMS call per data key, and the bulk encryption happens locally.",
     ],
+    agentic: [
+      "Keep secrets out of the model's context: anything in a prompt, tool result or pasted `env` can end up in transcripts and telemetry, and the OTel GenAI conventions keep prompt capture opt-in because it is likely to hold sensitive data. Agents should call a tool that uses a credential, not read the credential.",
+      "Credential brokering replaces keys in agent config. AgentCore Identity keeps OAuth tokens and API keys in a vault for agents acting on behalf of users, and Claude Code GitHub Actions can use OIDC instead of a stored key; Cursor's cloud agents show runtime secrets as `[REDACTED]`. Humans still own scope, rotation and who can fetch each one.",
+      "Agents create new copies as readily as people do: in commits, logs and tool config (K8sGPT stores backend API keys in plain text). Keep secret scanning on agent PRs in pre-commit and CI, and treat any secret that entered an agent's context as exposed and rotate it.",
+    ],
     code: [
       { lang: "bash", label: "Dynamic DB credential", src: "$ vault read database/creds/web\nKey                Value\nlease_id           database/creds/web/2f6a...\nlease_duration     1h\nlease_renewable    true\npassword           (generated)\nusername           v-web-x7Q2...\n\n# incident: kill every credential from this role\n$ vault lease revoke -prefix database/creds/web" },
       { lang: "bash", label: "Envelope encryption", src: "$ aws kms generate-data-key \\\n    --key-id alias/app-data --key-spec AES_256\n# Plaintext:      encrypt locally, then erase\n# CiphertextBlob: store next to the data\n\n$ aws kms decrypt --ciphertext-blob fileb://key.enc\n# returns the plaintext data key, if the key\n# policy allows kms:Decrypt for this caller" },
@@ -91,6 +96,11 @@ export const CHAPTERS = [
       { title: "AWS KMS GenerateDataKey", url: "https://docs.aws.amazon.com/kms/latest/APIReference/API_GenerateDataKey.html" },
       { title: "AWS Secrets Manager rotation strategies", url: "https://docs.aws.amazon.com/secretsmanager/latest/userguide/rotation-strategy.html" },
       { title: "OWASP Secrets Management Cheat Sheet", url: "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html" },
+      { title: "OpenTelemetry GenAI semantic conventions (Development)", url: "https://github.com/open-telemetry/semantic-conventions-genai" },
+      { title: "Amazon Bedrock AgentCore Identity", url: "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/identity.html" },
+      { title: "Claude Code GitHub Actions", url: "https://code.claude.com/docs/en/github-actions" },
+      { title: "Cursor Cloud Agents: Secrets and network", url: "https://cursor.com/docs/cloud-agent/security-network" },
+      { title: "K8sGPT README", url: "https://github.com/k8sgpt-ai/k8sgpt" },
     ],
   },
   {
@@ -160,6 +170,11 @@ export const CHAPTERS = [
       "Who can reach the database? Nobody can answer from memory across thousands of rules. Run Reachability Analyzer checks after network changes as automated intent tests, and use VPC Flow Logs for what actually happened.",
       "Managed upgrades and other tools change security groups too. TaxJar's cluster upgrade dropped the rule between control plane and nodes. Manage groups in IaC and alert on drift.",
     ],
+    agentic: [
+      "Egress control is the easiest leg of the lethal trifecta to cut: an agent holding private data and reading untrusted input can't exfiltrate to a host it can't reach. Run agents with no general internet route, AWS APIs through endpoints, everything else through an allowlisting proxy (Claude Code's sandbox allowlist starts empty; Cursor offers allowlist-only).",
+      "Check what each vendor allowlist covers: Claude Code's sandbox wraps shell commands only, not MCP servers or hooks, and GitHub's Copilot agent firewall covers Bash processes and says sophisticated attacks may bypass it. Security groups and endpoint policies apply to everything on the host, so they stay the backstop.",
+      "Block private ranges and metadata for agents and their MCP clients: the MCP security guidance names SSRF where a malicious server's OAuth discovery URLs point the client at `169.254.169.254`, and recommends egress proxies. Proxy logs and VPC Flow Logs then show what an agent actually tried to reach, which is your evidence when injection is suspected.",
+    ],
     code: [
       { lang: "hcl", label: "DB accepts only the app's group", src: "resource \"aws_security_group_rule\" \"db_from_app\" {\n  type                     = \"ingress\"\n  protocol                 = \"tcp\"\n  from_port                = 5432\n  to_port                  = 5432\n  security_group_id        = aws_security_group.db.id\n  source_security_group_id = aws_security_group.app.id\n}" },
     ],
@@ -184,6 +199,11 @@ export const CHAPTERS = [
       { title: "AWS PrivateLink concepts", url: "https://docs.aws.amazon.com/vpc/latest/privatelink/concepts.html" },
       { title: "What is AWS Transit Gateway?", url: "https://docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html" },
       { title: "What is Reachability Analyzer?", url: "https://docs.aws.amazon.com/vpc/latest/reachability/what-is-reachability-analyzer.html" },
+      { title: "Simon Willison: The lethal trifecta for AI agents", url: "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" },
+      { title: "Claude Code: Sandboxing", url: "https://code.claude.com/docs/en/sandboxing" },
+      { title: "Cursor Cloud Agents: Secrets and network", url: "https://cursor.com/docs/cloud-agent/security-network" },
+      { title: "GitHub: Customize the Copilot cloud agent firewall", url: "https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/customize-the-agent-firewall" },
+      { title: "MCP Security Best Practices (spec 2025-11-25)", url: "https://modelcontextprotocol.io/specification/2025-11-25/basic/security_best_practices" },
     ],
   },
   {
@@ -255,6 +275,11 @@ export const CHAPTERS = [
       "Measuring blast radius: count standing admin principals, and long-lived keys and how old they are. Use Access Analyzer's internal access findings to see which roles can reach your sensitive resources, and track these numbers over time.",
       "Long-lived keys on forgotten hosts are the classic path in: BrowserStack's attacker found AWS keys on an old prototype server and created their own IAM user. Inventory and remove access keys, and alert on IAM user creation.",
     ],
+    agentic: [
+      "LLM06:2025 Excessive Agency names three causes (too much functionality, permission and autonomy), which map onto this chapter: fewest tools, narrowest role, human approval for high-impact actions. Manual approval by default plus an opt-in read-only mode (`pulumi neo --permission-mode read-only`) are the agent version of separating plan from apply.",
+      "Break-glass stays human: mid-incident, agents gather evidence read-only and a person assumes the elevated role and acts. Google's SRE paper routes agent changes through a safety gateway with mandatory dry-runs and a \"Red Button\" to pause or revoke (see Agentic Engineering, Drawn).",
+      "Lethal trifecta: private data, untrusted content (logs, tickets, issues) and a way to send data out. Filters don't reliably stop injection, so remove a leg, for example no write or network tools for the agent that reads issue text. Approving every prompt without reading it is just autonomy by another name.",
+    ],
     quiz: [
       { q: "Why put prod and dev in separate AWS accounts instead of separating them with IAM policies in one account?", a: "The account is a hard boundary. Dev credentials and dev mistakes can't reach prod resources, quotas and costs are separate, and you can apply different guardrails per environment without writing perfect policies." },
       { q: "What makes a break-glass process trustworthy?", a: "It's pre-created and doesn't depend on the normal identity provider. Few people hold it, every use needs a declared emergency and alerts the security team, it's fully logged, credentials are rotated afterwards, and it's tested regularly." },
@@ -273,6 +298,10 @@ export const CHAPTERS = [
       { title: "Benefits of using multiple AWS accounts", url: "https://docs.aws.amazon.com/whitepapers/latest/organizing-your-aws-environment/benefits-of-using-multiple-aws-accounts.html" },
       { title: "SEC03-BP03 Establish emergency access process", url: "https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/sec_permissions_emergency_process.html" },
       { title: "Temporary elevated access (IAM Identity Center)", url: "https://docs.aws.amazon.com/singlesignon/latest/userguide/temporary-elevated-access.html" },
+      { title: "OWASP LLM06:2025 Excessive Agency", url: "https://genai.owasp.org/llmrisk/llm062025-excessive-agency/" },
+      { title: "pulumi neo CLI reference", url: "https://www.pulumi.com/docs/iac/cli/commands/pulumi_neo/" },
+      { title: "Google SRE: AI in SRE (engineering reliable operations)", url: "https://sre.google/resources/practices-and-processes/ai-engineering-reliable-operations/" },
+      { title: "Simon Willison: The lethal trifecta for AI agents", url: "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" },
     ],
   },
   {
@@ -334,6 +363,11 @@ export const CHAPTERS = [
       "Run the same policy at three points: OPA on Terraform plans in CI, admission control in clusters, and Config rules on what's actually running. Drift and click-ops changes get caught after the fact, not just at review time.",
       "Audit logging sits in the hot path. incident.io's PGAudit extension hung during a migration while holding locks and took the primary database down. Load-test audit settings like any other change, and watch API server memory when you raise audit levels.",
     ],
+    agentic: [
+      "Auditors will ask who made a change an agent made. CloudTrail records the role session, so give agents their own roles and require `sts:SourceIdentity` so the launching human appears on every event; Kubernetes audit shows the agent only if it has its own service account.",
+      "Platform logs show what changed, not why: Grafana documents that Assistant actions run under the user's identity in user-level audit logs that exclude chat transcripts. Keep the agent's own record of prompts, tool calls and approvals, for example OTel GenAI agent spans (Development status), with content capture opt-in.",
+      "Approval evidence still maps to a named person: Copilot's cloud agent can't approve or merge its own PR, and Copilot code reviews don't count toward required approvals by default. The new failure is technically human approval rubber-stamped across a flood of agent PRs, so sample approvals for real review.",
+    ],
     code: [
       { lang: "yaml", label: "Kubernetes audit policy", src: "apiVersion: audit.k8s.io/v1\nkind: Policy\nrules:\n  # noisy system watches: skip\n  - level: None\n    users: [\"system:kube-proxy\"]\n    verbs: [\"watch\"]\n  # never log secret values\n  - level: Metadata\n    resources:\n      - group: \"\"\n        resources: [\"secrets\", \"configmaps\"]\n  # everything else: who, what, when\n  - level: Metadata" },
       { lang: "bash", label: "Prove logs weren't altered", src: "$ aws cloudtrail validate-logs \\\n    --trail-arn arn:aws:cloudtrail:...:trail/org \\\n    --start-time 2026-01-01T00:00:00Z\n# checks each digest's signature and each\n# log file's hash; reports missing or\n# modified files" },
@@ -360,6 +394,10 @@ export const CHAPTERS = [
       { title: "Drata: SOC 2 Type 1 vs Type 2", url: "https://drata.com/grc-central/soc-2/type-1-vs-type-2" },
       { title: "PCI Security Standards Council: PCI DSS", url: "https://www.pcisecuritystandards.org/standards/pci-dss/" },
       { title: "AWS PCI DSS FAQs", url: "https://aws.amazon.com/compliance/pci-dss-level-1-faqs/" },
+      { title: "Grafana Assistant: Your data and security", url: "https://grafana.com/docs/grafana-cloud/platform/grafana-assistant/privacy-and-security/security/" },
+      { title: "OpenTelemetry GenAI semantic conventions (Development)", url: "https://github.com/open-telemetry/semantic-conventions-genai" },
+      { title: "GitHub: Risks and mitigations for Copilot cloud agent", url: "https://docs.github.com/en/copilot/concepts/agents/cloud-agent/risks-and-mitigations" },
+      { title: "GitHub: About Copilot code review", url: "https://docs.github.com/en/copilot/concepts/agents/code-review" },
     ],
   },
 ];

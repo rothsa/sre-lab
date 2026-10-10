@@ -66,6 +66,11 @@ export const CHAPTERS = [
       "Global blast radius: a flag change reaches every region in seconds, faster than any canary. Google Cloud's 2025 Spot VM incident spread because rollout safety checks were not enforced. Roll flag changes out by percentage or region, with approval for ops flags.",
       "Testing combinations: you cannot test every on/off mix of hundreds of flags. Test the production configuration, the all-off fallback and, occasionally, all-on.",
     ],
+    agentic: [
+      "Flags let agent-written code ship dark: it merges and deploys off, and a human decides when it turns on and for whom. The default value in code matters most; an agent that writes the new path as the evaluation default (for example `getBooleanValue(\"new-checkout\", true)`) makes the risky path the fallback whenever the flag service is unreachable.",
+      "Flag cleanup is a good agent task: find every reference, delete the dead branch, open the PR. The human checks ordering, that code is removed and redeployed everywhere before the definition is deleted and that no service still runs an old build, which is the gap behind Render's 2025 incident.",
+      "Flag flips should not become an agent's production write path: an ops flag or kill switch reaches every region in seconds. Give agents read access to flag state and the audit log for investigations, and keep flip rights with humans or an approval workflow, in line with OWASP LLM06:2025 Excessive Agency (human approval for high-impact actions).",
+    ],
     quiz: [
       { q: "What are the four categories of feature flag, and which should be short-lived?", a: "Release and experiment flags should be short-lived (days to weeks). Ops flags are mostly short-lived, except kill switches. Permission flags can live for years." },
       { q: "Your flag vendor is down and you autoscale. What do the new instances serve?", a: "They have no ruleset, so every evaluation returns the default from code, unless you run a persistent store or relay proxy they can read from." },
@@ -78,6 +83,7 @@ export const CHAPTERS = [
       { title: "OpenFeature specification: flag evaluation", url: "https://openfeature.dev/specification/sections/flag-evaluation" },
       { title: "flagd architecture: in-process and RPC evaluation", url: "https://flagd.dev/architecture/" },
       { title: "LaunchDarkly: client-side and server-side SDKs", url: "https://launchdarkly.com/docs/sdk/concepts/client-side-server-side" },
+      { title: "OWASP LLM06:2025 Excessive Agency", url: "https://genai.owasp.org/llmrisk/llm062025-excessive-agency/" },
     ],
   },
 
@@ -151,6 +157,11 @@ export const CHAPTERS = [
       "Lock queues: one blocked DDL statement stalls all traffic to a hot table. Enforce `lock_timeout` and statement timeouts in migration tooling, and lint for risky patterns in CI. Sentry's 2024 outage came from a raw SQL migration with no timeouts.",
       "Many services, one schema: you cannot contract until every reader has moved, and you may not know all the readers. Track contract tasks, find readers from query logs, and prefer one owning service per table.",
     ],
+    agentic: [
+      "Agents write migrations that look correct and fail on a real table: a plain `CREATE INDEX` instead of `CONCURRENTLY`, a column drop before every reader has moved, no `lock_timeout`. The reviewer checks each migration against expand and contract, and a migration linter in CI catches the risky patterns whoever wrote them.",
+      "The agent sees the repo, not the database: it does not know the table has a billion rows, which replica already lags, or which other service reads the column. A human supplies that context (sizes, query logs, owners) or the migration is planned blind, and the rollback plan assumes old code can read new data.",
+      "Backfills and cut-overs stay human-run: an agent can write the gh-ost command or batch script, but running it, watching replica lag and choosing the cut-over moment are operational calls. Mid-incident, an agent can read `pg_stat_activity` and `pg_locks` to show which query holds the lock; a human decides what to cancel.",
+    ],
     quiz: [
       { q: "At which step of expand/contract does rollback stop being safe, and why?", a: "After the contract step drops the old column. The previous version still writes it, so rolling back now fails." },
       { q: "Why is a down migration usually not a real rollback?", a: "It restores structure, not data. Anything written to the new shape, or dropped from the old one, is lost or inconsistent." },
@@ -163,6 +174,8 @@ export const CHAPTERS = [
       { title: "pt-online-schema-change (Percona Toolkit)", url: "https://docs.percona.com/percona-toolkit/pt-online-schema-change.html" },
       { title: "PostgreSQL: CREATE INDEX", url: "https://www.postgresql.org/docs/current/sql-createindex.html" },
       { title: "PostgreSQL: client connection defaults (lock_timeout)", url: "https://www.postgresql.org/docs/current/runtime-config-client.html" },
+      { title: "PostgreSQL: The cumulative statistics system (pg_stat_activity)", url: "https://www.postgresql.org/docs/current/monitoring-stats.html" },
+      { title: "PostgreSQL: pg_locks", url: "https://www.postgresql.org/docs/current/view-pg-locks.html" },
     ],
   },
 
@@ -236,6 +249,11 @@ export const CHAPTERS = [
       "Credential sprawl: thousands of repos each holding cloud keys or registry tokens are thousands of leak points (Homebrew's Jenkins exposed a token that could push to core repos). Replace them with OIDC trust policies scoped by `sub` claim to repo, branch or environment.",
       "Private builds: GitHub signs attestations for private repositories with its own Sigstore instance, which has no public transparency log, so verification policies must trust that root rather than the public one.",
     ],
+    agentic: [
+      "Provenance records which build made a digest, not who or what wrote the code: an agent-authored commit gets the same SLSA attestation as a human one. Authorship and review live in Git (the agent's bot identity, required human approval), and admission policy should pin the signer to the release workflow on the protected branch, so a workflow an agent edits on its own branch cannot produce an admitted image.",
+      "Agents add dependencies readily. GitHub documents that Copilot cloud agent checks new dependencies against the GitHub Advisory Database for malware and High or Critical vulnerabilities, and runs CodeQL and secret scanning on its changes (on by default; admins can turn these off); a human still confirms each new package is the intended one and actually needed, and the SBOM records what shipped.",
+      "Agent jobs in CI are a credential surface, and an issue or PR body is untrusted input that can carry prompt injection. Prefer OIDC federation over stored keys (the Claude Code GitHub Action supports it, including for Bedrock, Google Cloud's Agent Platform and Foundry), a custom GitHub App limited to Contents, Issues and Pull requests, and no registry-push or signing credentials in the agent's job.",
+    ],
     quiz: [
       { q: "What does SLSA Build L3 add over L2?", a: "L2 needs a hosted build platform that signs provenance. L3 hardens it: runs cannot influence each other, and the signing secret is not reachable from user-defined build steps." },
       { q: "In keyless signing, where is the private key stored?", a: "Nowhere. It is generated for one signing, certified by Fulcio for the OIDC identity, used, and discarded. Trust comes from the certificate and the Rekor entry." },
@@ -254,6 +272,8 @@ export const CHAPTERS = [
       { title: "GitHub: using artifact attestations", url: "https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations" },
       { title: "SPDX overview", url: "https://spdx.dev/about/overview/" },
       { title: "CycloneDX specification overview", url: "https://cyclonedx.org/specification/overview/" },
+      { title: "GitHub Docs: Risks and mitigations for Copilot cloud agent", url: "https://docs.github.com/en/copilot/concepts/agents/cloud-agent/risks-and-mitigations" },
+      { title: "Claude Code: GitHub Actions", url: "https://code.claude.com/docs/en/github-actions" },
     ],
   },
 
@@ -328,6 +348,11 @@ export const CHAPTERS = [
       "Freezes at scale: a company-wide freeze stacks up weeks of changes into a risky first deploy after it lifts. Invest in canaries, automated rollback and flags so deploys are safe on any day.",
       "Pipeline as a product: when the queue stalls, every engineer stops. Give it an owning team, on-call, and targets for queue wait, CI success rate and deploy duration.",
     ],
+    agentic: [
+      "DORA 2024: a 25% increase in AI adoption was associated with a 1.5% decrease in delivery throughput and a 7.2% decrease in delivery stability, which DORA linked to larger batches. DORA 2025 found a positive relationship with throughput but a still-negative one with stability (no percentages given), framing AI as an amplifier of the testing, version control and feedback loops a team already has.",
+      "More agent PRs land on the same merge queue: each is another group to build, and one flaky test ejects agent and human PRs alike. Size build concurrency and group limits for PR volume rather than headcount, and watch queue wait and eject rate; small agent PRs keep the batch-size problem DORA describes from coming back.",
+      "AI review is extra signal, not an approver: Copilot code review does not count toward required approvals by default (an opt-in Copilot approvals setting is in public preview), skips dependency manifests, and the person who asked Copilot cloud agent for a PR cannot approve it. The failure mode is a human approval that restates the bot's summary, so required human review stays in branch protection.",
+    ],
     quiz: [
       { q: "Two PRs each pass CI, merge, and main breaks. How does a merge queue prevent this?", a: "It tests each PR on a temporary branch containing main plus every PR ahead of it, and only merges commits whose combined result passed." },
       { q: "Name DORA's software delivery metrics and which are throughput.", a: "Throughput: change lead time, deployment frequency and failed deployment recovery time. Instability: change fail rate and deployment rework rate." },
@@ -339,6 +364,11 @@ export const CHAPTERS = [
       { title: "DORA's software delivery metrics", url: "https://dora.dev/guides/dora-metrics/" },
       { title: "DORA capability: trunk-based development", url: "https://dora.dev/capabilities/trunk-based-development/" },
       { title: "DORA capability: continuous delivery", url: "https://dora.dev/capabilities/continuous-delivery/" },
+      { title: "DORA: Impact of generative AI in software development", url: "https://dora.dev/ai/gen-ai-report/report/" },
+      { title: "Google Cloud blog: Announcing the 2024 DORA report", url: "https://cloud.google.com/blog/products/devops-sre/announcing-the-2024-dora-report" },
+      { title: "Google Cloud blog: Announcing the 2025 DORA report", url: "https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report" },
+      { title: "GitHub Docs: About Copilot code review", url: "https://docs.github.com/en/copilot/concepts/agents/code-review" },
+      { title: "GitHub Docs: Risks and mitigations for Copilot cloud agent", url: "https://docs.github.com/en/copilot/concepts/agents/cloud-agent/risks-and-mitigations" },
     ],
   },
 ];

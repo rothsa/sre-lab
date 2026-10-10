@@ -14,3 +14,6 @@ Pages accept `?only=<chapter id>` to render a single chapter.
   requests per second, and what people do about it (shown as "What breaks at scale").
 - `compare`: up to 3 entries `{ lang, idiom, good: [], bad: [] }`, shown under the code as "How the languages
   differ": the structure each language reaches for, and its strengths and weaknesses for this task.
+- `agentic`: 2-4 short items shown as "What changes in the agentic era": what agents now change about this
+  mechanism, what a human still verifies or owns, and the new failure mode. Every item must be backed by a
+  source in the chapter's `sources`. Required in every explainer except `agentic/`.

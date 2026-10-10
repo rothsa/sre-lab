@@ -68,6 +68,11 @@ export const CHAPTERS = [
       "One team's unbounded label can crowd out everyone on a shared Prometheus or tenant. Platform teams publish label standards (allowed label names, route templates, no IDs) and enforce them in review and at scrape time.",
       "Vendors bill on active series. Grafana Cloud counts a series as active if it received data in the last 20 minutes and bills on the 95th percentile, so a rollout or a label mistake shows up on the invoice.",
     ],
+    agentic: [
+      "Coding agents now write instrumentation at volume, and a generated `.labels(user_id=..., path=request.url)` multiplies series exactly like a hand-written one. The reviewer still owns the arithmetic (list each label, bound its values, multiply); the new failure mode is a plausible diff that ships the same unbounded label into many services in one week.",
+      "LLM features bring new label candidates: provider, model, operation, tool name, session ID, prompt text. Provider, model and operation are bounded sets and the OpenTelemetry GenAI conventions (Development status) use them as attributes; session IDs, user IDs and prompt text follow the `user_id` rule and belong in traces or logs.",
+      "The fundamentals do not change: identity is still metric name plus label set. An agent can do the multiplication faster than you, so the skill is checking its estimate against real data, for example `count(count by (route) (http_requests_total))`, not its guess at the value set.",
+    ],
     quiz: [
       { q: "You add a `region` label with 3 values to a metric that already has 2,000 series. How many series can it have now?", a: "Up to 6,000. Labels multiply: every existing combination can now appear once per region." },
       { q: "Why is `pod` a label that causes churn even when the number of pods is constant?", a: "Each restart or reschedule creates a pod with a new name, so all of its series are new label sets. The old ones stop getting samples but stay in the head until it is truncated." },
@@ -81,6 +86,7 @@ export const CHAPTERS = [
       { title: "Grafana Cloud: Metrics invoice (active series)", url: "https://grafana.com/docs/grafana-cloud/cost-management-and-billing/understand-your-invoice/metrics-invoice/" },
       { title: "Grafana Labs: What are cardinality spikes and why do they matter?", url: "https://grafana.com/blog/2022/02/15/what-are-cardinality-spikes-and-why-do-they-matter/" },
       { title: "Chronosphere: What is high cardinality?", url: "https://chronosphere.io/learn/what-is-high-cardinality/" },
+      { title: "OpenTelemetry GenAI semantic conventions (Development)", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/README.md" },
     ],
   },
   {
@@ -144,6 +150,11 @@ export const CHAPTERS = [
       "Long-term and global views move to remote write into Mimir, Thanos, Cortex or a vendor. Remote write keeps a series-ID to labels cache per WAL series, so high churn raises memory on the sending Prometheus too.",
       "Shared backends enforce per-tenant series limits. In Mimir, going over the per-tenant series limit gets samples rejected as a client error, so a bad deploy fails its own writes instead of the cluster.",
     ],
+    agentic: [
+      "AI assistants and investigation agents now run PromQL for you, often broad selectors over long ranges, and every query pays for postings intersections and chunk reads on the same server that evaluates your alerts. Give agent identities their own tenant or query limits; in Mimir, `max_fetched_series_per_query` and the per-query chunk limits can be overridden per tenant.",
+      "An agent loop can issue many queries per alert. OWASP lists this class as LLM10:2025 Unbounded Consumption, and Anthropic's agent guidance recommends stopping conditions such as a maximum number of iterations; the SRE version is a query budget per agent identity plus a step cap.",
+      "What stays the same: head memory still tracks active series, and no agent changes that. An agent can read `prometheus_tsdb_head_series` and the memory curve and propose a shard split; a human checks the projection against your own measured memory per series before resizing.",
+    ],
     quiz: [
       { q: "Why doesn't memory drop right after you scale a deployment from 200 pods to 20?", a: "The 180 dead pods' series are still in the head. They are only garbage-collected when a head compaction and truncation removes their last samples. Truncation runs about every 2 hours and cuts only the oldest 2h, so they can linger for roughly 1 to 3 hours." },
       { q: "What is a postings list and how is it used in a query?", a: "A sorted list of series IDs for one label pair. The query fetches the list for each matcher and intersects them to find the matching series, then reads their chunks." },
@@ -159,6 +170,8 @@ export const CHAPTERS = [
       { title: "Robust Perception: Scaling and federating Prometheus", url: "https://www.robustperception.io/scaling-and-federating-prometheus/" },
       { title: "Prometheus: Remote write tuning", url: "https://prometheus.io/docs/practices/remote_write/" },
       { title: "Grafana Mimir runbooks", url: "https://grafana.com/docs/mimir/latest/manage/mimir-runbooks/" },
+      { title: "OWASP Top 10 for LLM Applications 2025", url: "https://genai.owasp.org/llm-top-10/" },
+      { title: "Anthropic: Building effective agents", url: "https://www.anthropic.com/engineering/building-effective-agents" },
     ],
   },
   {
@@ -223,6 +236,11 @@ export const CHAPTERS = [
       "Full-scan queries don't work at 10M+ series on a shared backend. Use the backend's cardinality APIs: Grafana Cloud has label-name and label-value cardinality endpoints, and Mimir has its own.",
       "Unused metrics are the cheapest cut. Grafana Cloud flags metrics not queried in 30 days and not used in dashboards or rules; many teams start a cleanup by dropping those.",
     ],
+    agentic: [
+      "This is a good task for an agent, read-only: `/api/v1/status/tsdb`, the backend cardinality APIs and `scrape_series_added` let it name the metric, label and target quickly. Mid-incident it gathers the evidence; a human confirms the jump lines up with a deploy and an owner before anything is dropped.",
+      "Constrain the tools, not just the prompt. Left to itself an agent may reach for `count by (__name__)({__name__=~\".+\"})` on a server that is already struggling, so expose the status endpoints and cardinality APIs and leave full-scan queries out of its toolset.",
+      "Label values and log lines are untrusted input: text pulled into the agent's context can carry prompt injection (LLM01:2025). An agent that reads telemetry already holds two legs of the lethal trifecta (private data and untrusted text), so it should not also get a channel to outside systems; write access to scrape config is a separate excessive-agency risk (LLM06:2025).",
+    ],
     quiz: [
       { q: "Why prefer the TSDB status page over `topk(10, count by (__name__)({__name__=~\".+\"}))`?", a: "The status page reads statistics the head already keeps. The query matches and counts every series, which is expensive on a large or struggling server." },
       { q: "You know the metric. How do you find which label exploded?", a: "Count distinct values per label: `count(count by (label) (metric))` for each label, or read labelValueCountByLabelName on the status page." },
@@ -236,6 +254,8 @@ export const CHAPTERS = [
       { title: "Prometheus source: tsdb/head.go (head metrics)", url: "https://github.com/prometheus/prometheus/blob/main/tsdb/head.go" },
       { title: "Grafana Cloud: Cardinality management dashboards", url: "https://grafana.com/docs/grafana-cloud/cost-management-and-billing/analyze-costs/metrics-costs/prometheus-metrics-costs/cardinality-management/" },
       { title: "Grafana Labs: What are cardinality spikes and why do they matter?", url: "https://grafana.com/blog/2022/02/15/what-are-cardinality-spikes-and-why-do-they-matter/" },
+      { title: "OWASP Top 10 for LLM Applications 2025", url: "https://genai.owasp.org/llm-top-10/" },
+      { title: "Simon Willison: The lethal trifecta for AI agents", url: "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" },
     ],
   },
   {
@@ -303,6 +323,11 @@ export const CHAPTERS = [
       "Some detail is worth keeping but not at full cardinality. Hosted platforms such as Chronosphere offer aggregation rules in their control plane that roll up labels like `pod` before storage.",
       "Label standards hold only if checked before merge. Teams lint instrumentation for forbidden label names and route templates in CI, which is cheaper than any drop rule.",
     ],
+    agentic: [
+      "An LLM can draft a `metric_relabel_configs` drop or `labeldrop` rule straight from the cardinality report, and a human approves it. Check each regex against every alert, recording rule and dashboard that references the metric: a wrong match silently deletes series an alert needs, and a `labeldrop` can collide series.",
+      "Put the label standard where agents read it (`AGENTS.md` or repo instructions) so generated code starts compliant, and keep the forbidden-label lint in CI as the gate. Copilot code review reads `AGENTS.md`, but its reviews do not count toward required approvals by default and are not guaranteed to catch every problem.",
+      "`sample_limit` and per-tenant limits do not care who wrote the code, so they are the backstop when many agent PRs land at once. The new failure mode is an agent fixing a failed scrape (`up` = 0) by raising `sample_limit` instead of removing the label; treat limit changes as human-reviewed config.",
+    ],
     quiz: [
       { q: "You want to stop storing `debug_*` metrics from one job. Which config, and why not the other?", a: "`metric_relabel_configs` with `action: drop` on `__name__`. `relabel_configs` runs on targets before the scrape and can't see individual metrics." },
       { q: "A target exceeds `sample_limit`. What happens to its samples and to `up`?", a: "The whole scrape is treated as failed: none of its samples are ingested and `up` is 0. The limit is checked after metric relabeling, so drop rules can bring a target back under it." },
@@ -317,6 +342,7 @@ export const CHAPTERS = [
       { title: "Grafana Mimir: Runtime configuration (per-tenant overrides)", url: "https://grafana.com/docs/mimir/latest/configure/about-runtime-configuration/" },
       { title: "Grafana Mimir runbooks", url: "https://grafana.com/docs/mimir/latest/manage/mimir-runbooks/" },
       { title: "Chronosphere: What is high cardinality?", url: "https://chronosphere.io/learn/what-is-high-cardinality/" },
+      { title: "GitHub Docs: About Copilot code review", url: "https://docs.github.com/en/copilot/concepts/agents/code-review" },
     ],
   },
 ];

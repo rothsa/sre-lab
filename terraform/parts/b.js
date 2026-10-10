@@ -97,6 +97,11 @@ run "create" {
       "Monorepos: running every test on every change does not scale. CI computes which module directories changed and runs `terraform test` only there; Terraform 1.12 also added parallel runs inside a file (`parallel = true`).",
       "Provider rate limits: many test pipelines applying at once share the same account's API quotas and start getting throttled. Spread tests across accounts or limit concurrent apply jobs.",
     ],
+    agentic: [
+      "Agents write `.tftest.hcl` files fast, especially mocked `command = plan` runs, so test coverage becomes cheap. The reviewer's question changes to whether each `assert` could ever fail, because an agent writing code and tests together can end up asserting whatever the code already does.",
+      "Ask for one negative test per rule: `expect_failures` with `command = plan` passes only if the named custom condition reports a problem, so deleting or weakening the rule turns CI red.",
+      "A `run` without `command` defaults to `apply` with real credentials, so an agent running `terraform test` in a shell that holds production credentials can create real, billable resources. Give agents mock providers or a sandbox account with a reaper job.",
+    ],
     quiz: [
       { q: "What does a `run` block do if you don't set `command`?", a: "It runs `apply`: it creates real resources with the configured providers, then checks its assertions. Those resources are destroyed at the end of the test file." },
       { q: "How can an apply-style test run without cloud credentials?", a: "Replace the provider with `mock_provider` (Terraform 1.7+). Terraform creates fake resources with generated computed values and keeps them in the test state." },
@@ -207,6 +212,11 @@ terraform {
       "Migration at scale: move workspaces in waves, start with ones whose state is backed up and whose plans are empty, and keep one plan-only run with the new binary to prove a no-op diff before the first apply.",
       "Feature divergence grows each release. Teams that need state encryption without a platform may lean to OpenTofu; teams that need Stacks or vendor support from HashiCorp/IBM stay on Terraform.",
     ],
+    agentic: [
+      "Registry grounding is tool-specific: HashiCorp's Terraform MCP server reads the Terraform registry, and OpenTofu publishes its own MCP server for the OpenTofu registry. An agent grounded on one can still suggest features only the other has, such as Stacks or OpenTofu state encryption, so `validate` with the pinned binary is the check.",
+      "Models learned from years of mixed Terraform and OpenTofu content and can blend syntax across versions. The pinned `required_version` and the binary in CI decide what is valid, not the model's memory.",
+      "Choosing Terraform or OpenTofu is still a human decision about license terms, support contracts and platform. An agent can diff changelogs quickly, but it cannot weigh your contract or your risk appetite.",
+    ],
     quiz: [
       { q: "Which was the first Terraform release under the Business Source License, and the last under MPL 2.0?", a: "1.6.0 (4 October 2023) was the first BUSL release. 1.5.7 (7 September 2023) was the last MPL 2.0 release." },
       { q: "Name two features OpenTofu shipped that Terraform does not have.", a: "Client-side state and plan encryption (1.7.0) and early evaluation of variables and locals in backend settings (1.8.0); Terraform 1.15.0 added them only for module `source` and `version`. `for_each` on provider blocks and `-exclude` (1.9.0) are others." },
@@ -224,6 +234,8 @@ terraform {
       { title: "OpenTofu: provider registry protocol", url: "https://opentofu.org/docs/internals/provider-registry-protocol/" },
       { title: "Terraform: provider requirements", url: "https://developer.hashicorp.com/terraform/language/providers/requirements" },
       { title: "Atlantis: server configuration", url: "https://www.runatlantis.io/docs/server-configuration" },
+      { title: "Terraform MCP server", url: "https://developer.hashicorp.com/terraform/mcp-server" },
+      { title: "opentofu/opentofu-mcp-server (GitHub)", url: "https://github.com/opentofu/opentofu-mcp-server" },
     ],
   },
   {
@@ -326,6 +338,11 @@ resource "aws_db_instance" "main" {
       "OpenTofu encryption keys: losing the key makes the state unrecoverable. The docs recommend a separate KMS key per state file and `enforced = true` so a missing key setting cannot write plain-text state.",
       "Backend hygiene: turn on encryption at rest (S3 `encrypt = true`, GCS customer-managed keys), restrict read access to the state bucket as tightly as the secrets themselves, and keep audit logs of who read state.",
     ],
+    agentic: [
+      "Anything in plan or state is something an agent can read once it explains plans (the MCP server has `get_plan_json_output` and `get_plan_logs`) or opens a state file. Values from ephemeral resources and write-only arguments are never stored in those files, so the agent can explain the change without ever seeing the password.",
+      "Keep secrets out of the agent's context entirely: it writes `ephemeral` blocks that fetch from Vault or a secret manager at run time, and the runner identity, not the agent, holds that credential. `sensitive = true` only masks output, so an agent with state read access still sees the value.",
+      "An agent that reads a state full of secrets and also reads untrusted text (issues, docs, tool output) and can reach the network has Simon Willison's lethal trifecta. Remove a leg: no state-backend read for the agent, and an egress allowlist.",
+    ],
     quiz: [
       { q: "A variable is marked `sensitive = true`. Is its value in the state file?", a: "Yes, if it is used in a resource or output. `sensitive` only redacts it in CLI and UI output; state and plan files store it in full." },
       { q: "How do you rotate a password that was set through a write-only argument?", a: "Change the value and increase the companion version argument (for example `password_wo_version` from 1 to 2). Terraform stores only the version, so the version change is what triggers the update." },
@@ -340,6 +357,9 @@ resource "aws_db_instance" "main" {
       { title: "Terraform CHANGELOG (1.10, 1.11)", url: "https://github.com/hashicorp/terraform/blob/main/CHANGELOG.md" },
       { title: "OpenTofu: State and plan encryption", url: "https://opentofu.org/docs/language/state/encryption/" },
       { title: "OpenTofu releases and CHANGELOG", url: "https://github.com/opentofu/opentofu/releases" },
+      { title: "Terraform: ephemeral values and write-only arguments", url: "https://developer.hashicorp.com/terraform/language/manage-sensitive-data/ephemeral" },
+      { title: "Terraform MCP server: tools reference", url: "https://developer.hashicorp.com/terraform/mcp-server/reference" },
+      { title: "Simon Willison: The lethal trifecta for AI agents", url: "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" },
     ],
   },
   {
@@ -440,6 +460,11 @@ terraform {
       "Orchestrating dependent states: hand-built pipelines with remote-state reads break when the order changes. Stacks express components and deployments in one place and handle unknown values with deferred changes and convergence replans.",
       "Fan-out across regions and accounts: the same component in 20 regions means 20 states to plan and apply. Stacks deployments (up to 20 per Stack) or one workspace per region keep blast radius per region, and you roll a change to one region first.",
     ],
+    agentic: [
+      "The Terraform MCP server (GA June 2026) lets an agent query HCP Terraform workspaces, runs and Stacks (`list_workspaces`, `get_run_details`, `list_stacks`), which helps triage which of hundreds of plans needs a human. Its riskier tools (`action_run`, workspace create, update and delete, and `create_run` with auto-approve or destroy) stay off unless `ENABLE_TF_OPERATIONS=true`.",
+      "The GA post says the server enforces your existing Terraform authentication and authorization, so an agent with a broad org token is an OWASP LLM06:2025 Excessive Agency problem. Scope the token to the projects it should touch; the wrong workspace name is the IaC version of the wrong kube context.",
+      "Agents raise change volume, and DORA 2025 still links AI adoption to lower delivery stability. With many states, keep the gate where it was: a plan per state, mandatory policy, human apply approval, and one region first for Stacks deployments.",
+    ],
     quiz: [
       { q: "Why does plan time grow with state size even when nothing changed?", a: "Plan refreshes first: it reads every resource in state from the provider's API, at a default parallelism of 10, before comparing with configuration." },
       { q: "What is a deferred change in Stacks?", a: "When some values are unknown at plan time, for example a cluster's endpoint before the cluster exists, Stacks plan what they can, defer the rest, and replan after apply until the plan is empty (a convergence check)." },
@@ -457,6 +482,11 @@ terraform {
       { title: "HashiConf 2025: Terraform and Packer features (25 Sep 2025)", url: "https://www.hashicorp.com/en/blog/scale-infrastructure-with-new-terraform-and-packer-features-at-hashiconf-2025" },
       { title: "Terraform: terraform_remote_state data source", url: "https://developer.hashicorp.com/terraform/language/state/remote-state-data" },
       { title: "Terraform CHANGELOG (1.8, 1.11, 1.13)", url: "https://github.com/hashicorp/terraform/blob/main/CHANGELOG.md" },
+      { title: "Terraform MCP server is now generally available (11 Jun 2026)", url: "https://www.hashicorp.com/en/blog/terraform-mcp-server-is-now-generally-available" },
+      { title: "Terraform MCP server: tools reference", url: "https://developer.hashicorp.com/terraform/mcp-server/reference" },
+      { title: "hashicorp/terraform-mcp-server (GitHub)", url: "https://github.com/hashicorp/terraform-mcp-server" },
+      { title: "OWASP LLM06:2025 Excessive Agency", url: "https://genai.owasp.org/llmrisk/llm062025-excessive-agency/" },
+      { title: "Announcing the 2025 DORA report", url: "https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report" },
     ],
   },
 ];

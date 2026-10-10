@@ -79,6 +79,12 @@ legend { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); 
 .prose { max-width: 68ch; }
 .prose li { margin: 4px 0; }
 code { font-family: var(--font-mono); font-size: .92em; }
+.agentic { margin: 28px 0 0; background: var(--panel); border: 1px solid var(--rule); border-left: 3px solid var(--accent); border-radius: 10px; padding: 16px 18px; }
+.agentic h2 { margin-top: 0; }
+.agentic ul { padding-left: 20px; }
+.agentic li { margin: 8px 0; }
+.agentic h3 { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 400; margin: 16px 0 6px; }
+.agentic .sources li { margin: 4px 0; font-size: 14px; }
 footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
 footer a, .prose a { color: var(--accent); }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
@@ -165,6 +171,22 @@ footer a, .prose a { color: var(--accent); }
       <li><b>Degraded modes:</b> a cached or rule-based answer, a queue for later, or a clear "AI help is unavailable" state, so the product still works without the model.</li>
       <li><b>Budgets on the backup:</b> the fallback path gets real traffic only during incidents, so give it its own rate limits and spend caps, and test it regularly the way this page does.</li>
     </ul>
+
+    <section class="agentic" aria-labelledby="agentic-h">
+      <h2 id="agentic-h">What changes in the agentic era</h2>
+      <ul>
+        <li><b>Model failover is now a reliability problem.</b> A model API fails in its own ways. Claude's API returns 529 <code>overloaded_error</code> under high traffic across all users, a tier spend-cap 429 that has no <code>retry-after</code> and keeps failing, and errors that can arrive mid-stream after a 200. OpenAI likewise says quota 429s shouldn't be retried. Fallback logic has to tell these apart, because retrying a spend cap only burns the timeout.</li>
+        <li><b>A 200 isn't a good answer.</b> A backup model can answer the same prompt shorter, in a different format or wrong. Agents make this sharper: one task makes many model calls and errors compound across steps, so a silent switch mid-task can change what the agent does. Record which model served each call, make failover a visible event someone reviews, and have the synthetic probes check the answer as well as the status code.</li>
+        <li><b>Failing over can mean another Region.</b> Amazon Bedrock cross-Region inference routes requests within a geography or globally, and CloudTrail's <code>additionalEventData.inferenceRegion</code> shows where each one ran. Global routing can process requests in any supported commercial Region, so where a request may run is a data-residency decision for people, not just a reliability setting.</li>
+      </ul>
+      <h3>Sources</h3>
+      <ul class="sources">
+          <li><a href="https://platform.claude.com/docs/en/api/errors">Claude API errors</a></li>
+          <li><a href="https://developers.openai.com/api/docs/guides/error-codes">OpenAI API error codes</a></li>
+          <li><a href="https://www.anthropic.com/engineering/building-effective-agents">Anthropic: Building effective agents</a></li>
+          <li><a href="https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html">Amazon Bedrock: cross-Region inference</a></li>
+      </ul>
+    </section>
 
     <h2>Guardrails and cost</h2>
     <ul>

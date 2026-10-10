@@ -82,6 +82,11 @@ export const CHAPTERS = [
       "Synchronized schedules: the same cron line on every host fires at the same second and hits the same API together. Add a random start delay, and give the job a lock so a slow run doesn't overlap the next one.",
       "When a script grows state, retries and per-target progress, it has become a service. Move it into a job system or controller with a queue rather than adding more flags.",
     ],
+    agentic: [
+      "An agent drafts this skeleton in seconds in any of the three languages, so the review moves from syntax to the contract: does `--dry-run` really default to on, does Go's `main` stay a few lines around `run()`, does only the result reach stdout. A script that quietly defaults to apply, or catches `SystemExit` with a bare `except:`, survives a quick skim and fails on the first fleet run.",
+      "Asking an agent for a script gets you a script. Whether this should be a one-liner, an Ansible module, a Terraform resource or a service is still the first decision, and it belongs before the prompt, not after the diff.",
+      "The contract also makes the tool safe for an agent to call: JSON on stdout and meaningful exit codes are what a tool-using agent reads, and dry-run by default limits what a misread instruction can do. Claude Code's security docs note an approved Bash command can write anywhere your user account can, so try new scripts in a sandbox or container first (see Agentic Engineering, Drawn, on permissions).",
+    ],
     code: [
       { lang: "python", label: "Python · argparse + logging (stdlib)", src: `import argparse
 import json
@@ -197,6 +202,7 @@ exit(main(ARGV))                          # SystemExit: ensure blocks still run`
       { title: "Go: package log/slog", url: "https://pkg.go.dev/log/slog" },
       { title: "Ruby: OptionParser", url: "https://docs.ruby-lang.org/en/master/OptionParser.html" },
       { title: "Ruby: Kernel (exit, abort, warn)", url: "https://docs.ruby-lang.org/en/master/Kernel.html" },
+      { title: "Claude Code: Security", url: "https://code.claude.com/docs/en/security" },
     ],
   },
   {
@@ -263,6 +269,11 @@ exit(main(ARGV))                          # SystemExit: ensure blocks still run`
       "Exact percentiles keep every sample. Pipelines over many files use mergeable sketches or fixed histogram buckets, so per-file results can be combined; you cannot average p95s.",
       "CPU-bound parsing: in CPython and CRuby only one thread runs interpreter code at a time, so threads won't use more cores. Run one process per file (Python `multiprocessing`) and merge the counts, or use Go, where goroutines spread across cores.",
       "Rotated, compressed files: Python `gzip.open(path, \"rt\")`, Go `gzip.NewReader(f)` and Ruby `Zlib::GzipReader` all stream, but decompression costs CPU. Spread files across workers rather than reading one huge concatenated stream.",
+    ],
+    agentic: [
+      "Agents handle this shape well: describe one log line and the question, and a `Counter` or `bufio.Scanner` version arrives quickly. Review it for this chapter's traps (`sc.Err()` checked after the loop, paths normalized to routes, no threads added to a CPU-bound Python or Ruby parser, where the GIL or GVL means they add no parsing throughput), then run the jq or awk baseline on the same file and diff the counts.",
+      "If the logs already live in Loki, Elasticsearch or Datadog, the right output from an agent is a query in that platform's language, not a script that copies gigabytes to a laptop. Better still is a counter and a histogram from the service, so the question becomes a metrics query.",
+      "Pasting raw log lines into an agent sends whatever they contain (tokens, emails, user IDs) to the model provider; even K8sGPT's `--anonymize` leaves log and event data unmasked. Logs are also untrusted input that can carry prompt injection, so give the agent the schema and a scrubbed sample, not the production file.",
     ],
     code: [
       { lang: "python", label: "Python · json, collections, statistics (stdlib)", src: `import gzip
@@ -383,6 +394,8 @@ end` },
       { title: "Ruby: Enumerable", url: "https://docs.ruby-lang.org/en/master/Enumerable.html" },
       { title: "Ruby: Zlib::GzipReader", url: "https://docs.ruby-lang.org/en/master/Zlib/GzipReader.html" },
       { title: "Ruby: Thread (GVL)", url: "https://docs.ruby-lang.org/en/master/Thread.html" },
+      { title: "K8sGPT README (anonymization limits)", url: "https://github.com/k8sgpt-ai/k8sgpt" },
+      { title: "Simon Willison: The lethal trifecta for AI agents", url: "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" },
     ],
   },
   {
@@ -450,6 +463,11 @@ end` },
       "Conditional requests: store the `ETag` and send `If-None-Match`; an authenticated `304` doesn't count against the primary limit. Polling a thousand repositories becomes cheap, and webhooks avoid polling entirely.",
       "Synchronized cron jobs all start at `:00`, get 429s together and, with un-jittered backoff, retry together. Add a random start delay and jittered backoff: urllib3 `backoff_jitter` (its first retry is immediate, so jitter only spreads the later ones), faraday-retry `interval_randomness`, retryablehttp `LinearJitterBackoff`.",
       "Connection reuse: a `Session`, a pooled `http.Client` or one Faraday connection keeps TCP and TLS warm. A new client per request at high volume burns handshakes, ephemeral ports and file descriptors, and in Go an unclosed body leaks the connection.",
+    ],
+    agentic: [
+      "A generated client may hand-roll a `while` loop with `time.sleep` around each call. Ask for the existing policy instead (urllib3 `Retry`, retryablehttp's `CheckRetry`, faraday-retry, or just `gh api --paginate`), then check what those libraries leave to you: `timeout=` on every requests call, POST excluded from retries, `:raise_error` listed before `:retry`.",
+      "Hallucinated APIs look exactly like real ones: a keyword argument the library doesn't accept, or a Faraday option from another version. OWASP LLM09:2025 lists models suggesting non-existent libraries, and attackers register commonly hallucinated package names, so check every import and option against the docs and the lock file before installing anything.",
+      "Retry layers multiply when the API is an LLM provider: Anthropic's SDKs already retry twice by default and honor `retry-after`, so a retry loop around them multiplies attempts. A spend-cap 429 carries no `retry-after` and won't clear by retrying, which is the 403-versus-429 lesson from GitHub again.",
     ],
     code: [
       { lang: "python", label: "Python · requests + urllib3 Retry", src: `import os
@@ -580,6 +598,9 @@ issues(github, "rails/rails").lazy.reject { |i| i.key?("pull_request") }.first(5
       { title: "GitHub REST: best practices", url: "https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api" },
       { title: "GitHub REST: list repository issues", url: "https://docs.github.com/en/rest/issues/issues#list-repository-issues" },
       { title: "GitHub CLI: gh api", url: "https://cli.github.com/manual/gh_api" },
+      { title: "OWASP LLM09:2025 Misinformation", url: "https://genai.owasp.org/llmrisk/llm092025-misinformation/" },
+      { title: "Claude API: errors (SDK retries)", url: "https://platform.claude.com/docs/en/api/errors" },
+      { title: "Claude API: rate limits (spend-cap 429)", url: "https://platform.claude.com/docs/en/api/rate-limits" },
     ],
   },
   {
@@ -646,6 +667,11 @@ issues(github, "rails/rails").lazy.reject { |i| i.key?("pull_request") }.first(5
       "Retry modes: `standard` retries throttling with jittered backoff and a retry quota that stops retrying when most calls fail. `adaptive` adds a client-side rate limiter that slows every call from that client, which suits one hot API but not a scanner that touches many.",
       "Don't scan to find drift: AWS Config's `ec2-volume-inuse-check` rule flags unattached volumes continuously, and Resource Explorer searches across regions and, with Organizations, accounts. Keep the script for the act-on-it step, with tags deciding ownership.",
       "Cleanup jobs cause outages. One flooded a cloud provider's API until it was rate limited; another read only the first 100 images and deleted the rest as unused. Cap deletions per run, pace them, and stop if the listing looks incomplete.",
+    ],
+    agentic: [
+      "Dry-run by default matters more once an agent can run the script. Google's SRE team describes routing agent changes through a gateway that enforces dry-runs, and EC2's `DryRun` gives you that check per call; review that the `DryRunOperation` branch matches the error code, because code that treats every exception as failure, or swallows them all, breaks the check silently.",
+      "The default credential chain picks up whatever profile the shell has, so an agent running this script inherits your session. Give it a distinct read-only role, assumed with STS as the multi-account pattern already does, and keep `--apply` with a human; Google's guidance is least-privilege agent identities, never a developer's standing credentials (see Agentic Engineering, Drawn).",
+      "Check each generated call against the SDK reference, since paginator names and boto3's `max_attempts` versus `total_max_attempts` are easy to get plausibly wrong, and test against stubs as the Ruby version here did. Before that, ask whether AWS Config's `ec2-volume-inuse-check` already answers the question with no code.",
     ],
     code: [
       { lang: "python", label: "Python · boto3 paginator", src: `from concurrent.futures import ThreadPoolExecutor
@@ -772,6 +798,7 @@ regions.map { |r| Thread.new { clean_region(r, apply) } }  # GVL is released on 
       { title: "AWS SDKs: credential providers", url: "https://docs.aws.amazon.com/sdkref/latest/guide/standardized-credentials.html" },
       { title: "AWS Config: ec2-volume-inuse-check", url: "https://docs.aws.amazon.com/config/latest/developerguide/ec2-volume-inuse-check.html" },
       { title: "AWS Resource Explorer", url: "https://docs.aws.amazon.com/resource-explorer/latest/userguide/welcome.html" },
+      { title: "Google SRE: AI in SRE", url: "https://sre.google/resources/practices-and-processes/ai-engineering-reliable-operations/" },
     ],
   },
 ];

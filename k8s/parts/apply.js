@@ -75,6 +75,11 @@ export const CHAPTERS = [
       "etcd limits each request to 1.5 MiB by default and the database to 2 GiB by default (`--quota-backend-bytes`; 8 GiB is the suggested maximum). Past the quota, etcd raises a `NOSPACE` alarm and accepts only reads and deletes, so every `kubectl apply` fails. Operators compact, defragment member by member, disarm the alarm, and alert on database size well before the quota.",
       "The last step fans out to every node. With the old Endpoints API, a 5,000-Pod Service could need a 1.5 MB object, and on 3,000 nodes each change meant sending about 4.5 GB. EndpointSlices hold up to 100 endpoints each by default, so one Pod becoming Ready rewrites one small slice.",
     ],
+    agentic: [
+      "Agent-written manifests take the same path: authentication, RBAC, then admission. That chain is the guardrail that holds, because a ValidatingAdmissionPolicy rejects a bad spec whoever generated it; OWASP calls this complete mediation (LLM06:2025 Excessive Agency).",
+      "A successful apply from an agent still only means the object was stored. Ask for `kubectl rollout status` and the ReplicaSet's events as evidence, since Pods can be rejected by Pod Security or stuck Pending after the agent has reported 'deployed'.",
+      "Agents that retry in loops add API load. A FlowSchema can match an agent's ServiceAccount and put it in its own priority level, so a runaway agent gets `429`s before it competes with kubelets and controllers.",
+    ],
     quiz: [
       { q: "Which component decides which node a Pod runs on, and how does the node find out?", a: "The scheduler. It writes a binding to the API server, and the kubelet on that node, which watches for Pods assigned to it, picks it up." },
       { q: "In what order do mutating and validating admission run, and why does it matter?", a: "Mutating first, then validating. Validation sees the final object, after all defaults and injections, so policies judge what will really run." },
@@ -92,6 +97,7 @@ export const CHAPTERS = [
       { title: "etcd: system limits", url: "https://etcd.io/docs/v3.5/dev-guide/limit/" },
       { title: "etcd: maintenance", url: "https://etcd.io/docs/v3.5/op-guide/maintenance/" },
       { title: "Scaling Kubernetes networking with EndpointSlices", url: "https://kubernetes.io/blog/2020/09/02/scaling-kubernetes-networking-with-endpointslices/" },
+      { title: "OWASP LLM06:2025 Excessive Agency", url: "https://genai.owasp.org/llmrisk/llm062025-excessive-agency/" },
     ],
   },
 ];

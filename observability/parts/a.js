@@ -57,6 +57,11 @@ export const CHAPTERS = [
       "One label with unbounded values (user, request or session ID) multiplies series count and can take down the metrics backend. Cardinality limits and pre-ingest relabeling are standard guardrails.",
       "Pick the signal per question: how many and how fast (metrics, long retention), what happened to this request (traces, sampled), exactly why (logs, short retention). Keeping everything everywhere is what makes the bill explode.",
     ],
+    agentic: [
+      "Assistants now turn plain questions into queries: Grafana Assistant handles querying and dashboards in conversation, New Relic AI helps build NRQL, and Honeycomb's Canvas works from your schema plus sample telemetry values (none of these pages states a preview or GA label). Choosing the right signal for the question is still your call, so read the generated PromQL, LogQL or NRQL before trusting the chart: a plausible query on the wrong signal or label is the new silent error.",
+      "LLM calls and agent runs are now a workload you observe with the same three signals. OpenTelemetry's GenAI conventions (Development status, not stable) define token-usage counters, duration histograms, and spans per model call and per tool call; prompt and response content on those spans is Opt-In because it likely holds user data, so treat it like request bodies, never like metric labels.",
+      "Investigation agents walk the same loop of metric, exemplar, trace and logs, so the `TraceId` on your log records and exemplars on your histograms decide how far they get. Mid-incident they gather evidence read-only and a human decides; ask for the exact queries and links behind a conclusion, or treat it as a hypothesis (see Agentic Engineering, Drawn).",
+    ],
     quiz: [
       { q: "Why is a request rate metric cheap at 100,000 requests per second while access logs are not?", a: "The counter is aggregated in the process: one series per label combination, sampled at each scrape, however many requests arrive. Access logs write one record per request, so cost grows with traffic." },
       { q: "What is an exemplar?", a: "A trace ID (and labels) attached to a single metric sample, pointing at one representative request. Grafana shows it as a star on a Prometheus graph that links to the trace." },
@@ -71,6 +76,11 @@ export const CHAPTERS = [
       { title: "Prometheus: Metric and label naming", url: "https://prometheus.io/docs/practices/naming/" },
       { title: "Grafana: Introduction to exemplars", url: "https://grafana.com/docs/grafana/latest/fundamentals/exemplars/" },
       { title: "Grafana Loki overview", url: "https://grafana.com/docs/loki/latest/get-started/overview/" },
+      { title: "OpenTelemetry GenAI semantic conventions (Development)", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/README.md" },
+      { title: "OpenTelemetry GenAI spans", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md" },
+      { title: "Grafana Assistant overview", url: "https://grafana.com/docs/grafana-cloud/machine-learning/assistant/" },
+      { title: "New Relic AI", url: "https://docs.newrelic.com/docs/agentic-ai/new-relic-ai/" },
+      { title: "Honeycomb: AI policies (Honeycomb Intelligence)", url: "https://docs.honeycomb.io/security-compliance/honeycomb-intelligence" },
     ],
   },
 
@@ -145,6 +155,11 @@ export const CHAPTERS = [
       "When the gateway falls over, everything behind it backs up: agent queues fill and start dropping. Run several gateway replicas behind a load balancer and use persistent queues where loss matters.",
       "Several gateways writing the same metric stream break the single-writer rule and cause out-of-order or duplicate samples in Prometheus-style backends. Add unique resource identity with `k8sattributes` or `resourcedetection`.",
     ],
+    agentic: [
+      "Agent and LLM telemetry rides the same SDK-to-Collector path. The GenAI conventions keep `gen_ai.input.messages`, `gen_ai.output.messages` and `gen_ai.tool.call.arguments` Opt-In because they can carry user data; if a team turns capture on, the gateway's `attributes` or `transform` processor is where you delete or hash them before any exporter ships a copy to a vendor.",
+      "Each agent step can be a span: an `invoke_agent` span, one per model call and an `execute_tool` span per tool call, so one task sends a burst of spans through `memory_limiter` and the exporter queues. Some backends bill per LLM span (Datadog LLM Observability meters LLM spans ingested), so size both the pipeline and the budget for agent loops, not single requests.",
+      "Agents draft Collector configs quickly, and a config that loads is not a correct one. Check processor order by hand (`memory_limiter` first, `k8sattributes` before `batch`) and that redaction exists in every pipeline that exports, because a misordered limiter fails only under load and a missing redaction shows up only in an audit.",
+    ],
     quiz: [
       { q: "Why must `memory_limiter` be the first processor?", a: "So it can refuse data before anything downstream buffers it. The refusal is a retryable error that reaches the receiver, which pushes back on the sender instead of the Collector running out of memory." },
       { q: "You run three gateway Collectors behind a round-robin load balancer, each with `tail_sampling`. What goes wrong?", a: "Spans of one trace land on different Collectors, so each sees a partial trace and makes its own decision. Put a first tier with the `loadbalancing` exporter, `routing_key: traceID`, in front of the samplers." },
@@ -211,6 +226,9 @@ service:
       { title: "Recommended processors", url: "https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/README.md" },
       { title: "Load-balancing exporter README", url: "https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/loadbalancingexporter/README.md" },
       { title: "Tail sampling processor README", url: "https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/tailsamplingprocessor/README.md" },
+      { title: "OpenTelemetry GenAI spans", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md" },
+      { title: "OpenTelemetry GenAI agent spans", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-agent-spans.md" },
+      { title: "Datadog LLM Observability", url: "https://docs.datadoghq.com/llm_observability/" },
     ],
   },
 
@@ -277,6 +295,11 @@ service:
       "Restarting a busy Prometheus means replaying the WAL, which holds at least the last two hours of samples on busy servers, before the head is back. Large servers take a noticeable time to come back; HA pairs and staggered restarts hide the gap.",
       "Capacity is roughly retention seconds times samples per second times 1-2 bytes per sample. Sample rate is targets times series per target divided by the interval, so halving the interval doubles disk.",
     ],
+    agentic: [
+      "Agents now read metrics through assistants and MCP servers (Grafana Assistant, for one, queries your data sources under your own permissions), so `job`, `instance` and your metric names become an API that agents consume. Absence is the trap: a target dropped by `relabel_configs` has no `up` series at all, and an agent that finds no data can call the service healthy, so ask which series it actually checked.",
+      "LLM workloads add new series: OTel GenAI token counters and duration histograms (Development status, names may still change) reach Prometheus or Mimir through the Collector, so `sample_limit` and `metric_relabel_configs` apply to them like any exporter. The spec asks for `error.type` to be the provider's error code or another low-cardinality identifier; keep `gen_ai.request.model` bounded too, and never put prompt text or conversation IDs in labels.",
+      "Ask an agent to size a server or a `remote_write` queue and it will give confident numbers; check them against this chapter's arithmetic (targets times series per target divided by the interval, 1-2 bytes per sample) and against `prometheus_remote_storage_samples_pending`. A model's idea of defaults can be stale, and the fundamentals still decide capacity.",
+    ],
     quiz: [
       { q: "A pod is up and serving `/metrics`, but there is no series for it in Prometheus, not even `up`. Where do you look?", a: "Discovery and relabeling. The target was never discovered or a `keep`/`drop` rule in `relabel_configs` removed it. The targets page and service discovery page in the Prometheus UI show discovered labels before and after relabeling." },
       { q: "What does remote write read from, and what happens if the endpoint is down for six hours?", a: "It tails the WAL. Requests are retried without loss for up to about two hours; after that the WAL has been compacted and the unsent samples are lost." },
@@ -319,6 +342,8 @@ remote_write:
       { title: "Prometheus storage", url: "https://prometheus.io/docs/prometheus/latest/storage/" },
       { title: "Remote write tuning", url: "https://prometheus.io/docs/practices/remote_write/" },
       { title: "Federation", url: "https://prometheus.io/docs/prometheus/latest/federation/" },
+      { title: "Honeycomb: AI policies (Honeycomb Intelligence)", url: "https://docs.honeycomb.io/security-compliance/honeycomb-intelligence" },
+      { title: "OpenTelemetry GenAI metrics", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-metrics.md" },
     ],
   },
 
@@ -381,6 +406,11 @@ remote_write:
       "Dashboards with dozens of panels refreshing every few seconds re-run the same heavy query for every viewer. Recording rules turn that into a cheap read of a precomputed series.",
       "Late-arriving data from remote write can make a rule miss samples; `query_offset` on the rule group delays evaluation so the inputs have landed.",
     ],
+    agentic: [
+      "Query helpers now draft queries from plain language (New Relic AI builds NRQL; Grafana Assistant drafts queries in conversation). The rules in this chapter are your review checklist for their output: `rate()` before `sum`, `le` kept in `sum by`, no averaged quantiles, because a wrong query still draws a believable line.",
+      "Token spend is just another counter: `rate()` of the GenAI input and output token usage counters, then `sum` by the request-model label, gives tokens per second, which the OTel conventions call a proxy for cost. The per-operation token histograms are for p95/p99 outliers only; the spec says not to use them for totals or cost.",
+      "Agent-written recording rules get the same gates as human ones: the `level:metric:operations` name, a series `limit`, and a `promtool` test in CI. That catches a generated rule that drops a label or changes meaning before a dashboard or alert quietly starts reading it.",
+    ],
     quiz: [
       { q: "Why is `rate(sum(http_requests_total)[5m:])` wrong?", a: "Summing first hides individual counter resets. When one pod restarts, the sum drops and `rate()` reads that as a reset of the whole sum, producing a wrong spike. Take `rate()` per series, then sum." },
       { q: "Write a p95 latency per service from a classic histogram.", a: "`histogram_quantile(0.95, sum by (service, le) (rate(http_request_duration_seconds_bucket[5m])))`. Rate per bucket series first, keep `le` in the aggregation, quantile last." },
@@ -418,6 +448,9 @@ histogram_quantile(0.99,
       { title: "Recording rules (best practices)", url: "https://prometheus.io/docs/practices/rules/" },
       { title: "Defining recording rules", url: "https://prometheus.io/docs/prometheus/latest/configuration/recording_rules/" },
       { title: "Metric and label naming", url: "https://prometheus.io/docs/practices/naming/" },
+      { title: "New Relic AI", url: "https://docs.newrelic.com/docs/agentic-ai/new-relic-ai/" },
+      { title: "Grafana Assistant overview", url: "https://grafana.com/docs/grafana-cloud/machine-learning/assistant/" },
+      { title: "OpenTelemetry GenAI token metrics", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-token-metrics.md" },
     ],
   },
 ];

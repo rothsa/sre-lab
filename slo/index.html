@@ -72,6 +72,13 @@ pre { margin: 0; background: var(--bg); border: 1px solid var(--rule); border-ra
 .copy:focus-visible { outline: 2px solid var(--accent); }
 .explain { color: var(--muted); max-width: 70ch; margin: 0; font-size: 15px; }
 .explain b { color: var(--fg); }
+.agentic { margin-top: 20px; }
+.agentic ul { margin: 0; padding-left: 20px; display: grid; gap: 10px; max-width: 78ch; }
+.agentic li { font-size: 15px; }
+.agentic h3 { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 16px 0 6px; }
+.agentic .sources { gap: 4px; }
+.agentic .sources li { font-size: 13.5px; }
+.agentic a { color: var(--accent); }
 footer { margin-top: 28px; color: var(--muted); font-size: 14px; }
 footer a { color: var(--accent); }
 </style>
@@ -150,6 +157,22 @@ footer a { color: var(--accent); }
       </div>
     </section>
   </div>
+
+  <section class="panel agentic" aria-labelledby="agentic-h">
+    <h2 id="agentic-h">What changes in the agentic era</h2>
+    <ul>
+      <li><b>More change, same budget.</b> DORA's 2025 research found AI adoption now goes with higher delivery throughput but still with lower delivery stability, which it ties to more change without strong controls such as automated testing and fast feedback. An error budget measures that instability in user terms, which makes it the natural limit on how fast agents ship.</li>
+      <li><b>Write agents into the budget policy.</b> The SRE Workbook's example policy says that past the budget, &ldquo;we will halt all changes and releases other than P0 issues or security fixes.&rdquo; An agent opening PRs, bumping config or rolling out a deploy is change, so the freeze has to stop its pipeline too. A freeze that only people honor isn't a freeze.</li>
+      <li><b>Burn rate as a brake.</b> Google's SRE team describes checking live risk before an agent acts, including error budget status, active incidents and ongoing deployments, backed by agent-specific rate limits and circuit breakers. The fast-burn alerts above make a good trigger: the signal that pages a human can also pause agent rollouts, and a human decides when they resume.</li>
+      <li><b>What people still own.</b> An agent can compute burn rates and draft rules like the ones this page generates, but choosing the SLI, the target and what counts as a bad event is a product decision. The new failure mode is an agent that &ldquo;fixes&rdquo; a noisy alert by raising a threshold or excluding an error class, so real errors quietly stop spending budget. Review SLO and alert changes like code.</li>
+    </ul>
+    <h3>Sources</h3>
+    <ul class="sources">
+      <li><a href="https://sre.google/workbook/error-budget-policy/">Google SRE Workbook: Example Error Budget Policy</a></li>
+      <li><a href="https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report">Google Cloud: Announcing the 2025 DORA report</a></li>
+      <li><a href="https://sre.google/resources/practices-and-processes/ai-engineering-reliable-operations/">Google SRE: AI in SRE, engineering reliable operations</a></li>
+    </ul>
+  </section>
 
   <footer>Part of <a href="../">SRE Lab</a> by Sally Roth · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a>. Alert thresholds follow the Google SRE Workbook's recommendations for a 30-day window.</footer>
 </div>

@@ -69,6 +69,11 @@ export const CHAPTERS = [
       "Events are high-churn and can crowd out everything else in etcd. Large clusters store Event objects in a separate, dedicated etcd instance, which needs custom tooling to run and to point the API server at.",
       "Addons are sized for small and medium clusters. At scale, single-replica addons such as DNS or metrics can be OOM-killed or CPU-throttled. Teams raise their requests and limits as the cluster grows (the Vertical Pod Autoscaler in recommender mode or the addon resizer can help) and run them with `system-cluster-critical` priority.",
     ],
+    agentic: [
+      "Agents such as kubectl-ai and K8sGPT drive the same hub-and-spoke API: every `get`, `describe` or `logs` they run is an API server request under some identity. What you own is that identity, because an agent bound to a read-only Role cannot do what its RBAC forbids, whatever its prompt says.",
+      "The component map is how you catch a fluent but wrong answer. GKE's Gemini Cloud Assist docs (Preview) warn output can be plausible yet incorrect; an agent claiming 'the kubelet failed to schedule the Pod' has mixed up who binds (scheduler) and who runs (kubelet).",
+      "Agent bridges are a new front door. kubectl-ai's `--mcp-server` HTTP endpoint is unauthenticated by default, and its README warns that anyone who can reach the port can run `kubectl` and `bash` with the kubeconfig and host it runs on; treat it like API server access, with auth, network scope and audit.",
+    ],
     quiz: [
       { q: "Which component is the only one that should read and write etcd?", a: "kube-apiserver. Every other component, including the scheduler, controllers and kubelets, goes through the API server." },
       { q: "How does a kubelet learn that it should run a new Pod?", a: "It watches the API server for Pods bound to its node. When the scheduler writes a binding naming that node, the kubelet sees the change and starts the Pod through the container runtime. It can also run static Pods from local manifest files; kubeadm starts the control plane this way." },
@@ -83,6 +88,9 @@ export const CHAPTERS = [
       { title: "Operating etcd clusters for Kubernetes", url: "https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/" },
       { title: "Considerations for large clusters", url: "https://kubernetes.io/docs/setup/best-practices/cluster-large/" },
       { title: "SIG Scalability: Kubernetes scalability thresholds", url: "https://github.com/kubernetes/community/blob/master/sig-scalability/configs-and-limits/thresholds.md" },
+      { title: "kubectl-ai README", url: "https://github.com/GoogleCloudPlatform/kubectl-ai" },
+      { title: "K8sGPT README", url: "https://github.com/k8sgpt-ai/k8sgpt" },
+      { title: "GKE: Accelerate diagnosis with Gemini Cloud Assist", url: "https://docs.cloud.google.com/kubernetes-engine/docs/troubleshooting/introduction-gemini" },
     ],
   },
 
@@ -141,6 +149,11 @@ export const CHAPTERS = [
       "Watch bookmarks (`allowWatchBookmarks=true`) let a watcher resume from a recent `resourceVersion` instead of falling out of the short history window. Streaming lists (`sendInitialEvents=true`) deliver the initial state over the watch, which cuts API server memory compared with a big list.",
       "Some controllers deliberately slow down at scale. The node controller evicts from at most 1 node every 10 seconds (`--node-eviction-rate` 0.1). When at least 55% of a zone is unhealthy the rate drops to 0.01 per second, and in clusters of 50 nodes or fewer it stops, so a network partition does not trigger a mass eviction.",
     ],
+    agentic: [
+      "An agent is just another API client of the loop. If it 'fixes' a Pod by deleting or editing it, the ReplicaSet controller restores the template, so check that a proposed fix changes the owner's spec, ideally through a reviewed Git change.",
+      "Controllers reconcile any stored state, including a wrong one an agent wrote: a `replicas: 0` patch is applied as faithfully as a human's. Give agents their own identity so the audit log shows who changed desired state, and put writes behind the same review as people's.",
+      "Built-in controllers have brakes, such as the node controller's eviction rate limit. An agent acting in a loop has none unless you add them; Google's SRE guidance for agents asks for rate limits, circuit breakers and interruptible actions (see Agentic Engineering, Drawn).",
+    ],
     quiz: [
       { q: "What do a controller's watch, compare and act steps actually do?", a: "Watch: an informer lists then watches objects through the API server and keeps a cache. Compare: the controller checks desired state (spec) against actual state. Act: it asks the API server to create, update or delete objects to close the gap." },
       { q: "Why does a controller that missed an event still end up correct?", a: "Because it reconciles on current state, not on the event. On restart or after a broken watch it re-lists, sees the same gap between desired and actual, and fixes it." },
@@ -154,6 +167,8 @@ export const CHAPTERS = [
       { title: "ReplicaSet", url: "https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/" },
       { title: "API Priority and Fairness", url: "https://kubernetes.io/docs/concepts/cluster-administration/flow-control/" },
       { title: "Nodes", url: "https://kubernetes.io/docs/concepts/architecture/nodes/" },
+      { title: "Auditing", url: "https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/" },
+      { title: "AI in SRE: How Google is Engineering the Future of Reliable Operations", url: "https://sre.google/resources/practices-and-processes/ai-engineering-reliable-operations/" },
     ],
   },
 
@@ -227,6 +242,11 @@ export const CHAPTERS = [
       "With many teams, priority becomes a weapon: anyone who can create Pods at the highest priority can preempt everyone else. Admins cap each PriorityClass with a ResourceQuota scoped to it, and reserve `system-cluster-critical` and `system-node-critical` for components like DNS.",
       "A wave of Pending Pods turns into a wave of new nodes. At scale the bottleneck moves to the cloud: instance, IP address and load balancer quotas, and rate limits on creating instances. Teams raise quotas ahead of time and add nodes in batches with pauses between them.",
     ],
+    agentic: [
+      "Agents are good at turning a `FailedScheduling` event ('0/40 nodes are available: 12 Insufficient cpu...') into plain language. Check the reasoning uses requests, not usage, because an agent reading a CPU dashboard can blame the wrong thing.",
+      "The quick agent fixes for Pending Pods are policy changes in disguise: adding a toleration, raising priority or dropping anti-affinity gets the Pod placed but weakens isolation or preempts other teams. Keep PriorityClasses and taints out of an agent's write scope.",
+      "Agent runtimes are now a workload you schedule. kubernetes-sigs/agent-sandbox (SIG Apps, in development) runs each agent as a singleton Pod and keeps a SandboxWarmPool of pre-started Pods to avoid about a second of startup; warm Pods hold requests, so they use capacity the scheduler counts.",
+    ],
     quiz: [
       { q: "What are the two phases of a scheduling decision, and what happens if the first leaves no nodes?", a: "Filtering finds feasible nodes; scoring ranks them and the highest wins, with ties broken at random. If filtering leaves none, the Pod stays Pending and the scheduler may try preemption." },
       { q: "What is the difference between `NoSchedule`, `PreferNoSchedule` and `NoExecute` taints?", a: "`NoSchedule` keeps new non-tolerating Pods off but leaves running ones. `PreferNoSchedule` is a soft version. `NoExecute` also evicts running Pods that don't tolerate it; Pods that tolerate it with `tolerationSeconds` are evicted when that time runs out." },
@@ -243,6 +263,8 @@ export const CHAPTERS = [
       { title: "Scheduler performance tuning", url: "https://kubernetes.io/docs/concepts/scheduling-eviction/scheduler-perf-tuning/" },
       { title: "Considerations for large clusters", url: "https://kubernetes.io/docs/setup/best-practices/cluster-large/" },
       { title: "SIG Scalability: Kubernetes scalability thresholds", url: "https://github.com/kubernetes/community/blob/master/sig-scalability/configs-and-limits/thresholds.md" },
+      { title: "GKE: Accelerate diagnosis with Gemini Cloud Assist", url: "https://docs.cloud.google.com/kubernetes-engine/docs/troubleshooting/introduction-gemini" },
+      { title: "Running Agents on Kubernetes with Agent Sandbox", url: "https://kubernetes.io/blog/2026/03/20/running-agents-on-kubernetes-with-agent-sandbox/" },
     ],
   },
 
@@ -317,6 +339,11 @@ export const CHAPTERS = [
       "When a node dies, its Pods are not replaced at once. Kubernetes adds tolerations for the `not-ready` and `unreachable` taints with `tolerationSeconds=300`, so Pods stay bound for 5 minutes, and the control plane rate-limits new taints so a network partition does not evict a whole zone. Latency-critical apps set a shorter toleration; DaemonSet Pods are never evicted for these taints.",
       "Node liveness is a heartbeat, and at thousands of nodes its cost matters. Each kubelet renews a small Lease in `kube-node-lease` every 10 seconds, while the larger Node `.status` is written only on change or every 5 minutes by default. Splitting the two is what keeps heartbeats cheap on large clusters.",
     ],
+    agentic: [
+      "Agents now write probe configs, and the review question is semantics, not syntax. A generated manifest that points liveness at a deep health check passes review and only fails when a dependency blips and every replica restarts.",
+      "Container logs are untrusted input. When an agent reads a crashing container's output, any text in it reaches the model as context, which is why prompt injection through logs must hit a read-only token rather than a polite prompt (Willison's lethal trifecta).",
+      "GKE's Gemini Cloud Assist (Preview) explains CrashLoopBackOff errors, and K8sGPT has a pod analyzer. Verify the agent read `--previous` logs and the exit code; the same mistake people make, reading the fresh container's empty log, produces a confident wrong answer.",
+    ],
     quiz: [
       { q: "What happens when each of the three probes fails?", a: "Startup: the kubelet kills the container and it is handled by `restartPolicy`. Liveness: the kubelet restarts the container. Readiness: the Pod's IP is removed from matching Services' EndpointSlices, but the container keeps running." },
       { q: "How long does the kubelet wait between restarts of a crashing container?", a: "Exponential backoff, 10s, 20s, 40s and so on, capped at 300 seconds (5 minutes). It resets after the container runs for 10 minutes without problems." },
@@ -331,6 +358,9 @@ export const CHAPTERS = [
       { title: "Images", url: "https://kubernetes.io/docs/concepts/containers/images/" },
       { title: "Taints and tolerations", url: "https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/" },
       { title: "Node status", url: "https://kubernetes.io/docs/reference/node/node-status/" },
+      { title: "Simon Willison: The lethal trifecta", url: "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" },
+      { title: "K8sGPT README", url: "https://github.com/k8sgpt-ai/k8sgpt" },
+      { title: "GKE: Accelerate diagnosis with Gemini Cloud Assist", url: "https://docs.cloud.google.com/kubernetes-engine/docs/troubleshooting/introduction-gemini" },
     ],
   },
 
@@ -398,6 +428,11 @@ export const CHAPTERS = [
       "Old ReplicaSets add up. Each Deployment keeps 10 by default (`revisionHistoryLimit`), they consume resources in etcd and crowd `kubectl get rs`, and cleanup waits until a rollout completes. With thousands of Deployments, teams keep a smaller history that still covers their rollback needs.",
       "Many teams pushing at once collide. An update during a rollout starts a new ReplicaSet straight away and scales the previous new one down (rollover), and an autoscaler scaling mid-rollout spreads replicas proportionally across old and new. Use `kubectl rollout pause` to batch several changes into one rollout.",
     ],
+    agentic: [
+      "Kubernetes still never rolls back by itself. An agent can watch for `ProgressDeadlineExceeded` and propose `kubectl rollout undo`, but undo restores only the Pod template, so a human confirms the cause was the template and not replicas or config.",
+      "DORA 2025 links AI adoption to higher throughput but still lower delivery stability, tied to more change without strong controls. On Kubernetes those controls are readiness probes, `minReadySeconds`, modest `maxSurge` and canaries, and they matter more as agents open more PRs.",
+      "The Kubernetes project's own AI policy requires disclosure and that contributors can explain every AI-assisted change, or the PR is closed. Apply the same bar to agent image bumps: a rubber-stamped template change rolls through every replica unless readiness catches it.",
+    ],
     quiz: [
       { q: "With 10 replicas and the default strategy, how many Pods can exist and how many must be available during a rollout?", a: "maxSurge 25% of 10 rounds up to 3, so at most 13 Pods. maxUnavailable 25% rounds down to 2, so at least 8 must be available." },
       { q: "A new image crashes on start. What happens to the rollout and to your traffic?", a: "New Pods never become available, so the controller stops scaling down the old ReplicaSet; the old Pods it kept keep serving. After `progressDeadlineSeconds` the Deployment shows `ProgressDeadlineExceeded`, but it does not roll back on its own." },
@@ -410,6 +445,8 @@ export const CHAPTERS = [
       { title: "Pod lifecycle", url: "https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/" },
       { title: "Scaling Kubernetes networking with EndpointSlices", url: "https://kubernetes.io/blog/2020/09/02/scaling-kubernetes-networking-with-endpointslices/" },
       { title: "Considerations for large clusters", url: "https://kubernetes.io/docs/setup/best-practices/cluster-large/" },
+      { title: "Announcing the 2025 DORA report", url: "https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report" },
+      { title: "Open source maintainership in the age of AI", url: "https://kubernetes.io/blog/2026/06/26/open-source-maintainership-in-the-age-of-ai/" },
     ],
   },
 
@@ -475,6 +512,11 @@ export const CHAPTERS = [
       "The kubelet checks eviction thresholds every 10 seconds (`housekeeping-interval`), so a fast memory spike can reach the kernel OOM killer first. Fleets reserve memory with `--kube-reserved` and `--system-reserved`, can enable `--kernel-memcg-notification`, set `eviction-minimum-reclaim` (default 0) to avoid repeated small evictions, and rely on `eviction-pressure-transition-period` (default 5m) to stop node conditions flapping.",
       "Pod density has a ceiling regardless of node size: no more than 110 Pods per node in the tested envelope, and SIG Scalability's threshold is the smaller of 110 and 10 times the core count.",
     ],
+    agentic: [
+      "Agents are useful for the requests-versus-usage comparison across thousands of Pods, as VPA's recommender is. The decision stays human, because right-sizing a Guaranteed Pod into Burstable raises its OOM score and, once usage exceeds requests, puts it ahead of others for eviction, a cost an agent tuning for spend may not weigh.",
+      "OOMKilled and Evicted need different fixes. An agent can tell them apart from `lastState.terminated.reason` and node events, but only if it reads both; check that before accepting 'raise the memory limit'.",
+      "In-cluster agents need two kinds of limits: Kubernetes requests and limits for their Pods, and caps on model calls and tokens. A looping agent can burn budget long before it hits an OOM (OWASP LLM10:2025 Unbounded Consumption).",
+    ],
     quiz: [
       { q: "What QoS class does a Pod get if each container sets CPU and memory limits but no requests?", a: "Guaranteed. Requests default to the limits, so every container has requests equal to limits for both CPU and memory." },
       { q: "A container exceeds its CPU limit. Another exceeds its memory limit. What happens to each?", a: "The CPU one is throttled by the kernel and keeps running. The memory one is OOM-killed by the kernel and restarted per its restart policy, showing `OOMKilled`." },
@@ -490,6 +532,7 @@ export const CHAPTERS = [
       { title: "Resource quotas", url: "https://kubernetes.io/docs/concepts/policy/resource-quotas/" },
       { title: "Considerations for large clusters", url: "https://kubernetes.io/docs/setup/best-practices/cluster-large/" },
       { title: "SIG Scalability: Kubernetes scalability thresholds", url: "https://github.com/kubernetes/community/blob/master/sig-scalability/configs-and-limits/thresholds.md" },
+      { title: "OWASP Top 10 for LLM Applications 2025", url: "https://genai.owasp.org/llm-top-10/" },
     ],
   },
 ];

@@ -67,6 +67,11 @@ export const CHAPTERS = [
       "Mixed propagators during migrations: one fleet on B3 headers and another on W3C splits every cross-fleet trace. Run a composite propagator that reads and writes both until the old format is gone.",
       "Every proxy, mesh sidecar and API gateway on the path must forward `traceparent` and `tracestate`. One unconfigured hop splits all traces through it; check for unexpected root spans in services that are never entry points.",
     ],
+    agentic: [
+      "An agent run is a trace: the GenAI conventions (Development status) define an `invoke_agent` span with model-call spans and `execute_tool {gen_ai.tool.name}` spans under it, so a slow answer gets a waterfall like any request. What you verify is the same as for HTTP: that context survives the framework's async steps and thread handoffs, or tool spans turn up as separate root traces.",
+      "Tool calls over MCP carry context too: the MCP conventions put `traceparent`, `tracestate` and `baggage` in the request's `params._meta`, and the server uses it as the remote parent. That joins agent and tool server into one trace, and the baggage rule still holds: nothing secret or personal, because it travels to every MCP server the agent calls.",
+      "Tool arguments and results (`gen_ai.tool.call.arguments`, `gen_ai.tool.call.result`) are Opt-In, so by default traces show an agent's structure, not its content. Turning them on to debug is a privacy decision and an attribute-limit decision at once: a long tool result in an attribute costs memory and export bytes like a request body.",
+    ],
     quiz: [
       { q: "What are the four fields of `traceparent`, and which one changes at every hop?", a: "Version, trace-id (16 bytes), parent-id (8 bytes) and trace-flags. The parent-id changes: each hop puts its own span ID there before calling downstream." },
       { q: "Payments shows up in the trace, but its database calls appear as separate root spans. What's the likely cause?", a: "In-process context was lost, typically because the work ran on another thread, executor or goroutine without the context being passed, so the DB client found no active span." },
@@ -81,6 +86,9 @@ export const CHAPTERS = [
       { title: "OpenTelemetry: Attribute limits", url: "https://opentelemetry.io/docs/specs/otel/common/" },
       { title: "OpenTelemetry: Messaging spans", url: "https://opentelemetry.io/docs/specs/semconv/messaging/messaging-spans/" },
       { title: "Grafana Tempo architecture", url: "https://grafana.com/docs/tempo/latest/introduction/architecture/" },
+      { title: "OpenTelemetry GenAI agent spans", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-agent-spans.md" },
+      { title: "OpenTelemetry GenAI spans", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md" },
+      { title: "OpenTelemetry semantic conventions for MCP", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/mcp.md" },
     ],
   },
   {
@@ -147,6 +155,11 @@ export const CHAPTERS = [
       "Export cost before the decision: tail sampling needs every span to leave the app and cross the network. Very high-volume services head-sample a small share first so the pipeline is not overloaded, then tail-sample the rest.",
       "Backpressure: if tier 2 is slow, tier-1 exporter queues fill. Scale when `otelcol_exporter_queue_size` nears capacity, but if failed sends rise with every added Collector, the bottleneck is the backend.",
     ],
+    agentic: [
+      "Agent traces are long and wide: one task fans out into many model and tool spans and can run longer than the default 30s `decision_wait`. Tail-sampled agent traces then come out partial unless the wait, `num_traces` and the decision cache are sized for agent workloads, not web requests.",
+      "The GenAI conventions list sampling-relevant attributes to set at span creation: `gen_ai.operation.name` on every span, plus `gen_ai.agent.name` on agent and tool spans, `gen_ai.tool.name` on tool spans, and provider and model on inference spans. That lets a tail policy keep every trace with a failed `execute_tool` span (`error.type` set) while thinning routine calls; check that your instrumentation sets them at start, or a head sampler never sees them.",
+      "Never compute agent cost or failure rates from sampled traces: keep-errors policies inflate error rates, and token counts in dropped traces vanish. Spend comes from the unsampled `gen_ai.client.inference.usage.*` counters; traces explain individual runs.",
+    ],
     quiz: [
       { q: "Why must all spans of a trace reach the same tail-sampling instance, and how is that arranged?", a: "The policy needs the whole trace (any error, total latency). A front tier of Collectors runs the load-balancing exporter with `routing_key: traceID`, hashing each span to one back-tier instance." },
       { q: "Payments uses a 10% sampler and checkout, its caller, uses 50%, each deciding independently. What do you see?", a: "Partial traces: many traces have checkout spans but no payments spans. With the spec's deterministic trace-ID ratio sampler, payments' 10% is a subset of checkout's 50%; with random or mismatched samplers you also get payments spans whose caller is missing. Children should use `ParentBased` and follow the root's sampled flag." },
@@ -160,6 +173,9 @@ export const CHAPTERS = [
       { title: "Load-balancing exporter README", url: "https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/loadbalancingexporter/README.md" },
       { title: "OpenTelemetry: Scaling the Collector", url: "https://opentelemetry.io/docs/collector/scaling/" },
       { title: "W3C Trace Context (sampled flag)", url: "https://www.w3.org/TR/trace-context/" },
+      { title: "OpenTelemetry GenAI agent spans", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-agent-spans.md" },
+      { title: "OpenTelemetry GenAI spans", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md" },
+      { title: "OpenTelemetry GenAI token metrics", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-token-metrics.md" },
     ],
   },
   {
@@ -228,6 +244,11 @@ export const CHAPTERS = [
       "Cost per GB: debug and access logs usually dominate volume. Teams drop debug in production, sample successful access logs, and give noisy streams a short `retention_stream` while audit streams keep the long default.",
       "Query cost: `| json` over a week of a broad selector scans every chunk in range. Narrow by labels and time first, put line filters before parsers, and turn hot dashboards into recording rules or metrics.",
     ],
+    agentic: [
+      "Investigation agents now read logs, which makes every log line untrusted input: OWASP's LLM01:2025 Prompt Injection covers instructions hidden in external content a model reads, and a user-controlled field logged verbatim can carry them. Filters won't reliably stop it, so limit scope instead: give the agent read-only log access and no tool that can send data out, so it never combines private data, untrusted content and external communication (Willison's lethal trifecta).",
+      "Log fields can reach a model provider: Honeycomb's AI features send schema plus sample telemetry values and can be switched off per team, and Grafana Assistant says it sends only the conversation context relevant to a request. Drop or redact personal data in the collector (Alloy's `loki.process` stages) before ingest, because once it's stored, any assistant with read access can pass it to a model.",
+      "Agents handle this chapter's chores well: drafting LogQL with line filters before `| json`, or explaining an error (New Relic AI puts an \"Explain this error\" button in log details). A human still checks the label selector and time range, because a broad query an agent reruns in a loop scans the same chunks a human's would, against the same per-tenant limits.",
+    ],
     quiz: [
       { q: "Why is `trace_id` a bad Loki label, and where should it go?", a: "Every value creates a new stream, so you get huge numbers of tiny streams, small chunks and a large index. Keep it in structured metadata (or the line) and filter on it at query time." },
       { q: "You see bursts of HTTP 429 from Loki for one tenant. What are the likely limits and the fix?", a: "The tenant's ingestion rate or burst, the per-stream rate limit, or the max streams limit. Find the noisy stream or service and drop or rate-limit it at the agent, or raise the specific limit if the volume is legitimate." },
@@ -240,6 +261,11 @@ export const CHAPTERS = [
       { title: "Loki retention", url: "https://grafana.com/docs/loki/latest/operations/storage/retention/" },
       { title: "Loki request validation and rate limits", url: "https://grafana.com/docs/loki/latest/operations/request-validation-rate-limits/" },
       { title: "Grafana Alloy: loki.process", url: "https://grafana.com/docs/alloy/latest/reference/components/loki/loki.process/" },
+      { title: "OWASP LLM01:2025 Prompt Injection", url: "https://genai.owasp.org/llmrisk/llm01-prompt-injection/" },
+      { title: "Simon Willison: The lethal trifecta", url: "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" },
+      { title: "Honeycomb: AI policies (Honeycomb Intelligence)", url: "https://docs.honeycomb.io/security-compliance/honeycomb-intelligence" },
+      { title: "Grafana Assistant: your data and security", url: "https://grafana.com/docs/grafana-cloud/platform/grafana-assistant/privacy-and-security/security/" },
+      { title: "New Relic AI", url: "https://docs.newrelic.com/docs/agentic-ai/new-relic-ai/" },
     ],
   },
   {
@@ -314,6 +340,11 @@ export const CHAPTERS = [
       "Untested rules rot: a renamed metric or label silently stops an alert from ever firing. Run `promtool test rules` in CI with input series for both the firing and the quiet case.",
       "The alert path itself fails: notification pipelines have dropped pages during outages. Meta-monitor Prometheus and Alertmanager and run an end-to-end check of the whole path to the pager.",
     ],
+    agentic: [
+      "AI SRE agents now start from the alert: Datadog's Bits AI SRE auto-investigates only when a monitor enters alert state (not warn or no data) and can end inconclusive, and Google's SRE paper describes an AI Operator as first responder to production alerts. Routing still decides who is accountable: the page reaches a human owner, and the agent's findings arrive as evidence for that person (see Agentic Engineering, Drawn).",
+      "The products recommend, people act: New Relic's docs say Autopilot recommends actions but does not take them, and Google's autonomy levels require a human to approve each plan at L2. Keep agent identities read-only on Alertmanager too, because a silence is a write that can hide the next page.",
+      "Alert on the model dependency like any third party. A Claude API 529 `overloaded_error` is retryable, but a spend-cap 429 has no `retry-after` and keeps failing until access resumes, so it should reach an owner instead of burning retries; alert on the agent's own success rate and on `gen_ai.client.operation.duration` split by `error.type`, rather than waiting for the provider's status page.",
+    ],
     quiz: [
       { q: "Why does a multiwindow burn-rate alert need a short window as well as a long one?", a: "The long window shows enough budget was spent to matter. The short window shows it's still burning, so the alert resets within minutes after the problem stops instead of firing for the rest of the hour." },
       { q: "Two Prometheus replicas send the same alert. Why does the on-call get one page, not two?", a: "If their label sets match (replica label dropped via alert relabeling), Alertmanager treats them as one alert. Clustered Alertmanagers share a notification log over gossip and stagger sends, so only one replica notifies." },
@@ -328,6 +359,11 @@ export const CHAPTERS = [
       { title: "Alertmanager README (high availability)", url: "https://github.com/prometheus/alertmanager/blob/main/README.md" },
       { title: "Prometheus configuration (alert relabeling)", url: "https://prometheus.io/docs/prometheus/latest/configuration/configuration/" },
       { title: "Prometheus: Unit testing rules", url: "https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/" },
+      { title: "Datadog Bits AI SRE: investigate issues", url: "https://docs.datadoghq.com/bits_ai/bits_ai_sre/investigate_issues/" },
+      { title: "Google SRE: AI in SRE", url: "https://sre.google/resources/practices-and-processes/ai-engineering-reliable-operations/" },
+      { title: "New Relic Autopilot overview", url: "https://docs.newrelic.com/docs/agentic-ai/sre-agent/overview" },
+      { title: "Claude API errors", url: "https://platform.claude.com/docs/en/api/errors" },
+      { title: "OpenTelemetry GenAI metrics", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-metrics.md" },
     ],
   },
 ];

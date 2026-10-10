@@ -69,6 +69,11 @@ export const CHAPTERS = [
       "Rolling a big Deployment bursts updates. kube-proxy's `minSyncPeriod` (default `1s`) batches them; if `sync_proxy_rules_duration_seconds` averages well above 1 second, raise it. Since v1.28 iptables mode only rewrites what changed, so remove old large overrides first.",
       "SIG Scalability's thresholds are 10000 Services per cluster, 5000 per namespace and 250 endpoints per Service. They aren't hard limits: past them performance degrades, and they shrink as other dimensions approach their maximum.",
     ],
+    agentic: [
+      "Agents can walk the Service debug path fast: selector, EndpointSlices, `ready` conditions, kube-proxy mode. Ask for the commands they ran and confirm with a real request to the port, since an agent that pings a ClusterIP and calls it down has misread a virtual IP.",
+      "Fluent advice still needs the mechanism. An agent suggesting `externalTrafficPolicy: Local` to keep client IPs is right about the IP and silent about nodes without a local endpoint dropping traffic; that trade-off is yours to make.",
+      "Agent servers sit behind Services too: `k8sgpt serve --mcp` has an HTTP mode, and kubectl-ai's MCP HTTP endpoint is unauthenticated by default. A ClusterIP is not access control, so add authentication and a NetworkPolicy before anything else can reach them.",
+    ],
     quiz: [
       { q: "Which component turns a Service into something packets can use, and where does it run?", a: "kube-proxy (or a CNI plugin's replacement for it). It runs on every node, watches Services and EndpointSlices, and programs iptables or nftables rules in that node's kernel." },
       { q: "A new Pod joins a Deployment behind a Service. What has to happen before it gets traffic?", a: "Its labels must match the selector and the Pod must become Ready: its readiness probe passes, or its containers are running if it has no probe. Then the EndpointSlice controller marks it ready in the Service's EndpointSlice, and kube-proxy on each node updates its rules to include it." },
@@ -81,6 +86,8 @@ export const CHAPTERS = [
       { title: "EndpointSlices", url: "https://kubernetes.io/docs/concepts/services-networking/endpoint-slices/" },
       { title: "Using source IP", url: "https://kubernetes.io/docs/tutorials/services/source-ip/" },
       { title: "Kubernetes scalability thresholds", url: "https://github.com/kubernetes/community/blob/master/sig-scalability/configs-and-limits/thresholds.md" },
+      { title: "K8sGPT README", url: "https://github.com/k8sgpt-ai/k8sgpt" },
+      { title: "kubectl-ai README", url: "https://github.com/GoogleCloudPlatform/kubectl-ai" },
     ],
   },
 
@@ -153,6 +160,11 @@ export const CHAPTERS = [
       "Conntrack fills up. Every NATed flow takes a kernel conntrack entry, and kube-proxy sizes the table at 32768 entries per core with a floor of 131072 (`--conntrack-max-per-core`, `--conntrack-min`). Busy nodes with many short-lived flows, UDP DNS especially, start dropping packets when it's full; raise the limits or cut UDP flows with NodeLocal DNSCache.",
       "Per-node network agents run as DaemonSets, and addon default limits are based on small or medium clusters. At scale they get OOM-killed or CPU-throttled, so raise requests and limits; the VPA in recommender mode can suggest values.",
     ],
+    agentic: [
+      "NetworkPolicy is how you cut the third leg of the lethal trifecta for in-cluster agents: private data plus untrusted input plus outbound access. A default-deny egress policy with named destinations does that, but only if the CNI plugin enforces policy.",
+      "Agent Sandbox gets kernel and network isolation for agent-run code from gVisor or Kata via RuntimeClass; the Sandbox CRD itself does not isolate. Verify the RuntimeClass is set and that the sandbox namespace has default-deny egress that still allows DNS.",
+      "Cross-node connectivity bugs still need the packet path: veth, routes, overlay, conntrack. Agents can run the checks, but node-level debugging via `kubectl debug node/...` or host access is effectively root on the node, so keep it with humans.",
+    ],
     quiz: [
       { q: "Who calls the CNI plugin when a Pod starts, and what does the plugin do?", a: "The container runtime (containerd or CRI-O) calls it while creating the Pod sandbox. The plugin adds a network interface in the Pod's namespace, assigns an IP and sets up routes." },
       { q: "What are the two common ways Pod traffic crosses between nodes?", a: "Native routing, where the network knows which node owns each Pod range, or an overlay, where packets are encapsulated between node IPs (for example VXLAN). The plugin and its config decide." },
@@ -170,6 +182,8 @@ export const CHAPTERS = [
       { title: "Considerations for large clusters", url: "https://kubernetes.io/docs/setup/best-practices/cluster-large/" },
       { title: "Kubernetes scalability thresholds", url: "https://github.com/kubernetes/community/blob/master/sig-scalability/configs-and-limits/thresholds.md" },
       { title: "Using NodeLocal DNSCache", url: "https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/" },
+      { title: "Simon Willison: The lethal trifecta", url: "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" },
+      { title: "kubernetes-sigs/agent-sandbox", url: "https://github.com/kubernetes-sigs/agent-sandbox" },
     ],
   },
 
@@ -228,6 +242,11 @@ export const CHAPTERS = [
       "Cross-node hops: Pods with the highest DNS QPS may have to reach a CoreDNS Pod on another node. A node-local cache answers locally, adds per-node DNS metrics, and can re-enable negative caching to cut queries to CoreDNS.",
       "CoreDNS memory grows with the Services and endpoints it serves, and its cache defaults to 10000 entries (about 30 MB when full). Addon defaults come from small and medium clusters, so raise its limits as you grow and run it with `system-cluster-critical` priority so it isn't preempted.",
     ],
+    agentic: [
+      "Agents spot the `ndots:5` pattern quickly from a Pod's `resolv.conf` and a run of NXDOMAINs. The fix still needs judgement: lowering `ndots` in `dnsConfig` changes how short names resolve for that Pod, so confirm in-cluster names still work.",
+      "Agent Pods call external APIs (model providers, SaaS tools). With the default `ndots:5`, each external hostname with fewer than five dots walks the search list first, so use trailing-dot FQDNs and NodeLocal DNSCache as agent Pods multiply.",
+      "DNS is an outbound channel too. If egress policy allows DNS to anywhere, an agent with private data and untrusted input still has a way out, so when breaking the lethal trifecta allow DNS only to kube-dns or the node-local cache.",
+    ],
     quiz: [
       { q: "A Pod in namespace `prod` looks up `api`. What name is actually resolved and who answers?", a: "The search list makes the first try `api.prod.svc.cluster.local`. The query goes to the `kube-dns` Service IP, gets DNATed to a CoreDNS Pod, and the `kubernetes` plugin answers with the Service's ClusterIP." },
       { q: "Why does `curl https://api.example.com` from a Pod generate extra DNS traffic, and how do you avoid it?", a: "The name has fewer dots than `ndots:5`, so the resolver tries it with each search domain appended first and gets NXDOMAINs. Use `api.example.com.` with a trailing dot, or lower `ndots` in the Pod's `dnsConfig`." },
@@ -243,6 +262,7 @@ export const CHAPTERS = [
       { title: "hostname(7)", url: "https://man7.org/linux/man-pages/man7/hostname.7.html" },
       { title: "Autoscale the DNS service in a cluster", url: "https://kubernetes.io/docs/tasks/administer-cluster/dns-horizontal-autoscaling/" },
       { title: "Considerations for large clusters", url: "https://kubernetes.io/docs/setup/best-practices/cluster-large/" },
+      { title: "Simon Willison: The lethal trifecta", url: "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" },
     ],
   },
 
@@ -310,6 +330,11 @@ export const CHAPTERS = [
       "The controller is an addon that watches every Ingress, Service and TLS Secret it serves. Addon default limits are sized for small or medium clusters, so at scale it gets OOM-killed or throttled; raise its limits and split load across several IngressClasses or Gateways.",
       "With several controllers, mark exactly one IngressClass as default. If more than one has `ingressclass.kubernetes.io/is-default-class: true`, new Ingresses without `ingressClassName` are rejected.",
     ],
+    agentic: [
+      "Serving models is now a routing problem: Gateway API Inference Extension adds an InferencePool backend and an endpoint picker that chooses a model-server Pod from live metrics such as queue length, because round-robin fits long, GPU-bound LLM requests poorly. The Gateway and HTTPRoute model stays the same.",
+      "Gateway API's role split suits agents: an app team's agent can be allowed to edit HTTPRoutes in its namespace while Gateways, listeners and TLS stay with the platform team via RBAC. `allowedRoutes` and `ReferenceGrant` cap the blast radius of a wrong generated route.",
+      "An agent-written Ingress that the API accepts can still do nothing (no controller, wrong `ingressClassName`) or route the wrong host. Verify with a real request and the controller's status; never publish an unauthenticated MCP endpoint through an Ingress.",
+    ],
     quiz: [
       { q: "What is an ingress controller, physically?", a: "Pods running a reverse proxy, plus logic that watches Ingress, Service, EndpointSlice and Secret objects through the API server and rewrites the proxy config, usually sending straight to Pod IPs. It's usually exposed with a LoadBalancer Service." },
       { q: "Where does TLS terminate with a standard Ingress, and where does the certificate come from?", a: "At the ingress controller, on port 443. The certificate and key come from a Secret of type `kubernetes.io/tls` named in the Ingress `tls` section." },
@@ -324,6 +349,7 @@ export const CHAPTERS = [
       { title: "Gateway API: security model", url: "https://gateway-api.sigs.k8s.io/docs/concepts/security/" },
       { title: "Considerations for large clusters", url: "https://kubernetes.io/docs/setup/best-practices/cluster-large/" },
       { title: "Gateway API: ListenerSet", url: "https://gateway-api.sigs.k8s.io/reference/api-types/listenerset/" },
+      { title: "Introducing Gateway API Inference Extension", url: "https://kubernetes.io/blog/2025/06/05/introducing-gateway-api-inference-extension/" },
     ],
   },
 
@@ -388,6 +414,11 @@ export const CHAPTERS = [
       "Cluster Autoscaler only accounts for CSI volume limits with `--enable-csi-node-aware-scheduling=true`. Without it, don't set the CSIDriver's `preventPodSchedulingIfMissing: true`, or it may fail to scale up for Pending Pods with CSI volumes.",
       "Zonal disks pin StatefulSet Pods to a zone. The node autoscaler needs a node group per zone (Cluster Autoscaler's advice, with `--balance-similar-node-groups`) so a rescheduled Pod can get a node next to its disk.",
     ],
+    agentic: [
+      "Storage is where an agent mistake is permanent: with `reclaimPolicy: Delete`, deleting a PVC deletes the disk. Keep `delete` on PVCs, PVs and StatefulSets out of agent RBAC; OWASP LLM06:2025 names excessive permissions and asks for human approval of high-impact actions.",
+      "Agents can diagnose a Pending PVC quickly from events: binding mode, zone, attach limits, `ResourceExhausted`. Check the node's CSI allocatable count and the disk's zone before accepting 'add a node' as the fix.",
+      "Agent Sandbox can give each agent storage that survives restarts. Those volumes hold whatever the agent wrote, possibly secrets or customer data, so idle agent workspaces need a retention and cleanup policy you own.",
+    ],
     quiz: [
       { q: "Why would you use `volumeBindingMode: WaitForFirstConsumer`?", a: "So the volume is provisioned or bound only after a Pod using it is scheduled, in a topology (such as a zone) that node can reach. With `Immediate`, a zonal disk can end up where the Pod can't run." },
       { q: "What's the difference between attach and mount for a CSI volume?", a: "Attach makes the volume available to the node, driven by a VolumeAttachment and the driver's controller side. Mount happens on the node: the kubelet calls the CSI node plugin to stage and publish the volume into the Pod's directory." },
@@ -402,6 +433,8 @@ export const CHAPTERS = [
       { title: "StatefulSets", url: "https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/" },
       { title: "Node-specific volume limits", url: "https://kubernetes.io/docs/concepts/storage/storage-limits/" },
       { title: "Cluster Autoscaler FAQ", url: "https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md" },
+      { title: "OWASP LLM06:2025 Excessive Agency", url: "https://genai.owasp.org/llmrisk/llm062025-excessive-agency/" },
+      { title: "kubernetes-sigs/agent-sandbox", url: "https://github.com/kubernetes-sigs/agent-sandbox" },
     ],
   },
 
@@ -465,6 +498,11 @@ export const CHAPTERS = [
       "Propagation delay: a mounted ConfigMap or Secret updates after the kubelet sync period plus cache delay. `configMapAndSecretChangeDetectionStrategy` picks watch (default), TTL cache, or a direct get per sync; the cheaper options for the API server trade off freshness.",
       "KMS at scale: KMS v1 is deprecated since v1.28 and disabled by default since v1.29. KMS v2 derives a single-use DEK per encryption locally and caches unwrapped DEKs, so cached keys decrypt without a KMS call; the docs call its performance significantly better.",
     ],
+    agentic: [
+      "Whatever an agent reads can be sent to its model provider. One with `get` on Pods sees env values written inline in the spec, and one with `list` on Secrets sees all of them, so give diagnostic agents no Secret verbs and keep sensitive values in referenced Secrets.",
+      "K8sGPT's `--anonymize` masks object names for some analyzers only; Pod, ReplicaSet, PVC, log and event data go out unmasked, and its own config stores the backend API key in plain text. Its README recommends a local model for critical production.",
+      "Agents need credentials too. A model API key in a Secret is plain in etcd unless encryption at rest is on, and a static key outlives the agent, so prefer short-lived workload identity and audit who can read the Secret that holds it.",
+    ],
     quiz: [
       { q: "You update a ConfigMap used both as env vars and as a mounted volume. What does the running Pod see?", a: "The env vars keep the old values until the container restarts. The mounted files are updated eventually by the kubelet, unless they're `subPath` mounts, and the app must re-read them." },
       { q: "Is a Kubernetes Secret encrypted?", a: "Not by default. The values are base64-encoded and stored unencrypted in etcd. Encryption at rest needs an `EncryptionConfiguration` on the API server, preferably with a KMS provider." },
@@ -478,6 +516,7 @@ export const CHAPTERS = [
       { title: "Encrypting confidential data at rest", url: "https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/" },
       { title: "Using a KMS provider for data encryption", url: "https://kubernetes.io/docs/tasks/administer-cluster/kms-provider/" },
       { title: "Volumes", url: "https://kubernetes.io/docs/concepts/storage/volumes/" },
+      { title: "K8sGPT README", url: "https://github.com/k8sgpt-ai/k8sgpt" },
     ],
   },
 ];

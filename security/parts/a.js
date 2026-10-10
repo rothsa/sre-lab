@@ -69,6 +69,11 @@ export const CHAPTERS = [
       "Accidental public or cross-account sharing grows with the number of buckets, keys and queues. External-access analyzers flag it, but they only see the Region they run in, so you create one per Region in use.",
       "Data perimeters: RCPs restrict who can reach S3, KMS, SQS, Secrets Manager and other supported services org-wide, even when a bucket owner writes a wide-open bucket policy.",
     ],
+    agentic: [
+      "An agent can now walk this chain for you, pulling the identity policy, SCPs, RCPs and boundary and pointing at the deny. The human still checks that answer against the real denial in CloudTrail, because a plausible but wrong \"just add an Allow\" leads straight to over-granting.",
+      "Agent calls go through exactly the same evaluation: no explicit deny, SCP or RCP knows the request came from an LLM. That makes these layers the real guardrail, and LLM06:2025 Excessive Agency says to authorize in downstream systems, not in the model; a prompt saying \"read-only\" is not a Deny.",
+      "New failure mode: an agent that fixes its own AccessDenied. The EKS MCP server (in preview) documents an `add_inline_policy` write tool, so keep `iam:Put*Policy` and `iam:Attach*Policy` out of agent roles, or cap them with a permissions boundary and SCP.",
+    ],
     code: [
       { lang: "json", label: "SCP guardrail (attach to an OU)", src: `{
   "Version": "2012-10-17",
@@ -94,6 +99,8 @@ export const CHAPTERS = [
       { title: "Resource control policies (RCPs)", url: "https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_rcps.html" },
       { title: "Using IAM Access Analyzer", url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/what-is-access-analyzer.html" },
       { title: "IAM and AWS STS quotas", url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html" },
+      { title: "OWASP LLM06:2025 Excessive Agency", url: "https://genai.owasp.org/llmrisk/llm062025-excessive-agency/" },
+      { title: "Amazon EKS MCP Server tools reference (preview)", url: "https://docs.aws.amazon.com/eks/latest/userguide/eks-mcp-tools.html" },
     ],
   },
   {
@@ -157,6 +164,11 @@ export const CHAPTERS = [
       "Pod Identity supports up to 5,000 associations per cluster, and associations are eventually consistent: create them during setup, not in a hot deploy path.",
       "Auditing shared roles: session names alone are chosen by the caller. Require `sts:SourceIdentity` in trust policies so CloudTrail shows the original human or workload even after role chaining.",
     ],
+    agentic: [
+      "Agents are workloads and get the same answer as CI and pods: their own role through federation and short-lived credentials, never a developer's access key or standing session. Google's SRE paper says this directly, and AWS AgentCore Identity and Google Cloud Agent Identity both model agents as workload identities.",
+      "Design attribution into the trust policy: require `sts:SourceIdentity` set to the human who started the agent and pass a session tag naming the agent. CloudTrail then shows who the agent acted for even after role chaining, and ABAC on `aws:PrincipalTag` can give the agent less than the human has.",
+      "Agent identities follow the deployment: on Google Cloud, deleting and redeploying an agent creates a new principal whose bindings start empty, while the old grants linger until removed. Inventory and expire agent roles like any workload, or they become the next forgotten standing access.",
+    ],
     code: [
       { lang: "json", label: "Role trust policy for GitHub OIDC", src: `{
   "Effect": "Allow",
@@ -195,6 +207,9 @@ steps:
       { title: "Monitor and control actions taken with assumed roles", url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_control-access_monitor.html" },
       { title: "Security best practices in IAM", url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html" },
       { title: "IAM and AWS STS quotas", url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html" },
+      { title: "Google SRE: AI in SRE (engineering reliable operations)", url: "https://sre.google/resources/practices-and-processes/ai-engineering-reliable-operations/" },
+      { title: "Amazon Bedrock AgentCore Identity", url: "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/identity.html" },
+      { title: "Google Cloud: Agent Identity overview", url: "https://docs.cloud.google.com/iam/docs/agent-identity-overview" },
     ],
   },
   {
@@ -257,6 +272,11 @@ steps:
       "Handshake CPU: a full handshake costs an (EC)DHE exchange plus a signature. Session resumption with tickets skips certificate authentication, and long-lived keep-alive connections avoid handshakes entirely, so connection reuse matters more than cipher choice.",
       "Root and intermediate changes ripple through every client trust store. Old devices or pinned roots fail when a CA's chain changes, so track which clients trust which roots before switching CAs.",
     ],
+    agentic: [
+      "Agents read `openssl s_client -showcerts` output well and explain a broken chain or SAN mismatch fast. The fundamentals still decide it: the human confirms what each endpoint actually serves, since an agent reasoning from a pasted cert or stale docs can call the wrong one healthy.",
+      "The tempting agent fix for a handshake error is to switch verification off (`curl -k`, `verify=False`). HashiCorp's Terraform MCP deploy guide explicitly says keep `TFE_SKIP_TLS_VERIFY=false`; treat disabled verification in an agent diff as a hard blocker, because it silently drops server authentication.",
+      "TLS proves which server you reached, not that its content is safe: a correctly authenticated page or API response can still carry an indirect prompt injection (LLM01:2025). Remote MCP servers need the same TLS and auth as any API, and HashiCorp recommends a gateway with both for remote hosting.",
+    ],
     code: [
       { lang: "bash", label: "See the handshake and chain", src: `openssl s_client -connect api.example.com:443 \\
   -servername api.example.com -tls1_3 -showcerts </dev/null` },
@@ -278,6 +298,8 @@ steps:
       { title: "Create an HTTPS listener for your Application Load Balancer", url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html" },
       { title: "Target groups for your Application Load Balancers", url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html" },
       { title: "Managed certificate renewal in AWS Certificate Manager", url: "https://docs.aws.amazon.com/acm/latest/userguide/managed-renewal.html" },
+      { title: "Deploy the Terraform MCP server", url: "https://developer.hashicorp.com/terraform/mcp-server/deploy" },
+      { title: "OWASP LLM01:2025 Prompt Injection", url: "https://genai.owasp.org/llmrisk/llm01-prompt-injection/" },
     ],
   },
   {
@@ -338,6 +360,11 @@ steps:
       "Mesh cost: in Istio 1.24 at 1,000 requests per second, a sidecar used about 0.20 vCPU and 60 MB, and an ambient-mode ztunnel about 0.06 vCPU and 12 MB. Multiply by thousands of pods, and remember sidecar memory grows with the number of routes and clusters it's configured with.",
       "Policy on identity survives pod churn: IP-based rules go stale as pods reschedule, while a principal like `cluster.local/ns/shop/sa/frontend` stays the same. That makes service accounts per workload, not one shared default, a prerequisite.",
     ],
+    agentic: [
+      "Give each agent its own workload identity instead of letting it ride the pod or user that launched it. Google Cloud Agent Identity issues a SPIFFE ID per agent with 24-hour X.509 certificates and binds access tokens to that certificate, so policy can name the agent the way `AuthorizationPolicy` names a service account.",
+      "The MCP security best practices forbid token passthrough: a server MUST NOT accept tokens that weren't issued to it. Forwarding a user's token through an agent's tool server hides the real caller and bypasses downstream controls, so each hop should authenticate as itself.",
+      "The OWASP Agentic Top 10 lists ASI03 Identity & Privilege Abuse and ASI07 Insecure Inter-Agent Communication: agents calling agents need the same mutual authentication and per-identity authorization as services. A single shared \"agent\" service account is the new default-account mistake, making per-agent policy and attribution impossible.",
+    ],
     code: [
       { lang: "yaml", label: "Only frontend may call payments", src: `apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
@@ -375,6 +402,9 @@ spec:
       { title: "Istio AuthorizationPolicy reference", url: "https://istio.io/latest/docs/reference/config/security/authorization-policy/" },
       { title: "Istio: plug in CA certificates", url: "https://istio.io/latest/docs/tasks/security/cert-management/plugin-ca-cert/" },
       { title: "Istio performance and scalability", url: "https://istio.io/latest/docs/ops/deployment/performance-and-scalability/" },
+      { title: "Google Cloud: Agent Identity overview", url: "https://docs.cloud.google.com/iam/docs/agent-identity-overview" },
+      { title: "MCP Security Best Practices (spec 2025-11-25)", url: "https://modelcontextprotocol.io/specification/2025-11-25/basic/security_best_practices" },
+      { title: "OWASP Top 10 for Agentic Applications (announcement, 2025-12-09)", url: "https://genai.owasp.org/2025/12/09/owasp-top-10-for-agentic-applications-the-benchmark-for-agentic-security-in-the-age-of-autonomous-ai/" },
     ],
   },
 ];

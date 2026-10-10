@@ -71,6 +71,11 @@ export const CHAPTERS = [
       "Silent gaps: HCP Terraform health assessments need the Standard or Premium edition and pause whenever a workspace's latest run errored, so broken workspaces stop being checked exactly when they matter. Alert on workspaces whose last assessment is old.",
       "Unmanaged resources: a plan only refreshes what is already in state, so hand-made resources in no state never show as drift. Teams diff an account inventory (AWS Config, cloud asset exports) against the IDs in all states to find them.",
     ],
+    agentic: [
+      "An agent can turn a drift ticket into a draft fix: a revert PR, or an adopt PR with code edits and `import` blocks, with the refresh-only plan attached. Revert versus adopt depends on why someone clicked, which the plan does not show, so the owning team decides; the failure modes are adopting a mistaken or malicious console change into code, or adding `ignore_changes` just to quiet the report.",
+      "Drift output carries text written by whoever changed the cloud: tags, descriptions, rule names. An agent that reads it and can open PRs is acting on untrusted input, so keep it read-only plus PR-only with no secrets in reach, and let plan policy check whatever it proposes.",
+      "An agent that applies its own drift fixes on a schedule becomes a Crossplane-style reconciler with no pause annotation, and will undo break-glass fixes mid-incident. Pulumi Neo shows the safer shape: it runs scheduled automations and usually hands changes off as PRs with a preview summary, so branch protection and reviewers still gate them, and `pulumi neo --permission-mode read-only` blocks state-mutating operations (its docs give no GA or preview label).",
+    ],
     quiz: [
       { q: "What do the three exit codes of `terraform plan -detailed-exitcode` mean, and why is 2 not the same as drift?", a: "0: no changes. 1: error. 2: changes present. Exit 2 also happens when merged code has not been applied yet, so you need a `-refresh-only` plan (or apply-on-merge) to tell outside changes from a deploy backlog." },
       { q: "An on-call engineer opened a port in the console during an incident. The next morning the scheduled plan reports drift. What are the two ways to resolve it?", a: "Revert: apply the code and the port closes again. Adopt: add the rule to the code (and import it if it is a new resource) in a reviewed PR, so the next plan is clean. A `-refresh-only` apply alone does not adopt it." },
@@ -91,6 +96,9 @@ export const CHAPTERS = [
       { title: "AWS Config: how it works", url: "https://docs.aws.amazon.com/config/latest/developerguide/how-does-config-work.html" },
       { title: "Crossplane: managed resources", url: "https://docs.crossplane.io/latest/managed-resources/managed-resources/" },
       { title: "Pulumi: state and backends", url: "https://www.pulumi.com/docs/iac/concepts/state-and-backends/" },
+      { title: "Pulumi Neo", url: "https://www.pulumi.com/docs/ai/neo/" },
+      { title: "Pulumi CLI: pulumi neo", url: "https://www.pulumi.com/docs/iac/cli/commands/pulumi_neo/" },
+      { title: "Simon Willison: the lethal trifecta", url: "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" },
     ],
   },
   {
@@ -159,6 +167,11 @@ export const CHAPTERS = [
       "SCPs are org-wide blast radius in the other direction: a bad deny can lock out every account. AWS recommends testing on an OU and moving accounts in a few at a time before attaching anything to the root.",
       "One admin CI role for every state turns any pipeline compromise into an org-wide one. Use per-state or per-account apply roles, each with a permissions boundary, and only let the apply role create roles that carry the same boundary.",
     ],
+    agentic: [
+      "Agent-written refactors fail the way human ones do, just more often per day: deleting a resource block or module call takes `prevent_destroy` with it. That makes the cloud-side layers (SCPs, permissions boundaries, deletion protection) matter more, because they still hold when the agent's code is wrong and the reviewer missed the `-/+`.",
+      "OWASP LLM06:2025 Excessive Agency names three causes: too much functionality, permission and autonomy. An agent holding the apply role with `-target` and no prompt has all three; the fix is complete mediation, with authorization in IAM and the cloud API rather than in the agent's instructions, and Pulumi's `--approval-mode auto` (no prompts at all) kept to sandbox or read-only use.",
+      "Google's AI-in-SRE paper sends agent changes through a safety gateway with mandatory dry runs, rate limits and a Red Button to pause or revoke. In IaC the saved plan is the dry run, and the red button should flip without merging code: a trust policy or SCP that cuts off every agent role at once, tested before you need it.",
+    ],
     quiz: [
       { q: "A resource has `prevent_destroy = true`. A PR deletes its resource block. What happens?", a: "Terraform destroys it. The rule lives in configuration and is not recorded in state, so it disappears with the block. Use a `removed` block with `destroy = false`, or rely on deletion protection in the cloud." },
       { q: "How do you find every destructive change in a plan automatically?", a: "Save the plan, run `terraform show -json`, and look at `resource_changes[].change.actions`. Any list containing `delete` is a delete or replace (`[\"delete\",\"create\"]` or `[\"create\",\"delete\"]`). `action_reason` and `replace_paths` explain why." },
@@ -180,6 +193,9 @@ export const CHAPTERS = [
       { title: "Amazon RDS: deleting a DB instance", url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_DeleteInstance.html" },
       { title: "Terraform AWS provider: aws_db_instance", url: "https://raw.githubusercontent.com/hashicorp/terraform-provider-aws/main/website/docs/r/db_instance.html.markdown" },
       { title: "OPA: Terraform", url: "https://www.openpolicyagent.org/docs/terraform" },
+      { title: "OWASP LLM06:2025 Excessive Agency", url: "https://genai.owasp.org/llmrisk/llm062025-excessive-agency/" },
+      { title: "Google SRE: AI in SRE, engineering reliable operations", url: "https://sre.google/resources/practices-and-processes/ai-engineering-reliable-operations/" },
+      { title: "Pulumi CLI: pulumi neo", url: "https://www.pulumi.com/docs/iac/cli/commands/pulumi_neo/" },
     ],
   },
   {
@@ -252,6 +268,11 @@ export const CHAPTERS = [
       "Leaks pile up until sandbox accounts hit service quotas and every test fails. Run a nightly reaper with an age filter (cloud-nuke's `--older-than`) so it does not delete running tests' resources, and alert on quota usage.",
       "Reapers are deletion tools aimed at accounts. aws-nuke defaults to a dry run, refuses accounts on its blocklist or whose alias contains \"prod\", and asks for the alias twice. Keep those guards on. Travis CI's own cleanup service, given an incomplete list, deleted its stable build images.",
     ],
+    agentic: [
+      "Agents write `terraform test` files and Terratest suites quickly, which lowers the cost of the bottom bands. The human checks that each test asserts something the cloud decides rather than a mocked value echoed back, and watches for an agent making CI green by loosening an assertion or adding a retryable error (see Agentic Engineering, Drawn on verification).",
+      "The sandbox account is where an agent may apply for real: unique name suffixes, a reaper with an age filter, and no path to prod credentials. Agent retry loops multiply leaked resources and cost, so set stopping conditions such as max iterations and job timeouts, and alert on sandbox quota.",
+      "The awslabs AWS IaC MCP server gives agents the cheap CloudFormation layers: `validate_cloudformation_template` (cfn-lint), `check_cloudformation_template_compliance` (cfn-guard) and `troubleshoot_cloudformation_deployment`, which reads failed stacks and CloudTrail. It lists no deploy tools and states no GA label, so it speeds up the static band but proves nothing a real apply would.",
+    ],
     quiz: [
       { q: "What does `terraform validate` not check, and what catches those problems?", a: "It never calls provider APIs or reads remote state, so invalid values the cloud would reject and anything depending on real state pass. TFLint provider rulesets catch some invalid values offline; a plan catches provider validation; only an apply catches the rest." },
       { q: "Why scan the plan JSON as well as the HCL?", a: "The plan has resolved variables, module outputs and data sources, so rules see real values. The trade-off: plan JSON lacks lifecycle blocks, some count/for_each references and values unknown until apply." },
@@ -276,6 +297,8 @@ export const CHAPTERS = [
       { title: "Terratest: timeouts and logging", url: "https://terratest.gruntwork.io/docs/testing-best-practices/timeouts-and-logging/" },
       { title: "cloud-nuke CLI usage", url: "https://github.com/gruntwork-io/cloud-nuke/blob/master/docs/cli-usage.md" },
       { title: "aws-nuke: warning and safeguards", url: "https://aws-nuke.ekristen.dev/warning/" },
+      { title: "AWS IaC MCP server (awslabs)", url: "https://awslabs.github.io/mcp/servers/aws-iac-mcp-server" },
+      { title: "Anthropic: building effective agents", url: "https://www.anthropic.com/engineering/building-effective-agents" },
     ],
   },
   {
@@ -341,6 +364,12 @@ export const CHAPTERS = [
       "Cross-state dependencies get slow and fragile with hundreds of states. Teams keep the graph shallow (network, then IAM, then apps), publish outputs as a versioned contract, and use an orchestrator such as Stacks for ordered applies.",
       "Importing at scale hits tool limits: CloudFormation's IaC generator models at most 500 resources per template and allows only one scan a day when a scan covers more than 10,000 resources (partial scans can stay under that). Import per application and owner, not per account.",
     ],
+    agentic: [
+      "Across 300 teams, agents raise the number of IaC PRs and review becomes the bottleneck. DORA 2025 calls AI an amplifier: throughput now rises with adoption while stability still falls, so orgs with small states, paved modules and CODEOWNERS routing gain and the rest ship more instability; track change failure rate for agent-authored changes separately.",
+      "Give each agent its own identity and set source identity on its `AssumeRole` to the agent run and the human who asked, so the Git, CI and CloudTrail chain answers which agent acted for whom. Vendor tools follow the same rule: Pulumi Neo says it \"never has more access than you do, only less\", and shared Terraform MCP deployments use each member's own Terraform token.",
+      "Agents are good at drafting the ClickOps import: `import` blocks and generated config per owner batch. Choosing the owner, and what is live versus safe to delete, stays human; an agent that imports a whole resource group creates mixed ownership, with managed and unmanaged resources in one group, the mix that let Azure's cleanup automation delete production compute.",
+      "Status as of October 2026: the Terraform MCP server is GA (June 2026) and can create, update and delete HCP Terraform workspaces, variables and runs (tools that need explicit approval stay off unless `ENABLE_TF_OPERATIONS` is set); Pulumi Neo's docs give no GA or preview label; the AWS IaC MCP server only validates, checks compliance and troubleshoots. Choose tools by whether they keep agents on the PR path, and scope any write-capable token, as HashiCorp advises for `TFE_TOKEN`.",
+    ],
     quiz: [
       { q: "Why should a reusable module set only a minimum provider version?", a: "Because an upper bound in a shared module forces every root module that uses it to upgrade together. HashiCorp recommends `>=` in modules and putting the `~>` ceiling in root modules, with the lock file pinning the exact version." },
       { q: "An auditor asks who deleted a bucket last month. The CloudTrail event says the CI role did it. How do you get to a person?", a: "Join records: CloudTrail gives the role session (and source identity, if set), CI logs map the run to a commit and saved plan, and Git shows the PR author and approver. Setting source identity per run makes the first link direct." },
@@ -364,6 +393,12 @@ export const CHAPTERS = [
       { title: "Pulumi: how Pulumi works", url: "https://www.pulumi.com/docs/iac/concepts/how-pulumi-works/" },
       { title: "Pulumi: state and backends", url: "https://www.pulumi.com/docs/iac/concepts/state-and-backends/" },
       { title: "AWS CDK v2 developer guide", url: "https://docs.aws.amazon.com/cdk/v2/guide/home.html" },
+      { title: "Google Cloud: announcing the 2025 DORA report", url: "https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report" },
+      { title: "Pulumi Neo", url: "https://www.pulumi.com/docs/ai/neo/" },
+      { title: "HashiCorp: Terraform MCP server is generally available", url: "https://www.hashicorp.com/en/blog/terraform-mcp-server-is-now-generally-available" },
+      { title: "Terraform MCP server overview", url: "https://developer.hashicorp.com/terraform/mcp-server" },
+      { title: "Terraform MCP server: deploy", url: "https://developer.hashicorp.com/terraform/mcp-server/deploy" },
+      { title: "AWS IaC MCP server (awslabs)", url: "https://awslabs.github.io/mcp/servers/aws-iac-mcp-server" },
     ],
   },
 ];

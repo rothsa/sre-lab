@@ -65,6 +65,11 @@ export const CHAPTERS = [
       "THP can raise memory use: khugepaged collapsing sparse ranges fills empty pages. `max_ptes_none` limits how many empty pages a collapse may add, and `prctl(PR_SET_THP_DISABLE)` opts a single service out.",
       "Apps with many mappings (databases, mmap-heavy JVMs) hit `vm.max_map_count`, default 65530, and `mmap` fails with `ENOMEM`. Even `munmap` of a middle range can trip it by splitting one mapping into two. Raise it in the node image for those hosts.",
     ],
+    agentic: [
+      "Agents can pull `/proc/PID/status`, `smaps_rollup` and `ps -o min_flt,maj_flt` across many processes in seconds. What a human still checks is the reading: a big VSZ or a shared library counted in every RSS is not a leak, so ask for PSS and for numbers sampled over time, not one snapshot.",
+      "Defaults here are version- and distro-specific (THP `enabled` and `defrag`, `vm.overcommit_memory`, `vm.max_map_count`), which is where a model's remembered answer can be stale. Have the agent read `/sys/kernel/mm/transparent_hugepage/*` and `/proc/sys/vm/*` on the host and quote the live values.",
+      "The agent is a workload too: its builds, test runners and language servers allocate like any other process. Under default heuristic overcommit most of those allocations succeed up front and the shortfall surfaces later, at page-fault time, as the OOM killer, so run agent sessions in their own cgroup with a memory limit instead of sharing a developer box's headroom.",
+    ],
     quiz: [
       { q: "What is the difference between a minor and a major page fault, and which one hurts latency?", a: "A minor fault is resolved without I/O: zeroing a new anonymous page, or mapping a page already in the page cache. A major fault has to read the page from disk or swap, so the thread blocks on I/O. Major faults are the latency problem." },
       { q: "A process makes many 1 GB `malloc` calls on a 16 GB machine, 64 GB in total, and every one succeeds. Why?", a: "Allocation only creates virtual ranges, and pages are assigned on first touch. In the default mode 0 the kernel only checks each single request against total RAM plus swap, not the running total, so many 1 GB requests all pass; mode 1 checks nothing. Only mode 2 checks the total committed against `CommitLimit`." },
@@ -147,6 +152,11 @@ export const CHAPTERS = [
       "Cgroup writeback works only on ext2, ext4, btrfs, f2fs and xfs. On other filesystems buffered writeback is attributed to the root cgroup, so per-container `io.max` limits miss it.",
       "To pack nodes tighter, node agents reclaim cold cache ahead of pressure by writing to `memory.reclaim` (for example `1G`) instead of waiting for the kernel to reclaim under load.",
       "Fleet alerts on low `MemFree` fire everywhere because cache fills RAM by design. Alert on `MemAvailable` and memory PSI instead.",
+    ],
+    agentic: [
+      "An agent that reads low `free` in `free -m` can propose `drop_caches` or a bigger box, and that advice is easy to approve on autopilot. Make `MemAvailable` and memory PSI the evidence it must quote; reading `/proc/meminfo` is safe to delegate, writing to `/proc/sys/vm/*` stays behind human approval.",
+      "Agents that grep whole repos or log trees fill the page cache, and in a container that cache is charged to the agent's cgroup. A sandbox sitting near its `memory.max` may be mostly clean cache; check `file` vs `anon` in `memory.stat` before calling it a leak.",
+      "The durability rules don't change for agent-written code: a `write()` that returned is not on disk. Reviewing a generated script or service for `fsync()` or write-to-temp-and-rename on state files is the same skill as reviewing a human's.",
     ],
     quiz: [
       { q: "`free -m` shows 300 MB free, 20 GB buff/cache and 18 GB available on a 32 GB host. Is the host short of memory?", a: "No. Most of buff/cache is clean page cache the kernel can reclaim on demand, and available, 18 GB, is the estimate of what new work could get without swapping. Low free is normal." },
@@ -231,6 +241,11 @@ export const CHAPTERS = [
       "On Kubernetes nodes the kubelet sets `oom_score_adj` by QoS: -997 for Guaranteed, 1000 for BestEffort, and a request-based value for Burstable. Containers using far more than they requested die first, so fleets set accurate memory requests.",
       "Grepping `dmesg` on thousands of hosts doesn't scale. Export the `oom_kill` count from each cgroup's `memory.events` as a metric and alert on its rate.",
     ],
+    agentic: [
+      "Gathering OOM evidence is a good agent task: read `journalctl -k` for the task dump and the `oom-kill:` line, `/proc/pressure/memory`, and `/proc/PID/oom_score`, then say who died and why. The human checks the `constraint=` field and the timeline, and owns any change to `oom_score_adj` or `vm.panic_on_oom`, because both decide which workload dies next.",
+      "Kernel and app logs are untrusted input: the task dump prints process names the workloads chose, and log lines can carry text aimed at the model (OWASP LLM01:2025 Prompt Injection). An agent that reads them must not hold a token that can kill processes or write sysctls; enforce read-only with the identity, not the prompt (see Agentic Engineering, Drawn).",
+      "An agent's empty answer is not evidence of absence. With `kernel.dmesg_restrict` set to 1, `dmesg` needs `CAP_SYSLOG`, so an unprivileged agent may see an error or nothing; fall back to `oom_kill` in each cgroup's `memory.events`, which the agent can read without that capability.",
+    ],
     quiz: [
       { q: "What is the difference between kswapd and direct reclaim, and which one hurts application latency?", a: "`kswapd` reclaims in the background when free memory falls below the low watermark. Direct reclaim happens when it falls below min: the task that wants memory does the reclaim itself and waits. Direct reclaim adds latency to that task." },
       { q: "How does the OOM killer choose a victim, and how can you influence it?", a: "It computes a badness score, roughly the share of allowed memory (RAM plus swap) each task uses, adds `oom_score_adj` (-1000 to 1000), and kills the highest. Set `oom_score_adj` to protect or sacrifice tasks; -1000 exempts one entirely." },
@@ -246,6 +261,8 @@ export const CHAPTERS = [
       { title: "The /proc filesystem: meminfo", url: "https://docs.kernel.org/filesystems/proc.html" },
       { title: "Node-pressure eviction", url: "https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/" },
       { title: "Control Group v2", url: "https://docs.kernel.org/admin-guide/cgroup-v2.html" },
+      { title: "OWASP Top 10 for LLM Applications 2025", url: "https://genai.owasp.org/llm-top-10/" },
+      { title: "Documentation for /proc/sys/kernel/ (dmesg_restrict)", url: "https://docs.kernel.org/admin-guide/sysctl/kernel.html" },
     ],
   },
   {
@@ -314,6 +331,11 @@ export const CHAPTERS = [
       "A thread leak or fork bomb in one container can use up the node's PIDs. Set `pids.max` per cgroup; fork and clone then fail with `EAGAIN` inside that container only.",
       "Per-cgroup `memory.pressure` shows which container is stalling, and `memory.oom.group` makes a cgroup die whole instead of losing one worker. Both matter more as more workloads share a node.",
     ],
+    agentic: [
+      "Agent sandboxes are cgroups too. Give each agent session or sandbox Pod its own `memory.max` and `pids.max`, so a runaway test suite or fork loop ends in a cgroup OOM or `EAGAIN` inside the sandbox, not a node-wide OOM; `memory.oom.group` then kills the whole sandbox instead of leaving it half alive.",
+      "kubernetes-sigs/agent-sandbox adds a `Sandbox` CRD (API `v1beta1`, under SIG Apps) for one stateful Pod per agent runtime. Isolation comes from the RuntimeClass, such as gVisor or Kata, not the CRD; under gVisor the Pod talks to a user-space application kernel that doesn't implement every `/proc` or `/sys` file, so cgroup files read inside may not match the node's.",
+      "An agent looking at `OOMKilled` can suggest raising the limit. The human checks `memory.stat` (`anon` vs `file`) and `memory.events` first, because a cache-heavy container rarely needs more memory and a leaking one only dies later.",
+    ],
     quiz: [
       { q: "What is the difference between `memory.high` and `memory.max`?", a: "`memory.high` throttles the cgroup and forces reclaim when usage goes over it, but never invokes the OOM killer. `memory.max` is the hard limit: if reclaim can't keep usage under it, the OOM killer runs inside the cgroup." },
       { q: "How do you tell a container OOM kill from a node-wide OOM?", a: "A container OOM increments `oom_kill` in that cgroup's `memory.events`, the Pod shows `OOMKilled`, and the kernel log says `Memory cgroup out of memory`. A node-wide OOM has no cgroup limit involved: the log reports a plain `Out of memory`, the `oom-kill:` line shows `constraint=CONSTRAINT_NONE` instead of `CONSTRAINT_MEMCG`, and the victim can come from any cgroup." },
@@ -328,6 +350,8 @@ export const CHAPTERS = [
       { title: "Kubelet configuration (singleProcessOOMKill)", url: "https://kubernetes.io/docs/reference/config-api/kubelet-config.v1beta1/" },
       { title: "Node-pressure eviction", url: "https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/" },
       { title: "Considerations for large clusters", url: "https://kubernetes.io/docs/setup/best-practices/cluster-large/" },
+      { title: "kubernetes-sigs/agent-sandbox", url: "https://github.com/kubernetes-sigs/agent-sandbox" },
+      { title: "gVisor documentation", url: "https://gvisor.dev/docs/" },
     ],
   },
 ];

@@ -64,6 +64,11 @@ export const CHAPTERS = [
       "Hundreds of teams change labels independently: drive aggregation rules from usage analysis (Adaptive Metrics recommendations, Chronosphere's 30-day unused report) and preview their impact before enabling them.",
       "One rollup output fed by huge input: Chronosphere documents that if a single output series gets more than 10 million unique input series, it may stop accepting new inputs for that rule.",
     ],
+    agentic: [
+      "Usage-based recommendations are a natural thing for an assistant to explain. Grafana Adaptive Metrics derives them from how series are used in dashboards, alerts, recording rules and queries, and you apply rules in the UI, via API or Terraform, or turn on auto-apply, which applies new recommendations without review. A human still checks the label being aggregated away is not the one an incident runbook drills into.",
+      "Agent queries are queries. If investigation agents read raw `pod`-level series, usage analysis may count those labels as used; if they rely on detail you aggregate away, their investigations get worse. Decide which tier agents query (rollups or the short-retention raw tier) on purpose.",
+      "Agents write recording rules quickly, and the same checks decide whether they are safe: the rule group `limit`, the output label set, and `prometheus_rule_group_iterations_missed_total` after deploy. Review a generated rule's output cardinality the way you would its input.",
+    ],
     quiz: [
       { q: "You add a recording rule that sums away `pod`. Why didn't your Prometheus series count go down?", a: "Recording rules write new series in addition to the raw ones. The raw series are still scraped and stored. You save only by dropping raw series downstream, for example by remote-writing only the recorded series or using ingest-side aggregation that drops raw data." },
       { q: "What's the difference between a Prometheus recording rule and a Chronosphere rollup rule?", a: "A recording rule runs a PromQL query over data already stored in the TSDB. A rollup rule aggregates samples as they stream in, before storage, and with `drop_raw` the raw input is never persisted." },
@@ -78,6 +83,7 @@ export const CHAPTERS = [
       { title: "Chronosphere (Cortex XCOR) docs: Rollup rules", url: "https://docs-xcor.paloaltonetworks.com/control/shaping/shape-metrics/rules/rollup" },
       { title: "Grafana Cloud: Adaptive Metrics introduction", url: "https://grafana.com/docs/grafana-cloud/observe-and-act/adaptive-telemetry/adaptive-metrics/introduction/" },
       { title: "Grafana Cloud: Adaptive Metrics rules", url: "https://grafana.com/docs/grafana-cloud/observe-and-act/adaptive-telemetry/adaptive-metrics/create-rules/" },
+      { title: "Grafana Cloud: Control metrics usage via Adaptive Metrics", url: "https://grafana.com/docs/grafana-cloud/cost-management-and-billing/reduce-costs/metrics-costs/control-metrics-usage-via-adaptive-metrics/" },
     ],
   },
   {
@@ -144,6 +150,11 @@ export const CHAPTERS = [
       "Migration without breaking alerts: ingest both forms with `always_scrape_classic_histograms`, move dashboards and alerts to native queries, then drop the classic series.",
       "Billing differs by vendor: Grafana Cloud, for example, counts native histogram buckets toward billable series at a 0.25 ratio, so check how your backend counts them before projecting savings.",
     ],
+    agentic: [
+      "LLM latency is a histogram problem too. The OpenTelemetry GenAI metrics (all Development status, so names may change) advise 14 explicit boundaries for `gen_ai.client.inference.duration` (the same set as `gen_ai.client.operation.duration`, which covers non-inference operations such as tool calls), which is 17 classic series per label set; multiply by provider, model and operation before turning it on everywhere.",
+      "Token usage comes in two shapes: counters `gen_ai.client.inference.usage.input_tokens` and `.output_tokens`, which the spec calls a proxy for cost, and histograms `gen_ai.client.inference.operation.*`, which it says are for percentiles and not for total usage or cost. Same lesson as this chapter: pick the instrument by the question.",
+      "An agent can propose bucket boundaries or a native histogram schema; a human checks them against the SLO threshold. If no bucket edge sits at the SLO latency, `histogram_quantile` interpolates and the good-request count is an estimate, whoever chose the buckets.",
+    ],
     quiz: [
       { q: "A histogram has 10 bucket boundaries and is labelled by route (20 values) on 50 pods. How many series?", a: "Each label set has 10 + 1 (`+Inf`) bucket series plus `_sum` and `_count`, so 13. 13 × 20 × 50 = 13,000 series." },
       { q: "Why can you compute a fleet-wide p99 from histograms but not from summaries?", a: "Histogram buckets are counts, and counts add: sum the bucket rates across pods, then estimate the quantile. Summary quantiles are already computed per process, and averaging them gives a statistically meaningless result." },
@@ -156,6 +167,9 @@ export const CHAPTERS = [
       { title: "Prometheus: Configuration (send_native_histograms)", url: "https://prometheus.io/docs/prometheus/latest/configuration/configuration/" },
       { title: "OpenTelemetry: Metrics data model (exponential histogram)", url: "https://opentelemetry.io/docs/specs/otel/metrics/data-model/" },
       { title: "Grafana Cloud: Understand your metrics invoice", url: "https://grafana.com/docs/grafana-cloud/cost-management-and-billing/understand-your-invoice/metrics-invoice/" },
+      { title: "OpenTelemetry GenAI semconv: metrics", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-metrics.md" },
+      { title: "OpenTelemetry GenAI semconv: client inference (gen_ai.client.inference.duration)", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/client-inference.md" },
+      { title: "OpenTelemetry GenAI semconv: token metrics", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-token-metrics.md" },
     ],
   },
   {
@@ -225,6 +239,11 @@ export const CHAPTERS = [
       "Thousands of new metrics a month can't be reviewed by hand. Lint names, units and attribute keys in CI, estimate series from the allowed values, and require approval only above a threshold.",
       "Overflow streams at scale: an `otel.metric.overflow` series showing up across many services is a signal that a View or a code change is missing. Alert on it per service.",
     ],
+    agentic: [
+      "GenAI telemetry fits the same governance. The OpenTelemetry token counters carry bounded attributes such as `gen_ai.provider.name`, `gen_ai.operation.name`, `gen_ai.request.model` and `gen_ai.token.modality`. Prompt and response content is Opt-In on spans and marked likely to contain sensitive data, so it never becomes a metric attribute.",
+      "Agent runs produce many spans (inference calls and tool calls), and some vendors bill on them: Datadog LLM Observability bills per LLM span ingested, one per request to an LLM provider, so one agent workflow produces several. Give agent services an owner, a quota and sampling like any other team, and watch their series and span counts the same way.",
+      "An agent can lint new metrics in CI, estimate series from allowed values and draft the View or drop rule; the approval threshold and any quota raise stay human decisions. The failure mode is rubber-stamping a generated estimate (see Agentic Engineering, Drawn on reviewing agent output at scale).",
+    ],
     quiz: [
       { q: "What happens in the OpenTelemetry SDK when an instrument sees more attribute sets than its cardinality limit?", a: "New attribute sets are aggregated into a single stream with `otel.metric.overflow=true`. Measurements aren't dropped or double-counted, but their detail is lost. Without other configuration the limit is 2000." },
       { q: "You removed `user_id` with a View. How can an engineer still find the user behind a latency spike?", a: "Through exemplars: sampled measurements keep their `trace_id` and `span_id`, so the spike links to a trace that carries `user_id` as a span attribute." },
@@ -238,6 +257,9 @@ export const CHAPTERS = [
       { title: "Prometheus: Configuration (sample_limit, exemplars)", url: "https://prometheus.io/docs/prometheus/latest/configuration/configuration/" },
       { title: "Prometheus: Feature flags (exemplar storage)", url: "https://prometheus.io/docs/prometheus/latest/feature_flags/" },
       { title: "Grafana Cloud: Understand your metrics invoice", url: "https://grafana.com/docs/grafana-cloud/cost-management-and-billing/understand-your-invoice/metrics-invoice/" },
+      { title: "OpenTelemetry GenAI semconv: token metrics", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-token-metrics.md" },
+      { title: "OpenTelemetry GenAI semconv: spans", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md" },
+      { title: "Datadog: LLM Observability", url: "https://docs.datadoghq.com/llm_observability/" },
     ],
   },
 ];

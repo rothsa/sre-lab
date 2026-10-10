@@ -119,6 +119,11 @@ publish:
       "Busy main branch: with strict up-to-date checks, every merge invalidates every other open pull request's checks, so authors rebase and rerun in a race. A merge queue or merge train batches and serializes this.",
       "Secrets: long-lived cloud keys stored in CI are a high-value target. OIDC gives each job a short-lived token whose claims (repository, ref, environment) the cloud role checks, so there is nothing long-lived to steal.",
     ],
+    agentic: [
+      "Coding agents multiply pull requests, and every agent PR queues the same jobs on the same runner fleet, so queue time and CI minutes become the limit before human review does. Budget agent runs like any workload: the Claude Code GitHub Actions docs suggest `--max-turns`, workflow timeouts and concurrency limits, and the queue-time dashboard should split agent and human jobs.",
+      "An agent's branch is untrusted code that wants your secrets. For Copilot cloud agent, workflows do not run on its pushes until someone with write access clicks Approve and run workflows (unless configured to run automatically), so the human reading the diff to `.github/workflows/` and the lockfile before clicking is the real gate; a reflexive click is the new failure mode.",
+      "An agent can read the failing job log, spot a flaky test or a cache-key miss and propose a fix faster than a person scrolling output. The trap is an agent that makes the check green instead of the code correct, by adding retries, skipping a test or weakening an assertion, so the reviewer checks that the required-check set and the tests did not shrink (see Agentic Engineering, Drawn).",
+    ],
     quiz: [
       { q: "Your PR pipeline takes 25 minutes but the jobs only run for 8. Where is the rest going, and what do you change?", a: "Queue time waiting for runners, plus stage-by-stage waiting. Autoscale the runner fleet on queued-job events, use `needs` or a DAG so jobs start when their own inputs are ready, and check cache hit rate so builds don't start cold." },
       { q: "Why might a PR that passed all required checks still break main?", a: "If checks are not strict, the PR ran against an older base. Another change merged since, and the combination was never tested. Require up-to-date branches or use a merge queue that tests against the latest base plus queued changes." },
@@ -133,6 +138,8 @@ publish:
       { title: "GitHub Docs: About protected branches", url: "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches" },
       { title: "GitHub Docs: About security hardening with OpenID Connect", url: "https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect" },
       { title: "GitLab Docs: CI/CD pipelines", url: "https://docs.gitlab.com/ci/pipelines/" },
+      { title: "GitHub Docs: Risks and mitigations for Copilot cloud agent", url: "https://docs.github.com/en/copilot/concepts/agents/cloud-agent/risks-and-mitigations" },
+      { title: "Claude Code: GitHub Actions", url: "https://code.claude.com/docs/en/github-actions" },
     ],
   },
 
@@ -221,6 +228,11 @@ publish:
       "Tag drift: with mutable tags, nodes that pull at different times can run different images under the same name, and a node replacement can silently upgrade. Pin digests in manifests and turn on tag immutability for release repositories.",
       "Approvals at scale: a human approval on every service's every deploy becomes rubber-stamping. Keep human gates for high-risk tiers and replace the rest with automated checks; GitHub also supports custom protection rules from GitHub Apps.",
       "Provenance: with many build systems, you need proof that a digest came from your CI and not a laptop. Artifact attestations bind build provenance to the image digest and can be checked with `gh attestation verify` before deploy.",
+    ],
+    agentic: [
+      "An agent can open the PR that bumps a digest, but promotion still moves that one digest through the same gates: the environment's required reviewer approves, and the agent's identity never holds the production OIDC role. The failure mode to watch is an agent that answers a staging failure by rebuilding, which ships a new digest that staging never tested.",
+      "Artifact attestations bind an image digest to the workflow and commit that built it, so `gh attestation verify` answers whether the image came from your CI regardless of who or what wrote the code. They do not record whether a human reviewed that commit; that guarantee comes from branch protection, so it has to stay required for agent-authored changes.",
+      "Approval fatigue gets worse when agents open many deploy PRs a day: the reviewer approving the tenth environment bump stops reading. Keep human approval for high-risk tiers, gate the rest with automated checks, and make the diff show the digest and config change plainly so a quick review is still a real one.",
     ],
     quiz: [
       { q: "Why deploy `app@sha256:…` instead of `app:v1.4.2`?", a: "The digest is a hash of the image content, so it always means the same bytes. A tag can be re-pointed, so two nodes, or a rollback next week, may get different images under the same tag." },
@@ -358,6 +370,11 @@ spec:
       "Hundreds of clusters: ApplicationSets with a cluster generator create Applications as clusters are registered. Rolling a change across them in waves needs Progressive Syncs (RollingSync steps by label, each step Healthy before the next), which is beta and must be enabled explicitly.",
       "Secrets: plaintext secrets can't go in Git. Argo CD recommends secret operators on the destination cluster (External Secrets Operator, Sealed Secrets, Secrets Store CSI driver) and cautions against injecting secrets during manifest generation, because rendered manifests are cached in plaintext in Redis.",
     ],
+    agentic: [
+      "GitOps suits agents because their only write path is a pull request to the config repo: Argo CD applies it, so the agent needs no cluster credentials. The human reviews the rendered result (`argocd app diff` or the PR's rendered manifests), not just the values-file line, because one Helm value can change dozens of objects.",
+      "Mid-incident, an agent can gather evidence read-only from `argocd app get`, sync status, health and recent commits; a human decides whether to pause auto-sync, revert or roll back. An agent given write access that runs `kubectl edit` on a `selfHeal` app is reverted within seconds, and one pointed at the wrong Application or cluster context starts a second incident.",
+      "Deletions are the risky agent edit: with prune enabled, removing a manifest from Git deletes the live object. Require human review for PRs that delete files under app paths, and remember that an agent reporting `Synced` has said nothing about `Healthy`.",
+    ],
     quiz: [
       { q: "An Argo CD app shows `Synced` and `Degraded`. What does that tell you?", a: "Argo CD applied exactly what Git says, but the resulting resources are unhealthy, for example a Deployment whose new Pods don't become ready. The fix is a new commit (revert or fix forward), not another sync." },
       { q: "Someone scaled a Deployment by hand during an incident and Argo CD put it back. Why, and what should they have done?", a: "Self-heal was on, so the controller treated the change as drift and synced Git's value back. They should change the value in Git, or pause auto-sync for that app first, and exclude HPA-owned `replicas` with `ignoreDifferences` if an autoscaler manages it." },
@@ -376,6 +393,7 @@ spec:
       { title: "Argo CD: ApplicationSet controller", url: "https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/" },
       { title: "Argo CD: Progressive Syncs", url: "https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/Progressive-Syncs/" },
       { title: "Argo CD: Cluster bootstrapping (app of apps)", url: "https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/" },
+      { title: "Argo CD: argocd app diff", url: "https://argo-cd.readthedocs.io/en/stable/user-guide/commands/argocd_app_diff/" },
     ],
   },
 
@@ -501,6 +519,11 @@ spec:
       "Capacity: canary with traffic routing keeps stable at 100% plus the canary, and blue-green runs two full copies. On a large fleet that is real money; `dynamicStableScale` scales stable down as traffic moves (slower rollback), and `previewReplicaCount` keeps green small until promotion.",
       "Not just binaries: config, feature flags and content pushes can take down a fleet as fast as code, and several large outages came from changes that skipped staged rollout. Apply the same rings, bake times and automatic aborts to them.",
       "The metrics pipeline is now in the deploy path: a slow or broken Prometheus stalls or aborts every rollout at once. Use dry-run mode to trial a new metric before it gates anything, and alert on analysis errors, not just failures.",
+    ],
+    agentic: [
+      "Canaries with automated analysis are the main guardrail for agent-authored changes: the Rollout does not care who wrote the code, it checks error rate and latency at a small weight before sending more traffic. That holds only while humans own the AnalysisTemplate and step list; an agent PR that loosens a success condition or shortens a pause disables the check it is supposed to pass.",
+      "An agent can watch an in-flight rollout and summarize AnalysisRun results, which helps with the Inconclusive pause nobody noticed. Promoting past a pause or aborting stays a human call (`kubectl argo rollouts promote` / `abort`) or an automated rule in the spec, not an agent's judgment from chat.",
+      "A canary only tests what traffic exercises, and rollback does not undo side effects. An agent PR that bundles a schema or message-format change with code can pass the canary and still be impossible to roll back, so ask for side-effecting changes in separate, backward-compatible PRs.",
     ],
     quiz: [
       { q: "Your canary passed analysis, went to 100%, and then errors spiked. What could the analysis have missed?", a: "The canary may have seen too little traffic, or the wrong traffic, to be meaningful; the metric may not cover the failure (latency, a downstream dependency, one customer segment); or the problem only appears at full load. Add metrics, minimum traffic checks and a background analysis that keeps running through the final steps." },

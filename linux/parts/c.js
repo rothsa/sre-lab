@@ -68,6 +68,11 @@ export const CHAPTERS = [
       "Many cgroups on one node share CPU by `cpu.weight` (default 100, range 1-10000). Setting `cpu.idle` to 1 makes a batch cgroup behave like `SCHED_IDLE` toward its peers instead of capping it with `cpu.max`.",
       "Coarse averages hide saturation. Brendan Gregg describes CPU latency problems while 5-minute averages never showed above 80% utilization; the CPU was at 100% for seconds at a time. Collect at short intervals or use PSI's cumulative `total`.",
     ],
+    agentic: [
+      "Agents read `vmstat 1`, `mpstat` and `cpu.stat` quickly, but the traps are the same generic misreadings: load average as CPU busy, %iowait as busy time. Ask the agent to quote `r` vs `b` and the `nr_throttled` delta over a window, not a load number.",
+      "Scheduler and cgroup details depend on the kernel in front of you: EEVDF replaced CFS's pick logic in 6.6, and cgroup v1 (`cpu.cfs_quota_us`) and v2 (`cpu.max`) use different files. Have the agent run `uname -r` and `stat -fc %T /sys/fs/cgroup/` (`cgroup2fs` means v2) before it explains anything.",
+      "Coding agents run builds and tests in parallel. Inside a container with a small `cpu.max`, that parallelism uses the quota early in each period and shows up as throttling, so a slow agent may be a CPU limit rather than the model; check the sandbox's `cpu.stat`.",
+    ],
     quiz: [
       { q: "Load average is 40 on an 8-CPU host, but `top` shows CPUs 70% idle. What's likely going on?", a: "Many tasks are in D state, usually waiting on disk or network storage. Load counts them, but they use no CPU. Check `vmstat` `b`, `ps` for D-state tasks, and `iostat`." },
       { q: "What does a high %st mean, and can you fix it inside the VM?", a: "Steal: the vCPU was ready to run, but the hypervisor was running something else. Usually it's a host problem: move the VM, resize it, or ask the provider. One exception: on burstable or CPU-capped instance types, an exhausted credit or cap also shows up as steal, so using less CPU does help there." },
@@ -90,6 +95,7 @@ export const CHAPTERS = [
       { title: "PSI: pressure stall information", url: "https://docs.kernel.org/accounting/psi.html" },
       { title: "Linux load averages: solving the mystery", url: "https://www.brendangregg.com/blog/2017-08-08/linux-load-averages.html" },
       { title: "The USE method", url: "https://www.brendangregg.com/usemethod.html" },
+      { title: "About cgroup v2", url: "https://kubernetes.io/docs/concepts/architecture/cgroups/" },
     ],
   },
 
@@ -151,6 +157,11 @@ export const CHAPTERS = [
       "glibc sends A and AAAA in parallel from one socket since 2.9. `single-request-reopen` uses a new socket for the second query when something in the path mishandles two requests from the same port.",
       "A per-host cache (nscd or systemd-resolved) cuts upstream queries on chatty hosts.",
     ],
+    agentic: [
+      "An agent may reach for `dig`, which skips nsswitch, `/etc/hosts` and the search list. Require `getent ahosts NAME` as the evidence of what the app sees, and check the image's libc first: musl and Go's resolver don't follow the glibc path drawn here.",
+      "Editing `/etc/hosts` or `resolv.conf` to make a lookup work is a host-wide, silent change: a pinned `/etc/hosts` entry wins over DNS for every program until someone removes it. Agent-proposed resolver changes go through config management and review like any other.",
+      "Inside an agent sandbox, DNS may not work the same way: Claude Code's Linux sandbox has no direct network route, so tools that don't use its HTTP proxy fail with `Temporary failure in name resolution`. Treat that as a property of the sandbox before you treat it as a DNS outage.",
+    ],
     quiz: [
       { q: "`dig api.internal` returns 10.0.0.5 but the app connects to 10.0.0.9. What do you check?", a: "`/etc/hosts` and the `hosts:` line in `nsswitch.conf`. `files` usually comes before `dns`, and dig never reads either. `getent ahosts api.internal` shows what getaddrinfo returns." },
       { q: "Every DNS lookup on a host takes just over 5 seconds, then succeeds. Likely cause?", a: "The first `nameserver` in `resolv.conf` is unreachable. Each query waits the default 5s `timeout`, then tries the next server. Fix or remove the dead server. If every server is up but some lookups still stall 5s, one of the parallel A/AAAA replies is being dropped, often by conntrack on a NAT host; `options single-request-reopen` works around it." },
@@ -169,6 +180,7 @@ export const CHAPTERS = [
       { title: "DNS for Services and Pods (ndots:5)", url: "https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/" },
       { title: "dig (BIND 9 manual pages)", url: "https://bind9.readthedocs.io/en/stable/manpages.html" },
       { title: "Using NodeLocal DNSCache in Kubernetes clusters", url: "https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/" },
+      { title: "Claude Code: Sandboxing", url: "https://code.claude.com/docs/en/sandboxing" },
     ],
   },
 
@@ -237,6 +249,11 @@ export const CHAPTERS = [
       "Averages hide bursts: 5-minute averages can stay below 80% while the CPU is pinned for seconds. Use short intervals, or PSI's cumulative `total` in microseconds.",
       "PSI triggers (window 500ms to 10s, written to `/proc/pressure/*` or a cgroup's pressure file) wake an agent when stalls cross a threshold, so it can capture `vmstat`, `iostat` and `ss` output while the problem is happening.",
     ],
+    agentic: [
+      "This checklist is a natural first pass for a read-only agent: run the ten commands, keep the raw output with timestamps and hostname, and summarize utilization, saturation and errors per resource. The human checks the summary against the raw lines (the first `vmstat` line is since boot, `%util` misleads on SSDs) and decides what happens next.",
+      "Check the errors step actually ran. With `kernel.dmesg_restrict` at 1, `dmesg` needs `CAP_SYSLOG`, so an unprivileged agent's `dmesg | tail` may fail or come back empty, and a summary that says no kernel errors is then unfounded.",
+      "Sending an agent to SSH into hundreds of hosts multiplies sessions, model calls and tokens (OWASP LLM10:2025 Unbounded Consumption). Feed it fleet metrics such as PSI, retransmits and drops, let it pick the outliers, and run the checklist only on those.",
+    ],
     quiz: [
       { q: "Which two columns of `vmstat 1` tell you the CPUs are saturated, and memory is short?", a: "`r` above the CPU count means CPU saturation. Non-zero `si` and `so` (swap in and out) mean memory is short." },
       { q: "`mpstat` shows 12% average CPU on an 8-CPU host, but one CPU is at 100%. What does that suggest?", a: "A single-threaded bottleneck: one thread is maxed out while the others idle. The average hides it. `pidstat 1` finds the process." },
@@ -255,6 +272,8 @@ export const CHAPTERS = [
       { title: "uptime(1)", url: "https://man7.org/linux/man-pages/man1/uptime.1.html" },
       { title: "PSI: pressure stall information", url: "https://docs.kernel.org/accounting/psi.html" },
       { title: "SNMP counter", url: "https://docs.kernel.org/networking/snmp_counter.html" },
+      { title: "Documentation for /proc/sys/kernel/ (dmesg_restrict)", url: "https://docs.kernel.org/admin-guide/sysctl/kernel.html" },
+      { title: "OWASP Top 10 for LLM Applications 2025", url: "https://genai.owasp.org/llm-top-10/" },
     ],
   },
 
@@ -331,6 +350,11 @@ export const CHAPTERS = [
       "Latency clustered at about 5 seconds or multiples of it points at DNS retries: the glibc default `timeout` is 5s with 2 `attempts`.",
       "Group failures by source node, zone and destination. If they cluster on a few nodes, look at those nodes' conntrack, DNS cache and NIC drops before the service.",
     ],
+    agentic: [
+      "The map suits an agent well: each question has a read-only command, and the agent should stop at the first layer that fails and show that output instead of jumping to a cause. The human checks that each command ran on the right host, `ss -ltnp` on the server and the capture at both ends.",
+      "Captures and responses are untrusted content: text in an HTTP body, an error page or a `curl -v` header can carry instructions to the model (OWASP LLM01:2025 Prompt Injection). Keep captures to headers with a small `-s` snaplen, and don't let the agent that reads them also hold write tools or open egress.",
+      "Fixes found this way (a firewall rule, a route, a listener's bind address) are still changes to production networking. The agent drafts them with the evidence attached; a human approves and rolls them out the normal way, because a wrong rule can cut the path you would use to revert it.",
+    ],
     quiz: [
       { q: "`curl` to a service fails with `Connection refused`. What does that tell you, and what do you run next?", a: "A TCP reset (or ICMP port-unreachable) came back: usually the host is reachable but nothing accepted the connection, though a firewall REJECT rule causes the same error. Run `ss -ltnp` on the server to check the process is listening on that port and on a non-loopback address." },
       { q: "`tcpdump` on the client shows `Flags [S]` sent several times and nothing back. Where do you look?", a: "Something drops the SYN or the reply: a firewall rule on either host, a cloud security group or ACL, or routing. Capture on the server to see whether the SYN arrives. tcpdump sees it before the server's firewall, so a SYN there with no SYN-ACK points to a local rule or a full accept queue." },
@@ -350,6 +374,8 @@ export const CHAPTERS = [
       { title: "openssl-s_client", url: "https://docs.openssl.org/3.0/man1/openssl-s_client/" },
       { title: "SNMP counter", url: "https://docs.kernel.org/networking/snmp_counter.html" },
       { title: "resolv.conf(5)", url: "https://man7.org/linux/man-pages/man5/resolv.conf.5.html" },
+      { title: "OWASP Top 10 for LLM Applications 2025", url: "https://genai.owasp.org/llm-top-10/" },
+      { title: "Simon Willison: The lethal trifecta for AI agents", url: "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" },
     ],
   },
 ];

@@ -117,3 +117,9 @@ svg.stepping .d-edge.flow path { stroke-dasharray: 7 5; animation: march .8s lin
 
 /* Shared site nav lines up with the explainer shell */
 nav.site-nav { max-width: 1180px; }
+
+/* "What changes in the agentic era" aid: full width like the at-scale box, in its own colour */
+.aid.agentic { grid-column: 1 / -1; border-left: 3px solid var(--agentic, #6b4fbf); }
+.aid.agentic h3 { color: var(--agentic, #6b4fbf); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .aid.agentic { --agentic: #b9a3f2; } }
+:root[data-theme="dark"] .aid.agentic { --agentic: #b9a3f2; }

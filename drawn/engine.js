@@ -163,6 +163,7 @@ function chapterHTML(ch) {
     <div class="aids">
       <div class="aid say"><h3>Say it in 30 seconds</h3><p>${fmt(ch.say30)}</p></div>
       ${ch.atScale && ch.atScale.length ? `<div class="aid scale"><h3>What breaks at scale</h3><ul>${ch.atScale.map((g) => `<li>${fmt(g)}</li>`).join("")}</ul></div>` : ""}
+      ${ch.agentic && ch.agentic.length ? `<div class="aid agentic"><h3>What changes in the agentic era</h3><ul>${ch.agentic.map((g) => `<li>${fmt(g)}</li>`).join("")}</ul></div>` : ""}
       <div class="aid"><h3>Gotchas</h3><ul>${ch.gotchas.map((g) => `<li>${fmt(g)}</li>`).join("")}</ul></div>
       <div class="aid"><h3>Quiz yourself</h3>${ch.quiz.map((x) => `<details><summary>${fmt(x.q)}</summary><p>${fmt(x.a)}</p></details>`).join("")}</div>
       <div class="aid more" data-more="${ch.id}"></div>

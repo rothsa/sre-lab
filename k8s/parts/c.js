@@ -64,6 +64,11 @@ export const CHAPTERS = [
       "Shrinking is slow: a node must be unneeded for 10 minutes, non-empty nodes go one at a time, and empty ones in batches of up to 10 (`--max-empty-bulk-delete`). Karpenter consolidation is capped by disruption budgets, `nodes: 10%` by default.",
       "Multi-zone fleets: Cluster Autoscaler wants one node group per zone with identical nodes, plus `--balance-similar-node-groups`, and a cloud quota check before raising maximums.",
     ],
+    agentic: [
+      "Scaling stays with the controllers built for it. An agent running `kubectl scale` on an HPA-managed Deployment is overwritten on the next sync, so changes belong in the HPA's min, max or metrics, reviewed like any other change.",
+      "Agents can read HPA conditions and Pending Pods quickly and explain why no node arrived. Check that the explanation uses requests, not usage, since both the HPA's percentage and node autoscalers work from requests.",
+      "Agent workloads are bursty and mostly idle. Agent Sandbox can scale idle sandboxes to zero and keep a SandboxWarmPool for fast starts; the pool size trades cost for latency, a capacity decision like HPA `minReplicas`.",
+    ],
     quiz: [
       { q: "An HPA targets 50% CPU. 3 Pods each request 200m and use 300m. What does it do?", a: "Utilization is 300m / 200m = 150%. desired = ceil(3 × 150/50) = 9 Pods, capped at `maxReplicas`. The default scale-up rate (100% or 4 Pods per 15s, whichever is more) gets it there in two steps: 7, then 9." },
       { q: "Traffic drops sharply. Why do Pods stay for several minutes?", a: "The scale-down stabilization window (300 seconds by default): the HPA acts on the highest recommendation in that window, so it scales down only after the lower load has lasted." },
@@ -81,6 +86,7 @@ export const CHAPTERS = [
       { title: "Karpenter: disruption", url: "https://karpenter.sh/docs/concepts/disruption/" },
       { title: "metrics-server", url: "https://github.com/kubernetes-sigs/metrics-server" },
       { title: "kube-controller-manager", url: "https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/" },
+      { title: "Running Agents on Kubernetes with Agent Sandbox", url: "https://kubernetes.io/blog/2026/03/20/running-agents-on-kubernetes-with-agent-sandbox/" },
     ],
   },
 
@@ -151,6 +157,11 @@ export const CHAPTERS = [
       "One noisy client must not starve the rest. API Priority and Fairness splits the API server's concurrency (`--max-requests-inflight` 400 plus `--max-mutating-requests-inflight` 200 by default) across priority levels, uses `ByUser` or `ByNamespace` flows and shuffle sharding, and counts rejections in `apiserver_flowcontrol_rejected_requests_total`.",
       "In multi-tenant clusters, create rights alone can exhaust etcd by object size or count. Cap object counts per namespace with ResourceQuota, and review bindings periodically: a new user with a deleted user's name inherits their bindings.",
     ],
+    agentic: [
+      "Agent identity is the core control. Run each agent as its own ServiceAccount or OIDC identity with a namespaced Role, never your kubeconfig or `cluster-admin`, so `kubectl auth can-i --list --as=system:serviceaccount:<ns>:<agent>` shows its reach and audit logs name it.",
+      "RBAC can grant `pods/exec` but cannot limit which commands run inside it, as the Kubernetes blog on production debugging notes. Keep exec, `escalate`, `bind`, `impersonate` and Secret reads out of agent roles and send writes through a human approval step.",
+      "Tool-level guards are defence in depth, not the boundary. kubectl-ai asks before resource-modifying commands only while `skipPermissions` is false, and the EKS MCP Server (preview) separates read-only from write tools; under prompt injection, the RBAC on the identity is what holds.",
+    ],
     quiz: [
       { q: "You bind the ClusterRole `edit` to a user with a RoleBinding in namespace `dev`. What can they edit?", a: "Only objects in `dev`. A RoleBinding grants the referenced ClusterRole's permissions within its own namespace." },
       { q: "How does a Pod authenticate to the API server, and as whom?", a: "With the projected ServiceAccount token the kubelet mounted, sent as a bearer token. It authenticates as `system:serviceaccount:<namespace>:<name>`." },
@@ -168,6 +179,10 @@ export const CHAPTERS = [
       { title: "Admission webhook good practices", url: "https://kubernetes.io/docs/concepts/cluster-administration/admission-webhooks-good-practices/" },
       { title: "Dynamic admission control", url: "https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/" },
       { title: "API Priority and Fairness", url: "https://kubernetes.io/docs/concepts/cluster-administration/flow-control/" },
+      { title: "Securing Production Debugging in Kubernetes", url: "https://kubernetes.io/blog/2026/03/18/securing-production-debugging-in-kubernetes/" },
+      { title: "kubectl-ai README", url: "https://github.com/GoogleCloudPlatform/kubectl-ai" },
+      { title: "Amazon EKS MCP Server tools reference", url: "https://docs.aws.amazon.com/eks/latest/userguide/eks-mcp-tools.html" },
+      { title: "AI in SRE: How Google is Engineering the Future of Reliable Operations", url: "https://sre.google/resources/practices-and-processes/ai-engineering-reliable-operations/" },
     ],
   },
 
@@ -232,6 +247,11 @@ export const CHAPTERS = [
       "Custom resources live in etcd like everything else. SIG Scalability's envelope is 150'000 objects per resource type (non-Event) and 1.5MB per object, so an operator that creates one object per tenant or bloats `status` eats into it. Cap counts with ResourceQuota.",
       "Run two or more replicas with Lease-based leader election, as kube-controller-manager and kube-scheduler do, so exactly one reconciles while the rest stand by.",
     ],
+    agentic: [
+      "Operators are Kubernetes' model for trustworthy automation: a narrow CRD, deterministic reconcile code you can test, and progress in `status`. LLM agents lack the determinism, so give them the rest of the discipline: scoped RBAC, visible status, and no right to strip finalizers.",
+      "Agent Sandbox is itself an operator: a `Sandbox` CRD (`agents.x-k8s.io/v1beta1`) and controller managing a singleton Pod with stable hostname and storage, plus SandboxTemplate, SandboxClaim and SandboxWarmPool extensions. Evaluate it like any operator: CRD lifecycle, controller RBAC, upgrade path.",
+      "An agent can scaffold a controller fast, but reviewers still check level-triggered correctness: idempotent reconcile, handling `410 Gone`, finalizer cleanup. An agent that clears a stuck Terminating object by removing its finalizer has skipped the cleanup the finalizer guarded.",
+    ],
     quiz: [
       { q: "You apply a CRD and a custom resource, and nothing happens. Why?", a: "A CRD only adds an API type. Something has to watch and act on the objects: the operator (custom controller) must be installed and running." },
       { q: "What does the status subresource change?", a: "Writes to the main resource ignore `status` and writes to `/status` ignore everything but `status`. Users own spec, the controller owns status, and RBAC can grant them separately." },
@@ -250,6 +270,7 @@ export const CHAPTERS = [
       { title: "Kubernetes scalability thresholds", url: "https://github.com/kubernetes/community/blob/master/sig-scalability/configs-and-limits/thresholds.md" },
       { title: "Leases", url: "https://kubernetes.io/docs/concepts/architecture/leases/" },
       { title: "Role based access control good practices", url: "https://kubernetes.io/docs/concepts/security/rbac-good-practices/" },
+      { title: "kubernetes-sigs/agent-sandbox", url: "https://github.com/kubernetes-sigs/agent-sandbox" },
     ],
   },
 
@@ -326,6 +347,11 @@ export const CHAPTERS = [
       "No skipping minors: upgrades go one minor version at a time, control plane nodes one at a time. Fleets of many clusters need a steady cadence or they fall behind the supported window.",
       "For zero-risk upgrades some teams fail over to a complete replica cluster. It avoids downtime but doubles nodes and needs orchestration; PDBs plus disruption-tolerant apps are the cheaper default.",
     ],
+    agentic: [
+      "Agents do the inventory well: reading `apiserver_requested_deprecated_apis` for which APIs are still called, the audit log's `k8s.io/deprecated` annotations for who calls them, and drafting manifest fixes. Model knowledge about removed APIs can be stale, so the evidence is the API server's own metrics and the release notes, not the model's memory.",
+      "A stuck drain invites shortcuts. An agent seeing `429`s from the Eviction API may suggest `--disable-eviction` or deleting Pods, both of which bypass PodDisruptionBudgets; that is an owner's decision, not an agent's.",
+      "Node replacement already runs as automated waves, such as Karpenter's `nodes: 10%` budget. Agent-driven upgrades get the same staged waves and stop conditions; Google's SRE guidance for agents asks for mandatory dry runs and a pause control on agent changes.",
+    ],
     quiz: [
       { q: "Your API server is 1.37. Which kubelet versions are within the skew policy?", a: "1.37 down to 1.34: never newer than the API server, at most three minor versions older." },
       { q: "`kubectl drain` keeps printing that it can't evict a Pod. What's going on?", a: "The eviction would violate a PodDisruptionBudget, so the API server returns 429 and drain retries. Check the PDB and whether the app's other Pods are Ready." },
@@ -342,6 +368,7 @@ export const CHAPTERS = [
       { title: "Deprecated API migration guide", url: "https://kubernetes.io/docs/reference/using-api/deprecation-guide/" },
       { title: "Warning: Helpful Warnings Ahead (blog)", url: "https://kubernetes.io/blog/2020/09/03/warnings/" },
       { title: "Karpenter: disruption", url: "https://karpenter.sh/docs/concepts/disruption/" },
+      { title: "AI in SRE: How Google is Engineering the Future of Reliable Operations", url: "https://sre.google/resources/practices-and-processes/ai-engineering-reliable-operations/" },
     ],
   },
 
@@ -417,6 +444,11 @@ export const CHAPTERS = [
       "Intermittent DNS timeouts across many Pods point at conntrack or CoreDNS capacity, not at one Pod. Check conntrack usage on the node and the CoreDNS replica count; NodeLocal DNSCache is the usual fix.",
       "If `kubectl` itself is slow or rejected, the API server may be shedding load. APF rejections show in `apiserver_flowcontrol_rejected_requests_total`; find the noisy client before retrying in a loop.",
     ],
+    agentic: [
+      "This map is what diagnostic agents automate: K8sGPT runs analyzers over Pods, Services, events and more, and the EKS MCP Server (preview) has read-only tools such as `get_k8s_events` and `get_pod_logs` with `previous`. Confirm the context first, since an agent using your kubeconfig acts on whatever cluster it points to.",
+      "Mid-incident, agents gather evidence read-only and humans decide and act (see Agentic Engineering, Drawn). Google's Cloud Assist investigations (Preview) never use their token to mutate data, and the GKE docs warn answers can be plausible but wrong, so check each finding against its linked source data (or the commands an agent ran) before acting on it.",
+      "Logs and events can hold names, tokens and customer data, and anything an agent reads goes to its model backend. Prefer an approved or local model (K8sGPT recommends local for critical production) and remember its `--anonymize` skips logs and events.",
+    ],
     quiz: [
       { q: "A Pod is Pending and its events report insufficient memory on every node. Two fixes?", a: "Lower the Pod's memory request if it's oversized, or add capacity (more or bigger nodes, or let a node autoscaler do it). Freeing space by removing other Pods also works." },
       { q: "A container restarts with exit code 137 and reason OOMKilled. What happened?", a: "It used more memory than its limit and was killed with SIGKILL (128 + 9). Raise the limit or fix the memory use." },
@@ -440,6 +472,10 @@ export const CHAPTERS = [
       { title: "Node-specific volume limits", url: "https://kubernetes.io/docs/concepts/storage/storage-limits/" },
       { title: "Considerations for large clusters", url: "https://kubernetes.io/docs/setup/best-practices/cluster-large/" },
       { title: "Using NodeLocal DNSCache", url: "https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/" },
+      { title: "K8sGPT README", url: "https://github.com/k8sgpt-ai/k8sgpt" },
+      { title: "Amazon EKS MCP Server tools reference", url: "https://docs.aws.amazon.com/eks/latest/userguide/eks-mcp-tools.html" },
+      { title: "Gemini Cloud Assist investigations", url: "https://docs.cloud.google.com/cloud-assist/investigations" },
+      { title: "GKE: Accelerate diagnosis with Gemini Cloud Assist", url: "https://docs.cloud.google.com/kubernetes-engine/docs/troubleshooting/introduction-gemini" },
     ],
   },
 ];

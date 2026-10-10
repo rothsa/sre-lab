@@ -93,6 +93,11 @@ data "aws_ssm_parameter" "vpc_id" {
       "Many consumers of one producer state turn its outputs into an API that nobody versioned. Publish shared values to SSM, DNS or `tfe_outputs` under stable names, and treat renames like breaking API changes with a deprecation period.",
       "Plan time and API throttling grow with state size. Splitting state and the Stacks option are covered in Terraform, Five Years On; the backend side of that choice is one key, lock and IAM grant per split.",
     ],
+    agentic: [
+      "Agents that run `terraform plan` or read state through a tool need the same `s3:GetObject` on the state key as the runner, and that grant is read access to every plaintext secret in it. Give each agent its own role scoped to one key and one KMS key, never the launching developer's standing credentials, and include it in the unexpected-reader alerts like any new pipeline.",
+      "Whatever an agent reads from state or a saved plan lands in its context, so a `terraform show` run to answer a question can put database passwords into a model provider's transcript. Point agents at published outputs (SSM, `tfe_outputs`) instead of whole state, and avoid pairing state access with untrusted PR text and outbound network, the combination Simon Willison calls the lethal trifecta.",
+      "An agent that hits a lock error tends to reach for `force-unlock` or `-lock=false` as the quick fix. The lock is the only thing stopping two writers, so keep both out of the agent's allowed commands; confirming the holding job is dead and choosing the lock ID stays a human runbook step.",
+    ],
     quiz: [
       { q: "Two CI jobs start `terraform apply` on the same S3 state with `use_lockfile = true`. What happens?", a: "The first creates `<key>.tflock` and proceeds. The second can't get the lock and fails, or keeps retrying until `-lock-timeout` runs out." },
       { q: "Why is giving every team read access to the network state a security problem, even if they only need the VPC ID?", a: "State stores every attribute in plaintext, including secrets. Read access to the state is read access to all of it. Publish the VPC ID to SSM or similar instead." },
@@ -111,6 +116,8 @@ data "aws_ssm_parameter" "vpc_id" {
       { title: "OpenTofu: state and plan encryption", url: "https://opentofu.org/docs/language/state/encryption/" },
       { title: "Terragrunt: state backend", url: "https://docs.terragrunt.com/features/state-backend" },
       { title: "Pulumi: state and backends", url: "https://www.pulumi.com/docs/iac/concepts/state-and-backends/" },
+      { title: "Google SRE: AI in SRE, engineering reliable operations", url: "https://sre.google/resources/practices-and-processes/ai-engineering-reliable-operations/" },
+      { title: "Simon Willison: the lethal trifecta", url: "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" },
     ],
   },
   {
@@ -201,6 +208,11 @@ terraform {
       "Repo layout: HashiCorp's style guide suggests one repository per module so each is versioned and access-controlled on its own. Multi-module repos work with tag prefixes such as `vpc-v2.3.0`, which the HCP Terraform registry can strip.",
       "Ownership: a module with no owner rots while everyone depends on it. Large orgs put each module under CODEOWNERS, publish the private registry as the catalogue, and treat a module's inputs and outputs as a public API.",
     ],
+    agentic: [
+      "Agents now write the upgrade, not just the version bump: across hundreds of consumer repos they add `moved` blocks, rename inputs and fix the failing plan. The consumer's plan is still what a human reads, and the new failure is a plan made empty by the wrong means, such as an added `ignore_changes` or a loosened pin, so auto-merge on an empty plan should also require that only the `version` line changed.",
+      "Module READMEs, variable descriptions and the private registry are now context agents read when choosing a module, and the Terraform MCP server (GA since June 2026) serves registry and private-module data to them. The module owner keeps those descriptions accurate and the catalogue curated, because a vague description now produces misused inputs in many repos at once (see Agentic Engineering, Drawn on context engineering).",
+      "DORA linked AI adoption to larger batches and lower stability in 2024, and in 2025 stability still suffered as change volume rose. An agent jumping a consumer three majors in one PR is the ZenML upgrade pattern at machine speed; the module owner still sets the deprecation window and the one-major-at-a-time rule, and bots and agents follow it.",
+    ],
     quiz: [
       { q: "Why shouldn't a reusable module contain a `provider` block?", a: "Provider configuration belongs to the root. A module with its own provider block can't be used with `count`, `for_each` or `depends_on`, and removing the module also removes the config needed to destroy its resources." },
       { q: "Does `.terraform.lock.hcl` pin module versions?", a: "No, only providers. Pin modules with an exact `version` for registry sources or a tag or commit `ref` for Git sources." },
@@ -220,6 +232,9 @@ terraform {
       { title: "Renovate: Terraform manager", url: "https://docs.renovatebot.com/modules/manager/terraform/" },
       { title: "AWS CDK: constructs", url: "https://docs.aws.amazon.com/cdk/v2/guide/constructs.html" },
       { title: "Crossplane: compositions", url: "https://docs.crossplane.io/latest/composition/compositions/" },
+      { title: "Terraform MCP server overview", url: "https://developer.hashicorp.com/terraform/mcp-server" },
+      { title: "DORA: impact of generative AI in software development", url: "https://dora.dev/ai/gen-ai-report/report/" },
+      { title: "Google Cloud: announcing the 2025 DORA report", url: "https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report" },
     ],
   },
   {
@@ -324,6 +339,11 @@ inputs = {
       "Version skew: when prod lags dev by many module versions, each prod promotion becomes a large, risky jump. Scan the repo for the version each environment pins, alert when skew passes a set age, and promote small increments often.",
       "Scheduled drift plans across thousands of roots compete for API quota. Stagger them per account and region, and look at roots with exit code 2 first.",
     ],
+    agentic: [
+      "Promotion stays a one-line `ref` change per environment, which is a good task to hand an agent. The order and soak time between staging and prod belong to the pipeline, not the agent; the failure mode is an agent making a prod plan pass by editing prod's directory, so the code diverges and staging stops testing anything.",
+      "An agent in a terminal inherits whatever `AWS_PROFILE` or workspace is selected, the same wrong-context trap as the PSF `kubectl` incident. Give agent identities credentials only for sandbox and dev accounts, never a developer's standing prod access, so prod is reachable only through the pipeline's OIDC role.",
+      "With Account Factory for Terraform an account request is a Git commit, so an agent can draft one. The human-reviewed part is the target OU and baseline customizations, because the guardrails attached there bound every identity that later runs in the account, agents included.",
+    ],
     quiz: [
       { q: "Why does HashiCorp say CLI workspaces aren't suitable for separating dev and prod?", a: "All workspaces of a configuration share one backend and whatever credentials you run with, so there is no separate access control. Environments need different credentials and isolation." },
       { q: "How do you promote a change from staging to prod in a directory-per-environment layout?", a: "Open a PR that sets prod's module version (or Terragrunt `?ref=`) to the version staging already runs, review the plan, and apply it from the pipeline." },
@@ -344,6 +364,7 @@ inputs = {
       { title: "AWS: Account Factory for Terraform overview", url: "https://docs.aws.amazon.com/controltower/latest/userguide/aft-overview.html" },
       { title: "AWS: organizing your environment using multiple accounts", url: "https://docs.aws.amazon.com/whitepapers/latest/organizing-your-aws-environment/organizing-your-aws-environment.html" },
       { title: "Pulumi: stacks", url: "https://www.pulumi.com/docs/iac/concepts/stacks/" },
+      { title: "Google SRE: AI in SRE, engineering reliable operations", url: "https://sre.google/resources/practices-and-processes/ai-engineering-reliable-operations/" },
     ],
   },
   {
@@ -438,6 +459,11 @@ deny contains msg if {
       "Policy across hundreds of repos lives in its own versioned repo. Roll new rules out as advisory, then soft-mandatory (overridable with a recorded override), then hard-mandatory, so a new rule doesn't block every team on day one.",
       "Humans with console write access bypass all of this, as CircleCI found when a role could edit a WAF rule outside Terraform. Remove write access for people and run scheduled drift plans to catch what slips through.",
     ],
+    agentic: [
+      "Agent identities slot into the plan/apply split: an agent may push a branch, open the PR and read the plan comment, but the OIDC trust policy's `sub` should only ever give its branches the plan role. Copilot cloud agent, for example, pushes only to its own `copilot/` branch (or the PR branch it was asked to update), cannot approve or merge, and the person who asked for the PR cannot approve it.",
+      "In Atlantis, once `apply_requirements` are met, anyone who can comment on the PR can run `atlantis apply`, and that includes an agent bot with comment rights. Make `mergeable` with required code-owner review the real gate, and do not count an AI review as approval; Copilot code review, for one, does not count toward required approvals by default.",
+      "Policy as code is the guardrail that scales to agent volume: Conftest or Sentinel rules on `resource_changes` check the fortieth agent PR of the day as strictly as the first, when human reviewers start to rubber-stamp. Keep the policy repo under its own CODEOWNERS and agents out of the `approve_policies` owners, or an agent can relax a rule in the same change it is checked against.",
+    ],
     quiz: [
       { q: "Why apply a saved plan file instead of running `terraform apply` again after review?", a: "A fresh apply re-plans against the current state and code, which can differ from what was reviewed. A saved plan applies exactly the reviewed actions, and Terraform invalidates it if another apply changes the state first." },
       { q: "How does a CI pipeline get AWS credentials without storing access keys?", a: "OIDC: the CI provider issues a signed token for the job, and AWS STS exchanges it for temporary role credentials. The role's trust policy restricts which repo, branch or environment may assume it." },
@@ -463,6 +489,8 @@ deny contains msg if {
       { title: "Infracost docs", url: "https://www.infracost.io/docs/" },
       { title: "AWS CloudFormation: change sets", url: "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-changesets.html" },
       { title: "Crossplane: managed resources", url: "https://docs.crossplane.io/latest/managed-resources/managed-resources/" },
+      { title: "GitHub: risks and mitigations for Copilot cloud agent", url: "https://docs.github.com/en/copilot/concepts/agents/cloud-agent/risks-and-mitigations" },
+      { title: "GitHub: Copilot code review", url: "https://docs.github.com/en/copilot/concepts/agents/code-review" },
     ],
   },
 ];

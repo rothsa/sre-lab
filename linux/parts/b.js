@@ -79,6 +79,11 @@ export const CHAPTERS = [
       "On transmit, XPS maps CPUs to TX queues to cut queue lock contention and cache misses on completion.",
       "Latency-critical hosts trade CPU for latency with busy polling. `busy_read` is 0 by default and the docs recommend 50 for global use.",
     ],
+    agentic: [
+      "Drop counters are hex, per CPU, cumulative and partly driver-specific (`/proc/net/softnet_stat`, `ethtool -S`), which makes them easy to summarize wrongly. Have the agent take two samples and report per-CPU deltas, and spot-check one counter yourself.",
+      "Diagnosis is safe to delegate; tuning is not. `ethtool -G`, `-L` and `-C`, IRQ affinity and `rps_cpus` change the live data path, and a bad value on a remote NIC can cut the session you'd use to undo it, so those stay human-approved and go to one host first.",
+      "Make the agent read `/proc/sys/net/core/*` and `ethtool -k` on the box rather than recite defaults: queue counts, offloads and busy-poll settings vary by kernel, driver and NIC, and a remembered value is a hypothesis.",
+    ],
     quiz: [
       { q: "Where can an incoming packet be dropped before the app sees it, and which counter shows each?", a: "At the NIC when the RX ring is full (`ethtool -S`, `rx_missed_errors`); at a CPU's backlog past `netdev_max_backlog` (column 2 of `/proc/net/softnet_stat`); by a netfilter rule; and at the socket when the receive buffer overflows (`nstat`: `TcpExtPruneCalled`, `TcpExtRcvPruned`)." },
       { q: "What is NAPI, and why does it exist?", a: "The receive model where the interrupt only schedules a poll. The driver then pulls packets off the ring in budgeted batches from softirq context while the queue's interrupt stays masked. Under load it replaces one interrupt per packet with polling, so the CPU doesn't drown in interrupts." },
@@ -164,6 +169,11 @@ export const CHAPTERS = [
       "Traffic that needs no NAT or stateful filtering (a high-rate DNS server or load balancer VIP) can bypass tracking with `-t raw ... -j CT --notrack`.",
       "kube-proxy in iptables mode writes rules per Service and per endpoint: tens of thousands of rules in large clusters, slow to update. Raise `minSyncPeriod` to batch changes, or use nftables mode (kernel 5.13+), which handles endpoint changes faster.",
     ],
+    agentic: [
+      "Agents are good at tracing large rule sets, such as thousands of kube-proxy rules in `iptables-save` or `nft list ruleset`. The human still confirms which backend is live (`iptables -V`, legacy vs nft), because an agent reading the wrong one will report a missing rule that exists.",
+      "Keep live fixes human: `conntrack -D`, flushing a chain or changing `nf_conntrack_max` affects every flow on the node, and a misplaced DROP in INPUT can cut your own SSH. The agent supplies the evidence (`conntrack -S` deltas, `nf_conntrack_count` against the max); the change goes through config management.",
+      "`conntrack -L` lists the addresses and ports of every flow on a NAT host. Pasting it into a hosted model sends customer IPs off the box (OWASP LLM02:2025 Sensitive Information Disclosure), so summarize locally with `conntrack -C` and `-S` or use a model your data policy allows.",
+    ],
     quiz: [
       { q: "Why is DNAT done in PREROUTING and SNAT in POSTROUTING?", a: "The routing decision sits between them. DNAT must change the destination before routing, so the packet is routed to the new address. SNAT changes the source after routing, once the outgoing interface (and, for MASQUERADE, its address) is known." },
       { q: "A node logs `nf_conntrack: table full, dropping packet`. What do you check and change?", a: "Compare `nf_conntrack_count` with `nf_conntrack_max`, check `conntrack -S` for drops, and see what fills the table with `conntrack -L`: often many short connections or long timeouts. Fix the churn, raise the max and the bucket count with memory in mind, or exempt traffic with `--notrack` in `raw`." },
@@ -178,6 +188,7 @@ export const CHAPTERS = [
       { title: "IP sysctl", url: "https://docs.kernel.org/networking/ip-sysctl.html" },
       { title: "Virtual IPs and Service proxies", url: "https://kubernetes.io/docs/reference/networking/virtual-ips/" },
       { title: "Using NodeLocal DNSCache in Kubernetes clusters", url: "https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/" },
+      { title: "OWASP Top 10 for LLM Applications 2025", url: "https://genai.owasp.org/llm-top-10/" },
     ],
   },
 
@@ -245,6 +256,11 @@ export const CHAPTERS = [
       "SYN bursts fill the SYN queue (`tcp_max_syn_backlog`, at least 128 and scaled with memory). `tcp_syncookies` defaults to 1, so overflow triggers cookies; watch `TcpExtSyncookiesSent`.",
       "Socket buffers add up across 100k sockets. `tcp_rmem` max defaults to between 131072 bytes and 32MB depending on RAM, and `tcp_mem` (in pages, set at boot) caps all TCP memory, so many-connection hosts keep per-socket buffers small.",
       "On a busy client, `tcp_tw_reuse=1` enables TIME_WAIT reuse for all outbound connections, not just loopback; `tcp_max_tw_buckets` caps how many TIME_WAIT sockets the system holds.",
+    ],
+    agentic: [
+      "TCP defaults changed across kernels: `somaxconn` is 4096 since 5.4 (128 before), `tcp_tw_recycle` was removed in 4.12, and `tcp_tw_reuse` defaults to 2. Older tuning advice repeats the old values, so have the agent `sysctl` the live ones and reject any suggestion to enable `tcp_tw_recycle`.",
+      "Agent hosts are busy TCP clients: model API calls, MCP servers and parallel fetches each hold sockets and file descriptors. A long session that doesn't reuse connections fails like any chatty client, with `EMFILE` at `ulimit -n` or `EADDRNOTAVAIL` toward one endpoint; `ss -s` on the agent host shows it.",
+      "`ss -ltn`, `ss -ti` and `nstat` are safe to hand to an agent. `ss -K` closes sockets and `sysctl -w` changes TCP for the whole host, so those belong behind human approval, however confident the explanation.",
     ],
     quiz: [
       { q: "What's the difference between the SYN queue and the accept queue?", a: "The SYN queue holds half-open requests (SYN received, SYN-ACK sent). With SYN cookies on (the default) it is bounded by the listen backlog and the server falls back to cookies past that; `tcp_max_syn_backlog` only applies when cookies are off. The accept queue holds connections whose handshake finished, waiting for `accept()`, limited by the `listen()` backlog capped at `somaxconn`." },
@@ -323,6 +339,11 @@ export const CHAPTERS = [
       "Not everything is per namespace: `nf_conntrack_buckets` can only be written from the initial namespace, so conntrack sizing is a node setting shared by every Pod on it.",
       "On large flat L2 networks, the neighbour table caps at `gc_thresh3` (default 1024 entries). Nodes or routers with more neighbours raise `gc_thresh1/2/3`.",
     ],
+    agentic: [
+      "Where the agent ran decides what it saw. Claude Code's Linux and WSL2 sandbox runs commands in a separate network namespace with no direct route out, so `ip addr`, `ss` or `nstat` inside it describe the sandbox, and `Network is unreachable` or a name resolution failure can be the sandbox, not your network.",
+      "The same building blocks isolate agents: a namespace with no route out plus a proxy that checks hostnames against an allowlist cuts the exfiltration leg of the lethal trifecta. Knowing veth, routes and NAT lets you check what a sandbox can actually reach instead of trusting its config.",
+      "`nsenter -t PID -n` needs root on the node, which also reaches every other Pod's namespace there. Keep that kind of access with a human or a narrowly scoped debug path; an agent with node root is the excessive-permission case OWASP lists under LLM06:2025 Excessive Agency.",
+    ],
     quiz: [
       { q: "What does a network namespace isolate?", a: "Network devices, the IPv4 and IPv6 stacks, routing tables, firewall rules, port numbers, and per-namespace files such as `/proc/net` and `/proc/sys/net`. A process inside sees only that namespace's interfaces." },
       { q: "In a bridge setup, how does a packet get from a container to the Internet?", a: "Out the container's veth end, into the host end on the bridge, up into the host stack via the bridge's gateway IP, forwarded (with `ip_forward=1`) toward eth0, and source-NATed by MASQUERADE in POSTROUTING. Conntrack reverses the NAT on the reply." },
@@ -339,6 +360,9 @@ export const CHAPTERS = [
       { title: "IP sysctl", url: "https://docs.kernel.org/networking/ip-sysctl.html" },
       { title: "Considerations for large clusters", url: "https://kubernetes.io/docs/setup/best-practices/cluster-large/" },
       { title: "Netfilter conntrack sysctl", url: "https://docs.kernel.org/networking/nf_conntrack-sysctl.html" },
+      { title: "Claude Code: Sandboxing", url: "https://code.claude.com/docs/en/sandboxing" },
+      { title: "Simon Willison: The lethal trifecta for AI agents", url: "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" },
+      { title: "OWASP Top 10 for LLM Applications 2025", url: "https://genai.owasp.org/llm-top-10/" },
     ],
   },
 ];

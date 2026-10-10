@@ -212,6 +212,11 @@ bad.sort.each { |owner, pods| puts "#{owner}: #{pods.size} bad, e.g. #{pods.firs
       "Polling from many cron jobs multiplies the full-list cost. Long-running tools should LIST once and then WATCH: client-go's `SharedInformerFactory` shares one cache between controllers and handles relists. That, plus small static binaries, is why most controllers and operators are written in Go.",
       "client-go throttles itself (default QPS 5, burst 10), so a script that GETs each ReplicaSet to find its Deployment crawls at scale. One LIST of ReplicaSets joined in memory costs one request.",
     ],
+    agentic: [
+      "Wrong cluster gets easier to hit: an agent in your terminal inherits the kubeconfig's current-context. Scripts should take an explicit `--context`, and agent sessions should get a kubeconfig whose ServiceAccount has only `list` on `pods`, so a mistaken target can read but not change anything.",
+      "A generated script can read a field that doesn't exist, such as `containerStatus` for `containerStatuses`: kubeclient's open structs return nil and the report says nothing is unhealthy. Go's compiler rejects it, one reason typed clients make agent output cheaper to review; for Python and Ruby, test against a cluster with a known crash-looping Pod before trusting an empty result.",
+      "Tools such as kubectl-ai (its README says it is not an officially supported Google product) turn questions into kubectl calls and ask before resource-modifying commands by default. They make the same LIST calls this chapter costs out, so for a one-off the no-code answer is still `kubectl get pods -A -o json | jq`, run read-only.",
+    ],
     quiz: [
       { q: "Why does the Python client take `_continue` instead of `continue`, and `restart_count` instead of `restartCount`?", a: "The generator maps API names to valid, idiomatic Python identifiers: `continue` is a keyword, and fields become snake_case. Ruby's kubeclient keeps the API's own names; Go uses exported CamelCase struct fields with JSON tags." },
       { q: "Your Go report panics with a nil pointer dereference on some Pods but not others. Where do you look first?", a: "Pointer fields in the API types, such as `State.Waiting`, `State.Terminated` or `OwnerReference.Controller`. They are nil unless set. Slices like `ContainerStatuses` are safe to range over even when nil." },
@@ -232,6 +237,7 @@ bad.sort.each { |owner, pods| puts "#{owner}: #{pods.size} bad, e.g. #{pods.firs
       { title: "Field selectors", url: "https://kubernetes.io/docs/concepts/overview/working-with-objects/field-selectors/" },
       { title: "API Priority and Fairness", url: "https://kubernetes.io/docs/concepts/cluster-administration/flow-control/" },
       { title: "Deployments (ReplicaSet naming, pod-template-hash)", url: "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/" },
+      { title: "kubectl-ai README", url: "https://github.com/GoogleCloudPlatform/kubectl-ai" },
     ],
   },
 
@@ -403,6 +409,11 @@ puts format("error ratio %.4f: OK", ratio)` },
       "Long-term stores enforce per-tenant query limits (Mimir: `max_fetched_series_per_query`, `max_fetched_chunk_bytes_per_query`; off by default, set by operators). A query that hits a limit fails, and the gate must treat that as unknown and block, not pass.",
       "Range queries cost series × (range ÷ step). A 30-day SLO report at a 15-second step is far more points than any chart needs; use a coarser `step` or the recording rule's series.",
       "Fleet-wide CI images: the Go gate (or `promtool`) is one static binary; the Python version needs an interpreter plus `requests` in every image; the Ruby version needs only Ruby, since it uses the standard library.",
+    ],
+    agentic: [
+      "An agent writes the HTTP call and a plausible PromQL ratio quickly, but it doesn't know your metric or label names. A misspelled name returns an empty result, not an error, and with `or vector(0)` added the gate reads 0% errors and passes; run the expression in the Prometheus UI against real series and make empty fail the gate unless you decided otherwise.",
+      "The language traps are still the reviewer's to know: Ruby's `\"NaN\".to_f` turning 0/0 into a perfect score, no default timeout in `requests`, `os.Exit` skipping `defer cancel()`. Ask for tests that feed recorded responses with NaN, an empty result and +Inf, rather than trusting a run against a healthy Prometheus.",
+      "The no-code answer often wins: `promtool query instant` plus a threshold, or a recording rule the gate reads, leaves less generated code to get wrong and less to review. The fundamentals of the query still decide whether the gate is right; an agent only gets you to a draft faster.",
     ],
     quiz: [
       { q: "The query returns `\"result\": []`. Is the error ratio zero?", a: "No. No series matched: no traffic, a label typo, or a renamed metric. Treat it as unknown. If \"no 5xx series\" should mean zero, add `or vector(0)` to the numerator." },
@@ -627,6 +638,11 @@ exit(problems.empty? ? 0 : 1)` },
       "Thread cost: Python and Ruby threads are OS threads, each reserving a stack of a megabyte or more and scheduled by the kernel, while goroutines start with a stack of a few kilobytes. That is why Go fan-outs stretch to thousands of concurrent checks; the real ceiling is still fds and the targets.",
       "Recurring checks don't belong in a script: blackbox_exporter's multi-target `/probe?target=` lets Prometheus spread probes across scrapes, and an alert on `probe_ssl_earliest_cert_expiry - time() < 14 * 86400` replaces the cron job.",
     ],
+    agentic: [
+      "Check that the concurrency primitive matches the work: Python threads are fine here because the GIL is released during socket waits, but CPU-heavy work needs processes, and Ruby threads must rescue per item or one exception leaves the rest of the queue unchecked. The model of the runtime decides this, not the syntax of the generated code.",
+      "In Go, `errgroup.WithContext` looks like the idiomatic choice and cancels every remaining check after the first failure. Test any generated sweep with one dead host in the list: a correct version still reports the other 499, and one with no `SetLimit` shows up as \"too many open files\" at scale.",
+      "Agents make writing the script cheap, not running and owning it. For a recurring check the answer is still blackbox_exporter plus an alert on `probe_ssl_earliest_cert_expiry`, with cert-manager renewing what it issues.",
+    ],
     quiz: [
       { q: "Why is a thread pool fine for this in Python despite the GIL?", a: "The work is waiting on the network. CPython releases the GIL during blocking socket I/O, so 50 threads overlap their waits. Only CPU-bound Python code is serialized." },
       { q: "You used `errgroup.WithContext` and most hosts report `context canceled`. Why?", a: "The first goroutine that returned an error cancelled the shared context, so in-flight and later checks were aborted. Return nil and record errors per host, or use the zero-value Group." },
@@ -847,6 +863,11 @@ run ->(_env) { [404, { "content-type" => "text/plain" }, ["try /metrics\n"]] }` 
       "Cardinality: each label combination is a series. 50 accounts times 5 quota types is fine; a per-user label across a million users is not.",
       "Process model: Python under gunicorn needs multiprocess mode, and Ruby under clustered Puma needs `DirectFileStore`. A Go exporter is one process with goroutines, which avoids both and is one reason most exporters are written in Go.",
     ],
+    agentic: [
+      "Search the exporters list before asking an agent for one: a generated exporter works in minutes, but an existing one is maintained by someone else. If you do write it, review the Prometheus specifics rather than the syntax: fresh const metrics per scrape, a bounded label set, a separate `vendorapi_up`, and label values in the order the `Desc` declared them.",
+      "LLM APIs are now one of the quotas worth watching: Anthropic returns `anthropic-ratelimit-*-remaining` headers on each response, so the client making calls can record them as gauges and alert before agents hit a 429. Keep labels to model and workspace, never prompt or user IDs; OTel's GenAI token counters (`gen_ai.client.inference.usage.*`, still Development status) track consumption alongside them, but not the remaining headroom the headers report.",
+      "A generated exporter that passes one local scrape can still fail in production. Test it under the real process model (gunicorn multiprocess mode, clustered Puma with `DirectFileStore`) and with two overlapping scrapes, which is where shared-gauge races and stale label values show up.",
+    ],
     quiz: [
       { q: "Why should a fetch-on-scrape exporter create new metrics in each `collect`/`Collect` instead of updating global gauges?", a: "Overlapping scrapes would race on shared state, and label values that vanished upstream would keep being exported. Fresh const metrics show exactly what the upstream returned this time." },
       { q: "`up{job=\"vendorapi\"}` is 1, but the quota panel is empty. What happened?", a: "The exporter answered, so `up` is 1, but its call to the vendor failed. That is what `vendorapi_up` is for: alert on it as well as on `up`." },
@@ -864,6 +885,8 @@ run ->(_env) { [404, { "content-type" => "text/plain" }, ["try /metrics\n"]] }` 
       { title: "client_python: multiprocess mode", url: "https://prometheus.github.io/client_python/multiprocess/" },
       { title: "client_golang prometheus package (Collector, NewDesc, MustNewConstMetric)", url: "https://pkg.go.dev/github.com/prometheus/client_golang/prometheus" },
       { title: "client_ruby README", url: "https://github.com/prometheus/client_ruby/blob/main/README.md" },
+      { title: "Claude API: rate limits (response headers)", url: "https://platform.claude.com/docs/en/api/rate-limits" },
+      { title: "OpenTelemetry GenAI token metrics", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-token-metrics.md" },
     ],
   },
 ];

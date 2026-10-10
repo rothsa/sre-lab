@@ -70,6 +70,11 @@ mark { background: var(--mark); color: var(--bone); border-radius: 2px; padding:
 .monster .btn { align-self: flex-start; margin-top: auto; }
 .why { color: var(--fg); max-width: 75ch; }
 .method { color: var(--muted); font-size: 14px; max-width: 80ch; }
+.monster.agentic { margin-top: 14px; }
+.monster.agentic ul { max-width: 80ch; gap: 10px; font-size: 15px; }
+.monster.agentic h3.src { font-family: var(--font-type); font-weight: 400; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--moss); margin: 6px 0 0; }
+.monster.agentic ul.sources { gap: 4px; font-size: 13.5px; }
+.monster.agentic b { color: var(--bone); }
 footer { margin-top: 40px; border-top: 1px solid var(--rule); padding-top: 16px; color: var(--muted); font-size: 14px; }
 footer p { margin: 0 0 8px; }
 </style>
@@ -97,6 +102,26 @@ footer p { margin: 0 0 8px; }
 
   <h2>What's missing</h2>
   <p class="why">Public postmortems lean toward availability incidents a company is comfortable telling: a clever root cause, a fast fix, lessons learned. Security incidents, often the costliest, are published less often, later, and with less detail, because lawyers, regulators and disclosure rules shape what gets said. This collection includes a set of credential leaks and supply-chain compromises, but like anything built from public writing, it underrepresents the failures companies would rather not discuss.</p>
+
+  <section aria-labelledby="agentic-h">
+    <h2 id="agentic-h">What changes in the agentic era</h2>
+    <p class="sub">AI now searches, summarizes and drafts incident write-ups. The evidence is still the original.</p>
+    <div class="monster agentic">
+      <ul>
+        <li><b>Search finds, the source proves.</b> The search on this page (embeddings plus keyword ranking) matches a symptom to similar cases when you don't know the right words; it doesn't read or reason about them. Treat its results, and any AI summary of a postmortem, as a pointer: timings, contributing factors and caveats are exactly what summaries flatten, so read the company's own write-up before you cite it.</li>
+        <li><b>AI postmortems are drafts.</b> incident.io, FireHydrant and Rootly now draft retrospectives from the timeline, chat and call transcripts. incident.io calls the result &ldquo;a starting point, not a finished document&rdquo;, and FireHydrant says drafts should be validated by your team. What's left for people is the valuable part: checking the timeline against evidence, keeping several contributing factors instead of one tidy root cause, and owning the action items.</li>
+        <li><b>Agents learn from incidents too.</b> Google's SRE team evaluates its incident agents nightly against a rolling set of recent real incidents, and PagerDuty's SRE agent recalls similar past incidents for a service. Patterns like the ones above are useful input, but a past incident is a hypothesis for yours, not a diagnosis. Mid-incident, an agent gathers evidence from your own system read-only, and a human decides and acts.</li>
+      </ul>
+      <h3 class="src">Sources</h3>
+      <ul class="sources">
+        <li><a href="https://docs.incident.io/post-incident/postmortem-ai">incident.io: AI-native post-mortems</a></li>
+        <li><a href="https://docs.firehydrant.com/docs/ai-drafted-retrospectives">FireHydrant: AI-drafted retrospectives</a></li>
+        <li><a href="https://docs.rootly.com/retrospectives/retrospectives">Rootly: Retrospectives</a></li>
+        <li><a href="https://sre.google/resources/practices-and-processes/ai-engineering-reliable-operations/">Google SRE: AI in SRE, engineering reliable operations</a></li>
+        <li><a href="https://support.pagerduty.com/main/docs/sre-agent">PagerDuty: SRE Agent</a></li>
+      </ul>
+    </div>
+  </section>
 
   <footer>
     <p class="method"><b>How it works.</b> Each case file holds facts and a summary written for this page from the company's own postmortem; follow the links to read the originals. Cases were found through <a href="https://github.com/danluu/post-mortems">danluu/post-mortems</a>. Search combines a small embedding model (<a href="https://huggingface.co/Xenova/all-MiniLM-L6-v2">all-MiniLM-L6-v2</a> via <a href="https://huggingface.co/docs/transformers.js">Transformers.js</a>, which matches by meaning) with BM25 keyword ranking, merged with reciprocal rank fusion. It runs entirely in your browser after a one-time 23&nbsp;MB download; nothing you type leaves your device. Monster groupings were proposed by the same model and confirmed by hand; each warding comes from what the cited companies changed afterwards.</p>

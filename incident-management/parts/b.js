@@ -65,6 +65,11 @@ export const CHAPTERS = [
       "Small teams cannot staff a rotation alone (the SRE book wants at least 8 for one site). Related teams act as each other's secondary, or services move onto a shared platform rotation.",
       "The paging path itself fails during big upstream outages, exactly when it is needed. Monitor delivery for each notification type, not just aggregate traffic, as Datadog did after its 2016 notification incident.",
     ],
+    agentic: [
+      "An agent that investigates every alert does not reduce pages. Incidents per shift and the 2-per-12-hour budget only move when the alert review fixes, demotes or deletes the alert; an agent summary on a non-actionable page adds token cost and reading time to the noise.",
+      "Pages still go to humans. An agent can gather evidence before the primary acks, but the primary owns the response, and the handoff note now records what the agent ran and concluded so the next shift verifies it rather than repeating it.",
+      "Agent analysis is only as good as the alert payload: PagerDuty's SRE Agent reads only the first 2,000 characters of `custom_details` and notes. Put the service, symptom and runbook link up front, the same discipline that makes a page actionable for a person.",
+    ],
     quiz: [
       { q: "Why does Google set the ceiling at 2 incidents per 12-hour shift?", a: "Handling an incident, with root cause, remediation and postmortem, takes about 6 hours on average, so two fill a 12-hour shift. More than that and follow-up work is skipped and pages repeat." },
       { q: "A disk-usage alert pages every night and the on-call always just clears a cache. What do you do?", a: "It is a cause-based, repeat page with a known fix. Automate the cleanup or fix the growth, and replace the page with a symptom-based alert or a business-hours ticket." },
@@ -78,6 +83,8 @@ export const CHAPTERS = [
       { title: "Datadog On-Call", url: "https://docs.datadoghq.com/service_management/on-call/" },
       { title: "Datadog Software Catalog: ownership", url: "https://docs.datadoghq.com/internal_developer_portal/software_catalog/set_up/ownership/" },
       { title: "PagerDuty: alert fatigue", url: "https://www.pagerduty.com/resources/digital-operations/learn/alert-fatigue/" },
+      { title: "PagerDuty: SRE Agent", url: "https://support.pagerduty.com/main/docs/sre-agent" },
+      { title: "Datadog Bits AI SRE: Investigate issues", url: "https://docs.datadoghq.com/bits_ai/bits_ai_sre/investigate_issues/" },
     ],
   },
   {
@@ -143,6 +150,11 @@ export const CHAPTERS = [
       "Blame creeps back on high-visibility incidents, often from leadership. The Workbook reviews those write-ups for blameful language and redirects to what warning signs existed and why they were dismissed.",
       "Building timelines by hand across many tools is slow. Incident tooling can fill in roles, severity, detection method and timeline entries from chat and paging data.",
     ],
+    agentic: [
+      "AI now drafts timelines and review sections from chat, call transcripts and investigation findings; incident.io calls the result \"a starting point, not a finished document\". The investigator checks each event against the evidence and puts back the false starts a tidy draft tends to drop.",
+      "Check the method, not only the facts: FireHydrant's drafts apply 5 Whys to contributing factors, which Allspaw warns collapses into one chain. Rewrite toward several factors, and keep interviews and calibration human, since a draft cannot ask how it made sense at the time.",
+      "When an agent caused or contributed, stay blameless and systemic: what was it allowed to do, what context did it have, who approved it. OWASP's Excessive Agency names the usual causes (too much functionality, permission or autonomy); \"the AI did it\" is no more a root cause than \"human error\".",
+    ],
     quiz: [
       { q: "What is the difference between the trigger and the root cause in the Workbook's good postmortem example?", a: "The trigger is the event that started it (a manual workflow rerun). The root cause is the latent flaw that made it dangerous (an input-validation bug that made the decommission procedure non-idempotent, so an empty list targeted every machine). Other contributing factors are listed too." },
       { q: "Why should the investigator not be a responder or the responders' manager?", a: "A responder is biased by their own view of events, and a manager's presence makes people hold back mistakes for fear of reprimand. Either way the account gets thinner." },
@@ -159,6 +171,9 @@ export const CHAPTERS = [
       { title: "Howie guide: Distribute", url: "https://howie-guide.pagerduty.com/distribute/" },
       { title: "John Allspaw: The Infinite Hows", url: "https://www.kitchensoap.com/2014/11/14/the-infinite-hows-or-the-dangers-of-the-five-whys/" },
       { title: "incident.io: Principles for learning and review", url: "https://incident.io/guide/learn-and-improve/principles-for-learning-and-review" },
+      { title: "incident.io: AI-native post-mortems", url: "https://docs.incident.io/post-incident/postmortem-ai" },
+      { title: "FireHydrant: AI-drafted retrospectives", url: "https://docs.firehydrant.com/docs/ai-drafted-retrospectives" },
+      { title: "OWASP LLM06:2025 Excessive Agency", url: "https://genai.owasp.org/llmrisk/llm062025-excessive-agency/" },
     ],
   },
   {
@@ -222,6 +237,11 @@ export const CHAPTERS = [
       "One-off reviews miss systemic problems. Tag reviews with metadata (services, triggers, detection method) so you can query across hundreds of them and publish periodic theme reports.",
       "Org-wide themes outgrow team backlogs. They become funded cross-team programs, like Cloudflare's Code Orange work, which a second Portland power loss in 2024 put to the test.",
     ],
+    agentic: [
+      "Agents can draft items and even open the PR for one, but each item still has one human owner. An agent can be the assignee for the work; a person owns the outcome, reviews the change and verifies the measurable end state.",
+      "Agent-drafted lists lean toward volume. Apply the same gate (specific, one owner, priority, measurable end) and keep only the top priorities, or the tracker fills with plausible low-value tickets. DORA 2025 ties AI's link to lower delivery stability to more change without strong controls.",
+      "If an agent contributed, the fix is a guard on the agent, not a prompt tweak: a narrower tool set, a read-only identity, human approval for high-impact actions, as in OWASP LLM06:2025. Rewording the prompt is the agent version of \"be more careful\".",
+    ],
     quiz: [
       { q: "Rewrite \"improve monitoring of notifications\" as a good action item.", a: "Something like: \"Add a monitor on delivery rate for each notification type that pages when any one drops; owner: one named engineer; P1; done when a test drop pages.\" Datadog added per-type monitors after its 2016 incident." },
       { q: "Repeat incidents are rising while closure rate looks fine. What could explain it?", a: "The items being closed are the wrong ones: easy mitigations rather than fixes to the contributing factors, or items closed without checking that they worked." },
@@ -235,6 +255,8 @@ export const CHAPTERS = [
       { title: "Davidovič: Incident Metrics in SRE", url: "https://sre.google/resources/practices-and-processes/incident-metrics-in-sre/" },
       { title: "John Allspaw: Moving Past Shallow Incident Data", url: "https://www.adaptivecapacitylabs.com/blog/2018/03/23/moving-past-shallow-incident-data/" },
       { title: "incident.io: Principles for learning and review", url: "https://incident.io/guide/learn-and-improve/principles-for-learning-and-review" },
+      { title: "OWASP LLM06:2025 Excessive Agency", url: "https://genai.owasp.org/llmrisk/llm062025-excessive-agency/" },
+      { title: "Google Cloud: Announcing the 2025 DORA report", url: "https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report" },
     ],
   },
   {
@@ -297,6 +319,11 @@ export const CHAPTERS = [
       "Drills across many teams collide with real incidents and with each other. Schedule them centrally, notify the affected on-callers, and take the pager for anything that will page.",
       "Training dozens of new on-callers a quarter by hand does not scale. Standard learning checklists, recorded talks and a curated set of teachable postmortems reuse the effort.",
     ],
+    agentic: [
+      "A readiness review for an AI feature adds model-provider checks: Claude's API returns 529 `overloaded_error` under load, and a usage-tier spend-cap 429 has no `retry-after`. Ask for a fallback, token budgets and GenAI telemetry, whose OpenTelemetry conventions are still in Development status.",
+      "Before an AI SRE agent joins on-call, give it a Wheel of Misfortune: replay past incidents with known causes and grade its evidence. Google's AI in SRE paper runs nightly evaluations against recent real incidents; add a scorecard rule that agent identities are read-only.",
+      "Game days should cover the agent too: what happens when it is wrong, when its tools time out, when a log line carries injected instructions. With private data, untrusted content and a way to send data out (the lethal trifecta), remove one leg rather than trust a filter.",
+    ],
     quiz: [
       { q: "What does a Wheel of Misfortune session practice that a tabletop exercise does not?", a: "Technical diagnosis: on-callers say which dashboards and commands they would use and the game master feeds back what they would see. A tabletop focuses on the incident process and roles." },
       { q: "Name three areas a production readiness review checks.", a: "Any three of: architecture and dependencies, instrumentation and monitoring, emergency response, capacity planning, change management, performance." },
@@ -312,6 +339,10 @@ export const CHAPTERS = [
       { title: "incident.io: Tabletop exercises", url: "https://incident.io/guide/learn-and-improve/table-top-exercises" },
       { title: "Datadog Scorecards", url: "https://docs.datadoghq.com/internal_developer_portal/scorecards/" },
       { title: "PagerDuty Incident Response: Being On-Call", url: "https://response.pagerduty.com/oncall/being_oncall/" },
+      { title: "Claude API: Errors", url: "https://platform.claude.com/docs/en/api/errors" },
+      { title: "OpenTelemetry: GenAI semantic conventions", url: "https://github.com/open-telemetry/semantic-conventions-genai" },
+      { title: "Google SRE: AI in SRE", url: "https://sre.google/resources/practices-and-processes/ai-engineering-reliable-operations/" },
+      { title: "Simon Willison: The lethal trifecta for AI agents", url: "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" },
     ],
   },
 ];

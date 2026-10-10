@@ -59,6 +59,11 @@ export const CHAPTERS = [
       "One shared dependency fails and a dozen teams each open a SEV3 for their own symptom. Fix: a central incident on-call or major incident manager who can link those incidents, raise them to one SEV1 and run them as one response.",
       "Manual follow-through does not scale. Wire the level to policy in tooling: it decides who is paged, whether an IC is paged, which stakeholder list is notified and whether a status page draft opens.",
     ],
+    agentic: [
+      "An AI investigation can suggest a SEV from telemetry, but severity is customer impact, so a human confirms it by asking what customers cannot do and how many. An agent that grades by the first alarming log line (\"database errors, so SEV1\") repeats the cause-based mistake from this chapter.",
+      "Datadog's Bits AI SRE starts an automatic investigation only when a monitor enters `alert`, not warn or no data. The declare-early, pick-the-higher-SEV call stays with people; the new design question is which monitors and levels should trigger an agent at all.",
+      "When an agent caused or worsened the impact, grade it like any other incident: by impact, not by \"the AI did it\". Record agent involvement as a field next to initial and final severity, so reviews can count those incidents instead of arguing about them.",
+    ],
     quiz: [
       { q: "Your payments database fails over cleanly and no customer sees an error. What severity is it?", a: "Low, because severity is customer impact. It may still deserve a ticket and a review, but it is not a major incident." },
       { q: "You can't tell whether an outage is SEV1 or SEV2. What do you do?", a: "Treat it as SEV1 and keep working. Revisit the level once things are stable and record both the initial and final values." },
@@ -70,6 +75,7 @@ export const CHAPTERS = [
       { title: "incident.io guide: Severities", url: "https://incident.io/guide/foundations/severities" },
       { title: "Site Reliability Engineering: Managing Incidents", url: "https://sre.google/sre-book/managing-incidents/" },
       { title: "The Site Reliability Workbook: Incident Response", url: "https://sre.google/workbook/incident-response/" },
+      { title: "Datadog Bits AI SRE: Investigate issues", url: "https://docs.datadoghq.com/bits_ai/bits_ai_sre/investigate_issues/" },
     ],
   },
   {
@@ -125,6 +131,11 @@ export const CHAPTERS = [
       "Executives join the call and start directing. Fix: a published rule that the IC outranks everyone during the incident; an executive either takes command explicitly or holds comments, and gets updates from the comms lead.",
       "Long incidents exhaust people. Rotate the IC and on-call on a fixed schedule (PagerDuty rotated every four hours in the Workbook's NTP case) with an explicit handoff and an up-to-date doc.",
     ],
+    agentic: [
+      "AI scribes such as incident.io Scribe transcribe the bridge call and post summaries and key moments to the channel, which frees a person. The transcript is still a draft: someone confirms decisions, owners and timestamps in the incident doc, because a misattributed decision becomes the postmortem timeline.",
+      "Treat an AI SRE agent as another SME: it reports evidence to the IC through a read-only identity, and only the ops lead changes production. Google's AI in SRE paper gives agents their own principals, separate from humans, so every agent action is attributable (see Agentic Engineering, Drawn).",
+      "The IC's new failure mode is deferring to a confident agent summary. Ask for the queries and links behind each finding, and remember the agent reads channel messages and pasted logs, so text in them can steer it (prompt injection).",
+    ],
     quiz: [
       { q: "The IC spots something odd in a graph. What should they do?", a: "Hand it to an SME or the ops lead to investigate. If the IC starts debugging, nobody is coordinating." },
       { q: "Who should change production during an incident?", a: "Only the people the IC has assigned to operational work, so fixes don't conflict and every change is known and recorded." },
@@ -137,6 +148,9 @@ export const CHAPTERS = [
       { title: "PagerDuty Incident Response: Different roles", url: "https://response.pagerduty.com/before/different_roles/" },
       { title: "PagerDuty Incident Response: Incident Commander training", url: "https://response.pagerduty.com/training/incident_commander/" },
       { title: "incident.io guide: Roles", url: "https://incident.io/guide/foundations/roles" },
+      { title: "incident.io: Scribe", url: "https://docs.incident.io/ai/scribe" },
+      { title: "incident.io: What investigations can see", url: "https://docs.incident.io/investigations/what-we-can-see" },
+      { title: "Google SRE: AI in SRE", url: "https://sre.google/resources/practices-and-processes/ai-engineering-reliable-operations/" },
     ],
   },
   {
@@ -203,6 +217,11 @@ export const CHAPTERS = [
       "Low error rates stay under alert thresholds while customers notice. Fix: synthetic checks on key customer journeys, and record how each incident was detected so customer-reported incidents become a tracked number.",
       "Duration metrics like MTTR are skewed and noisy across incidents of very different shapes; Google's report on incident metrics finds them poorly suited to decisions or trends, and swapping the mean for a median or percentile does not fix that. Fix: treat per-severity distributions as context rather than a target, measure impact against SLOs, and read individual incidents.",
     ],
+    agentic: [
+      "\"What changed?\" is where agents help most: they line up deploys, flag flips and config pushes against the start of impact from your own change history. A human still decides to roll back, and a finding without the queries behind it is a hypothesis.",
+      "Vendor investigation agents mostly stop at findings: New Relic says Autopilot \"recommends actions but does not take them\", Gemini Cloud Assist investigations (preview) never use the caller's token to mutate data, and Bits can end \"inconclusive\". Mitigation stays a human call through the normal rollback path.",
+      "If an agent's start at alert time is logged as the acknowledgement, time to acknowledge looks better while time to detect, which starts at impact, is unchanged. Record agent start and human ack as separate timestamps so the timeline shows who did what.",
+    ],
     quiz: [
       { q: "A deploy went out ten minutes before errors started, but logs point at the database. Roll back or investigate?", a: "Roll back while others keep investigating. It is cheap and reversible, and if errors continue the deploy becomes much less likely, unless it changed state the rollback does not undo, such as a migration, written data or cached responses." },
       { q: "What is the difference between mitigated and resolved?", a: "Mitigated means customers are no longer harmed. Resolved means the underlying cause is fixed so it won't recur." },
@@ -216,6 +235,9 @@ export const CHAPTERS = [
       { title: "incident.io guide: Statuses", url: "https://incident.io/guide/foundations/statuses" },
       { title: "Google SRE: Incident Metrics in SRE", url: "https://sre.google/resources/practices-and-processes/incident-metrics-in-sre/" },
       { title: "Adaptive Capacity Labs: Moving past shallow incident data", url: "https://www.adaptivecapacitylabs.com/blog/2018/03/23/moving-past-shallow-incident-data/" },
+      { title: "New Relic Autopilot overview", url: "https://docs.newrelic.com/docs/agentic-ai/sre-agent/overview" },
+      { title: "Google Cloud: Gemini Cloud Assist investigations", url: "https://docs.cloud.google.com/cloud-assist/investigations" },
+      { title: "Datadog Bits AI SRE: Investigate issues", url: "https://docs.datadoghq.com/bits_ai/bits_ai_sre/investigate_issues/" },
     ],
   },
   {
@@ -275,6 +297,11 @@ export const CHAPTERS = [
       "Thousands of customers open tickets at once. Fix: give support a ready statement, a ticket tag linked to the incident, and an in-product banner so customers don't need to ask.",
       "Large or regulated customers expect direct notice. Fix: the comms lead or account teams contact them individually for high severities, from a prepared contact list.",
     ],
+    agentic: [
+      "Drafting updates from the channel into the fixed template is a good fit for AI, but the comms lead approves every post. A draft that lifts an unconfirmed hypothesis or the wrong region onto the status page is a public error that is hard to take back.",
+      "A drafting tool reads the responder channel, so speculation and pasted secrets can leak into stakeholder text. incident.io requires an explicit opt-in before private incident data goes to AI subprocessors; check what your own tools send, and where.",
+      "The drafting tool is a dependency, like the status page. If its model provider or your SSO is down with the outage, the comms lead writes from the template by hand, so keep that path practiced.",
+    ],
     code: [
       { lang: "text", label: "Stakeholder update template", src: "SEV2 | Checkout errors | Investigating\nImpact: ~15% of card payments in EU fail.\n        Other regions and payment types OK.\nKnown: errors began 13:52 UTC after a\n        payments config change.\nDoing: rolling back the config change.\nAsk:   support, use macro 'checkout-eu'.\nNext update: 14:30 UTC or sooner." },
     ],
@@ -292,6 +319,7 @@ export const CHAPTERS = [
       { title: "incident.io guide: Keeping your customers in the loop", url: "https://incident.io/guide/response/keeping-your-customers-in-the-loop" },
       { title: "The Site Reliability Workbook: Incident Response", url: "https://sre.google/workbook/incident-response/" },
       { title: "Site Reliability Engineering: Emergency Response", url: "https://sre.google/sre-book/emergency-response/" },
+      { title: "incident.io: AI-native post-mortems", url: "https://docs.incident.io/post-incident/postmortem-ai" },
     ],
   },
 ];
