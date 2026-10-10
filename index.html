@@ -21,6 +21,10 @@ a.tool { display: grid; gap: 4px; background: var(--panel); border: 1px solid va
 a.tool:hover, a.tool:focus-visible { border-color: var(--accent); outline: none; }
 a.tool strong { font-family: var(--font-display); font-size: 20px; }
 a.tool span { color: var(--muted); }
+.tool.next { display: grid; gap: 4px; border: 1px dashed var(--rule); border-radius: 10px; padding: 16px; }
+.tool.next strong { font-family: var(--font-display); font-size: 20px; color: var(--muted); }
+.tool.next span { color: var(--muted); }
+.tool.next em { font-family: var(--font-mono); font-style: normal; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
 footer { margin-top: 28px; color: var(--muted); font-size: 14px; }
 footer a { color: var(--accent); }
 </style>
@@ -29,11 +33,12 @@ footer a { color: var(--accent); }
 <div class="wrap">
   <div class="kicker">Sally Roth</div>
   <h1>SRE Lab</h1>
-  <p>Small, working tools for reliability engineering: error budgets, uptime, and alerting that respects people's sleep.</p>
+  <p>Small, working tools across the life of an incident: setting reliability targets, knowing when something is really broken, and learning from the failures that keep coming back. Next up: designing incident management that people can actually follow.</p>
   <div class="tools">
     <a class="tool" href="slo/"><strong>SLO Burn Simulator</strong><span>See how fast an error budget drains, which burn-rate alerts fire and when, and get matching Prometheus rules.</span></a>
     <a class="tool" href="status/"><strong>Down or Me</strong><span>Uptime checks with an AI classifier that decides whether a failure is real, and only alerts when it's sure.</span></a>
     <a class="tool" href="incidents/"><strong>The Incident Files</strong><span>310 real postmortems, searchable by failure mode, plus the nine failure patterns that keep coming back and how companies warded them off.</span></a>
+    <div class="tool next"><em>Coming next</em><strong>Sane Incident Management</strong><span>Designing a response process people can actually follow: who does what, how severity is decided, and how an incident ends in learning instead of blame.</span></div>
   </div>
   <footer><a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab">source</a></footer>
 </div>
