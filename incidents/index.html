@@ -79,7 +79,7 @@ footer a { color: var(--accent); }
 <div class="wrap">
   <div class="kicker">SRE Lab · retrieval</div>
   <h1>Find the Incident</h1>
-  <p class="lede">Mid-incident, the fastest hint is often someone else's postmortem. Describe what you're seeing, and this page ranks real public postmortems with similar symptoms, leading with what caused each one and what fixed it: a short list of things to check, and gotchas you might not have thought of. Point the same idea at every postmortem on the internet, or at your own company's, and it becomes a triage assistant.</p>
+  <p class="lede">Common failures repeat: expired certificates, config pushes that go everywhere at once, retry storms, databases running out of IDs. Describe a failure mode and this page ranks real public postmortems that match, leading with what caused each one and what fixed it. It's meant for the time around incidents, not the middle of one: readiness and design reviews, on-call training, and postmortems that point to known patterns and preventions. Mid-incident, the job is capturing data from your own system, because every system is its own thing.</p>
   <p class="lede">Under the hood it compares two ways to search. An <b>embedding model</b> (all-MiniLM-L6-v2, a small model that turns text into numbers capturing its meaning) matches by meaning, and <b>BM25</b> (the classic keyword ranking behind most search engines) matches by words. Neither writes anything; they only rank. Everything runs in your browser after a one-time 23&nbsp;MB model download.</p>
 
   <form class="search" id="form" role="search">
