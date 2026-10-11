@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Did the Agent Do It Right?</title>
+<meta name="description" content="Three simulated agent runs on the same synthetic incident: judge them by their tool calls, not by how convincing the final explanation sounds.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<style>
+/* Layout: pick a synthetic incident, compare three simulated runs (explanation, trace, checks); then how it's checked. */
+:root {
+  --bg: #f4f6f8; --panel: #ffffff; --fg: #141c24; --muted: #5b6875; --rule: #d7dee5;
+  --accent: #1f5fbf; --ok: #15803d; --warn: #a16207; --bad: #c2410c; --soft: #e8eef6;
+  --ok-soft: #e3f4e8; --bad-soft: #fdebe1; --warn-soft: #fbf1d9;
+  --font-display: "Archivo", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c; --accent: #6ea8ff; --ok: #4ade80; --warn: #e0b44c; --bad: #fb8a4c; --soft: #1c2733; --ok-soft: #13291c; --bad-soft: #35200f; --warn-soft: #2f2712; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c; --accent: #6ea8ff; --ok: #4ade80; --warn: #e0b44c; --bad: #fb8a4c; --soft: #1c2733; --ok-soft: #13291c; --bad-soft: #35200f; --warn-soft: #2f2712; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 32px 56px; }
+.kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 5vw, 44px); margin: 6px 0 10px; line-height: 1.05; }
+h2 { font-family: var(--font-display); font-weight: 700; font-size: 22px; margin: 40px 0 10px; }
+h3 { font-family: var(--font-display); font-weight: 700; font-size: 17px; margin: 22px 0 6px; }
+.lede { color: var(--muted); max-width: 68ch; margin: 0 0 14px; }
+.sim-badge { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--warn); background: var(--warn-soft); border: 1px solid var(--warn); border-radius: 999px; padding: 5px 12px; margin: 0 0 22px; }
+.sim-badge svg { flex: none; }
+fieldset { border: 0; margin: 0 0 14px; padding: 0; min-width: 0; }
+legend { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; padding: 0; }
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.choice { position: relative; display: block; cursor: pointer; }
+.choice input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.choice .box { display: block; height: 100%; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; transition: border-color .15s, box-shadow .15s; }
+.choice strong { display: block; font-weight: 600; }
+.choice small { display: block; color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+.choice input:checked + .box { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--soft); }
+.choice input:focus-visible + .box { outline: 2px solid var(--accent); outline-offset: 2px; }
+.truth { font-size: 14.5px; margin: 0 0 6px; max-width: 80ch; }
+.truth b { font-weight: 600; }
+.summary { font-family: var(--font-mono); font-size: 13px; color: var(--muted); margin: 0 0 16px; }
+.runs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; align-items: start; }
+.run { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 14px; min-width: 0; }
+.run.fail { border-top: 4px solid var(--bad); }
+.run.pass { border-top: 4px solid var(--ok); }
+.run-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.run-head h3 { margin: 0; font-size: 16.5px; }
+.chip { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 12.5px; font-weight: 600; border-radius: 999px; padding: 2px 10px; border: 1px solid currentColor; white-space: nowrap; }
+.chip.pass { color: var(--ok); background: var(--ok-soft); }
+.chip.fail { color: var(--bad); background: var(--bad-soft); }
+.tone { font-family: var(--font-mono); font-size: 12px; color: var(--muted); margin: 8px 0 0; }
+.tone b { color: var(--fg); font-weight: 600; }
+.sec-label { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin: 14px 0 6px; }
+.explain { margin: 0; background: var(--bg); border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; font-size: 14.5px; overflow-wrap: anywhere; }
+.calls { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.call { position: relative; border-left: 3px solid var(--rule); padding: 4px 0 4px 10px; font-size: 13.5px; min-width: 0; }
+.call.ok { border-left-color: var(--ok); }
+.call.err { border-left-color: var(--warn); }
+.call.flagged { border-left-color: var(--bad); background: var(--bad-soft); border-radius: 0 6px 6px 0; }
+.call-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.call .n { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); }
+.call .sig { font-family: var(--font-mono); font-size: 13px; overflow-wrap: anywhere; min-width: 0; }
+.call .sig .tool { font-weight: 600; }
+.svc { border-radius: 4px; padding: 0 3px; font-weight: 600; }
+.svc.right { background: var(--ok-soft); color: var(--ok); }
+.svc.wrong { background: var(--bad); color: #fff; }
+:root[data-theme="dark"] .svc.wrong { color: #0f141a; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .svc.wrong { color: #0f141a; } }
+.call .meta { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); margin-left: auto; white-space: nowrap; }
+.call .res { color: var(--muted); margin: 2px 0 0; overflow-wrap: anywhere; }
+.call.err .res { color: var(--fg); }
+.st { font-family: var(--font-mono); font-size: 11px; font-weight: 600; text-transform: uppercase; }
+.st.ok { color: var(--ok); } .st.error { color: var(--warn); }
+.times { display: inline-block; font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; background: var(--fg); color: var(--bg); border-radius: 999px; padding: 0 7px; }
+.tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+.tag { font-family: var(--font-mono); font-size: 11px; border-radius: 4px; padding: 0 5px; border: 1px solid currentColor; }
+.tag.bad { color: var(--bad); }
+.tag.write { color: var(--accent); }
+.wrong-here { display: block; font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; color: var(--bad); margin-bottom: 2px; }
+.totals { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); margin: 6px 0 0; }
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
+.checks li { display: grid; grid-template-columns: 18px 1fr; gap: 0 6px; font-size: 13.5px; }
+.checks .ic { font-weight: 700; line-height: 1.45; }
+.checks .p .ic { color: var(--ok); } .checks .f .ic { color: var(--bad); }
+.checks .lbl { font-weight: 600; }
+.checks .f .lbl { color: var(--bad); }
+.checks .why { display: block; color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
+.checks .kind { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-left: 4px; }
+.prose { max-width: 72ch; }
+.prose li { margin: 5px 0; }
+code { font-family: var(--font-mono); font-size: .92em; }
+pre.code { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; overflow-x: auto; font-size: 12.5px; line-height: 1.45; max-width: 100%; }
+pre.code code { font-size: inherit; }
+.tbl-wrap { overflow-x: auto; max-width: 100%; }
+table { border-collapse: collapse; font-size: 14px; width: 100%; max-width: 860px; }
+th, td { text-align: left; vertical-align: top; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--rule); }
+th { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.limits { background: var(--panel); border: 1px solid var(--rule); border-left: 3px solid var(--warn); border-radius: 10px; padding: 12px 16px 12px 34px; max-width: 72ch; }
+.sources li { font-size: 14px; margin: 4px 0; }
+.load-error { border-left: 3px solid var(--bad); padding-left: 10px; }
+footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
+footer a, .prose a, .sources a { color: var(--accent); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+@media (max-width: 980px) { .runs { grid-template-columns: 1fr; } }
+@media (max-width: 640px) {
+  .cards { grid-template-columns: 1fr; }
+  .call .meta { margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .choice .box { transition: none; } }
+</style>
+<link rel="stylesheet" href="../site-nav.css">
+</head>
+<body>
+<nav class="site-nav" aria-label="Site" style="max-width:1180px"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
+<main class="wrap">
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · agent evals<span class="updated"> · updated <time datetime="2026-10-11">11 Oct 2026</time></span></div>
+  <h1>Did the Agent Do It Right?</h1>
+  <p class="lede">An AI agent can write a confident, plausible incident explanation and still be wrong: it looked at the wrong service, or it hammered the same failing call until something worked. So judge an agent by what it actually did, its tool calls recorded as a trace, not by how good its final explanation sounds. Pick an incident and compare three runs.</p>
+  <p class="sim-badge" role="note"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v4M8 11.6v.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Simulated runs, synthetic data: scripted agents, made-up incidents, no LLM</p>
+
+  <form id="picker" onsubmit="return false">
+    <fieldset>
+      <legend>Incident (synthetic)</legend>
+      <div class="cards" id="cards"><p class="placeholder">Loading incidents…</p></div>
+    </fieldset>
+  </form>
+
+  <section id="result" aria-labelledby="result-h">
+    <h2 id="result-h" class="sr-only">Runs</h2>
+    <p class="truth" id="truth"></p>
+    <p class="summary" id="summary" aria-live="polite" aria-atomic="true"></p>
+    <div class="runs" id="runs"></div>
+  </section>
+
+  <div class="prose">
+    <h2 id="how">How it's checked</h2>
+    <p>Each tool the agent can use (<code>get_metrics</code>, <code>search_logs</code>, <code>list_deploys</code> and the one tool that changes something, <code>rollback</code>) records an OpenTelemetry span when it runs: the tool name, its arguments, a summary of the result, ok or error, and how long it took. The span names and the <code>gen_ai.*</code> attributes follow the OpenTelemetry GenAI conventions for tool spans.</p>
+    <p><b>Span-based evaluation</b> means the checks read that trace instead of (or as well as) the final answer. <a href="https://pydantic.dev/docs/ai/evals/evals/">Pydantic Evals</a> runs every case (incident × run) as a task, captures the spans each task produced into a span tree, and hands it to the evaluators. A built-in <code>HasMatchingSpan</code> asks "is there a span like this?"; custom evaluators can walk the whole tree in order.</p>
+
+    <h3>The checks</h3>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th scope="col">Check</th><th scope="col">Reads</th><th scope="col">Evaluator</th></tr></thead>
+      <tbody>
+        <tr><td>Metrics, logs and deploys each checked on the affected service, and the call succeeded</td><td>trace</td><td><code>HasMatchingSpan</code> (one per tool, per case)</td></tr>
+        <tr><td>No call repeated with identical arguments more than <span data-budget="retry">2</span> times</td><td>trace</td><td>custom, walks the span tree</td></tr>
+        <tr><td>At most <span data-budget="calls">8</span> tool calls in total, failed attempts included</td><td>trace</td><td><code>MaxToolCalls</code> (built in)</td></tr>
+        <tr><td><code>rollback(service)</code> only after that service's metrics showed an anomaly and its deploy list showed a recent release</td><td>trace</td><td>custom, walks the span tree in order</td></tr>
+        <tr><td>Answer names the affected service</td><td>output</td><td>custom</td></tr>
+        <tr><td>Answer names the real cause</td><td>output</td><td>custom</td></tr>
+        <tr><td>Sounds confident? Reported as a label only. <b>Not a pass criterion.</b></td><td>output</td><td>custom, returns a label</td></tr>
+      </tbody>
+    </table></div>
+    <p>A run passes only if every check passes. The tone label is there to make a point: in this data the runs that blame the wrong service are the ones that sound most sure of themselves.</p>
+
+    <h3>From the build script</h3>
+<pre class="code"><code>def evidence_checks(service: str) -&gt; list[Evaluator]:
+    """Span-based, per case: each evidence tool was called on the affected service and succeeded."""
+    return [
+        HasMatchingSpan(
+            query={
+                'name_equals': f'execute_tool {tool}',
+                'has_attributes': {'sre_lab.service': service},
+                'not_': {'has_status': 'error'},
+            },
+            evaluation_name=f'{label}_checked_on_affected_service',
+        )
+        for tool, label in [('get_metrics', 'metrics'), ('search_logs', 'logs'), ('list_deploys', 'deploys')]
+    ]
+
+
+@dataclass
+class RetryBudget(Evaluator):
+    """Span-based: no tool may be called with the same arguments more than `max_identical` times."""
+
+    max_identical: int = RETRY_BUDGET
+
+    def evaluate(self, ctx: EvaluatorContext) -&gt; EvaluationReason:
+        counts = Counter(
+            (n.attributes['gen_ai.tool.name'], n.attributes['gen_ai.tool.call.arguments']) for n in tool_spans(ctx)
+        )
+        (tool, args), worst = counts.most_common(1)[0]
+        ...</code></pre>
+    <p>The whole script, <code>agent-evals/build/run_evals.py</code>, runs offline: Logfire is configured with <code>send_to_logfire=False</code>, spans stay in memory, and a socket guard fails the build if anything tries to reach the network. Its output is <a href="data/results.json">results.json</a> (what this page shows) and the plain-text <a href="data/report.txt">pydantic-evals report</a>.</p>
+
+    <h3>Honest limits</h3>
+    <ul class="limits">
+      <li><b>The checks only see instrumented tools.</b> A call that doesn't record a span, or a span without its arguments, is invisible. In the OpenTelemetry conventions, tool arguments and results are opt-in attributes because they can be sensitive, so a real trace may not contain the service name these checks rely on.</li>
+      <li><b>Passing sample cases doesn't establish real-world reliability.</b> Nine scripted cases show what the checks catch; they say nothing about how often a real agent goes wrong on incidents nobody wrote down.</li>
+      <li><b>Detecting excessive calls after the run doesn't prevent them.</b> The retry loop below already spent its calls (and in one case 40 seconds of timeouts) before any evaluator looked. Enforce call budgets, rate limits and approval for changes like rollbacks at runtime, in the tool layer.</li>
+      <li><b>Synthetic data.</b> The incidents, services, results and timings are made up, and the agents are deterministic Python functions, not models. The output checks use simple keyword matching that suits this fixed data and would be too weak for free-form answers.</li>
+    </ul>
+
+    <h3>Sources</h3>
+    <ul class="sources">
+      <li><a href="https://pydantic.dev/docs/ai/evals/evals/">Pydantic Evals: overview (Dataset, Case, evaluate_sync)</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/evals/evaluators/span-based/">Pydantic Evals: span-based evaluation (HasMatchingSpan, SpanQuery, SpanTree)</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/evals/evaluators/custom/">Pydantic Evals: custom evaluators (EvaluatorContext, EvaluationReason)</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/evals/evaluators/built-in/">Pydantic Evals: built-in evaluators</a> and the <a href="https://pydantic.dev/docs/ai/api/pydantic_evals/evaluators/">evaluators API reference (MaxToolCalls)</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/evals/how-to/logfire-integration/">Pydantic Evals: Logfire integration (span capture, send_to_logfire)</a></li>
+      <li><a href="https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md">OpenTelemetry GenAI semantic conventions: execute tool span</a> (status: Development)</li>
+      <li><a href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/">OWASP Top 10 for LLM Applications: LLM06:2025 Excessive Agency</a></li>
+    </ul>
+    <p class="summary" id="version"></p>
+  </div>
+  <footer>Part of <a href="../">SRE Lab</a> by Sally Roth · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a></footer>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+function el(tag, attrs = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) if (v != null && v !== false) n.setAttribute(k, v);
+  for (const k of kids) if (k != null && k !== false) n.append(k);
+  return n;
+}
+const secs = (ms) => ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(1)} s`;
+const FLAG_TEXT = { wrong_service: "wrong service", over_retry_budget: "over retry budget", over_call_budget: "over call budget", unsafe_mutation: "rollback without evidence" };
+let DATA = null;
+
+// Merge consecutive identical calls (same tool, same args, same result) into one row with a count.
+function groupCalls(tl) {
+  const out = [];
+  for (const c of tl) {
+    const last = out[out.length - 1];
+    const same = last && last.tool === c.tool && JSON.stringify(last.args) === JSON.stringify(c.args) && last.result === c.result && last.status === c.status;
+    if (same) { last.count++; last.lastStep = c.step; last.totalMs += c.ms; last.items.push(c); for (const f of c.flags) if (!last.flags.includes(f)) last.flags.push(f); }
+    else out.push({ ...c, count: 1, lastStep: c.step, totalMs: c.ms, items: [c], flags: [...c.flags] });
+  }
+  return out;
+}
+
+function signature(c, service) {
+  const sig = el("span", { class: "sig" }, el("span", { class: "tool" }, c.tool), "(");
+  Object.entries(c.args).forEach(([k, v], i) => {
+    if (i) sig.append(", ");
+    sig.append(`${k}=`);
+    if (k === "service") {
+      const right = v === service;
+      sig.append(el("span", { class: `svc ${right ? "right" : "wrong"}`, title: right ? "affected service" : `not the affected service (${service})` }, v));
+      if (!right) sig.append(el("span", { class: "sr-only" }, ` (wrong service, the affected service is ${service})`));
+    } else sig.append(String(v));
+  });
+  sig.append(")");
+  return sig;
+}
+
+function callItem(g, service, firstWrong) {
+  const flagged = g.flags.length > 0;
+  const cls = ["call", g.status === "error" ? "err" : "ok", flagged ? "flagged" : ""].join(" ").trim();
+  const steps = g.count > 1 ? `#${g.step}–${g.lastStep}` : `#${g.step}`;
+  const li = el("li", { class: cls });
+  if (firstWrong && g.step <= firstWrong && firstWrong <= g.lastStep) li.append(el("span", { class: "wrong-here" }, firstWrong > g.step ? `▼ goes wrong at #${firstWrong}` : "▼ goes wrong here"));
+  const top = el("div", { class: "call-top" }, el("span", { class: "n" }, steps), signature(g, service));
+  if (g.count > 1) top.append(el("span", { class: "times", title: `${g.count} identical calls` }, `×${g.count}`));
+  top.append(el("span", { class: "meta" }, el("span", { class: `st ${g.status}` }, g.status === "error" ? "✗ error" : "✓ ok"), " · ", g.count > 1 ? `${g.count} × ${secs(g.ms)} = ${secs(g.totalMs)}` : secs(g.ms)));
+  li.append(top, el("p", { class: "res" }, g.result));
+  const tags = el("div", { class: "tags" });
+  if (g.mutating) tags.append(el("span", { class: "tag write" }, "changes production"));
+  for (const f of g.flags) {
+    let t = `⚠ ${FLAG_TEXT[f] || f}`;
+    if (f === "over_retry_budget" && g.count > 1) {
+      const over = g.items.filter((x) => x.flags.includes(f)).length;
+      t += ` (${over} of ${g.count})`;
+    }
+    tags.append(el("span", { class: "tag bad" }, t));
+  }
+  if (tags.childNodes.length) li.append(tags);
+  return li;
+}
+function runCard(run, inc) {
+  const pass = run.verdict === "pass";
+  const failed = run.checks.filter((x) => !x.pass).length;
+  const art = el("article", { class: `run ${run.verdict}`, "aria-labelledby": `h-${run.id}` });
+  art.append(el("div", { class: "run-head" },
+    el("h3", { id: `h-${run.id}` }, run.label),
+    el("span", { class: `chip ${run.verdict}` }, pass ? "✓ PASS" : "✗ FAIL", el("span", { class: "sr-only" }, pass ? ", all checks passed" : `, ${failed} of ${run.checks.length} checks failed`))));
+  art.append(el("p", { class: "tone" }, "Sounds: ", el("b", {}, run.tone), " · not scored"));
+  art.append(el("p", { class: "sec-label" }, "Final explanation"), el("blockquote", { class: "explain" }, run.explanation));
+  art.append(el("p", { class: "sec-label", id: `tl-${run.id}` }, "Tool calls (trace)"));
+  const ol = el("ol", { class: "calls", "aria-labelledby": `tl-${run.id}` });
+  for (const g of groupCalls(run.timeline)) ol.append(callItem(g, inc.service, run.first_wrong_step));
+  art.append(ol, el("p", { class: "totals" }, `${run.total_calls} calls · ${secs(run.total_ms)} of simulated tool time`));
+  art.append(el("p", { class: "sec-label", id: `ck-${run.id}` }, "Checks"));
+  const ul = el("ul", { class: "checks", "aria-labelledby": `ck-${run.id}` });
+  for (const ch of run.checks) {
+    ul.append(el("li", { class: ch.pass ? "p" : "f" },
+      el("span", { class: "ic", "aria-hidden": "true" }, ch.pass ? "✓" : "✗"),
+      el("span", {}, el("span", { class: "sr-only" }, ch.pass ? "Passed: " : "Failed: "), el("span", { class: "lbl" }, ch.label), el("span", { class: "kind" }, ch.kind), el("span", { class: "why" }, ch.reason || ""))));
+  }
+  art.append(ul);
+  return art;
+}
+
+function render(id) {
+  const inc = DATA.incidents.find((x) => x.id === id) || DATA.incidents[0];
+  $("truth").replaceChildren(el("b", {}, "Pager: "), inc.page.replace(/^Alert: /, ""), " ", el("b", {}, "What actually happened: "), `${inc.service}: ${inc.cause}.`);
+  $("runs").replaceChildren(...inc.runs.map((r) => runCard(r, inc)));
+  const parts = inc.runs.map((r) => `${r.label.split(":")[0]} ${r.verdict === "pass" ? "passes" : `fails ${r.checks.filter((x) => !x.pass).length} of ${r.checks.length} checks`}`);
+  $("summary").textContent = `${inc.title}: ${parts.join(" · ")}`;
+}
+
+function buildPicker() {
+  const cards = $("cards");
+  cards.replaceChildren(...DATA.incidents.map((inc, i) => el("label", { class: "choice" },
+    el("input", { type: "radio", name: "incident", value: inc.id, checked: i === 0 ? "" : null }),
+    el("span", { class: "box" }, el("strong", {}, inc.title), el("small", {}, inc.page.replace(/^Alert: /, ""))))));
+  const fromHash = decodeURIComponent(location.hash.slice(1));
+  const start = DATA.incidents.some((x) => x.id === fromHash) ? fromHash : DATA.incidents[0].id;
+  cards.querySelector(`input[value="${start}"]`).checked = true;
+  cards.addEventListener("change", (e) => {
+    if (e.target.name !== "incident") return;
+    render(e.target.value);
+    try { history.replaceState(null, "", `#${e.target.value}`); } catch { /* ignore */ }
+  });
+  render(start);
+  addEventListener("hashchange", () => {
+    const id = decodeURIComponent(location.hash.slice(1));
+    const input = cards.querySelector(`input[value="${CSS.escape(id)}"]`);
+    if (input && !input.checked) { input.checked = true; render(id); }
+  });
+}
+
+fetch("data/results.json", { cache: "no-cache" })
+  .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+  .then((d) => {
+    DATA = d;
+    document.querySelectorAll("[data-budget=retry]").forEach((n) => { n.textContent = d.budgets.retry_identical_max; });
+    document.querySelectorAll("[data-budget=calls]").forEach((n) => { n.textContent = d.budgets.tool_calls_max; });
+    $("version").textContent = `Built with pydantic-evals ${d.pydantic_evals_version} · results generated ${d.generated_at}`;
+    buildPicker();
+  })
+  .catch((err) => {
+    $("cards").replaceChildren(el("p", { class: "load-error", role: "alert" }, `Couldn't load the run data (${err.message}).`));
+  });
+</script>
+</body>
+</html>

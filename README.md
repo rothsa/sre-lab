@@ -9,6 +9,7 @@ Small, working reliability-engineering tools, live at **lab.sallyroth.dev**.
 | [Kubernetes, Drawn](k8s/) | How Kubernetes works in 18 step-through diagrams (control loop, kubectl apply, scheduling, Services, DNS, storage, autoscaling, RBAC, upgrades, a troubleshooting map), each with a 30-second answer, gotchas, a quiz and links to the kubernetes.io pages it's based on. Static page; chapter specs in `k8s/parts/`, checks in `k8s/check.mjs`. |
 | [Down or Me](status/) | Uptime checks every 5 minutes on a Cloudflare Worker. When something looks unusual, [Jev](https://en.wikipedia.org/wiki/Jev_(AI_model)) classifies the cause (real outage, degraded, monitor-side, planned maintenance, blip) with a confidence score, and an email goes out only for confident, real problems. Uncertain calls are left for a human. |
 | [Plan B](planb/) | AI failover you can break on purpose: pick a fictional incident, break the primary model (bad model id or a 1 ms timeout) and watch AI Gateway fall back from Workers AI to Claude on Anthropic, with which step answered and how long each attempt took. Pages Function + D1 caps; keys stay server-side. |
+| [Did the Agent Do It Right?](agent-evals/) | Three simulated agent runs on the same synthetic incident (one correct, one that checks the wrong service but sounds sure, one stuck in a retry loop), judged by their tool-call traces with span-based Pydantic Evals checks, not by how convincing the final explanation sounds. Static page, no LLM, no API calls. |
 
 ## How Down or Me works
 
@@ -127,3 +128,21 @@ incidents.json ─► all-MiniLM-L6-v2 (q8) ─►      query ─► same model 
 - **Patterns (`incidents/data/patterns.json`):** recurring failure modes proposed by the embedding model and confirmed by hand; each prevention cites the incidents whose own follow-ups it comes from.
 - Rebuild after editing the corpus: `cd incidents && npm install && node build.mjs --check`, then `node evalnode.mjs .` to score AI, keyword and hybrid search offline.
 
+## How Did the Agent Do It Right? works
+
+```
+build time (agent-evals/build/run_evals.py, Python)                         browser (agent-evals/index.html)
+scripted agents ─► mock tools ─► OTel spans ─► pydantic-evals Dataset ─►    data/results.json ─► runs, traces, checks
+                   (execute_tool *)            evaluate_sync + evaluators   data/report.txt (plain-text report)
+```
+
+- **Simulated, synthetic:** three made-up incidents × three deterministic Python "agents" (correct, wrong service, retry loop). No LLM, no keys, no API cost; the page is static at runtime and only reads `data/results.json`.
+- **Checks read the trace:** `HasMatchingSpan` per case (metrics, logs, deploys checked on the affected service), the built-in `MaxToolCalls`, and custom span-tree evaluators for a retry budget and "no rollback without evidence". Output checks (names the service and cause) count too; a "sounds confident" label is reported but never scored.
+- **Offline build:** Logfire is configured with `send_to_logfire=False`, spans stay in memory, and a socket guard fails loudly on any outbound connection. Fake durations keep the output stable; only `generated_at` changes between runs.
+- Rebuild (venv lives outside the repo; exact versions in `agent-evals/build/requirements.txt`):
+  ```bash
+  python3 -m venv ~/.venvs/agent-evals && ~/.venvs/agent-evals/bin/pip install -r agent-evals/build/requirements.txt
+  # If venv fails because ensurepip is missing (no python3.12-venv package), create it without pip and bootstrap pip:
+  #   python3 -m venv --without-pip ~/.venvs/agent-evals && curl -sS https://bootstrap.pypa.io/get-pip.py | ~/.venvs/agent-evals/bin/python
+  ~/.venvs/agent-evals/bin/python agent-evals/build/run_evals.py
+  ```
