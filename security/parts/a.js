@@ -200,7 +200,7 @@ steps:
     sources: [
       { title: "AssumeRole (AWS STS API Reference)", url: "https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html" },
       { title: "Create an OpenID Connect (OIDC) identity provider in IAM", url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html" },
-      { title: "Configuring OpenID Connect in Amazon Web Services (GitHub Docs)", url: "https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services" },
+      { title: "Configuring OpenID Connect in Amazon Web Services (GitHub Docs)", url: "https://docs.github.com/en/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws" },
       { title: "IAM roles for service accounts", url: "https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html" },
       { title: "EKS Pod Identity", url: "https://docs.aws.amazon.com/eks/latest/userguide/pod-identities.html" },
       { title: "Pass session tags in AWS STS", url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html" },
@@ -403,7 +403,7 @@ spec:
       { title: "Istio: plug in CA certificates", url: "https://istio.io/latest/docs/tasks/security/cert-management/plugin-ca-cert/" },
       { title: "Istio performance and scalability", url: "https://istio.io/latest/docs/ops/deployment/performance-and-scalability/" },
       { title: "Google Cloud: Agent Identity overview", url: "https://docs.cloud.google.com/iam/docs/agent-identity-overview" },
-      { title: "MCP Security Best Practices (spec 2026-07-28)", url: "https://modelcontextprotocol.io/specification/2026-07-28/basic/security_best_practices" },
+      { title: "MCP Security Best Practices (spec 2026-07-28)", url: "https://modelcontextprotocol.io/docs/2026-07-28/tutorials/security/security_best_practices" },
       { title: "OWASP Top 10 for Agentic Applications (announcement, 2025-12-09)", url: "https://genai.owasp.org/2025/12/09/owasp-top-10-for-agentic-applications-the-benchmark-for-agentic-security-in-the-age-of-autonomous-ai/" },
     ],
   },

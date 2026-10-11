@@ -235,7 +235,7 @@ export const CHAPTERS = [
       { title: "incident.io guide: Statuses", url: "https://incident.io/guide/foundations/statuses" },
       { title: "Google SRE: Incident Metrics in SRE", url: "https://sre.google/resources/practices-and-processes/incident-metrics-in-sre/" },
       { title: "Adaptive Capacity Labs: Moving past shallow incident data", url: "https://www.adaptivecapacitylabs.com/blog/2018/03/23/moving-past-shallow-incident-data/" },
-      { title: "New Relic Autopilot overview", url: "https://docs.newrelic.com/docs/agentic-ai/sre-agent/overview" },
+      { title: "New Relic Autopilot overview", url: "https://docs.newrelic.com/docs/agentic-ai/autopilot/overview/" },
       { title: "Google Cloud: Gemini Cloud Assist investigations", url: "https://docs.cloud.google.com/cloud-assist/investigations" },
       { title: "Datadog Bits Investigation: Investigate issues", url: "https://docs.datadoghq.com/bits_ai/bits_investigation/investigate_issues/" },
     ],

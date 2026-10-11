@@ -350,7 +350,7 @@
   "trigger": "The AWS us-east-1 outage broke a telecom provider and Docker Hub, which incident.io relied on even though its own platform runs on Google Cloud.",
   "impact": "SMS and phone on-call notifications were delayed from 07:20 to 09:26 UTC, SAML login was degraded for about two hours, the Scribe note taker could not join calls for several hours, and about 4% of status page traffic errored for 25 minutes.",
   "detection": "An on-call engineer was paged at 07:21 UTC for high SMS and phone error rates, and blackbox exporters in nine regions caught the status page errors.",
-  "fix": "Once Docker Hub partly recovered the team shipped isolated notification queues and escalation fixes, then removed the Docker Hub dependency, added telecom redundancy and tuned Postgres autovacuum.",
+  "fix": "Once Docker Hub partly recovered the team shipped isolated notification queues and escalation fixes, then removed the Docker Hub dependency and tuned Postgres autovacuum. Adding telecom providers in other clouds and regions was still being worked on.",
   "summary": "When AWS us-east-1 failed, incident.io's GCP-hosted platform stayed up but its dependencies did not. A telecom provider outage plus aggressive client retries made notification jobs run up to 60 times longer, and shared queues delayed email, Slack and push alerts too. Fixes could not ship because the build used a Docker Hub base image. Dead tuples in a Postgres escalations index made lock acquisition eat nearly half of worker capacity, and an internal rate limiter only applied to the top 10 organisations."
  },
  {

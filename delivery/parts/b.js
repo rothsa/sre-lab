@@ -272,7 +272,7 @@ export const CHAPTERS = [
       { title: "GitHub: using artifact attestations", url: "https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations" },
       { title: "SPDX overview", url: "https://spdx.dev/about/overview/" },
       { title: "CycloneDX specification overview", url: "https://cyclonedx.org/specification/overview/" },
-      { title: "GitHub Docs: Risks and mitigations for Copilot cloud agent", url: "https://docs.github.com/en/copilot/concepts/agents/cloud-agent/risks-and-mitigations" },
+      { title: "GitHub Docs: Risks and mitigations for Copilot cloud agent", url: "https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/risks-and-mitigations" },
       { title: "Claude Code: GitHub Actions", url: "https://code.claude.com/docs/en/github-actions" },
     ],
   },
@@ -368,7 +368,7 @@ export const CHAPTERS = [
       { title: "Google Cloud blog: Announcing the 2024 DORA report", url: "https://cloud.google.com/blog/products/devops-sre/announcing-the-2024-dora-report" },
       { title: "Google Cloud blog: Announcing the 2025 DORA report", url: "https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report" },
       { title: "GitHub Docs: About Copilot code review", url: "https://docs.github.com/en/copilot/concepts/agents/code-review" },
-      { title: "GitHub Docs: Risks and mitigations for Copilot cloud agent", url: "https://docs.github.com/en/copilot/concepts/agents/cloud-agent/risks-and-mitigations" },
+      { title: "GitHub Docs: Risks and mitigations for Copilot cloud agent", url: "https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/risks-and-mitigations" },
     ],
   },
 ];
