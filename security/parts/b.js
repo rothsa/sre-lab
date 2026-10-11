@@ -367,7 +367,7 @@ export const CHAPTERS = [
     agentic: [
       "Auditors will ask who made a change an agent made. CloudTrail records the role session, so give agents their own roles and require `sts:SourceIdentity` so the launching human appears on every event; Kubernetes audit shows the agent only if it has its own service account.",
       "Platform logs show what changed, not why: Grafana documents that Assistant actions run under the user's identity in user-level audit logs that exclude chat transcripts. Keep the agent's own record of prompts, tool calls and approvals, for example OTel GenAI agent spans (Development status), with content capture opt-in.",
-      "Approval evidence still maps to a named person: Copilot's cloud agent can't approve or merge its own PR, and Copilot code reviews don't count toward required approvals by default. The new failure is technically human approval rubber-stamped across a flood of agent PRs, so sample approvals for real review.",
+      "Approval evidence still maps to a named person: Copilot's cloud agent can't approve or merge its own PR, a PR it opens under its own app identity needs one extra approval, and Copilot code reviews don't count toward required approvals by default. The new failure is technically human approval rubber-stamped across a flood of agent PRs, so sample approvals for real review.",
     ],
     code: [
       { lang: "yaml", label: "Kubernetes audit policy", src: "apiVersion: audit.k8s.io/v1\nkind: Policy\nrules:\n  # noisy system watches: skip\n  - level: None\n    users: [\"system:kube-proxy\"]\n    verbs: [\"watch\"]\n  # never log secret values\n  - level: Metadata\n    resources:\n      - group: \"\"\n        resources: [\"secrets\", \"configmaps\"]\n  # everything else: who, what, when\n  - level: Metadata" },
@@ -391,7 +391,7 @@ export const CHAPTERS = [
       { title: "Kubernetes auditing", url: "https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/" },
       { title: "What is AWS Config?", url: "https://docs.aws.amazon.com/config/latest/developerguide/WhatIsConfig.html" },
       { title: "Open Policy Agent documentation", url: "https://www.openpolicyagent.org/docs" },
-      { title: "AICPA: SOC 2 (Trust Services Criteria)", url: "https://www.aicpa-cima.com/topic/audit-assurance/audit-and-assurance-greater-than-soc-2" },
+      { title: "AICPA & CIMA: SOC suite of services", url: "https://www.aicpa-cima.com/resources/landing/system-and-organization-controls-soc-suite-of-services" },
       { title: "Drata: SOC 2 Type 1 vs Type 2", url: "https://drata.com/grc-central/soc-2/type-1-vs-type-2" },
       { title: "PCI Security Standards Council: PCI DSS", url: "https://www.pcisecuritystandards.org/standards/pci-dss/" },
       { title: "AWS PCI DSS FAQs", url: "https://aws.amazon.com/compliance/pci-faqs/" },

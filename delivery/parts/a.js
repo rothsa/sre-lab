@@ -107,6 +107,7 @@ publish:
     say30: "A CI pipeline turns a commit into evidence and an artifact. The push or pull request emits an event, matching workflows queue jobs, and each job waits for a runner: a fresh VM if hosted, or your own machine. The job checks out the exact commit, restores dependencies from a cache keyed on the lockfile hash, builds, and runs unit and integration tests as parallel jobs. Each job reports a status, branch protection requires the important ones to pass before merge, and a merge queue retests against the latest main. On main it pushes one image and records its digest. At scale the hard parts are queue time, flaky tests, cache misses and building only what changed.",
     gotchas: [
       "A cache is not an artifact. Caches are best-effort and get evicted (GitHub removes entries unused for 7 days and evicts the oldest when a repository hits its limit). Use artifacts to hand build outputs between jobs.",
+      "CI evidence expires too: since October 2026 GitHub's Actions retention setting also deletes checks, workflow runs and statuses, including third-party ones (90 days max for public repositories), and raising it won't restore removed records. Copy the release evidence audits or postmortems need somewhere you control.",
       "Cache scope follows branches: a run can restore from its own branch and the default branch (pull requests also from the base), never from sibling branches. A cold feature branch is normal; keep the default branch's cache warm.",
       "With loose status checks a green pull request can still break main if the base moved after its run. Strict mode or a merge queue closes that gap.",
       "A self-hosted runner that is not ephemeral keeps files, credentials and processes from earlier jobs, so one job can affect the next.",
@@ -114,7 +115,7 @@ publish:
     atScale: [
       "Queue time: when the runner fleet is too small, jobs sit queued while dashboards show short run times. Track queue time per runner label, scale runners from `workflow_job` events or Actions Runner Controller, and use ephemeral one-job runners so scale-in is safe.",
       "Flaky tests: across thousands of tests, a small per-test flake rate makes many runs fail somewhere, and required checks turn each flake into a blocked merge. Teams track flake rate per test, quarantine flaky tests out of the required set, and give them owners, instead of blanket auto-retry that hides real failures.",
-      "Cache pressure: GitHub's default is 10 GB of cache per repository, oldest-by-access evicted first. A large monorepo with many keys thrashes and every run goes cold. Key caches on lockfile hashes, share broad `restore-keys` prefixes, and save from the default branch.",
+      "Cache pressure: GitHub's default is 10 GB of cache per repository (admins can raise it; usage beyond 10 GB is billed), oldest-by-access evicted first. A large monorepo with many keys thrashes and every run goes cold. Key caches on lockfile hashes, share broad `restore-keys` prefixes, and save from the default branch.",
       "Monorepos: building and testing everything on every commit grows with the repo, not the change. Teams trigger jobs on changed paths, use build tools that compute affected targets, and split work into child pipelines (GitLab parent-child pipelines are common for monorepos).",
       "Busy main branch: with strict up-to-date checks, every merge invalidates every other open pull request's checks, so authors rebase and rerun in a race. A merge queue or merge train batches and serializes this.",
       "Secrets: long-lived cloud keys stored in CI are a high-value target. OIDC gives each job a short-lived token whose claims (repository, ref, environment) the cloud role checks, so there is nothing long-lived to steal.",
@@ -140,6 +141,7 @@ publish:
       { title: "GitLab Docs: CI/CD pipelines", url: "https://docs.gitlab.com/ci/pipelines/" },
       { title: "GitHub Docs: Risks and mitigations for Copilot cloud agent", url: "https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/risks-and-mitigations" },
       { title: "Claude Code: GitHub Actions", url: "https://code.claude.com/docs/en/github-actions" },
+      { title: "GitHub changelog: Actions retention now covers checks, runs, and statuses (1 Oct 2026)", url: "https://github.blog/changelog/2026-10-01-actions-retention-now-covers-checks-runs-and-statuses/" },
     ],
   },
 
@@ -224,7 +226,7 @@ publish:
     ],
     atScale: [
       "Registry growth: thousands of services building on every merge fill registries fast. Lifecycle rules (ECR expires by image count or age, within 24 hours of matching) clean up, but a careless rule can expire an image still running or needed for rollback. Preview rules first and exclude release tags or the last N deployed digests.",
-      "Multi-region pulls: pulling from one central registry adds latency and a cross-region dependency to every scale-up. Teams replicate (ECR supports cross-region and cross-account), but only images pushed after replication is configured are copied, deletes are not replicated, and most images arrive within 30 minutes, so the deploy must wait until the digest exists in each region.",
+      "Multi-region pulls: pulling from one central registry adds latency and a cross-region dependency to every scale-up. Teams replicate (ECR supports cross-region and cross-account), but only images pushed or restored after replication is configured are copied, deletes and archives are not replicated, and most images arrive within 30 minutes, so the deploy must wait until the digest exists in each region.",
       "Tag drift: with mutable tags, nodes that pull at different times can run different images under the same name, and a node replacement can silently upgrade. Pin digests in manifests and turn on tag immutability for release repositories.",
       "Approvals at scale: a human approval on every service's every deploy becomes rubber-stamping. Keep human gates for high-risk tiers and replace the rest with automated checks; GitHub also supports custom protection rules from GitHub Apps.",
       "Provenance: with many build systems, you need proof that a digest came from your CI and not a laptop. Artifact attestations bind build provenance to the image digest and can be checked with `gh attestation verify` before deploy.",

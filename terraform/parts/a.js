@@ -169,6 +169,7 @@ removed {
     say30: "Terraform tracks objects by address, so a rename or a move into a module looks like a delete plus a create. Before 1.1 you fixed that with `terraform state mv`, by hand, outside a plan. Since 1.1 you write a `moved` block with `from` and `to`; plan treats the object as already at the new address and shows a move instead of a replacement. For shared modules you chain moves and keep them forever, because consumers may upgrade from any old version. Terraform 1.7 added `removed` blocks for the opposite case: stop managing a resource. With `lifecycle { destroy = false }` it leaves state but keeps running, and you see that in the plan first.",
     gotchas: [
       "A `removed` block destroys by default. Without `lifecycle { destroy = false }` it behaves like deleting the resource block.",
+      "Terraform 1.16 also accepts `destroy = false` in a resource's own `lifecycle` block: when that resource is planned for destruction, it is removed from state instead and the real object is left in place.",
       "Deleting old `moved` blocks is a breaking change for module consumers who have not applied the move yet: their plan goes back to destroy and create.",
       "A module can only declare moves for its own objects and its child modules. You cannot move objects into or out of a module you do not control from the caller side.",
       "`removed` takes a resource or module address without instance keys. You cannot forget just `aws_instance.web[1]` with it.",
@@ -198,6 +199,7 @@ removed {
       { title: "Remove a resource from state", url: "https://developer.hashicorp.com/terraform/language/state/remove" },
       { title: "What's new in OpenTofu 1.7", url: "https://opentofu.org/docs/v1.7/intro/whats-new/" },
       { title: "Terraform JSON output format", url: "https://developer.hashicorp.com/terraform/internals/json-format" },
+      { title: "The lifecycle meta-argument", url: "https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle" },
     ],
   },
   {

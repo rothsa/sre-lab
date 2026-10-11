@@ -59,6 +59,7 @@ export const CHAPTERS = [
       "Accepting `traceparent` from the internet lets callers forge or join traces. Many edges restart the trace (allowed by the W3C spec) and keep the client's ID only as a link or attribute.",
       "Tracing middleware can break production: in one Cloudflare incident a tracing header extractor wiped headers the service itself depended on.",
       "Baggage is propagated to every downstream hop, including third parties if you let it. Never put credentials or PII in it.",
+      "OpenTelemetry is deprecating the Span Event API (`Span.AddEvent`, `Span.RecordException`): new code should write events as logs correlated with the current span. Existing span-event data stays valid OTLP, and instrumentations switch in their next major versions.",
     ],
     atScale: [
       "Span volume: a fan-out request can emit hundreds of spans. The SDK's batch queue (spec default 2048 spans) drops spans silently when export can't keep up; watch dropped-span counts and sample before raising queue sizes.",
@@ -89,6 +90,7 @@ export const CHAPTERS = [
       { title: "OpenTelemetry GenAI agent spans", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-agent-spans.md" },
       { title: "OpenTelemetry GenAI spans", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md" },
       { title: "OpenTelemetry semantic conventions for MCP", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/mcp.md" },
+      { title: "OpenTelemetry: Deprecating span events", url: "https://opentelemetry.io/blog/2026/deprecating-span-events/" },
     ],
   },
   {
@@ -137,7 +139,7 @@ export const CHAPTERS = [
       { text: "Everything else is discarded, after you already paid to export, ship and buffer it. That's the trade: head is cheap but blind, tail sees more but costs more, and late, dropped or misrouted spans still leave gaps. High-volume services often head-sample first, then tail-sample.", on: ["pol", "dropT", "drop0"], flow: ["e-drop"] },
     ],
     code: [
-      { lang: "yaml", label: "Tier 1: route by trace ID", src: "exporters:\n  loadbalancing:\n    routing_key: traceID\n    protocol:\n      otlp:\n        tls:\n          insecure: true\n    resolver:\n      dns:\n        hostname: tail-samplers-headless.otel.svc.cluster.local" },
+      { lang: "yaml", label: "Tier 1: route by trace ID", src: "exporters:\n  load_balancing:\n    routing_key: traceID\n    protocol:\n      otlp:\n        tls:\n          insecure: true\n    resolver:\n      dns:\n        hostname: tail-samplers-headless.otel.svc.cluster.local" },
       { lang: "yaml", label: "Tier 2: tail sampling", src: "processors:\n  tail_sampling:\n    decision_wait: 30s\n    num_traces: 200000\n    decision_cache:\n      sampled_cache_size: 1000000\n    policies:\n      - name: errors\n        type: status_code\n        status_code: {status_codes: [ERROR]}\n      - name: slow\n        type: latency\n        latency: {threshold_ms: 2000}\n      - name: baseline\n        type: probabilistic\n        probabilistic: {sampling_percentage: 5}" },
     ],
     codeNote: "The DNS resolver points at a headless Service so tier 1 sees every tier-2 pod. Size `num_traces` and the decision cache from your trace rate and memory, not from this example.",

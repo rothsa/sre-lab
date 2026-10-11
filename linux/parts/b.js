@@ -278,6 +278,7 @@ export const CHAPTERS = [
       { title: "SNMP counter", url: "https://docs.kernel.org/networking/snmp_counter.html" },
       { title: "getrlimit(2)", url: "https://man7.org/linux/man-pages/man2/getrlimit.2.html" },
       { title: "proc_sys_fs(5)", url: "https://man7.org/linux/man-pages/man5/proc_sys_fs.5.html" },
+      { title: "Linux commit: tcp: remove tcp_tw_recycle (v4.12)", url: "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=4396e46187ca5070219b81773c4e65088dac50cc" },
     ],
   },
 

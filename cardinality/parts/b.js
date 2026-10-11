@@ -83,7 +83,6 @@ export const CHAPTERS = [
       { title: "Chronosphere (Cortex XCOR) docs: Rollup rules", url: "https://docs-xcor.paloaltonetworks.com/control/shaping/shape-metrics/rules/rollup" },
       { title: "Grafana Cloud: Adaptive Metrics introduction", url: "https://grafana.com/docs/grafana-cloud/observe-and-act/adaptive-telemetry/adaptive-metrics/introduction/" },
       { title: "Grafana Cloud: Adaptive Metrics rules", url: "https://grafana.com/docs/grafana-cloud/observe-and-act/adaptive-telemetry/adaptive-metrics/create-rules/" },
-      { title: "Grafana Cloud: Control metrics usage via Adaptive Metrics", url: "https://grafana.com/docs/grafana-cloud/cost-management-and-billing/reduce-costs/metrics-costs/control-metrics-usage-via-adaptive-metrics/" },
     ],
   },
   {
@@ -228,6 +227,7 @@ export const CHAPTERS = [
     gotchas: [
       "Removing an attribute with a View doesn't remove it everywhere: removed attributes can still appear as `filtered_attributes` on exemplars. If it's sensitive, turn exemplars off or use a custom filter.",
       "The SDK limit is per instrument, per process. A fleet of 1,000 processes can each stay under 2000 and still send millions of series. Backend quotas are still needed.",
+      "Overflow keeps totals right but strips attributes, so an error ratio whose numerator filters on one (say `success=false`) misses failures folded into overflow and looks healthier than it is. Page, not ticket, on overflow for any metric behind an SLO, alert or autoscaler.",
       "Cumulative temporality makes the SDK remember every attribute set it has seen, so memory grows with cardinality. Delta moves that cost out of the process to whoever converts or stores it.",
       "With the default TraceBased filter, exemplars come only from sampled spans (AlwaysOn and AlwaysOff behave differently). With 1% head sampling, most points have none, and the one you need may not be there.",
     ],
@@ -260,6 +260,7 @@ export const CHAPTERS = [
       { title: "OpenTelemetry GenAI semconv: token metrics", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-token-metrics.md" },
       { title: "OpenTelemetry GenAI semconv: spans", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md" },
       { title: "Datadog: Agent Observability", url: "https://docs.datadoghq.com/llm_observability/" },
+      { title: "OpenTelemetry: Metric cardinality limits in OpenTelemetry, a practical guide", url: "https://opentelemetry.io/blog/2026/cardinality-limits-in-opentelemetry/" },
     ],
   },
 ];

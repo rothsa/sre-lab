@@ -336,6 +336,7 @@ export const CHAPTERS = [
     say30: "Trunk-based development keeps changes small and merged at least daily, but at a few hundred engineers, PR checks against a stale main let combinations break it. A merge queue fixes that: it tests each PR on top of main and the PRs ahead of it, merges only passing groups, and ejects failures. CI time becomes the bottleneck, so you shard tests and batch merges. A green main lets you deploy small changes often, through canaries. DORA measures it per application: lead time, deployment frequency and recovery time from failed deploys for throughput, change fail rate and rework rate for instability. Don't make them targets or compare teams. Prefer safer deploys to freezes, which just batch risk.",
     gotchas: [
       "A merge queue does not replace PR checks; it adds a check on the combined result. Forgetting the `merge_group` trigger makes every queued PR fail its required check.",
+      "GitHub's stacked PRs (GA October 2026) keep approvals when an otherwise unchanged stack is rebased onto a moved base, even where stale approvals are dismissed, and the whole stack enters the merge queue as one merge group. A kept approval says nothing about the combined result; the `merge_group` check still does.",
       "Jumping a PR to the front of the queue rebuilds every group in progress. Used often, it slows everyone.",
       "DORA metrics are for a team improving itself. Mandating targets invites gaming, and comparing teams or unlike applications misleads.",
       "Change fail rate counts deployments needing immediate intervention, like a rollback or hotfix. It is not the number of incidents.",
@@ -369,6 +370,7 @@ export const CHAPTERS = [
       { title: "Google Cloud blog: Announcing the 2025 DORA report", url: "https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report" },
       { title: "GitHub Docs: About Copilot code review", url: "https://docs.github.com/en/copilot/concepts/agents/code-review" },
       { title: "GitHub Docs: Risks and mitigations for Copilot cloud agent", url: "https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/risks-and-mitigations" },
+      { title: "GitHub changelog: Stacked pull requests generally available (6 Oct 2026)", url: "https://github.blog/changelog/2026-10-06-stacked-pull-requests-generally-available/" },
     ],
   },
 ];

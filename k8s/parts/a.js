@@ -245,7 +245,7 @@ export const CHAPTERS = [
     agentic: [
       "Agents are good at turning a `FailedScheduling` event ('0/40 nodes are available: 12 Insufficient cpu...') into plain language. Check the reasoning uses requests, not usage, because an agent reading a CPU dashboard can blame the wrong thing.",
       "The quick agent fixes for Pending Pods are policy changes in disguise: adding a toleration, raising priority or dropping anti-affinity gets the Pod placed but weakens isolation or preempts other teams. Keep PriorityClasses and taints out of an agent's write scope.",
-      "Agent runtimes are now a workload you schedule. kubernetes-sigs/agent-sandbox (SIG Apps, in development) runs each agent as a singleton Pod and keeps a SandboxWarmPool of pre-started Pods to avoid about a second of startup; warm Pods hold requests, so they use capacity the scheduler counts.",
+      "Agent runtimes are now a workload you schedule. kubernetes-sigs/agent-sandbox (SIG Apps, v1.0 with v1beta1 APIs) runs each agent as a singleton Pod, can scale idle ones to zero, and keeps a SandboxWarmPool of pre-started Pods to skip about a second of startup; warm Pods hold requests, so they use capacity the scheduler counts.",
     ],
     quiz: [
       { q: "What are the two phases of a scheduling decision, and what happens if the first leaves no nodes?", a: "Filtering finds feasible nodes; scoring ranks them and the highest wins, with ties broken at random. If filtering leaves none, the Pod stays Pending and the scheduler may try preemption." },
@@ -265,6 +265,7 @@ export const CHAPTERS = [
       { title: "SIG Scalability: Kubernetes scalability thresholds", url: "https://github.com/kubernetes/community/blob/master/sig-scalability/configs-and-limits/thresholds.md" },
       { title: "GKE: Accelerate diagnosis with Gemini Cloud Assist", url: "https://docs.cloud.google.com/kubernetes-engine/docs/troubleshooting/introduction-gemini" },
       { title: "Running Agents on Kubernetes with Agent Sandbox", url: "https://kubernetes.io/blog/2026/03/20/running-agents-on-kubernetes-with-agent-sandbox/" },
+      { title: "kubernetes-sigs/agent-sandbox releases", url: "https://github.com/kubernetes-sigs/agent-sandbox/releases" },
     ],
   },
 

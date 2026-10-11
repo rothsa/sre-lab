@@ -155,6 +155,7 @@ export const CHAPTERS = [
     gotchas: [
       "Deny rules match text, not programs: `Bash(curl *)` misses `curl` by path or inside `sh -c`, and `Read(./.env)` misses a script that opens `.env`. A README injection beat Snowflake Cortex's safe-command check with process substitution and had the agent set `dangerously_disable_sandbox`.",
       "Sandboxes have edges. Claude Code's sandbox covers shell commands and their children; file tools follow permission rules, and MCP servers and hooks run outside it. Agent teammates inherit the lead's permission mode, even `--dangerously-skip-permissions`.",
+      "GitHub Copilot's local sandbox (GA October 2026) has similar edges: it is off by default, contains processes rather than running a VM or container, its in-process file tools check policy themselves on a best-effort basis, and remote MCP servers are never sandboxed.",
       "Uncurated allowlists leak. Antigravity's injected agent ran `cat` on `.env` to get around the gitignore block, then sent the credentials to webhook.site, which was on the default browser allowlist.",
       "Detection is not prevention. In a February 2026 Anthropic red-team exercise, a phished user's Claude Code session exfiltrated AWS credentials in 24 of 25 tries. Anthropic: in that case, only the environment holds.",
     ],
@@ -207,6 +208,8 @@ export const CHAPTERS = [
       { title: "Claude Code: Settings reference", url: "https://code.claude.com/docs/en/settings-reference" },
       { title: "Claude Code: Monitoring usage", url: "https://code.claude.com/docs/en/monitoring-usage" },
       { title: "Claude Code: Agent teams", url: "https://code.claude.com/docs/en/agent-teams" },
+      { title: "GitHub changelog: Local sandboxing for GitHub Copilot GA (7 Oct 2026)", url: "https://github.blog/changelog/2026-10-07-local-sandboxing-for-github-copilot-now-generally-available/" },
+      { title: "GitHub Docs: About cloud and local sandboxes", url: "https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/about-cloud-and-local-sandboxes" },
     ],
   },
   {
@@ -258,7 +261,7 @@ export const CHAPTERS = [
       gotchas: [
         "Read-only belongs in the identity, not the prompt. Azure SRE Agent's four misfires included deallocating a VM on a pattern match after its safety checks went down; Microsoft's fix was environmental: microVMs, default-deny egress, a handle-swapping proxy, gated writes, no deletes.",
         "Check defaults: Azure SRE Agent's incident response plans default to Autonomous though the agent default is Review, and Approve/Deny gates only Azure infra writes, not emails or Teams posts.",
-        "Microsoft counts 221K of 1.47M incidents \"mitigated autonomously\" without defining it, then wrote \"every mutation requires human approval\". Ask what it counts.",
+        "Microsoft counts 221K of 1.47M incidents \"mitigated autonomously\" without defining it, then wrote two weeks later that \"every mutation requires human approval\". Ask what it counts.",
       ],
       atScale: [
         "Automation fails fleet-wide in one step: a 2024 Google Cloud maintenance job ignored its zone parameter and stopped VPC controllers in every zone; an Azure automation change deleted resources in 14 regions in about 40 minutes. Google adds agent rate limits, circuit breakers, auto-downgrade of risky requests and a fleet-wide \"Red Button\".",

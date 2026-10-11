@@ -210,6 +210,7 @@ terraform {
       "Mixed fleets: some teams on `terraform`, some on `tofu`. Pin the tool and version per root module, and have CI or the orchestrator (Atlantis, Spacelift, env0) select the binary per project.",
       "Private module and provider registries: make sure both tools can install from yours, and that no module uses features only one tool has.",
       "Migration at scale: move workspaces in waves, start with ones whose state is backed up and whose plans are empty, and keep one plan-only run with the new binary to prove a no-op diff before the first apply.",
+      "Upgrades within one tool need the same no-op check: OpenTofu 1.13 removed WinRM for the `remote-exec` and `file` provisioners (a `winrm` connection is now an error), and its `base64gzip` output is equivalent but not byte-for-byte identical, so configurations using it show a change after upgrading.",
       "Feature divergence grows each release. Teams that need state encryption without a platform may lean to OpenTofu; teams that need Stacks or vendor support from HashiCorp/IBM stay on Terraform.",
     ],
     agentic: [
@@ -236,6 +237,7 @@ terraform {
       { title: "Atlantis: server configuration", url: "https://www.runatlantis.io/docs/server-configuration" },
       { title: "Terraform MCP server", url: "https://developer.hashicorp.com/terraform/mcp-server" },
       { title: "opentofu/opentofu-mcp-server (GitHub)", url: "https://github.com/opentofu/opentofu-mcp-server" },
+      { title: "OpenTofu 1.13.0 (29 Sep 2026)", url: "https://opentofu.org/blog/opentofu-1-13-0/" },
     ],
   },
   {

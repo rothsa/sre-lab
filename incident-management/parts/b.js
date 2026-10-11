@@ -68,7 +68,7 @@ export const CHAPTERS = [
     agentic: [
       "An agent that investigates every alert does not reduce pages. Incidents per shift and the 2-per-12-hour budget only move when the alert review fixes, demotes or deletes the alert; an agent summary on a non-actionable page adds token cost and reading time to the noise.",
       "Pages still go to humans. An agent can gather evidence before the primary acks, but the primary owns the response, and the handoff note now records what the agent ran and concluded so the next shift verifies it rather than repeating it.",
-      "Agent analysis is only as good as the alert payload: PagerDuty's SRE Agent reads only the first 2,000 characters of `custom_details` and notes. Put the service, symptom and runbook link up front, the same discipline that makes a page actionable for a person.",
+      "Agent analysis is only as good as the alert payload: PagerDuty's SRE Agent, Paige, reads only the first 2,000 characters of `custom_details` and notes. Put the service, symptom and runbook link up front, the same discipline that makes a page actionable for a person.",
     ],
     quiz: [
       { q: "Why does Google set the ceiling at 2 incidents per 12-hour shift?", a: "Handling an incident, with root cause, remediation and postmortem, takes about 6 hours on average, so two fill a 12-hour shift. More than that and follow-up work is skipped and pages repeat." },
@@ -126,7 +126,7 @@ export const CHAPTERS = [
     steps: [
       { text: "Two paths from one incident: a light review for most, a deep investigation for a few. Both end in a shared, searchable write-up. Press Next." },
       { text: "Decide the triggers before incidents happen. The SRE book lists user-visible impact over a threshold, any data loss, on-call intervention such as a rollback, long resolution, and monitoring failures. Anyone can ask for a review.", on: ["inc", "sel"], flow: ["e-trig"] },
-      { text: "Most incidents get a light review: one owner fills in the template and a short meeting checks it. For major incidents, PagerDuty's process holds the postmortem meeting within 3 calendar days for SEV-1 and 5 business days for SEV-2.", on: ["sel", "light", "report"], flow: ["e-no", "e-short"] },
+      { text: "Most incidents get a light review: one owner fills in the template and a short meeting checks it. For major incidents, PagerDuty's process schedules the postmortem meeting within 3 calendar days for SEV-1 and 5 business days for SEV-2.", on: ["sel", "light", "report"], flow: ["e-no", "e-short"] },
       { text: "High impact, surprising or near-miss incidents get a deep review. The Howie guide assigns one investigator who did not respond and has no authority over the people interviewed, so people speak freely.", on: ["sel", "assign"], flow: ["e-yes"] },
       { text: "Build the timeline from evidence, not memory: chat transcripts, alert logs, on-call schedules, deploys, dashboards. Tag events (detection, hypotheses, mitigations) and keep the false starts. A clean detect-diagnose-repair story hides how hard it was.", on: ["assign", "evidence", "timeline"], flow: ["e-gather", "e-build"] },
       { text: "Interview the people involved. Ask how, not why: what did you see, what did you expect, what were you trying to do? Allspaw's point is that the action made sense to them at the time, and the review should find out how.", on: ["timeline", "interviews"], flow: ["e-ask"] },

@@ -325,6 +325,7 @@ export const CHAPTERS = [
       "tmpfs, including a Kubernetes `emptyDir` with `medium: Memory`, is charged to the container's memory and can't be dropped like page cache. Filling it can OOM-kill the container.",
       "On cgroup v1, or with the kubelet's `singleProcessOOMKill: true`, a cgroup OOM can kill a worker process while PID 1 lives on. The container keeps running in a degraded state and Kubernetes doesn't restart it.",
       "`memory.high` never kills, so a workload stuck above it just gets slower. Look at `memory.events` `high` and `memory.pressure` when a container is slow but not dying.",
+      "Kubernetes 1.37 turned the MemoryQoS gate on by default (Beta) but changed `memoryThrottlingFactor`'s default from 0.9 to null, so a kubelet config that never set it stops writing `memory.high` after the upgrade. `TieredReservation` is node-wide, and its `memory.min` also pins page cache.",
     ],
     atScale: [
       "Kubernetes is designed for no more than 110 Pods per node, so hundreds of cgroups compete for one machine's memory. `memory.min` (hard) and `memory.low` (best effort) protect system daemons and critical workloads from reclaim driven by neighbours.",
@@ -353,6 +354,7 @@ export const CHAPTERS = [
       { title: "Considerations for large clusters", url: "https://kubernetes.io/docs/setup/best-practices/cluster-large/" },
       { title: "kubernetes-sigs/agent-sandbox", url: "https://github.com/kubernetes-sigs/agent-sandbox" },
       { title: "gVisor documentation", url: "https://gvisor.dev/docs/" },
+      { title: "Kubernetes v1.37: Memory QoS graduates to Beta (14 Sep 2026)", url: "https://kubernetes.io/blog/2026/09/14/kubernetes-v1-37-memory-qos-graduates-to-beta/" },
     ],
   },
 ];

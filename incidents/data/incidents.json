@@ -1,5 +1,107 @@
 [
  {
+  "id": "circleci-2026-wal-volume-full",
+  "company": "CircleCI",
+  "date": "2026-10-06",
+  "title": "Autovacuum log flood takes workflow database offline, stalling pipelines",
+  "url": "https://discuss.circleci.com/t/post-incident-report-oct-6-2026-delays-in-pipelines-workflows-ui-data-and-notifications/54908",
+  "category": [
+   "database",
+   "storage",
+   "monitoring-gap"
+  ],
+  "trigger": "Anti-wraparound autovacuum runs on the orchestration database's biggest tables produced transaction logs faster than archiving could keep up, nearly filling the dedicated log volume; relocating the logs to the main volume meant taking the database down.",
+  "impact": "Pipelines, workflows and jobs were delayed on October 6, 2026 (15:30-20:30 UTC), after intermittent slowdowns from 13:30; nothing started between 15:48 and 16:38, pipelines triggered after 16:02 failed, and about 3,500 jobs never started. UI data, notifications and commit statuses lagged as well.",
+  "detection": "Short-lived orchestration alerts from 10:02 were handled as routine; renewed alerts at 13:35 and again near 14:30 led to an incident being declared at 14:54, and CircleCI says the alert combination should have been recognized earlier.",
+  "fix": "Engineers moved the logs onto the main storage volume (50 minutes offline), then at 18:19 UTC tuned a database parameter that restored throughput and added capacity to drain the backlog. Planned follow-ups: alerts on log-volume fill and archive lag, autovacuum tuning, removing the single transaction log bottleneck via multiple instances or a distributed database, and making clients wait rather than give up.",
+  "summary": "On 6 October 2026 the CircleCI service that orchestrates all pipelines, workflows and jobs slowed and then stopped. Autovacuum on very large tables generated more transaction log than the database could archive, and the log volume approached full, which would have made the database read-only. Engineers chose to move the logs to the main disk, a step that kept the database offline for 50 minutes. Afterwards it ran at about half speed until a storage-wait setting was changed at 18:19 UTC. No alert existed for log-volume usage or archive lag; CircleCI is adding both."
+ },
+ {
+  "id": "railway-2026-routing-schema-race",
+  "company": "Railway",
+  "date": "2026-09-30",
+  "title": "Routing service outruns its schema migration, returning 404 for every Railway domain",
+  "url": "https://blog.railway.com/p/incident-report-sept-30-2026-routing-disruption",
+  "category": [
+   "deploy",
+   "database",
+   "network"
+  ],
+  "trigger": "A routing control plane change bundled a schema migration with a new routing service binary; since the control plane was split out of the monolith the two pipelines ran in parallel, and the binary went live first and queried columns that did not exist yet.",
+  "impact": "For about five minutes on September 30, 2026 (roughly 07:35-07:40 UTC), new connections to all Railway-hosted domains, custom and *.up.railway.app alike, returned HTTP 404 in all regions, and private networking DNS lookups between services failed; existing connections and running workloads were unaffected.",
+  "detection": "Internal alerting paged the on-call team as soon as route lookups began failing; engineers pinned down the cause at 07:44 UTC.",
+  "fix": "Routing healed by itself once CI applied the migration and lookups retried, so no rollback was required. Railway says it has unified pipeline ordering with pre-merge checks and makes the service refuse to go live until its matching schema exists; shard-based regional rollouts for the control plane are still to be added.",
+  "summary": "Railway's new distributed routing control plane tells origin proxies where each domain's traffic should go. A change preparing an authentication feature needed a modified table plus a new service version, but parallel pipelines let the binary deploy ahead of the migration. Every lookup errored, and because a recently modified fallback meant proxies no longer reused the last known route, failures were treated as unknown domains and answered with 404. The outage lasted about five minutes and ended on its own; Railway paused other work on the system to ship guardrails."
+ },
+ {
+  "id": "google-firebase-2026-analytics-ios-flag-crash",
+  "company": "Google (Firebase)",
+  "date": "2026-09-28",
+  "title": "Stale flag cleanup crashes iOS apps using Firebase Analytics SDK",
+  "url": "https://firebase.blog/posts/2026/10/firebase-analytics-outage/",
+  "category": [
+   "config",
+   "software-bug",
+   "monitoring-gap"
+  ],
+  "trigger": "A legacy remote configuration flag was deleted (a 2-line change) while the iOS SDK still referenced it, and because the SDK never checked for a nil flag name, fetching the new payload caused a fatal error.",
+  "impact": "From 17:41 PDT on September 28, 2026 the bad payload went out globally, and many Apple-platform apps (iOS and others) embedding Google Analytics for Firebase crashed once on launch before reverting to the earlier config; the backend served it for 2 hours and 11 minutes, with crash reports trailing in for hours.",
+  "detection": "Developer crash alerts spiked and GitHub bug reports arrived at 17:59 PDT, paging on-call; status dashboards for both Firebase and Google Ads stayed green because they watch only server-side health.",
+  "fix": "Responders found the culprit at 19:16 PDT and the rollback was live on all production servers at 19:52 PDT. Planned: an SDK patch that strictly validates payloads and skips malformed flags, an audit of other Firebase SDKs, pipeline checks that block orphaned flag references, slower phased config rollouts and SDK outage coverage on status dashboards.",
+  "summary": "Google Analytics for Firebase uses remote flags as kill switches, and that mechanism ships globally by design. Cleaning up an unused flag left the iOS SDK pointing at something that no longer existed, so every active user fetching the new config hit a one-time crash. Existing tests passed the change. Status pages showed no problem, since client-side crashes are invisible to server metrics, so the team posted updates on GitHub and a console banner instead. No devices got stuck in a crash loop, but reporting lag made the incident look longer to developers."
+ },
+ {
+  "id": "luarocks-2026-rockspec-bytecode-rce",
+  "company": "LuaRocks",
+  "date": "2026-09-25",
+  "title": "Bytecode rockspec uploads give attackers code execution on LuaRocks.org",
+  "url": "https://luarocks.org/security-incident-september-2026",
+  "category": [
+   "security",
+   "supply-chain",
+   "software-bug"
+  ],
+  "trigger": "The upload path evaluated rockspecs with loadstring without restricting it to source text, so any registered user could submit hand-crafted LuaJIT bytecode that escaped the empty-environment sandbox and ran arbitrary code in the web server.",
+  "impact": "Three attacker-created accounts ran shell commands on the server on July 9 and August 7, 2026, published three malicious packages, and made several hundred automated exploit attempts on August 16 and August 20; LuaRocks assumes everything on the host was read, including bcrypt password hashes, API keys, 2FA secrets and GitHub tokens. No changes to existing packages were found.",
+  "detection": "A researcher reported the vulnerability, coordinated through CISA, on September 25; the earlier exploitation was only discovered during the follow-up investigation.",
+  "fix": "On September 26 the loader was switched to text-only mode and files beginning with the bytecode marker byte were rejected, the site went read-only, attacker accounts and packages were removed, and all API keys, sessions, 2FA secrets and server credentials were revoked before moving to a newly provisioned server. Users are asked to upgrade the client to LuaRocks 3.12 or newer.",
+  "summary": "LuaRocks.org parses uploaded rockspecs by executing them in a sandbox, but loadstring in LuaJIT also accepts precompiled bytecode, which is never verified and can reach arbitrary process memory. Three purpose-made accounts used this to run shell commands on the server between July and August 2026 and to publish three malicious packages. The hole was reported via CISA on September 25 and patched the next day. Comparing storage against an external daily git mirror found no evidence that legitimate modules were altered, though deleted packages and served content could not be fully verified."
+ },
+ {
+  "id": "google-cloud-2026-us-central1-fiber-unplug",
+  "company": "Google Cloud",
+  "date": "2026-09-01",
+  "title": "Unsequenced router upgrade unplugs every fiber path in us-central1 datacenter",
+  "url": "https://status.cloud.google.com/incidents/J5ia5t9p3g9Q5Wi7r8Ev",
+  "category": [
+   "human-error",
+   "hardware",
+   "network"
+  ],
+  "trigger": "A technician doing a scheduled router capacity upgrade was handed the whole list of transceiver swaps with no instruction to sequence routers individually; the new higher-density transceivers were incompatible with the fabric, and all fiber paths on the affected devices were pulled within 13 minutes.",
+  "impact": "On 1 September 2026, 07:41-11:52 US/Pacific (4 hours 11 minutes), VMs in part of the us-central1-b and -f zones lost connectivity, with drop rates reaching 100% at peak; GKE control planes, Cloud SQL, Spanner, Cloud Run, App Engine, Cloud VPN and regional Envoy load balancers saw errors or latency.",
+  "detection": "Automated network loss monitoring and proactive probes caught it immediately and engaged network engineering and incident response.",
+  "fix": "Engineers diverted traffic at 07:45 and 08:00 while on-site technicians reinserted the original transceivers, with most links back by 08:50. Planned follow-ups: retraining on checking unplugged fibers for light, fully automated sequencing for zonal upgrade workflows, work-stop alerts for live-fiber disconnects, and automatic zone evacuation cutting diversion from approximately 19 minutes to around 5.",
+  "summary": "A manually orchestrated router upgrade in one Google datacenter skipped both its step-by-step sequencing and its verification checks. The technician swapped transceivers across every redundant router in quick succession, and the replacements could not talk to the existing fabric, isolating compute in parts of two us-central1 zones. A standing rule to stop if light shows on a disconnected fiber was not followed. Multi-zone deployments mostly rode it out. After restoration, Cloud Run and App Engine suffered a thundering herd of instance starts that overwhelmed file-serving tiers until emergency capacity arrived."
+ },
+ {
+  "id": "microsoft-azure-2026-west-us-break-fix-scope",
+  "company": "Microsoft (Azure)",
+  "date": "2026-07-23",
+  "title": "Over-scoped optical repair cuts West US datacenter off from the WAN",
+  "url": "https://azure.status.microsoft/en-us/status/history/?trackingId=ZJV6-SGG",
+  "category": [
+   "network",
+   "software-bug",
+   "monitoring-gap"
+  ],
+  "trigger": "An automated break-fix repair on one optical device was widened by a bug in the blast radius analysis system to every optical device egressing a datacenter, and the safety check judged each device on its own instead of in aggregate, so routes were withdrawn from all of them at once.",
+  "impact": "On 23 July 2026, 14:44-19:41 UTC, some customers saw connection failures and latency on traffic entering or leaving West US across services including App Service, AKS, Cosmos DB, ExpressRoute and VPN Gateway, with knock-on Microsoft 365 impact; traffic staying inside the region was fine.",
+  "detection": "Service alerts fired at 14:45 UTC, but links that still looked healthy steered triage toward a WAN routing anomaly, and engineers only tied it to the break-fix work at 17:19 UTC.",
+  "fix": "Automated rollback kept failing because it relied on the severed connectivity, so engineers began rolling back by hand at 17:45 UTC, finishing at 18:26 UTC. Done: the scoping defect fixed, validation and safety checks blocking work on all diverse paths, existing requests scanned. Planned by October 2026: change-ledger visibility, faster traffic anomaly detection, tooling guardrails, quicker escalation and a sturdier rollback.",
+  "summary": "Azure processes single-device break-fix requests automatically because they are assumed harmless. A scoping bug turned one optical repair into a request covering a whole datacenter's egress devices, a case the per-device safety check was never built to evaluate. Physical links and adjacencies stayed up, so the failure resembled third parties being unable to reach Azure, and two investigation tracks chased misleading signals for over two hours. The recovery system also depended on the very connectivity it was trying to repair, so it retried in vain until engineers rolled back manually."
+ },
+ {
   "id": "circleci-2026-api-thread-exhaustion",
   "company": "CircleCI",
   "date": "2026-07-02",

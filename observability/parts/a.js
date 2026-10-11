@@ -176,15 +176,15 @@ processors:
     check_interval: 5s
     limit_mib: 4000
     spike_limit_mib: 500
-  k8sattributes: {}
+  k8s_attributes: {}
   attributes:
     actions:
       - { key: user.email, action: delete }
   batch: {}
 exporters:
-  otlp/vendor:
+  otlp_grpc/vendor:
     endpoint: vendor.example.com:4317
-  loadbalancing:
+  load_balancing:
     routing_key: traceID
     protocol:
       otlp: { tls: { insecure: true } }
@@ -194,9 +194,9 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [memory_limiter, k8sattributes,
+      processors: [memory_limiter, k8s_attributes,
                    attributes, batch]
-      exporters: [otlp/vendor, loadbalancing]` },
+      exporters: [otlp_grpc/vendor, load_balancing]` },
       { lang: "yaml", label: "Tier 2: tail sampling", src: `processors:
   tail_sampling:
     decision_wait: 30s
@@ -212,7 +212,7 @@ service:
         type: probabilistic
         probabilistic: { sampling_percentage: 5 }` },
     ],
-    codeNote: "A sketch, not a drop-in config: hostnames are placeholders and the thresholds are examples. The processor order in `service.pipelines` is the order data flows.",
+    codeNote: "A sketch, not a drop-in config: hostnames are placeholders and the thresholds are examples. The processor order in `service.pipelines` is the order data flows. Recent Collector releases renamed the `otlp` exporter to `otlp_grpc`, `k8sattributes` to `k8s_attributes` and `loadbalancing` to `load_balancing`; the old names still work as deprecated aliases.",
     incidents: ["stackdriver-2013-cassandra-queue-coupling", "honeycomb-2019-ingest-memory-leak", "railway-2023-metrics-agent-cpu-softlock"],
     sources: [
       { title: "OpenTelemetry Collector: Architecture", url: "https://opentelemetry.io/docs/collector/architecture/" },
@@ -229,6 +229,7 @@ service:
       { title: "OpenTelemetry GenAI spans", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md" },
       { title: "OpenTelemetry GenAI agent spans", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-agent-spans.md" },
       { title: "Datadog Agent Observability", url: "https://docs.datadoghq.com/llm_observability/" },
+      { title: "OpenTelemetry Collector contrib CHANGELOG (component renames)", url: "https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/CHANGELOG.md" },
     ],
   },
 
