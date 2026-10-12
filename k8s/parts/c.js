@@ -267,7 +267,7 @@ export const CHAPTERS = [
       { title: "Garbage collection", url: "https://kubernetes.io/docs/concepts/architecture/garbage-collection/" },
       { title: "Kubernetes API concepts", url: "https://kubernetes.io/docs/reference/using-api/api-concepts/" },
       { title: "API Priority and Fairness", url: "https://kubernetes.io/docs/concepts/cluster-administration/flow-control/" },
-      { title: "Kubernetes scalability thresholds", url: "https://github.com/kubernetes/community/blob/master/sig-scalability/configs-and-limits/thresholds.md" },
+      { title: "Kubernetes scalability thresholds", url: "https://github.com/kubernetes/community/blob/main/sig-scalability/configs-and-limits/thresholds.md" },
       { title: "Leases", url: "https://kubernetes.io/docs/concepts/architecture/leases/" },
       { title: "Role based access control good practices", url: "https://kubernetes.io/docs/concepts/security/rbac-good-practices/" },
       { title: "kubernetes-sigs/agent-sandbox", url: "https://github.com/kubernetes-sigs/agent-sandbox" },

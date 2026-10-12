@@ -292,7 +292,7 @@ steps:
     ],
     incidents: ["microsoft-azure-2013-storage-ssl-cert-expiry", "mongodb-2020-expired-cross-signed-ca", "jamf-2025-securedns-cert-expiry", "lootlocker-2025-db-provider-cert-expiry"],
     sources: [
-      { title: "RFC 8446: The Transport Layer Security (TLS) Protocol Version 1.3", url: "https://www.rfc-editor.org/rfc/rfc8446.html" },
+      { title: "RFC 9846: The Transport Layer Security (TLS) Protocol Version 1.3", url: "https://www.rfc-editor.org/rfc/rfc9846.html" },
       { title: "RFC 5280: Internet X.509 PKI Certificate and CRL Profile (path validation)", url: "https://www.rfc-editor.org/rfc/rfc5280.html" },
       { title: "RFC 9525: Service Identity in TLS", url: "https://www.rfc-editor.org/rfc/rfc9525.html" },
       { title: "Create an HTTPS listener for your Application Load Balancer", url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html" },

@@ -2920,7 +2920,7 @@
   "company": "Cloudflare",
   "date": "2020-07-17",
   "title": "Atlanta router policy edit pulls all backbone traffic to one site",
-  "url": "https://web.archive.org/web/20211016040522/https://blog.cloudflare.com/cloudflare-outage-on-july-17-2020/",
+  "url": "https://blog.cloudflare.com/cloudflare-outage-on-july-17-2020/",
   "category": [
    "config",
    "bgp",
