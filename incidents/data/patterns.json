@@ -66,6 +66,7 @@
   "name": "The Thundering Herd",
   "lore": "The service comes back. So does every client, all at once, and it goes down again.",
   "members": [
+   "flyio-2026-readiness-check-netlink-herd",
    "launchdarkly-2025-aws-flag-delivery",
    "railway-2024-io-pressure-retry-storm",
    "buildkite-2022-build-matrix-retry-explosion",
@@ -97,7 +98,8 @@
     "text": "Cache what clients ask for, so one outage doesn't become a query flood.",
     "ids": [
      "spotify-2013-popcount-retry-cascade",
-     "datadog-2020-service-discovery-dns-storm"
+     "datadog-2020-service-discovery-dns-storm",
+     "flyio-2026-readiness-check-netlink-herd"
     ]
    },
    {

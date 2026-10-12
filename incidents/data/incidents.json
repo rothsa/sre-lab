@@ -34,6 +34,23 @@
   "summary": "Railway's new distributed routing control plane tells origin proxies where each domain's traffic should go. A change preparing an authentication feature needed a modified table plus a new service version, but parallel pipelines let the binary deploy ahead of the migration. Every lookup errored, and because a recently modified fallback meant proxies no longer reused the last known route, failures were treated as unknown domains and answered with 404. The outage lasted about five minutes and ended on its own; Railway paused other work on the system to ship guardrails."
  },
  {
+  "id": "docker-2026-pat-transfer-org-conversion",
+  "company": "Docker",
+  "date": "2026-09-30",
+  "title": "Account-to-org conversion hands Docker Hub tokens to a new owner",
+  "url": "https://www.docker.com/blog/docker-hub-security-advisory-cve-2026-105445/",
+  "category": [
+   "security",
+   "supply-chain",
+   "software-bug"
+  ],
+  "trigger": "Converting a personal Docker Hub account into an organization reassigned the account's personal access tokens to the named new owner without rotating or revoking the secret, and the new owner was not asked to confirm or notified.",
+  "impact": "From August 26, 2024 until the fix on September 30, 2026, whoever created such a token could pull, push or delete images as the new owner within the token's scope, including in organizations that owner could access; it gave no web login and no way to change password, email or 2FA. Docker found no evidence of exploitation after reviewing about 304,000 pushes made with transferred tokens.",
+  "detection": "Two external security researchers reported it through Docker's Vulnerability Disclosure Program on September 30, 2026 at 11:40 AM US Eastern, and Docker reproduced it at about 1:30 PM.",
+  "fix": "Docker deployed a fix at about 3:10 PM the same day so conversion no longer transfers tokens, updated its docs, emailed affected users and organization owners on October 2, and deactivated transferred tokens on October 8 unless owners asked to keep them; it recommends organization access tokens for automation.",
+  "summary": "Docker Hub let a user turn a personal account into an organization and name another user as its owner. The account's personal access tokens moved to that owner, but the secret stayed the same, so the original creator still held a working token that now authenticated as someone else. An attacker could set this up on purpose to push images into a target's repositories. Docker rated it critical as a supply chain risk (CVE-2026-105445), fixed it within four hours of the report, and treated every token that moved through conversion since August 2024 as exposed, since registry logs show token use but not unused tokens."
+ },
+ {
   "id": "google-firebase-2026-analytics-ios-flag-crash",
   "company": "Google (Firebase)",
   "date": "2026-09-28",
@@ -66,6 +83,23 @@
   "detection": "A researcher reported the vulnerability, coordinated through CISA, on September 25; the earlier exploitation was only discovered during the follow-up investigation.",
   "fix": "On September 26 the loader was switched to text-only mode and files beginning with the bytecode marker byte were rejected, the site went read-only, attacker accounts and packages were removed, and all API keys, sessions, 2FA secrets and server credentials were revoked before moving to a newly provisioned server. Users are asked to upgrade the client to LuaRocks 3.12 or newer.",
   "summary": "LuaRocks.org parses uploaded rockspecs by executing them in a sandbox, but loadstring in LuaJIT also accepts precompiled bytecode, which is never verified and can reach arbitrary process memory. Three purpose-made accounts used this to run shell commands on the server between July and August 2026 and to publish three malicious packages. The hole was reported via CISA on September 25 and patched the next day. Comparing storage against an external daily git mirror found no evidence that legitimate modules were altered, though deleted packages and served content could not be fully verified."
+ },
+ {
+  "id": "flyio-2026-readiness-check-netlink-herd",
+  "company": "Fly.io",
+  "date": "2026-09-24",
+  "title": "Relay readiness checks pile up behind a kernel lock and stall Fly.io hosts",
+  "url": "https://fly.io/infra-log/network-readiness-checks-stalled/",
+  "category": [
+   "network",
+   "cascading-failure",
+   "capacity"
+  ],
+  "trigger": "Packet loss into Mumbai (BOM) made the reroute system send that traffic through Singapore (SIN) relays; a few hundred hosts switched at about the same time and over 100 probed the same relay worker, whose readiness check dumped every network interface and address via netlink.",
+  "impact": "The netlink dumps serialized behind a global kernel lock at about 500ms each on a busy host, so concurrent checks queued over 50 seconds of work and affected hosts went dark while connections stalled; a similar pattern hit LAX workers about six hours later. The post gives no outage duration or host count.",
+  "detection": "Network monitoring detected the packet loss into BOM that triggered the reroute; the post does not say how the stalled hosts were spotted.",
+  "fix": "Fly.io single-flighted the readiness check so concurrent requests share one result, and replaced the full netlink interface and address dumps with a targeted lookup filtered to the one interface that matters.",
+  "summary": "Fly.io reroutes private 6PN traffic through relay workers when a path degrades, and each source host first runs a readiness check against the candidate relay. On September 24, 2026, packet loss into BOM moved a few hundred hosts onto SIN relays at once. Every check dumped all interfaces and addresses through netlink, and those dumps ran one at a time behind a global kernel lock, so a cheap health check became a queue of more than 50 seconds and the hosts waiting on it stalled. The same thing happened in LAX hours later. Sharing one in-flight check and asking the kernel for a single interface removed the pile-up."
  },
  {
   "id": "google-cloud-2026-us-central1-fiber-unplug",
