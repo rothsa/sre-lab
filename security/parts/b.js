@@ -365,7 +365,7 @@ export const CHAPTERS = [
       "Audit logging sits in the hot path. incident.io's PGAudit extension hung during a migration while holding locks and took the primary database down. Load-test audit settings like any other change, and watch API server memory when you raise audit levels.",
     ],
     agentic: [
-      "Auditors will ask who made a change an agent made. CloudTrail records the role session, so give agents their own roles and require `sts:SourceIdentity` so the launching human appears on every event; Kubernetes audit shows the agent only if it has its own service account.",
+      "Auditors will ask who made a change an agent made. CloudTrail records the role session, so give agents their own roles and require `sts:SourceIdentity`, set by your IdP or launcher rather than the agent, so the launching human appears on the agent's API events (CloudTrail omits it when an AWS service or service-linked role acts for a federated identity); Kubernetes audit shows the agent only if it has its own service account.",
       "Platform logs show what changed, not why: Grafana documents that Assistant actions run under the user's identity in user-level audit logs that exclude chat transcripts. Keep the agent's own record of prompts, tool calls and approvals, for example OTel GenAI agent spans (Development status), with content capture opt-in.",
       "Approval evidence still maps to a named person: Copilot's cloud agent can't approve or merge its own PR, a PR it opens under its own app identity needs one extra approval, and Copilot code reviews don't count toward required approvals by default. The new failure is technically human approval rubber-stamped across a flood of agent PRs, so sample approvals for real review.",
     ],

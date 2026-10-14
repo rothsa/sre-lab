@@ -140,7 +140,7 @@ export const CHAPTERS = [
       "Classic buckets must match exactly to aggregate. Changing boundaries on half the fleet gives `histogram_quantile` mixed `le` values, and results during the rollout are wrong.",
       "`histogram_quantile` interpolates inside a bucket. If the p99 lands in a 1 s to 5 s bucket, the answer can be far off, so put boundaries near your SLO threshold.",
       "Summary quantiles can't be aggregated across instances, and you can't change the quantile or window after the fact. Only use them when you never need a fleet view.",
-      "For scraping, native histograms are only exposed in the Prometheus protobuf format; remote write and OTLP exponential histograms also carry them. A text-format exporter or a library without protobuf support still exposes classic buckets.",
+      "For scraping, native histograms need the Prometheus protobuf format; remote write and OTLP exponential histograms also carry them. Prometheus v3.15 added experimental OpenMetrics 2.0 text scraping, which can carry them, behind `--enable-feature=openmetrics2`. A text-format exporter or a library without protobuf support still exposes classic buckets.",
     ],
     atScale: [
       "Bucket explosion across hundreds of services: each team adds its own boundaries and labels, so a single latency metric becomes millions of series. Standardise a small shared bucket set, or move to native histograms where the series count no longer scales with bucket count.",
