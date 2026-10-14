@@ -77,6 +77,7 @@ code { font-family: var(--font-mono); font-size: .92em; }
 .quote q { color: var(--fg); }
 .who { border-top: 1px solid var(--rule); padding: 14px 18px; }
 .who h3 { font-family: var(--font-mono); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); }
+.who-note { margin: -4px 0 10px; font-size: 13px; color: var(--muted); }
 .who ul { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 22px; }
 .who li { font-size: 14px; padding-left: 10px; border-left: 2px solid var(--rule); }
 .who .src { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); }
@@ -168,7 +169,7 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
       <div class="col breaks"><h3>What breaks without it</h3><ul id="st-breaks"></ul><div id="st-quote"></div></div>
       <div class="col gate"><h3 id="st-gate-h">Ready for the next stage when</h3><ul id="st-gate"></ul><p class="ready" id="st-ready" aria-live="polite"></p></div>
     </div>
-    <div class="who"><h3>Who works this way</h3><ul id="st-people"></ul></div>
+    <div class="who"><h3>Who works this way</h3><p class="who-note">Each practice is dated by its source. Practices change with every model release, so treat older ones as a starting point.</p><ul id="st-people"></ul></div>
     <div class="foot">
       <div><h3>Documented limits you'll meet here</h3><ul id="st-limits"></ul></div>
       <div><h3>Sources for this stage</h3><ul id="st-sources"></ul></div>
@@ -176,10 +177,6 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
     <div class="nav"><button type="button" id="prev">← Previous stage</button><span class="keys">or use ← → keys</span><button type="button" id="next" class="go">Next stage →</button></div>
   </section>
 
-  <div class="warnbox" role="note">
-    <p><b>Check first that more agents will help at all.</b> A Google Research, Google DeepMind and MIT study of 260 agent configurations found that tasks where one agent already succeeds more than 45% of the time <q>experience negative returns from additional agents, as coordination costs exceed diminishing improvement potential</q>. On SWE-bench Verified, every multi-agent setup they tested did slightly worse than one agent (−15% to −2%).</p>
-    <p style="margin:0">Scale pays when the work splits into independent pieces and each piece has a check the agent can't fake. Anthropic's C compiler run used 16 parallel agents. It stalled when every agent hit the same kernel bug, and recovered once GCC served as a known-good oracle. (<a href="https://arxiv.org/abs/2512.08296">Kim et al., arXiv:2512.08296 v3</a>; <a href="https://www.anthropic.com/engineering/building-c-compiler">Anthropic: Building a C compiler with a team of parallel Claudes</a>)</p>
-  </div>
 
   <h2 id="edges">Fast inside, careful at the edges</h2>
   <div class="prose">
@@ -188,7 +185,7 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
       <li><b>Build the harness into the new code from day one.</b> Böckeler: greenfield teams can bake it in, while legacy teams face the harder problem, because <q>the harness is most needed where it is hardest to build</q>. (<a href="https://martinfowler.com/articles/harness-engineering.html">martinfowler.com</a>)</li>
       <li><b>Add tests at the boundary before you add agents there.</b> Where Spotify's repositories had no build-time tests, its agent couldn't verify its own work and the owning teams had to. (<a href="https://engineering.atspotify.com/2026/4/background-coding-agents-dataset-migrations-honk-part-4">Spotify, Honk Part 4</a>)</li>
       <li><b>Make the agent flag what needs judgment.</b> Spotify had Honk leave those fields unchanged, with a comment linking to the human migration guide, so the reviewing team saw exactly where to look.</li>
-      <li><b>Review the plan for anything that crosses the boundary.</b> A wrong idea about how the old system works is cheapest to catch in a short plan, before it becomes thousands of lines. (<a href="https://www.humanlayer.com/blog/advanced-context-engineering">Horthy</a>)</li>
+      <li><b>Review the plan for anything that crosses the boundary.</b> A wrong idea about how the old system works is cheapest to catch in a short plan, before it becomes thousands of lines. Then read the code, a slice at a time. (<a href="https://www.humanlayer.com/blog/advanced-context-engineering">Horthy 2025</a>, <a href="https://github.com/humanlayer/advanced-context-engineering-for-coding-agents/blob/main/wsff.md">2026</a>)</li>
       <li><b>Fix locally, then spend CI sparingly.</b> Stripe's rule for a codebase of hundreds of millions of lines: often one, at most two CI runs, after everything local passes. (<a href="https://stripe.dev/blog/minions-stripes-one-shot-end-to-end-coding-agents">Stripe</a>)</li>
       <li><b>Standardize before you scale.</b> Spotify's conclusion after migrating about 1,800 pipelines: the next large migrations depend on consolidating and standardising what the agents touch.</li>
       <li><b>Put shared gateways between agents and internal systems.</b> Uber describes a central model gateway (workload identity, PII redaction) and an MCP gateway for tool access, so every agent goes through the same controls. (<a href="https://ai.engineer/talks/agentic-sdlc-at-uber-building-blocks-for-uber-s-software-factory">Uber talk</a>)</li>
@@ -207,12 +204,18 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
     <p>Two ideas carry the whole ladder. First, <b>evidence, not assertion</b>: a worker's "done" counts only with the evidence its brief asked for. pstack's swarm skill drops a report missing its SHAs, respawns the worker once, and records a second miss as a gap: <q>A gap does not count as a pass.</q> Second, <b>encode lessons in structure</b>: a correction you keep repeating becomes a lint rule, a check or a script. pstack's principle puts it bluntly: <q>The instruction is the symptom.</q></p>
     <p>Memory is the newer layer. In her AI Native DevCon talk, Anthropic's Lamis Mukta describes memory moving from CLAUDE.md files to skills to plain files that agents search with ordinary tools. It then needs versioning, a hash check before every write, and read-only organisation-wide memory beside writable per-agent scratchpads once many agents share it. "Dreaming" is a separate batch job that reads past sessions and proposes a cleaned-up memory store for a human to accept or reject. Claude Managed Agents documents the same mechanics (immutable memory versions, a <code>content_sha256</code> precondition on writes). Dreams are in research preview.</p>
 
+  </div>
+  <div class="warnbox" role="note">
+    <p><b>When more agents pay off.</b> A Google Research, Google DeepMind and MIT study of 260 agent configurations found that tasks where one agent already succeeds more than 45% of the time <q>experience negative returns from additional agents, as coordination costs exceed diminishing improvement potential</q>. On SWE-bench Verified, every multi-agent setup they tested did slightly worse than one agent (−15% to −2%). A September 2026 preprint, AsynCodeBench, adds that better coding performance does not necessarily translate into stronger collaboration between agents (<a href="https://arxiv.org/abs/2609.32662">arXiv:2609.32662</a>).</p>
+    <p style="margin:0">Scale pays when the work splits into independent pieces and each piece has a check the agent can't fake. Anthropic's C compiler run used 16 parallel agents. It stalled when every agent hit the same kernel bug, and recovered once GCC served as a known-good oracle. (<a href="https://arxiv.org/abs/2512.08296">Kim et al., arXiv:2512.08296 v3</a>; <a href="https://www.anthropic.com/engineering/building-c-compiler">Anthropic: Building a C compiler with a team of parallel Claudes</a>)</p>
+  </div>
+  <div class="prose">
     <h3 style="font-size:17px;margin-top:22px">Honest limits</h3>
     <ul class="limits">
       <li><b>The stage sizes are illustrative.</b> 1, 3, 10, dozens and hundreds are where the cited sources describe things breaking (worktrees, about ten agents per coordinator drain, Cursor's lock contention at twenty). They are not measured thresholds, and your breakpoints depend on the repo, the tasks and your checks.</li>
       <li><b>pstack moves fast.</b> Quotes are from the repository as of 13 October 2026 (version 0.15.23). Its README still says it was built at Cursor. Lauren Tan's GitHub profile now lists xAI, and her recent talk introduces her as working on Grok Bot. Some details differ between playbooks: Orchestrate's stacker uses Graphite (<code>gt</code>), while Shipping and Babysit say never to require it.</li>
       <li><b>"Hundreds" is the sources' word.</b> In her pstack guide (31 August 2026), Lauren Tan writes that you may get away with up to 10 agents in parallel with worktrees, and promises a later post on running hundreds of subagents in parallel in the cloud. Cursor reports runs that <q>peak at several hundred agents</q>. No source here gives an exact count for any one person's setup.</li>
-      <li><b>Company numbers are the companies' own.</b> Stripe's and Spotify's figures are from their engineering blogs, Uber's from its AI Engineer World's Fair talk page, and Boris Cherny's from The Pragmatic Engineer's write-up of their interview. None is independently measured.</li>
+      <li><b>Company numbers are the companies' own.</b> Stripe's and Spotify's figures are from their engineering blogs, Uber's from its AI Engineer World's Fair talk page, and Boris Cherny's from The Pragmatic Engineer's write-up of their interview. Block's are from an interview Anthropic published. None is independently measured.</li>
       <li><b>Cost is real.</b> Anthropic reports that its multi-agent research system used about 15 times the tokens of a chat. Claude Code's docs say agent teams use about 7 times the tokens of a standard session in plan mode. Measure before you scale.</li>
       <li><b>Limits change.</b> The documented numbers below each stage are defaults as of October 2026. Check the linked docs before you plan around them.</li>
     </ul>
@@ -257,8 +260,19 @@ const S = {
   horthy: ["Dex Horthy (HumanLayer): Advanced context engineering for coding agents (29 Aug 2025)", "https://www.humanlayer.com/blog/advanced-context-engineering"],
   cherny: ["The Pragmatic Engineer: Building Claude Code with Boris Cherny (4 Mar 2026)", "https://newsletter.pragmaticengineer.com/p/building-claude-code-with-boris-cherny"],
   stripe: ["Stripe: Minions, Stripe's one-shot, end-to-end coding agents (9 Feb 2026)", "https://stripe.dev/blog/minions-stripes-one-shot-end-to-end-coding-agents"],
-  uber: ["AI Engineer World's Fair 2026: Agentic SDLC at Uber (talk page)", "https://ai.engineer/talks/agentic-sdlc-at-uber-building-blocks-for-uber-s-software-factory"],
+  uber: ["AI Engineer World's Fair 2026 (29 Jun to 2 Jul): Agentic SDLC at Uber (talk page)", "https://ai.engineer/talks/agentic-sdlc-at-uber-building-blocks-for-uber-s-software-factory"],
   spotify1: ["Spotify: 1,500+ PRs later, our background coding agent (Honk, Part 1, 6 Nov 2025)", "https://engineering.atspotify.com/2025/11/spotifys-background-coding-agent-part-1"],
+  chernyFortune: ["Fortune: Claude Code creator Boris Cherny at Brainstorm Tech (8 Jun 2026)", "https://fortune.com/2026/06/08/anthropics-boris-cherny-creator-of-claude-code-says-there-are-days-he-manages-tens-of-thousands-of-ai-agents-at-once/"],
+  chernyX: ["Boris Cherny on X: production code written by Claude needs a higher bar (11 Sep 2026)", "https://x.com/bcherny/status/2098217573276131577"],
+  horthy2: ["Dex Horthy: Why Software Factories Fail, Part 2: Turning the lights back on (25 Jul 2026)", "https://github.com/humanlayer/advanced-context-engineering-for-coding-agents/blob/main/wsff.md"],
+  tanAug: ["Lauren Tan on X: one local coordinator, cloud subagents, /swarm (5 Aug 2026)", "https://x.com/poteto/status/2084844251100438890"],
+  stripePmf: ["Stripe: Payment Method Factory, orchestrating agents for repeated custom integrations (30 Sep 2026)", "https://stripe.dev/blog/stripes-payment-method-factory-orchestrating-agents-for-repeated-custom-integrations"],
+  spotifyJun: ["Spotify: Coding is no longer the constraint (3 Jun 2026)", "https://engineering.atspotify.com/2026/6/code-with-claude-coding-is-no-longer-the-constraint"],
+  spotifySep: ["Spotify: AI changed how Spotify builds; what we learned and fixed about quality (16 Sep 2026)", "https://engineering.atspotify.com/2026/9/ai-changed-how-spotify-builds-what-we-learned-and-fixed-about-quality-at-higher-velocity"],
+  block: ["Anthropic: How Block orchestrates Claude Fable across thousands of pull requests (8 Oct 2026)", "https://claude.com/resources/articles/how-block-orchestrates-claude-fable-across-thousands-of-pull-requests"],
+  scm: ["Anthropic: Redesigning source control at Anthropic (13 Oct 2026)", "https://www.anthropic.com/engineering/redesigning-source-control"],
+  asyncode: ["Zhang et al.: AsynCodeBench (arXiv:2609.32662, 26 Sep 2026)", "https://arxiv.org/abs/2609.32662"],
+  maWorkflow: ["Claude Managed Agents docs: workflow runs", "https://platform.claude.com/docs/en/managed-agents/workflow-runs"],
   spotify4: ["Spotify: Background coding agents and dataset migrations (Honk, Part 4, 22 Apr 2026)", "https://engineering.atspotify.com/2026/4/background-coding-agents-dataset-migrations-honk-part-4"],
 };
 
@@ -313,8 +327,8 @@ const STAGES = [
       ["One worktree or branch per agent. A worktree is a fresh checkout, so each one sets up its own environment.", "ccWorktrees"],
       ["Split on seams: disjoint files, services or layers run in parallel; anything that writes shared state goes to one agent. pstack: \"Shared writes serialize.\"", "feature"],
       ["A reason for each split. pstack's checkpoint asks for the smallest safe decomposition: \"If one worker is best, name why.\"", "feature"],
-      ["Research, then plan, then implement, and review the plan, not the code. Dex Horthy: a bad line of research can land you thousands of bad lines of code, and a 200-line plan is readable where 2,000 lines of code a day is not.", "horthy"],
-      ["A good plan is what makes a parallel agent safe to leave alone. Boris Cherny, per The Pragmatic Engineer: with a good plan, the agent will \"one-shot the implementation almost every time\".", "cherny"],
+      ["Plan in layers, then read the code. In 2025 Dex Horthy stressed reviewing research and plans, because a bad line of research can become thousands of bad lines of code. In July 2026 he wrote that models can't yet judge code quality, so \"the judge is you -- so we're gonna put the code review back\": he plans in four phases (product requirements, system architecture, program design, vertical slices) and builds one to three slices at a time while reviewing the code.", "horthy2"],
+      ["A good plan is what makes a parallel agent safe to leave alone. Boris Cherny in March 2026, per The Pragmatic Engineer: with a good plan, the agent will \"one-shot the implementation almost every time\".", "cherny"],
     ],
     breaks: [
       ["Two agents on the same file: Claude Code's agent-team docs say this \"leads to overwrites\".", "ccTeams"],
@@ -331,10 +345,10 @@ const STAGES = [
       ["Agent teams use about 7× the tokens of a standard session when teammates run in plan mode.", "ccCosts"],
     ],
     people: [
-      ["Boris Cherny", "(creator of Claude Code) runs 5 parallel Claude instances, each in its own checkout, and ships 20 to 30 PRs a day, per The Pragmatic Engineer.", "cherny"],
-      ["Dex Horthy", "(HumanLayer) uses research, plan, implement on a 300k-line Rust codebase, keeping each phase's context small.", "horthy"],
+      ["Boris Cherny", "(creator of Claude Code) ran 5 parallel Claude instances, each in its own checkout, shipping 20 to 30 PRs a day, per The Pragmatic Engineer. By June he described managing hundreds of agents (see Hundreds).", "cherny"],
+      ["Dex Horthy", "(HumanLayer) plans in four phases before code, then has a model build one to three vertical slices at a time while he reviews the code. His closing advice: \"Read the dang code.\"", "horthy2"],
     ],
-    sources: ["ccWorktrees", "feature", "horthy", "cherny", "ccTeams", "ccCosts"],
+    sources: ["ccWorktrees", "feature", "horthy2", "horthy", "cherny", "ccTeams", "ccCosts"],
     diagram: {
       boxes: [
         { id: "you", x: 30, y: 125, w: 100, h: 50, label: "You", sub: "split + review" },
@@ -358,6 +372,7 @@ const STAGES = [
       ["Fixed report shapes: PASS, ISSUES or BLOCKED, with the exact SHAs and method the brief asked for. A missing report is respawned once, then logged as a gap.", "swarm"],
       ["For races (several agents on one brief), the selection rule decided before spawning: first pass, rank all, or best-of.", "swarm"],
       ["Fast feedback before CI. Stripe's agents run in devboxes that start in 10 seconds, run lints on every push in under five seconds, and get \"often one, at most two, CI runs\", only after fixing everything they can locally.", "stripe"],
+      ["A higher bar for agent-written production code. Boris Cherny wrote in September 2026 that it should be higher than for human-written code; Anthropic backs this with many lint rules and tests, Claude-driven end-to-end tests, Claude-powered fuzzers running daily, and automated code and security reviews.", "chernyX"],
     ],
     breaks: [
       ["Vague briefs fail quietly: pstack notes a worker cannot ask you a question.", "orch"],
@@ -378,7 +393,7 @@ const STAGES = [
       ["Stripe", "Minions write each change start to finish in an isolated, pre-warmed devbox; humans review every PR.", "stripe"],
       ["Lauren Tan", "suggests up to about 10 agents with worktrees on one machine, depending on the repo and the machine.", "tan1"],
     ],
-    sources: ["orch", "swarm", "ship", "stripe", "tan1", "ccSub", "ccWorkflows"],
+    sources: ["orch", "swarm", "ship", "stripe", "chernyX", "tan1", "ccSub", "ccWorkflows"],
     diagram: {
       boxes: [
         { id: "you", x: 20, y: 125, w: 90, h: 50, label: "You", sub: "write briefs" },
@@ -404,6 +419,7 @@ const STAGES = [
       ["Retry by failure mode, then give up: pstack respawns with smaller scope after a context cap, retries network drops as-is, and abandons a unit after two retries.", "orch"],
       ["Tests before agents where old code has none. Without build-time tests, an agent can't verify its own change, and the checking lands back on the owning teams.", "spotify4"],
       ["Flag judgment calls instead of guessing: Spotify had its agent leave those fields unchanged and add a comment linking to the human migration guide for the reviewing team.", "spotify4"],
+      ["Coordinate in code where the steps are predictable. Stripe found an LLM orchestrator agent expensive, slow and sometimes unreliable, and concluded that \"predictable coordination is better implemented in code\", aiming for each plan step to map to one pull request.", "stripePmf"],
     ],
     breaks: [
       ["Cursor found that with shared locks, \"Twenty agents would slow down to the effective throughput of two or three\". They moved to planners that spawn sub-planners.", "cursorScale"],
@@ -423,9 +439,10 @@ const STAGES = [
     ],
     people: [
       ["Spotify", "rolled out 240 automated migration PRs for about 1,800 downstream data pipelines with its Honk agent and Fleetshift; its earlier deterministic migration script had grown past 20,000 lines.", "spotify4"],
+      ["Stripe", "(Payment Method Factory) moved agent coordination into code and hardens prompts with an observer agent that reviews an implementation agent's transcript.", "stripePmf"],
       ["Cursor", "moved from shared locks to planners that spawn sub-planners once twenty agents slowed to the throughput of two or three.", "cursorScale"],
     ],
-    sources: ["orch", "ship", "spotify4", "spotify1", "cursorScale", "carlini", "mukta", "maMemory", "ghMq"],
+    sources: ["orch", "ship", "stripePmf", "spotify4", "spotify1", "cursorScale", "carlini", "mukta", "maMemory", "ghMq"],
     diagram: {
       boxes: [
         { id: "you", x: 15, y: 125, w: 80, h: 50, label: "You", sub: "gates only" },
@@ -456,12 +473,14 @@ const STAGES = [
       ["Human gates only where they belong: irreversible actions and product calls reach you; retries, restacks and CI flakes don't.", "orch"],
       ["Periodic fresh starts: Cursor still restarts agents to combat \"drift and tunnel vision\".", "cursorScale"],
       ["Learning across runs, with a person approving: pstack's reflect turns transcripts into proposed skill edits (\"Do not auto-apply\"). Anthropic's dreaming proposes a cleaned memory store for review.", "reflect"],
-      ["Shared gateways instead of per-agent wiring: Uber describes a central model gateway with workload identity and PII redaction, and an MCP gateway with CLI-style tool access that it says cut fleet-wide token use by more than 40%.", "uber"],
+      ["Shared gateways instead of per-agent wiring: Uber describes a central model gateway with workload identity and PII redaction, and an MCP gateway with CLI-style tool access that it says cut fleet-wide token use by more than 40% (the talk gave no baseline or measurement window).", "uber"],
       ["Standardize what agents will touch. Spotify concluded that large, complex migrations depend on consolidating and standardising its data landscape and enforcing testing requirements.", "spotify4"],
     ],
     breaks: [
       ["GitHub caps content creation at 80 requests a minute and 500 an hour. Hundreds of agents opening PRs and comments hit that quickly.", "ghRest"],
       ["Token cost grows with the fleet: Anthropic's multi-agent research system used about 15× the tokens of chat.", "research"],
+      ["Verification becomes the constraint. Spotify's merged changes more than doubled year over year (about 8,100 to 17,000 in August 2026), and it wrote that \"the next constraint became our ability to verify it.\"", "spotifySep"],
+      ["Shared infrastructure gives way. Anthropic's merges grew from an average of about 2,500 a day in May 2026 to over 30,000 a day by September, and source control became its biggest development bottleneck.", "scm"],
     ],
     quote: ["most runs would peak at several hundred agents", "Cursor, on its long-running agent experiments", "cursorSelf"],
     gate: [
@@ -474,15 +493,18 @@ const STAGES = [
       ["Claude Code dynamic workflows: concurrency configurable up to 256; 1,000 agents total per run.", "ccWorkflows"],
       ["Claude API: per-model RPM and token-per-minute limits by usage tier; a spend-cap 429 has no retry-after.", "apiLimits"],
       ["GitHub Actions: concurrent jobs are capped per plan.", "ghActions"],
-      ["Claude Managed Agents dreams: 1 to 100 sessions per dream; research preview.", "maDreams"],
+      ["Claude Managed Agents workflow runs: up to 64 threads working at once (the docs say this can change) and up to 1,000 agents started over a run's life.", "maWorkflow"],
+      ["Claude Managed Agents dreams: 1 to 100 sessions per dream; still a research preview that needs an access request (Oct 2026).", "maDreams"],
     ],
     people: [
+      ["Boris Cherny", "said he was managing \"maybe a few hundred\" agents that morning, and that some days it is \"thousands, or tens of thousands\"; with subagents, \"it's actually another Claude that does the prompting\" (as reported by Fortune).", "chernyFortune"],
+      ["Lauren Tan", "works from one local coordinator agent that spawns Cursor cloud subagents to do the work, and uses her /swarm skill to run 10 or more subagents that fuzz the app before she ships PRs.", "tanAug"],
+      ["Block", "has Claude Fable 5 plan migrations and direct up to dozens of cheaper Opus or Sonnet workers; one migration may merge around a thousand PRs, and deploys need two human approvals (Anthropic-published interview).", "block"],
+      ["Spotify", "announced Honk v2 with shared agent sessions and agent orchestration; its Fleet Management has merged more than 2.5 million automated maintenance PRs, most auto-merged.", "spotifyJun"],
       ["Stripe", "merges more than a thousand minion-written PRs a week; they are human-reviewed but contain no human-written code.", "stripe"],
-      ["Uber", "reports agents involved in more than 70% of PRs and more than 250 automated migrations covering nine million lines (talk summary).", "uber"],
-      ["Lauren Tan", "describes her bots as coordinators that manage and supervise cloud agents, and says she ships about 2,000 PRs a month.", "tan1"],
-      ["Cursor", "reports runs that peak at several hundred agents.", "cursorSelf"],
+      ["Uber", "reports agents involved in more than 70% of PRs and more than 250 automated migrations covering nine million lines (talk page summary).", "uber"],
     ],
-    sources: ["orch", "reflect", "uber", "stripe", "spotify4", "cursorScale", "cursorSelf", "cursorProjects", "tan1", "tanTalk", "maDreams", "ghRest", "ghActions", "apiLimits", "research", "ccWorkflows"],
+    sources: ["orch", "reflect", "chernyFortune", "tanAug", "block", "spotifyJun", "spotifySep", "scm", "uber", "stripe", "spotify4", "cursorScale", "cursorSelf", "cursorProjects", "tan1", "tanTalk", "maWorkflow", "maDreams", "ghRest", "ghActions", "apiLimits", "research", "ccWorkflows"],
     diagram: {
       boxes: [
         { id: "you", x: 15, y: 30, w: 80, h: 46, label: "You", sub: "twice a day" },
@@ -490,7 +512,7 @@ const STAGES = [
         { id: "budget", x: 15, y: 224, w: 105, h: 46, label: "Budget", sub: "stop at ~70%", new: true },
         { id: "stacker", x: 600, y: 30, w: 150, h: 46, label: "Stacker → queue", sub: "lands continuously" },
         { id: "limits", x: 600, y: 127, w: 150, h: 46, label: "Outside limits", sub: "API · GitHub · CI", new: true },
-        { id: "dream", x: 600, y: 224, w: 150, h: 46, label: "Learn across runs", sub: "from transcripts · human OKs", new: true },
+        { id: "dream", x: 600, y: 224, w: 150, h: 46, label: "Learn across runs", sub: "transcripts · human OK", new: true },
       ],
       zones: [{ x: 150, y: 14, w: 430, h: 272, label: "cloud fleet", new: true }],
       clusters: [{ id: "fleet", x: 175, y: 40, w: 385, h: 230, n: 200, label: "" }],
@@ -499,6 +521,8 @@ const STAGES = [
   },
 ];
 
+// When each practice was described; these change fast, so the page shows the date with each one.
+const AS_OF = { hashimoto: "Feb 2026", bockeler: "Apr 2026", cherny: "Mar 2026", horthy: "Aug 2025", stripe: "Feb 2026", tan1: "Aug 2026", spotify4: "Apr 2026", cursorScale: "Jan 2026", cursorSelf: "Feb 2026", uber: "Jun 2026", chernyFortune: "Jun 2026", chernyX: "Sep 2026", horthy2: "Jul 2026", tanAug: "Aug 2026", stripePmf: "Sep 2026", spotifyJun: "Jun 2026", spotifySep: "Sep 2026", block: "Oct 2026", scm: "Oct 2026" };
 const $ = (id) => document.getElementById(id);
 const NS = "http://www.w3.org/2000/svg";
 function svg(tag, attrs = {}, text) {
@@ -639,7 +663,7 @@ function render() {
     cb.addEventListener("change", () => { ticks[`${cur}.${j}`] = cb.checked; saveTicks(); renderReady(); });
     return el("li", {}, el("label", { for: id }, cb, el("span", {}, t)));
   }));
-  $("st-people").replaceChildren(...s.people.map(([n, t, k]) => el("li", {}, el("b", {}, n), " ", t, " ", el("span", { class: "src" }, srcLink(k)))));
+  $("st-people").replaceChildren(...s.people.map(([n, t, k]) => el("li", {}, el("b", {}, n), " ", t, " ", el("span", { class: "src" }, `as of ${AS_OF[k] || "2026"} · `, srcLink(k)))));
   $("st-limits").replaceChildren(...s.limits.map(([t, k]) => el("li", {}, t, " ", el("span", { class: "src" }, srcLink(k)))));
   $("st-sources").replaceChildren(...s.sources.map((k) => el("li", {}, el("a", { href: S[k][1] }, S[k][0]))));
   $("prev").disabled = cur === 0;
