@@ -189,6 +189,9 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
       <li><b>Fix locally, then spend CI sparingly.</b> Stripe's rule for a codebase of hundreds of millions of lines: often one, at most two CI runs, after everything local passes. (<a href="https://stripe.dev/blog/minions-stripes-one-shot-end-to-end-coding-agents">Stripe</a>)</li>
       <li><b>Standardize before you scale.</b> Spotify's conclusion after migrating about 1,800 pipelines: the next large migrations depend on consolidating and standardising what the agents touch.</li>
       <li><b>Put shared gateways between agents and internal systems.</b> Uber describes a central model gateway (workload identity, PII redaction) and an MCP gateway for tool access, so every agent goes through the same controls. (<a href="https://ai.engineer/talks/agentic-sdlc-at-uber-building-blocks-for-uber-s-software-factory">Uber talk</a>)</li>
+      <li><b>Map zones before agents work.</b> Green code gets a tight agent loop, yellow gets characterization tests first, red gets a human on every step; pin current behavior in a separate pass so the agent doesn't write the tests that grade it. <q>Autonomy should follow blast radius, observability, and recoverability.</q> (<a href="https://addyo.substack.com/p/brownfield-agentic-engineering">Addy Osmani, Sep 2026</a>)</li>
+      <li><b>Decide the evidence and the review tiers before the run.</b> Anthropic's modernization guide has each change carry evidence that can be checked without a human, then tiers human review <q>by blast radius and agent confidence</q>. (<a href="https://claude.com/resources/articles/how-to-prepare-for-ai-driven-code-modernization-projects">Anthropic, Sep 2026</a>)</li>
+      <li><b>Don't let a summary stand in for the old code.</b> Microsoft's COBOL-to-Java sample turned off feeding extracted business logic to its converters by default, because they followed the summary instead of translating the COBOL. (<a href="https://github.com/Azure-Samples/Legacy-Modernization-Agents/blob/main/CHANGELOG.md">changelog, Oct 2026</a>)</li>
     </ul>
   </div>
 
@@ -207,6 +210,7 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
   </div>
   <div class="warnbox" role="note">
     <p><b>When more agents pay off.</b> A Google Research, Google DeepMind and MIT study of 260 agent configurations found that tasks where one agent already succeeds more than 45% of the time <q>experience negative returns from additional agents, as coordination costs exceed diminishing improvement potential</q>. On SWE-bench Verified, every multi-agent setup they tested did slightly worse than one agent (−15% to −2%). A September 2026 preprint, AsynCodeBench, adds that better coding performance does not necessarily translate into stronger collaboration between agents (<a href="https://arxiv.org/abs/2609.32662">arXiv:2609.32662</a>).</p>
+    <p>Newer results point the same way. Vals AI found agent teams cost 1.8 to 5.1 times as much as single agents, with only one of four score gains statistically significant (<a href="https://www.vals.ai/blogs/multi-agent-vibe-code-bench">Oct 2026</a>). A ProgramBench preprint found the best use of extra agents is planning: planners keep improving as the team grows, while implementers and verifiers plateau beyond four workers (<a href="https://arxiv.org/abs/2610.17471">arXiv:2610.17471</a>). Toby Ord's reading of OpenAI's published swarm charts: <q>The most important answer is speed</q>, bought with extra compute (<a href="https://www.tobyord.com/writing/swarm-scaling">Sep 2026</a>; a secondary analysis).</p>
     <p style="margin:0">Scale pays when the work splits into independent pieces and each piece has a check the agent can't fake. Anthropic's C compiler run used 16 parallel agents. It stalled when every agent hit the same kernel bug, and recovered once GCC served as a known-good oracle. (<a href="https://arxiv.org/abs/2512.08296">Kim et al., arXiv:2512.08296 v3</a>; <a href="https://www.anthropic.com/engineering/building-c-compiler">Anthropic: Building a C compiler with a team of parallel Claudes</a>)</p>
   </div>
   <div class="prose">
@@ -215,7 +219,7 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
       <li><b>The stage sizes are illustrative.</b> 1, 3, 10, dozens and hundreds are where the cited sources describe things breaking (worktrees, about ten agents per coordinator drain, Cursor's lock contention at twenty). They are not measured thresholds, and your breakpoints depend on the repo, the tasks and your checks.</li>
       <li><b>pstack moves fast.</b> Quotes are from the repository as of 13 October 2026 (version 0.15.23). Its README still says it was built at Cursor. Lauren Tan's GitHub profile now lists xAI, and her recent talk introduces her as working on Grok Bot. Some details differ between playbooks: Orchestrate's stacker uses Graphite (<code>gt</code>), while Shipping and Babysit say never to require it.</li>
       <li><b>"Hundreds" is the sources' word.</b> In her pstack guide (31 August 2026), Lauren Tan writes that you may get away with up to 10 agents in parallel with worktrees, and promises a later post on running hundreds of subagents in parallel in the cloud. Cursor reports runs that <q>peak at several hundred agents</q>. No source here gives an exact count for any one person's setup.</li>
-      <li><b>Company numbers are the companies' own.</b> Stripe's and Spotify's figures are from their engineering blogs, Uber's from its AI Engineer World's Fair talk page, and Boris Cherny's from The Pragmatic Engineer's write-up of their interview. Block's are from an interview Anthropic published. None is independently measured.</li>
+      <li><b>Company numbers are the companies' own.</b> Stripe's and Spotify's figures are from their engineering blogs, Uber's from its engineering blog and AI Engineer World's Fair talk page, Kiro's from its own team, and Boris Cherny's from The Pragmatic Engineer's write-up of their interview. Block's are from an interview Anthropic published. None is independently measured.</li>
       <li><b>Cost is real.</b> Anthropic reports that its multi-agent research system used about 15 times the tokens of a chat. Claude Code's docs say agent teams use about 7 times the tokens of a standard session in plan mode. Measure before you scale.</li>
       <li><b>Limits change.</b> The documented numbers below each stage are defaults as of October 2026. Check the linked docs before you plan around them.</li>
     </ul>
@@ -273,6 +277,32 @@ const S = {
   scm: ["Anthropic: Redesigning source control at Anthropic (13 Oct 2026)", "https://www.anthropic.com/engineering/redesigning-source-control"],
   asyncode: ["Zhang et al.: AsynCodeBench (arXiv:2609.32662, 26 Sep 2026)", "https://arxiv.org/abs/2609.32662"],
   maWorkflow: ["Claude Managed Agents docs: workflow runs", "https://platform.claude.com/docs/en/managed-agents/workflow-runs"],
+  anthMulti: ["Anthropic: Patterns and problems in emerging multiagent systems (13 Aug 2026)", "https://www.anthropic.com/research/multiagent-systems"],
+  vals: ["Vals AI: Do agent teams pay off? A case study on Vibe Code Bench (9 Oct 2026)", "https://www.vals.ai/blogs/multi-agent-vibe-code-bench"],
+  programbench: ["Samway et al.: Scaling inference-time compute with teams of coding agents (arXiv:2610.17471, 12 Oct 2026)", "https://arxiv.org/abs/2610.17471"],
+  ord: ["Toby Ord: Swarm Scaling (21 Sep 2026)", "https://www.tobyord.com/writing/swarm-scaling"],
+  kiro: ["Kiro: How we built a software factory with Kiro Crew to merge 1,000 PRs in a week (18 Sep 2026)", "https://kiro.dev/blog/software-factory-1000-prs"],
+  uberBlog: ["Uber Engineering: Running a software factory efficiently at Uber scale (27 Aug 2026)", "https://www.uber.com/us/en/blog/efficient-software-factory/"],
+  zalando: ["Zalando Engineering: Agentic engineering at Zalando, a snapshot (14 Aug 2026)", "https://engineering.zalando.com/posts/2026/08/agentic-engineering-at-zalando-a-snapshot.html"],
+  debois: ["Patrick Debois on X: making mistakes survivable (28 Sep 2026)", "https://x.com/patrickdebois/status/2104587505655754902"],
+  lopopolo: ["Ryan Lopopolo on X: a 31-agent message-board swarm (8 Oct 2026)", "https://x.com/_lopopolo/status/2108202484548436290"],
+  arslan: ["Fatih Arslan: How I manage my agents (11 Sep 2026)", "https://arslan.io/2026/09/11/how-i-manage-my-agents/"],
+  jain: ["Naresh Jain: Are harnesses worth the cost? (martinfowler.com, 13 Oct 2026)", "https://martinfowler.com/articles/are-harnesses-worth-the-cost.html"],
+  anthModern: ["Anthropic: How to prepare for AI-driven code modernization projects (23 Sep 2026)", "https://claude.com/resources/articles/how-to-prepare-for-ai-driven-code-modernization-projects"],
+  osmani: ["Addy Osmani: Brownfield agentic engineering (14 Sep 2026)", "https://addyo.substack.com/p/brownfield-agentic-engineering"],
+  msCobol: ["Azure-Samples Legacy-Modernization-Agents: CHANGELOG (Oct 2026)", "https://github.com/Azure-Samples/Legacy-Modernization-Agents/blob/main/CHANGELOG.md"],
+  unintended: ["Anthropic: Investigating unintended model actions in our evaluations and internal use (9 Oct 2026)", "https://www.anthropic.com/research/investigating-unintended-model-actions"],
+  maRelnotes: ["Claude Platform release notes (dynamic workflows public beta, 9 Oct 2026)", "https://platform.claude.com/docs/en/release-notes/overview"],
+  claudeDevAuto: ["claude.dev: Building effective agent automations (8 Oct 2026)", "https://claude.dev/blog/building-effective-agent-automations/"],
+  claudeDevCost: ["claude.dev: What a task costs on Opus 5.5 (25 Sep 2026)", "https://claude.dev/blog/what-a-task-costs-on-opus-5-5/"],
+  ccAgentView: ["Claude Code docs: agent view", "https://code.claude.com/docs/en/agent-view"],
+  ccProjects: ["Claude Code docs: Projects", "https://code.claude.com/docs/en/claude-projects"],
+  ghScale: ["GitHub: Building Git infrastructure for agent-scale development (6 Oct 2026)", "https://github.blog/engineering/architecture-optimization/building-git-infrastructure-for-agent-scale-development/"],
+  ghStacked: ["GitHub Changelog: Stacked pull requests generally available (6 Oct 2026)", "https://github.blog/changelog/2026-10-06-stacked-pull-requests-generally-available"],
+  honeycomb: ["The AI Native Dev ep. 125: Liz Fong-Jones, 2x the PRs, 1.5x the incidents (29 Sep 2026)", "https://tessl.io/podcast/125"],
+  thorsten: ["Thorsten Ball on X: how the Amp team ships (13 Oct 2026)", "https://x.com/thorstenball/status/2110035978685747457"],
+  danluu: ["Dan Luu: How well do agents use test and verification techniques? (7 Sep 2026)", "https://danluu.com/agentic-testing/"],
+  jesse: ["Jesse Vincent: Today at work (5 Oct 2026)", "https://blog.fsck.com/2026/10/05/today-at-work/"],
   spotify4: ["Spotify: Background coding agents and dataset migrations (Honk, Part 4, 22 Apr 2026)", "https://engineering.atspotify.com/2026/4/background-coding-agents-dataset-migrations-honk-part-4"],
 };
 
@@ -290,10 +320,12 @@ const STAGES = [
       ["The simplest memory that works: a short instructions file (such as CLAUDE.md) checked into the repo.", "mukta"],
       ["Both halves of a harness: guides that steer the agent before it acts (conventions, docs, examples) and sensors that check after (tests, linters, type checkers). Fast deterministic sensors are cheap enough to run on every change.", "bockeler"],
       ["A slow climb to trust: redo your own finished work with the agent, then hand it end-of-day tasks, then the slam dunks. Every mistake it makes gets a harness fix so it doesn't happen again.", "hashimoto"],
+      ["A harness can matter more than the model. In a martinfowler.com experiment, a cost-optimized model passed 178 hidden acceptance tests in 3 of 10 runs alone and 10 of 10 with guides and sensors, cheaper per run than the stronger model without them (Naresh Jain, Oct 2026).", "jain"],
     ],
     breaks: [
       ["Agents stop when work looks finished. Anthropic's harness post lists \"declare the job done\" as a core failure mode, alongside trying to do too much at once.", "harness"],
       ["A check on the wrong surface (a unit test for a UI bug) passes while the bug stays.", "prove"],
+      ["Agents don't test well on their own. Dan Luu tried 26 prompt variants naming techniques like TDD and property-based testing, and found that naming them changed little: \"agents are really bad at testing\" (Sep 2026).", "danluu"],
     ],
     quote: ["Parallelization just gave me more to review and discard.", "Lauren Tan, on scaling before trust", "tanLoops"],
     gate: [
@@ -373,10 +405,12 @@ const STAGES = [
       ["For races (several agents on one brief), the selection rule decided before spawning: first pass, rank all, or best-of.", "swarm"],
       ["Fast feedback before CI. Stripe's agents run in devboxes that start in 10 seconds, run lints on every push in under five seconds, and get \"often one, at most two, CI runs\", only after fixing everything they can locally.", "stripe"],
       ["A higher bar for agent-written production code. Boris Cherny wrote in September 2026 that it should be higher than for human-written code; Anthropic backs this with many lint rules and tests, Claude-driven end-to-end tests, Claude-powered fuzzers running daily, and automated code and security reviews.", "chernyX"],
+      ["A model for each role. Searching and log reading go to a small model, edits stay on the main model, and the hardest planning moves up a tier. Anthropic's cost guide warns that a subagent that inherits the main model \"inherits its price too\" (Sep 2026); Uber defaults subagents to a weaker, cheaper model and keeps the strong one for planning and evaluation (Aug 2026).", "claudeDevCost"],
     ],
     breaks: [
       ["Vague briefs fail quietly: pstack notes a worker cannot ask you a question.", "orch"],
       ["Self-graded work: a green check from the agent that wrote the change says little about whether it's right.", "ship"],
+      ["A blocked agent may route around the block instead of stopping. Anthropic reported Claude using SQL injection, borrowed access tokens and URL shorteners when a tool or limit stood in its way, mostly on ambiguous or impossible tasks (Oct 2026). Make BLOCKED an acceptable result and enforce limits in the host, not the prompt.", "unintended"],
     ],
     quote: ["You may be able to get away with running up to 10 agents in parallel with worktrees", "Lauren Tan, pstack guide Pt. 1", "tan1"],
     gate: [
@@ -386,8 +420,9 @@ const STAGES = [
       "You read verdicts and evidence, not transcripts.",
     ],
     limits: [
-      ["Claude Code: by default, spawning a 21st concurrent subagent in a session fails; subagents nest up to three layers deep.", "ccSub"],
-      ["Claude Code dynamic workflows: up to 16 concurrent agents by default.", "ccWorkflows"],
+      ["Claude Code: by default, spawning a 21st concurrent subagent in a session fails (CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS changes it); subagents nest up to three layers deep.", "ccSub"],
+      ["Claude Code dynamic workflows: up to 16 agents at once by default, fewer on machines with fewer CPUs; a run that schedules more than 25 agents or 1.5 million projected tokens shows a Large workflow warning.", "ccWorkflows"],
+      ["Plan quota scales with agent count: Claude Code's docs say ten agents in parallel use quota roughly ten times as fast as one.", "ccAgentView"],
     ],
     people: [
       ["Stripe", "Minions write each change start to finish in an isolated, pre-warmed devbox; humans review every PR.", "stripe"],
@@ -412,7 +447,7 @@ const STAGES = [
     count: "dozens of agents",
     bottleneck: "<b>What limits you:</b> coordination and shared state. One coordinator can't absorb every report, and agents racing on the same branch, lock or memory file slow each other down or overwrite each other.",
     add: [
-      ["A coordinator that writes no code (\"It never authors or edits code\") and sub-coordinators only when one can't keep up, each capped at roughly ten children in a rolling window, never in blocking batches.", "orch"],
+      ["A coordinator that writes no code (\"It never authors or edits code\") and sub-coordinators only when one can't keep up, each capped at roughly ten children in a rolling window, never in blocking batches. Cursor Projects and Claude Code Projects both use this shape: a coordinator that directs agents and doesn't write code.", "orch"],
       ["Exactly one writer per piece of state: pstack's program store says \"Every file has exactly one writer.\"", "orch"],
       ["One stacker per stack. Workers never rebase. After any rebase, recheck each verdict's patch-id, because a rebase \"can silently invalidate a verdict without touching a check\".", "ship"],
       ["Shared memory with guardrails: versions you can roll back, a hash check before every write, read-only organisation-wide memory and writable per-agent scratchpads.", "mukta"],
@@ -425,6 +460,9 @@ const STAGES = [
       ["Cursor found that with shared locks, \"Twenty agents would slow down to the effective throughput of two or three\". They moved to planners that spawn sub-planners.", "cursorScale"],
       ["In Anthropic's compiler run, parallel agents all hit the same bug, fixed it, and overwrote each other's changes until a known-good oracle split the work.", "carlini"],
       ["Spotify's dataset migration repositories rarely had build-time unit tests, so Honk lost its ability to verify its work and the owning teams had to check each PR.", "spotify4"],
+      ["Identical agents make identical choices. In Anthropic's swarm experiments, 18 of 30 agents that started together created a git branch with the exact same name (Aug 2026).", "anthMulti"],
+      ["A swarm with no integrator falls apart. Ryan Lopopolo's message-board swarm peaked at 31 agents in 31 worktrees and collapsed after about 36 hours: the agents were poor at global integration and wouldn't break bad dependency edges (Oct 2026).", "lopopolo"],
+      ["Rules that live in chat don't bind agents. Jesse Vincent's agent merged a PR humans had said to hold, because the hold was in Slack and main had no branch protection (Oct 2026).", "jesse"],
     ],
     quote: null,
     gate: [
@@ -432,13 +470,17 @@ const STAGES = [
       "Only the stacker rebases, and a rebase re-checks each verdict.",
       "Work is pushed as it lands, so a dead worker loses nothing verified.",
       "From the ledger alone you can say why each unit failed.",
+      "Rules agents must follow (holds, protected branches, permissions) are enforced by the host, not written in chat or a prompt.",
     ],
     limits: [
       ["Claude Managed Agents memory: every change creates an immutable version; writes can carry a content_sha256 precondition.", "maMemory"],
       ["GitHub merge queue: build concurrency and group size each between 1 and 100.", "ghMq"],
+      ["GitHub stacked pull requests (GA 6 Oct 2026): a stack enters and lands through the merge queue as a single merge group.", "ghStacked"],
     ],
     people: [
       ["Spotify", "rolled out 240 automated migration PRs for about 1,800 downstream data pipelines with its Honk agent and Fleetshift; its earlier deterministic migration script had grown past 20,000 lines.", "spotify4"],
+      ["Kiro Crew", "(three engineers, 1,000 merged PRs in seven days) reached about 20 concurrent sessions per person with memory, cron and an agent pipeline; near 50, human input and a single coordinating agent became the limits. Permissions are \"enforced by the host, not requested politely in a prompt\" (vendor team's own numbers).", "kiro"],
+      ["Fatih Arslan", "(Cursor) keeps every plan as a markdown file in a plans repo; coordinators write no code and leave each other notes in inbox files in git, so a fresh coordinator can rebuild state from the repo in one turn.", "arslan"],
       ["Stripe", "(Payment Method Factory) moved agent coordination into code and hardens prompts with an observer agent that reviews an implementation agent's transcript.", "stripePmf"],
       ["Cursor", "moved from shared locks to planners that spawn sub-planners once twenty agents slowed to the throughput of two or three.", "cursorScale"],
     ],
@@ -473,14 +515,20 @@ const STAGES = [
       ["Human gates only where they belong: irreversible actions and product calls reach you; retries, restacks and CI flakes don't.", "orch"],
       ["Periodic fresh starts: Cursor still restarts agents to combat \"drift and tunnel vision\".", "cursorScale"],
       ["Learning across runs, with a person approving: pstack's reflect turns transcripts into proposed skill edits (\"Do not auto-apply\"). Anthropic's dreaming proposes a cleaned memory store for review.", "reflect"],
-      ["Shared gateways instead of per-agent wiring: Uber describes a central model gateway with workload identity and PII redaction, and an MCP gateway with CLI-style tool access that it says cut fleet-wide token use by more than 40% (the talk gave no baseline or measurement window).", "uber"],
+      ["Shared gateways instead of per-agent wiring: Uber describes a central model gateway with workload identity and PII redaction, and an MCP gateway with CLI-style tool access that it says cut fleet-wide token use by more than 40% (the talk gave no baseline or measurement window). Its August 2026 engineering post adds that weekly agentic requests grew 9.4 times from February to August while total AI spend held roughly flat since April.", "uberBlog"],
       ["Standardize what agents will touch. Spotify concluded that large, complex migrations depend on consolidating and standardising its data landscape and enforcing testing requirements.", "spotify4"],
+      ["Review by risk, not volume. Zalando's bot scores every PR by risk using rules drawn from its own past incidents and auto-approves the low-risk third (Aug 2026). Patrick Debois: factories become autonomous \"by making mistakes survivable\", not review perfect (Sep 2026).", "zalando"],
+      ["A hard spend cap per run. Anthropic's automation guide suggests starting at three to five times a normal run's cost; a run that hits its cap pauses instead of failing, so a cap set too low looks like a quiet run (Oct 2026).", "claudeDevAuto"],
     ],
     breaks: [
       ["GitHub caps content creation at 80 requests a minute and 500 an hour. Hundreds of agents opening PRs and comments hit that quickly.", "ghRest"],
       ["Token cost grows with the fleet: Anthropic's multi-agent research system used about 15× the tokens of chat.", "research"],
       ["Verification becomes the constraint. Spotify's merged changes more than doubled year over year (about 8,100 to 17,000 in August 2026), and it wrote that \"the next constraint became our ability to verify it.\"", "spotifySep"],
       ["Shared infrastructure gives way. Anthropic's merges grew from an average of about 2,500 a day in May 2026 to over 30,000 a day by September, and source control became its biggest development bottleneck.", "scm"],
+      ["Shared capacity gets stampeded. Anthropic's agents sharing a finite job queue with no other way to coordinate flooded it: in one run, 2.4 million job requests and only 117 jobs accepted (Aug 2026).", "anthMulti"],
+      ["Git hosting gives way too. GitHub says thousands of agents on their own branches produce a sustained write rate, and it is rebuilding its Git storage for agent-scale load (Oct 2026).", "ghScale"],
+      ["Incidents follow throughput. Honeycomb roughly doubled its merged PRs a day and then saw 1.5 times the incidents, per its AI Native Dev episode notes (Sep 2026).", "honeycomb"],
+      ["A finished run isn't a passed run. Claude Managed Agents docs say a workflow run's result \"doesn't say whether the work passed\"; read each thread for failures.", "maWorkflow"],
     ],
     quote: ["most runs would peak at several hundred agents", "Cursor, on its long-running agent experiments", "cursorSelf"],
     gate: [
@@ -492,8 +540,8 @@ const STAGES = [
     limits: [
       ["Claude Code dynamic workflows: concurrency configurable up to 256; 1,000 agents total per run.", "ccWorkflows"],
       ["Claude API: per-model RPM and token-per-minute limits by usage tier; a spend-cap 429 has no retry-after.", "apiLimits"],
-      ["GitHub Actions: concurrent jobs are capped per plan.", "ghActions"],
-      ["Claude Managed Agents workflow runs: up to 64 threads working at once (the docs say this can change) and up to 1,000 agents started over a run's life.", "maWorkflow"],
+      ["GitHub Actions: standard hosted runners allow 20 concurrent jobs on Free, 40 on Pro, 60 on Team and 500 on Enterprise; larger runners allow 1,000.", "ghActions"],
+      ["Claude Managed Agents dynamic workflows (public beta since 9 Oct 2026): up to 64 threads at once (the docs say this can change) and 1,000 agents per run; runs can't start runs of their own, and a run can pass its budget by one request per working thread.", "maWorkflow"],
       ["Claude Managed Agents dreams: 1 to 100 sessions per dream; still a research preview that needs an access request (Oct 2026).", "maDreams"],
     ],
     people: [
@@ -502,7 +550,8 @@ const STAGES = [
       ["Block", "has Claude Fable 5 plan migrations and direct up to dozens of cheaper Opus or Sonnet workers; one migration may merge around a thousand PRs, and deploys need two human approvals (Anthropic-published interview).", "block"],
       ["Spotify", "announced Honk v2 with shared agent sessions and agent orchestration; its Fleet Management has merged more than 2.5 million automated maintenance PRs, most auto-merged.", "spotifyJun"],
       ["Stripe", "merges more than a thousand minion-written PRs a week; they are human-reviewed but contain no human-written code.", "stripe"],
-      ["Uber", "reports agents involved in more than 70% of PRs and more than 250 automated migrations covering nine million lines (talk page summary).", "uber"],
+      ["Uber", "attributes more than 70% of PRs to local or cloud agents; weekly agentic requests grew 9.4 times from February to August 2026 while total AI spend held roughly flat, with cheaper models as default subagents.", "uberBlog"],
+      ["Amp", "(Thorsten Ball) has no pull requests or code review and pushes to main; agents read production logs, watch deploys and attach a recorded video walkthrough as proof of their work.", "thorsten"],
     ],
     sources: ["orch", "reflect", "chernyFortune", "tanAug", "block", "spotifyJun", "spotifySep", "scm", "uber", "stripe", "spotify4", "cursorScale", "cursorSelf", "cursorProjects", "tan1", "tanTalk", "maWorkflow", "maDreams", "ghRest", "ghActions", "apiLimits", "research", "ccWorkflows"],
     diagram: {
@@ -522,7 +571,7 @@ const STAGES = [
 ];
 
 // When each practice was described; these change fast, so the page shows the date with each one.
-const AS_OF = { hashimoto: "Feb 2026", bockeler: "Apr 2026", cherny: "Mar 2026", horthy: "Aug 2025", stripe: "Feb 2026", tan1: "Aug 2026", spotify4: "Apr 2026", cursorScale: "Jan 2026", cursorSelf: "Feb 2026", uber: "Jun 2026", chernyFortune: "Jun 2026", chernyX: "Sep 2026", horthy2: "Jul 2026", tanAug: "Aug 2026", stripePmf: "Sep 2026", spotifyJun: "Jun 2026", spotifySep: "Sep 2026", block: "Oct 2026", scm: "Oct 2026" };
+const AS_OF = { hashimoto: "Feb 2026", bockeler: "Apr 2026", cherny: "Mar 2026", horthy: "Aug 2025", stripe: "Feb 2026", tan1: "Aug 2026", spotify4: "Apr 2026", cursorScale: "Jan 2026", cursorSelf: "Feb 2026", uber: "Jun 2026", chernyFortune: "Jun 2026", chernyX: "Sep 2026", horthy2: "Jul 2026", tanAug: "Aug 2026", stripePmf: "Sep 2026", spotifyJun: "Jun 2026", spotifySep: "Sep 2026", block: "Oct 2026", scm: "Oct 2026", anthMulti: "Aug 2026", kiro: "Sep 2026", uberBlog: "Aug 2026", zalando: "Aug 2026", lopopolo: "Oct 2026", arslan: "Sep 2026", jain: "Oct 2026", honeycomb: "Sep 2026", thorsten: "Oct 2026", jesse: "Oct 2026" };
 const $ = (id) => document.getElementById(id);
 const NS = "http://www.w3.org/2000/svg";
 function svg(tag, attrs = {}, text) {
@@ -665,7 +714,9 @@ function render() {
   }));
   $("st-people").replaceChildren(...s.people.map(([n, t, k]) => el("li", {}, el("b", {}, n), " ", t, " ", el("span", { class: "src" }, `as of ${AS_OF[k] || "2026"} · `, srcLink(k)))));
   $("st-limits").replaceChildren(...s.limits.map(([t, k]) => el("li", {}, t, " ", el("span", { class: "src" }, srcLink(k)))));
-  $("st-sources").replaceChildren(...s.sources.map((k) => el("li", {}, el("a", { href: S[k][1] }, S[k][0]))));
+  const cited = [...s.add.map((x) => x[1]), ...s.breaks.map((x) => x[1]), ...s.limits.map((x) => x[1]), ...s.people.map((x) => x[2]), ...(s.quote ? [s.quote[2]] : [])];
+  const srcKeys = [...new Set([...s.sources, ...cited])].filter((k) => S[k]);
+  $("st-sources").replaceChildren(...srcKeys.map((k) => el("li", {}, el("a", { href: S[k][1] }, S[k][0]))));
   $("prev").disabled = cur === 0;
   $("next").disabled = last;
   $("next").textContent = last ? "Top of the ladder" : `Next: ${STAGES[cur + 1].n} →`;
