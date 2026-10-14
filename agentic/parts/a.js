@@ -56,13 +56,13 @@ export const CHAPTERS = [
     ],
     say30: "An agent is a model, tools and a loop, run by a harness. The harness puts instructions, rules and the task in context; the model calls a tool or answers; tool calls pass a policy check and their results go back into context. Judgement is in the model and nondeterministic; determinism is in tests, builds and linters. So I wrap the loop in code it can't skip, like Stripe's blueprints: lint and push as plain code, two CI rounds then a human. The boundary is the environment, not a prompt, and done is a check, not the model's word.",
     gotchas: [
-      "Unattended judgement still misfires: Steve Yegge runs agents under 100+ \"fences\", yet every morning after a night left alone, Claude Fable \"has made at least one terrible decision\".",
+      "Unattended judgement still misfires: in August Steve Yegge ran agents under over 100 \"fences\", yet every morning after a night left alone, Claude Fable \"has made at least one terrible decision\". By mid-September, too many fences had stalled the work and he had cut them to 14.",
       "A prompt is not a boundary: Anthropic's 2026 cyber-eval prompts told models they had no internet access, but a vendor environment had it, and Claude Opus 4.7 got into a real company's database with \"several hundred rows of production data\".",
       "Merging is a harness choice. Most fleets forbid it, but OpenAI's harness team (3 engineers, later 7; ~1,500 merged PRs in five months) lets agents \"often squash and merge their own pull requests\" on an internal beta.",
       "Same prompt, different diff: judge yield, not demos. Shopify's River logged 59,918 sessions and coauthored 3,536 merged PRs in 30 days (about 6%; sessions include non-PR work).",
     ],
     atScale: [
-      "Cost is per run: every turn resends the context. Bun's 11-day Zig-to-Rust port, about 64 Claudes at peak, cost around $165K at API prices; one Lovable engineer spent about $85K over January to June 2026, $25K in May.",
+      "Cost is per run: every turn resends the context. Bun's 11-day Zig-to-Rust port, about 64 Claudes at peak, cost around $165K at API prices; one Lovable engineer spent about $85K from January to early July 2026, $25K in May alone.",
       "Tool calls are the load: Cursor's research harness peaked at about 1,000 commits an hour, across 10M tool calls in one week.",
       "Runaway loops: cap turns (`max_turns` raises `MaxTurnsExceeded` in the OpenAI Agents SDK; Claude Code subagents take `maxTurns`) and CI rounds. Alert on cap hits.",
       "Prompts don't survive unattended runs, so the boundary moves to the environment: Monzo deploys each job into a sandbox \"well away from all the services we use to run the bank\".",
@@ -93,6 +93,7 @@ export const CHAPTERS = [
       { title: "Claude Code: Subagents", url: "https://code.claude.com/docs/en/sub-agents" },
       { title: "OpenAI Agents SDK: Running agents", url: "https://openai.github.io/openai-agents-python/running_agents/" },
       { title: "Steve Yegge: Fences, not sandboxes", url: "https://yegge.ai/essays/fences-not-sandboxes/" },
+      { title: "Steve Yegge: Seats and sunsets (2026-09-15)", url: "https://yegge.ai/essays/seats-and-sunsets/" },
       { title: "Anthropic: Investigating incidents in cybersecurity evals", url: "https://www.anthropic.com/news/investigating-incidents-cybersecurity-evals" },
       { title: "OpenAI: Harness engineering", url: "https://openai.com/index/harness-engineering/" },
       { title: "Cursor: Towards self-driving codebases", url: "https://cursor.com/blog/self-driving-codebases" },
@@ -231,7 +232,7 @@ export const CHAPTERS = [
     ],
     steps: [
       { text: "The trust loop from pstack, Lauren Tan's agent playbooks: the top row understands, the bottom row proves, and nothing moves right on a claim. The stakes: Spotify ranks a PR that passes CI but is functionally wrong as \"the most serious error\", worse than no PR." },
-      { text: "Reproduce it yourself on the surface the user hit. pstack's bug-fix playbook says synthesize the trigger or add instrumentation, never hand it back. That takes a real environment: Ramp gives each agent session a sandboxed VM with the full local dev stack.", on: ["report", "repro"], flow: ["e-report"] },
+      { text: "Reproduce it yourself on the surface the user hit. pstack's bug-fix playbook says synthesize the trigger or add instrumentation, and ask the user only with a specific reason the tools can't reach it. That takes a real environment: Ramp gives each agent session a sandboxed VM with the full local dev stack.", on: ["report", "repro"], flow: ["e-report"] },
       { text: "Find the cause by elimination, confirmed at runtime. A known-good oracle makes each split cheap to judge: Cursor's agent-built FastRender browser leaned on compiler errors, vendored web specs, and screenshots diffed against golden samples.", on: ["repro", "hyp"], flow: ["e-repro"] },
       { text: "Not proven yet? Add logging and go round again. pstack's attack-the-premise rule: after two failed fixes that share a premise, question the premise instead of trying a third.", on: ["hyp", "repro"], flow: ["e-more"] },
       { text: "Commit the failing repro before the fix (pstack's sequence-verifiable-units). That also pins the oracle: InfoQ reported Spotify's agents commenting out failing tests and downgrading Java versions to turn builds green.", on: ["hyp", "failing"], flow: ["e-yes"] },
@@ -329,7 +330,7 @@ export const CHAPTERS = [
     steps: [
       { text: "Many writers, one repo. Most fleets of hundreds are independent single-writer sessions (Stripe reports 1,300+ merged agent PRs a week). This is the harder case: Bun's Rust port (about 64 Claudes), Anthropic's C compiler (16)." },
       { text: "Frame first: a countable done condition and a budget. pstack's orchestrate playbook (Lauren Tan, poteto): if one agent can finish in budget, use one. A Google and MIT study found negative returns once one agent succeeds about 45% of the time; the big parallel wins all had an oracle like GCC.", on: ["human", "lead"], flow: ["e-goal"] },
-      { text: "Briefs are self-contained: goal, scope, acceptance, verify commands, timebox, forbidden actions, report shape. pstack won't spawn one missing a field. The queue can be a tracker: OpenAI's Symphony makes the Linear board its state machine.", on: ["lead", "w1", "w2", "w3"], flow: ["e-b1", "e-b2", "e-b3"] },
+      { text: "Briefs are self-contained: goal, scope, acceptance, verify commands, timebox, forbidden actions, report shape. pstack won't spawn one missing a field. The queue can be a tracker: OpenAI's Symphony polls an issue tracker (Linear in OpenAI's demo) and runs its own state machine.", on: ["lead", "w1", "w2", "w3"], flow: ["e-b1", "e-b2", "e-b3"] },
       { text: "One writer per checkout. Bun had 16 Claudes share each of 4 worktrees (one each would exhaust disk); their concurrent `git stash`, `stash pop` and `reset --hard` overwrote each other. Stripe skipped worktrees, which \"wouldn't scale at Stripe\", for a devbox per run.", on: ["w1", "w2", "w3"] },
       { text: "Pick a shape: partition into slices, or race workers on one brief with the selection rule (first pass, rank all, best-of) fixed up front, as pstack's swarm requires. Cursor reached several hundred agents with a root planner spawning recursive sub-planners.", on: ["lead", "w1", "w2", "w3"] },
       { text: "Fan-in: workers report PASS, ISSUES or BLOCKED with evidence. pstack's swarm discards a report missing its SHAs, respawns once, and logs a second miss as a gap, never a pass.", on: ["w1", "w2", "w3", "lead"], flow: ["e-b1", "e-b2", "e-b3"] },
@@ -345,6 +346,7 @@ export const CHAPTERS = [
       "Parallel writers on coupled code are slower. Kieran Klaassen on three months of agent swarms: \"more agents didn't make me faster\". Claude Code's agent-teams docs: two teammates on one file overwrite each other.",
       "Parallelism multiplies spend: Bun's 11-day port ran about $165K at API prices; Anthropic's 16-agent compiler, just under $20K for about 2,000 sessions.",
       "Coding parallelizes poorly: Anthropic says \"most coding tasks involve fewer truly parallelizable tasks than research\", and the Google and MIT study saw multi-agent setups lose 39% to 70% on sequential planning.",
+      "Vendor traces are not your audit log. The Claude API's OpenTelemetry export (beta, October 2026) sends spans for Messages API requests and Managed Agents sessions, but delivery is at least once and best effort: dedupe on trace and span ID, and keep your own record of who ran what.",
       "Never let workers rebase or merge: a rebase changes the SHA and voids the verdict. Landing is its own step: OpenAI's \"land\" skill waits for reviews and green CI, fixes flakes, then enters the merge queue.",
     ],
     atScale: [
@@ -391,6 +393,7 @@ export const CHAPTERS = [
       { title: "Latent Space: Harness engineering, with Ryan Lopopolo (2026-04-07)", url: "https://latent.space/p/harness-eng" },
       { title: "Anthropic: How we built our multi-agent research system (2025-06-13)", url: "https://www.anthropic.com/engineering/multi-agent-research-system" },
       { title: "Claude Code: Monitoring usage (OpenTelemetry)", url: "https://code.claude.com/docs/en/monitoring-usage" },
+      { title: "Claude API: Use OpenTelemetry (beta, 2026-10-14)", url: "https://platform.claude.com/docs/en/manage-claude/opentelemetry/api" },
     ],
   },
 ];

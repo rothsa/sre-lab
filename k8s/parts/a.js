@@ -72,7 +72,7 @@ export const CHAPTERS = [
     agentic: [
       "Agents such as kubectl-ai and K8sGPT drive the same hub-and-spoke API: every `get`, `describe` or `logs` they run is an API server request under some identity. What you own is that identity, because an agent bound to a read-only Role cannot do what its RBAC forbids, whatever its prompt says.",
       "The component map is how you catch a fluent but wrong answer. GKE's Gemini Cloud Assist docs (Preview) warn output can be plausible yet incorrect; an agent claiming 'the kubelet failed to schedule the Pod' has mixed up who binds (scheduler) and who runs (kubelet).",
-      "Agent bridges are a new front door. kubectl-ai's `--mcp-server` HTTP endpoint is unauthenticated by default, and its README warns that anyone who can reach the port can run `kubectl` and `bash` with the kubeconfig and host it runs on; treat it like API server access, with auth, network scope and audit.",
+      "Agent bridges are a new front door. kubectl-ai's `--mcp-server` HTTP endpoint is unauthenticated by default, and its README warns that anyone who can reach the port can run `kubectl` and `bash` with the kubeconfig and host it runs on. OAuth 2.1 (`--mcp-auth-issuer`) is opt-in and newer than the last tagged release, so treat it like API server access, with auth, network scope and audit.",
     ],
     quiz: [
       { q: "Which component is the only one that should read and write etcd?", a: "kube-apiserver. Every other component, including the scheduler, controllers and kubelets, goes through the API server." },

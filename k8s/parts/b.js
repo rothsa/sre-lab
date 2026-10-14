@@ -72,7 +72,7 @@ export const CHAPTERS = [
     agentic: [
       "Agents can walk the Service debug path fast: selector, EndpointSlices, `ready` conditions, kube-proxy mode. Ask for the commands they ran and confirm with a real request to the port, since an agent that pings a ClusterIP and calls it down has misread a virtual IP.",
       "Fluent advice still needs the mechanism. An agent suggesting `externalTrafficPolicy: Local` to keep client IPs is right about the IP and silent about nodes without a local endpoint dropping traffic; that trade-off is yours to make.",
-      "Agent servers sit behind Services too: `k8sgpt serve --mcp` has an HTTP mode, and kubectl-ai's MCP HTTP endpoint is unauthenticated by default. A ClusterIP is not access control, so add authentication and a NetworkPolicy before anything else can reach them.",
+      "Agent servers sit behind Services too: `k8sgpt serve --mcp` has an HTTP mode, and kubectl-ai's MCP HTTP endpoint is unauthenticated by default (its OAuth 2.1 option is opt-in). A ClusterIP is not access control, so add authentication and a NetworkPolicy before anything else can reach them.",
     ],
     quiz: [
       { q: "Which component turns a Service into something packets can use, and where does it run?", a: "kube-proxy (or a CNI plugin's replacement for it). It runs on every node, watches Services and EndpointSlices, and programs iptables or nftables rules in that node's kernel." },

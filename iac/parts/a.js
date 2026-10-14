@@ -96,7 +96,7 @@ data "aws_ssm_parameter" "vpc_id" {
     agentic: [
       "Agents that run `terraform plan` or read state through a tool need the same `s3:GetObject` on the state key as the runner, and that grant is read access to every plaintext secret in it. Give each agent its own role scoped to one key and one KMS key, never the launching developer's standing credentials, and include it in the unexpected-reader alerts like any new pipeline.",
       "Whatever an agent reads from state or a saved plan lands in its context, so a `terraform show` run to answer a question can put database passwords into a model provider's transcript. Point agents at published outputs (SSM, `tfe_outputs`) instead of whole state, and avoid pairing state access with untrusted PR text and outbound network, the combination Simon Willison calls the lethal trifecta.",
-      "An agent that hits a lock error tends to reach for `force-unlock` or `-lock=false` as the quick fix. The lock is the only thing stopping two writers, so keep both out of the agent's allowed commands; confirming the holding job is dead and choosing the lock ID stays a human runbook step.",
+      "An agent that hits a lock error tends to reach for `force-unlock` or `-lock=false` as the quick fix. The lock is the only thing stopping two writers, so keep both out of the agent's allowed commands, and leave the Terraform MCP server's `force_unlock_workspace` off (it needs `ENABLE_TF_OPERATIONS`). Confirming the holding job is dead and choosing the lock ID stays a human runbook step.",
     ],
     quiz: [
       { q: "Two CI jobs start `terraform apply` on the same S3 state with `use_lockfile = true`. What happens?", a: "The first creates `<key>.tflock` and proceeds. The second can't get the lock and fails, or keeps retrying until `-lock-timeout` runs out." },
@@ -233,6 +233,7 @@ terraform {
       { title: "AWS CDK: constructs", url: "https://docs.aws.amazon.com/cdk/v2/guide/constructs.html" },
       { title: "Crossplane: compositions", url: "https://docs.crossplane.io/latest/composition/compositions/" },
       { title: "Terraform MCP server overview", url: "https://developer.hashicorp.com/terraform/mcp-server" },
+      { title: "Terraform MCP server: tools reference", url: "https://developer.hashicorp.com/terraform/mcp-server/reference" },
       { title: "DORA: impact of generative AI in software development", url: "https://dora.dev/ai/gen-ai-report/report/" },
       { title: "Google Cloud: announcing the 2025 DORA report", url: "https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report" },
     ],
