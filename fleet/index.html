@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>One Agent to Hundreds</title>
+<meta name="description" content="How to get from one coding agent you trust to hundreds running in parallel, one stage at a time: what each stage adds, what breaks without it, and how to know you're ready for the next.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<style>
+/* Layout: a five-stage ladder. Pick a stage; the diagram grows, and the panels say what to add, what breaks, and when to move on. */
+:root {
+  --bg: #f4f6f8; --panel: #ffffff; --fg: #141c24; --muted: #5b6875; --rule: #d7dee5;
+  --accent: #1f5fbf; --ok: #15803d; --warn: #a16207; --bad: #c2410c; --soft: #e8eef6;
+  --ok-soft: #e3f4e8; --bad-soft: #fdebe1; --warn-soft: #fbf1d9; --new: #7c3aed; --new-soft: #f1eafe;
+  --font-display: "Archivo", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c; --accent: #6ea8ff; --ok: #4ade80; --warn: #e0b44c; --bad: #fb8a4c; --soft: #1c2733; --ok-soft: #13291c; --bad-soft: #35200f; --warn-soft: #2f2712; --new: #b794f6; --new-soft: #251a3a; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c; --accent: #6ea8ff; --ok: #4ade80; --warn: #e0b44c; --bad: #fb8a4c; --soft: #1c2733; --ok-soft: #13291c; --bad-soft: #35200f; --warn-soft: #2f2712; --new: #b794f6; --new-soft: #251a3a; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 32px 56px; }
+.kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 5vw, 44px); margin: 6px 0 10px; line-height: 1.05; }
+h2 { font-family: var(--font-display); font-weight: 700; font-size: 22px; margin: 40px 0 10px; }
+h3 { font-family: var(--font-display); font-weight: 700; font-size: 16px; margin: 0 0 8px; }
+.lede { color: var(--muted); max-width: 72ch; margin: 0 0 14px; }
+a { color: var(--accent); }
+code { font-family: var(--font-mono); font-size: .92em; }
+
+/* The ladder */
+.ladder { list-style: none; margin: 22px 0 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); position: relative; }
+.ladder::before { content: ""; position: absolute; left: 10%; right: 10%; top: 27px; height: 3px; background: var(--rule); border-radius: 2px; }
+.ladder .fill { position: absolute; left: 10%; top: 27px; height: 3px; background: var(--accent); border-radius: 2px; transition: width .25s; }
+.ladder li { position: relative; text-align: center; }
+.rung { appearance: none; background: none; border: 0; padding: 0 4px; cursor: pointer; color: inherit; font: inherit; width: 100%; }
+.rung .dot { display: grid; place-items: center; width: 56px; height: 56px; margin: 0 auto 6px; border-radius: 50%; background: var(--panel); border: 2px solid var(--rule); font-family: var(--font-display); font-weight: 800; font-size: 17px; position: relative; z-index: 1; transition: border-color .15s, background .15s; }
+.rung .name { display: block; font-weight: 600; font-size: 14.5px; line-height: 1.25; }
+.rung .hint { display: block; color: var(--muted); font-size: 12.5px; line-height: 1.3; margin-top: 2px; }
+.rung.past .dot { border-color: var(--accent); color: var(--accent); }
+.rung[aria-current="step"] .dot { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.rung:focus-visible .dot { outline: 2px solid var(--accent); outline-offset: 3px; }
+.rung .done { position: absolute; top: -2px; right: calc(50% - 34px); z-index: 2; font-size: 12px; color: var(--ok); font-weight: 700; }
+
+.stage { margin-top: 24px; background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; }
+.stage-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 14px; padding: 16px 18px 6px; }
+.stage-head h2 { margin: 0; font-size: 24px; }
+.stage-head .count { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+.bottleneck { margin: 0; padding: 0 18px 12px; color: var(--muted); max-width: 90ch; }
+.bottleneck b { color: var(--fg); }
+.diagram { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); background: var(--bg); padding: 8px; }
+.diagram > svg { display: block; width: 100%; height: auto; max-height: 360px; }
+.legend svg { display: inline-block; vertical-align: -1px; margin-right: 4px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); padding: 6px 10px 2px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 5px; border: 1.5px solid var(--fg); background: var(--panel); }
+.legend i.n { border-color: var(--new); background: var(--new-soft); }
+.cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+.col { padding: 16px 18px; min-width: 0; }
+.col + .col { border-left: 1px solid var(--rule); }
+.col h3 { font-family: var(--font-mono); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+.col.add h3 { color: var(--new); } .col.breaks h3 { color: var(--bad); } .col.gate h3 { color: var(--ok); }
+.col ul { margin: 0; padding-left: 18px; }
+.col li { margin: 0 0 8px; font-size: 14.5px; }
+.col .src { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+.col .src a { color: var(--muted); }
+.gate ul { list-style: none; padding: 0; }
+.gate label { display: grid; grid-template-columns: 20px 1fr; gap: 6px; cursor: pointer; font-size: 14.5px; }
+.gate input { margin: 4px 0 0; accent-color: var(--ok); width: 15px; height: 15px; }
+.gate .ready { margin: 10px 0 0; font-size: 14px; font-weight: 600; }
+.gate .ready.yes { color: var(--ok); }
+.gate .ready.no { color: var(--muted); font-weight: 400; }
+.quote { margin: 10px 0 0; padding: 8px 12px; border-left: 3px solid var(--rule); font-size: 14px; color: var(--muted); }
+.quote q { color: var(--fg); }
+.foot { border-top: 1px solid var(--rule); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.foot > div { padding: 14px 18px; min-width: 0; }
+.foot > div + div { border-left: 1px solid var(--rule); }
+.foot h3 { font-family: var(--font-mono); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.foot ul { margin: 0; padding-left: 18px; font-size: 14px; }
+.foot li { margin: 0 0 6px; overflow-wrap: anywhere; }
+.nav { display: flex; justify-content: space-between; gap: 10px; padding: 12px 18px; border-top: 1px solid var(--rule); background: var(--bg); }
+.nav button { font: 600 14px var(--font-body); color: var(--fg); background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 7px 14px; cursor: pointer; }
+.nav button:disabled { opacity: .45; cursor: default; }
+.nav button.go { border-color: var(--accent); color: var(--accent); }
+.nav .keys { align-self: center; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+
+.warnbox { background: var(--panel); border: 1px solid var(--rule); border-left: 4px solid var(--warn); border-radius: 10px; padding: 12px 16px; max-width: 80ch; margin-top: 22px; }
+.warnbox p { margin: 0 0 6px; }
+.tbl-wrap { overflow-x: auto; max-width: 100%; }
+table { border-collapse: collapse; font-size: 14px; width: 100%; }
+th, td { text-align: left; vertical-align: top; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--rule); }
+th { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+td:first-child { white-space: nowrap; font-weight: 600; }
+tr.cur td { background: var(--soft); }
+.prose { max-width: 76ch; }
+.prose li { margin: 5px 0; }
+.limits { background: var(--panel); border: 1px solid var(--rule); border-left: 3px solid var(--warn); border-radius: 10px; padding: 12px 16px 12px 34px; max-width: 76ch; }
+footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* Diagram */
+.dg-box { fill: var(--panel); stroke: var(--fg); stroke-width: 1.4; }
+.dg-box.new { fill: var(--new-soft); stroke: var(--new); stroke-width: 2; }
+.dg-zone { fill: none; stroke: var(--muted); stroke-dasharray: 5 4; stroke-width: 1.2; }
+.dg-zone.new { stroke: var(--new); }
+.dg-label { fill: var(--fg); font: 600 12.5px var(--font-body); }
+.dg-sub { fill: var(--muted); font: 10.5px var(--font-mono); }
+.dg-zl { fill: var(--muted); font: 10.5px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
+.dg-zl.new { fill: var(--new); }
+.dg-edge { stroke: var(--muted); stroke-width: 1.4; fill: none; }
+.dg-edge.new { stroke: var(--new); }
+.dg-el { fill: var(--muted); font: 10px var(--font-mono); }
+.dg-dot { fill: var(--accent); }
+.dg-arrow { fill: var(--muted); }
+.dg-arrow-new { fill: var(--new); }
+
+@media (max-width: 900px) {
+  .cols { grid-template-columns: 1fr; }
+  .col + .col { border-left: 0; border-top: 1px solid var(--rule); }
+  .foot { grid-template-columns: 1fr; }
+  .foot > div + div { border-left: 0; border-top: 1px solid var(--rule); }
+}
+@media (max-width: 640px) {
+  .rung .hint { display: none; }
+  .rung .dot { width: 44px; height: 44px; font-size: 14px; }
+  .ladder::before, .ladder .fill { top: 21px; }
+  .rung .name { font-size: 12.5px; }
+  .rung .done { right: calc(50% - 28px); }
+  .nav .keys { display: none; }
+  .diagram { overflow-x: auto; }
+  .diagram > svg { min-width: 640px; max-height: none; }
+}
+@media (prefers-reduced-motion: reduce) { .ladder .fill { transition: none; } }
+</style>
+<link rel="stylesheet" href="../site-nav.css">
+</head>
+<body>
+<nav class="site-nav" aria-label="Site" style="max-width:1180px"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
+<main class="wrap">
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · agent fleets</div>
+  <h1>One Agent to Hundreds</h1>
+  <p class="lede">Running hundreds of coding agents is not one agent times a hundred. Each jump in scale breaks something the smaller setup got away with: your review time, shared files, one coordinator's attention, then rate limits and cost. Step up one stage at a time. Each stage says what to add, what breaks without it, and how to tell you're ready for the next.</p>
+  <p class="lede">The main thread is <a href="https://github.com/cursor/plugins/tree/main/pstack">pstack</a>, Lauren Tan's published agent workflow, alongside what Anthropic, Cursor and Claude Code's docs say about running many agents. Stage sizes are teaching breakpoints, not thresholds from a study.</p>
+
+  <nav aria-label="Stages">
+    <ol class="ladder" id="ladder"><span class="fill" id="fill" aria-hidden="true"></span></ol>
+  </nav>
+
+  <section class="stage" id="stage" aria-live="polite">
+    <div class="stage-head"><h2 id="st-title"></h2><span class="count" id="st-count"></span></div>
+    <p class="bottleneck" id="st-bottleneck"></p>
+    <div class="diagram">
+      <svg id="dg" viewBox="0 0 760 300" role="img" aria-labelledby="dg-title"><title id="dg-title"></title></svg>
+      <div class="legend"><span><i></i>carried over</span><span><i class="n"></i>new at this stage</span><span><svg width="10" height="10" aria-hidden="true"><circle cx="5" cy="5" r="4" class="dg-dot"/></svg> one agent</span></div>
+    </div>
+    <div class="cols">
+      <div class="col add"><h3>Add at this stage</h3><ul id="st-add"></ul></div>
+      <div class="col breaks"><h3>What breaks without it</h3><ul id="st-breaks"></ul><div id="st-quote"></div></div>
+      <div class="col gate"><h3 id="st-gate-h">Ready for the next stage when</h3><ul id="st-gate"></ul><p class="ready" id="st-ready" aria-live="polite"></p></div>
+    </div>
+    <div class="foot">
+      <div><h3>Documented limits you'll meet here</h3><ul id="st-limits"></ul></div>
+      <div><h3>Sources for this stage</h3><ul id="st-sources"></ul></div>
+    </div>
+    <div class="nav"><button type="button" id="prev">← Previous stage</button><span class="keys">or use ← → keys</span><button type="button" id="next" class="go">Next stage →</button></div>
+  </section>
+
+  <div class="warnbox" role="note">
+    <p><b>Check first that more agents will help at all.</b> A Google Research, Google DeepMind and MIT study of 260 agent configurations found that tasks where one agent already succeeds more than 45% of the time <q>experience negative returns from additional agents, as coordination costs exceed diminishing improvement potential</q>. On SWE-bench Verified, every multi-agent setup they tested did slightly worse than one agent (−15% to −2%).</p>
+    <p style="margin:0">Scale pays when the work splits into independent pieces and each piece has a check the agent can't fake. Anthropic's C compiler run used 16 parallel agents. It stalled when every agent hit the same kernel bug, and recovered once GCC served as a known-good oracle. (<a href="https://arxiv.org/abs/2512.08296">Kim et al., arXiv:2512.08296 v3</a>; <a href="https://www.anthropic.com/engineering/building-c-compiler">Anthropic: Building a C compiler with a team of parallel Claudes</a>)</p>
+  </div>
+
+  <h2 id="glance">A to B at a glance</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th scope="col">Stage</th><th scope="col">What limits you</th><th scope="col">What you add</th><th scope="col">Move on when</th></tr></thead>
+    <tbody id="glance-body"></tbody>
+  </table></div>
+
+  <div class="prose">
+    <h2>How the pieces fit</h2>
+    <p>Across the stages, the human's job moves from doing the work to writing briefs, then to reading verdicts, then to answering only the questions no experiment can settle. pstack's Orchestrate playbook describes the end state as <q>the human checking in twice a day instead of every five minutes</q>. Irreversible actions (force-pushes to shared branches, deploys, data deletion, customer messages) still wait for a person.</p>
+    <p>Two ideas carry the whole ladder. First, <b>evidence, not assertion</b>: a worker's "done" counts only with the evidence its brief asked for. pstack's swarm skill drops a report missing its SHAs, respawns the worker once, and records a second miss as a gap: <q>A gap does not count as a pass.</q> Second, <b>encode lessons in structure</b>: a correction you keep repeating becomes a lint rule, a check or a script. pstack's principle puts it bluntly: <q>The instruction is the symptom.</q></p>
+    <p>Memory is the newer layer. In her AI Native DevCon talk, Anthropic's Lamis Mukta describes memory moving from CLAUDE.md files to skills to plain files that agents search with ordinary tools. It then needs versioning, a hash check before every write, and read-only organisation-wide memory beside writable per-agent scratchpads once many agents share it. "Dreaming" is a separate batch job that reads past sessions and proposes a cleaned-up memory store for a human to accept or reject. Claude Managed Agents documents the same mechanics (immutable memory versions, a <code>content_sha256</code> precondition on writes). Dreams are in research preview.</p>
+
+    <h3 style="font-size:17px;margin-top:22px">Honest limits</h3>
+    <ul class="limits">
+      <li><b>The stage sizes are illustrative.</b> 1, 3, 10, dozens and hundreds are where the cited sources describe things breaking (worktrees, about ten agents per coordinator drain, Cursor's lock contention at twenty). They are not measured thresholds, and your breakpoints depend on the repo, the tasks and your checks.</li>
+      <li><b>pstack moves fast.</b> Quotes are from the repository as of 13 October 2026 (version 0.15.23). Its README still says it was built at Cursor. Lauren Tan's GitHub profile now lists xAI, and her recent talk introduces her as working on Grok Bot. Some details differ between playbooks: Orchestrate's stacker uses Graphite (<code>gt</code>), while Shipping and Babysit say never to require it.</li>
+      <li><b>"Hundreds" is the sources' word.</b> In her pstack guide (31 August 2026), Lauren Tan writes that you may get away with up to 10 agents in parallel with worktrees, and promises a later post on running hundreds of subagents in parallel in the cloud. Cursor reports runs that <q>peak at several hundred agents</q>. No source here gives an exact count for any one person's setup.</li>
+      <li><b>Cost is real.</b> Anthropic reports that its multi-agent research system used about 15 times the tokens of a chat. Claude Code's docs say agent teams use about 7 times the tokens of a standard session in plan mode. Measure before you scale.</li>
+      <li><b>Limits change.</b> The documented numbers below each stage are defaults as of October 2026. Check the linked docs before you plan around them.</li>
+    </ul>
+  </div>
+  <footer>Part of <a href="../">SRE Lab</a> by Sally Roth · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · related: <a href="../agentic/">Agentic Engineering, Drawn</a>, <a href="../agent-evals/">Did the Agent Do It Right?</a></footer>
+</main>
+<script>
+const PS = "https://github.com/cursor/plugins/blob/main/pstack/";
+const S = {
+  harness: ["Anthropic: Effective harnesses for long-running agents", "https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents"],
+  prove: ["pstack: prove-it-works principle", PS + "skills/principle-prove-it-works/SKILL.md"],
+  encode: ["pstack: encode-lessons-in-structure principle", PS + "skills/principle-encode-lessons-in-structure/SKILL.md"],
+  correct: ["pstack: correct skill", PS + "skills/correct/SKILL.md"],
+  feature: ["pstack: feature playbook (throughput checkpoint)", PS + "skills/poteto-mode/playbooks/feature.md"],
+  orch: ["pstack: orchestrate playbook", PS + "skills/poteto-mode/playbooks/orchestrate.md"],
+  swarm: ["pstack: swarm skill", PS + "skills/swarm/SKILL.md"],
+  ship: ["pstack: shipping playbook (patch-id recheck)", PS + "skills/poteto-mode/playbooks/shipping.md"],
+  reflect: ["pstack: reflect skill", PS + "skills/reflect/SKILL.md"],
+  tan1: ["Lauren Tan: The Complete Guide to pstack Pt. 1 (X, 31 Aug 2026)", "https://x.com/poteto/status/2094457600259842065"],
+  tanLoops: ["Lauren Tan: Loops You Can Trust (X, 24 Jun 2026)", "https://x.com/poteto/status/2069824386283319343"],
+  tanTalk: ["Lauren Tan: talk on shipping 2,500 PRs in a month (X video, 21 Sep 2026)", "https://x.com/poteto/status/2102050467505430555"],
+  ccWorktrees: ["Claude Code docs: worktrees", "https://code.claude.com/docs/en/worktrees"],
+  ccTeams: ["Claude Code docs: agent teams", "https://code.claude.com/docs/en/agent-teams"],
+  ccSub: ["Claude Code docs: subagents", "https://code.claude.com/docs/en/sub-agents"],
+  ccWorkflows: ["Claude Code docs: dynamic workflows", "https://code.claude.com/docs/en/workflows"],
+  ccCosts: ["Claude Code docs: costs", "https://code.claude.com/docs/en/costs"],
+  cursorScale: ["Cursor: Scaling long-running autonomous coding (14 Jan 2026)", "https://cursor.com/blog/scaling-agents"],
+  cursorSelf: ["Cursor: Towards self-driving codebases (5 Feb 2026)", "https://cursor.com/blog/self-driving-codebases"],
+  cursorProjects: ["Cursor: Introducing Projects (10 Sep 2026)", "https://cursor.com/blog/projects"],
+  carlini: ["Anthropic: Building a C compiler with a team of parallel Claudes", "https://www.anthropic.com/engineering/building-c-compiler"],
+  mukta: ["Lamis Mukta (Anthropic): Learning while you sleep, AI Native DevCon 2026", "https://www.youtube.com/watch?v=tTcxVv8HHNw"],
+  maMemory: ["Claude Managed Agents docs: memory", "https://platform.claude.com/docs/en/managed-agents/memory"],
+  maDreams: ["Claude Managed Agents docs: dreams (research preview)", "https://platform.claude.com/docs/en/managed-agents/dreams"],
+  research: ["Anthropic: How we built our multi-agent research system", "https://www.anthropic.com/engineering/multi-agent-research-system"],
+  ghRest: ["GitHub docs: REST API rate limits", "https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api"],
+  ghMq: ["GitHub docs: managing a merge queue", "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue"],
+  ghActions: ["GitHub docs: Actions limits", "https://docs.github.com/en/actions/reference/limits"],
+  apiLimits: ["Claude API docs: rate limits", "https://platform.claude.com/docs/en/api/rate-limits"],
+  paper: ["Kim et al.: Towards a Science of Scaling Agent Systems (arXiv:2512.08296)", "https://arxiv.org/abs/2512.08296"],
+};
+
+// Diagram primitives: boxes {x,y,w,h,label,sub,new}, zones, clusters of dots, edges between box ids.
+const STAGES = [
+  {
+    n: "1", name: "One you trust", hint: "a check it can't fake",
+    title: "1 · One agent you trust",
+    count: "1 agent",
+    bottleneck: "<b>What limits you:</b> trust. If you redo or re-check every result by hand, adding agents only adds work. Lauren Tan, in an earlier talk: you can't spawn a hundred agents when you don't trust the output of one.",
+    add: [
+      ["A check the agent can't edit: a repro script, a test, or the real screen the user saw. \"Done\" means that check passes, not that the agent says so.", "prove"],
+      ["Evidence in every report: what it ran and what it saw, so you can rerun it.", "prove"],
+      ["A rule for repeated corrections: the second time you say something, make it a lint rule, CI check, hook or script instead of more prompt text.", "encode"],
+      ["The simplest memory that works: a short instructions file (such as CLAUDE.md) checked into the repo.", "mukta"],
+    ],
+    breaks: [
+      ["Agents stop when work looks finished. Anthropic's harness post lists \"declare the job done\" as a core failure mode, alongside trying to do too much at once.", "harness"],
+      ["A check on the wrong surface (a unit test for a UI bug) passes while the bug stays.", "prove"],
+    ],
+    quote: ["Parallelization just gave me more to review and discard.", "Lauren Tan, on scaling before trust", "tanLoops"],
+    gate: [
+      "Its \"done\" arrives with evidence you can rerun, not a summary.",
+      "You no longer re-check this kind of task by hand.",
+      "Corrections you've given twice now live in a check, not in the prompt.",
+    ],
+    limits: [["Anthropic's long-running harness keeps a progress file and a feature list where the agent may only flip a pass/fail field, and works one feature at a time.", "harness"]],
+    sources: ["prove", "encode", "correct", "harness", "mukta", "tanLoops"],
+    diagram: {
+      boxes: [
+        { id: "you", x: 30, y: 120, w: 110, h: 50, label: "You", sub: "task + review" },
+        { id: "agent", x: 220, y: 120, w: 130, h: 50, label: "Agent", sub: "one session" },
+        { id: "check", x: 420, y: 120, w: 180, h: 50, label: "Check it can't edit", sub: "repro · tests · real UI", new: true },
+        { id: "pr", x: 640, y: 120, w: 90, h: 50, label: "PR", sub: "with evidence" },
+        { id: "rules", x: 210, y: 228, w: 150, h: 46, label: "Lint · CI · hook", sub: "lessons as checks", new: true },
+      ],
+      edges: [["you", "agent", "brief"], ["agent", "check", "claims done"], ["check", "pr", "passes"], ["check", "agent", "fails: go again", "over"], ["you", "rules", "repeat correction", "", true], ["rules", "agent", "", "", true]],
+    },
+  },
+  {
+    n: "3", name: "A few", hint: "split on seams",
+    title: "3 · A few agents in parallel",
+    count: "about 3 agents",
+    bottleneck: "<b>What limits you:</b> collisions. Agents editing the same files overwrite each other, and your attention splits three ways.",
+    add: [
+      ["One worktree or branch per agent. A worktree is a fresh checkout, so each one sets up its own environment.", "ccWorktrees"],
+      ["Split on seams: disjoint files, services or layers run in parallel; anything that writes shared state goes to one agent. pstack: \"Shared writes serialize.\"", "feature"],
+      ["A reason for each split. pstack's checkpoint asks for the smallest safe decomposition: \"If one worker is best, name why.\"", "feature"],
+    ],
+    breaks: [
+      ["Two agents on the same file: Claude Code's agent-team docs say this \"leads to overwrites\".", "ccTeams"],
+      ["Three half-checked results that cost more to review than doing one task yourself.", "tanLoops"],
+    ],
+    quote: null,
+    gate: [
+      "Each running task touches files no other running task touches.",
+      "Every worktree builds and runs its checks without you.",
+      "You can review all three results the same day without redoing any.",
+    ],
+    limits: [
+      ["Claude Code agent teams (experimental, off by default): \"Start with 3-5 teammates for most workflows.\"", "ccTeams"],
+      ["Agent teams use about 7× the tokens of a standard session when teammates run in plan mode.", "ccCosts"],
+    ],
+    sources: ["ccWorktrees", "feature", "ccTeams", "ccCosts"],
+    diagram: {
+      boxes: [
+        { id: "you", x: 30, y: 125, w: 100, h: 50, label: "You", sub: "split + review" },
+        { id: "a1", x: 220, y: 40, w: 150, h: 50, label: "Agent · worktree A", sub: "own files", new: true },
+        { id: "a2", x: 220, y: 125, w: 150, h: 50, label: "Agent · worktree B", sub: "own files", new: true },
+        { id: "a3", x: 220, y: 210, w: 150, h: 50, label: "Agent · worktree C", sub: "shared writes here", new: true },
+        { id: "check", x: 450, y: 125, w: 130, h: 50, label: "Checks", sub: "per worktree" },
+        { id: "pr", x: 640, y: 125, w: 90, h: 50, label: "PRs", sub: "one each" },
+      ],
+      edges: [["you", "a1", ""], ["you", "a2", ""], ["you", "a3", ""], ["a1", "check", ""], ["a2", "check", ""], ["a3", "check", ""], ["check", "pr", "passes"]],
+    },
+  },
+  {
+    n: "10", name: "About ten", hint: "briefs + verdicts",
+    title: "10 · About ten: briefs and verdicts",
+    count: "about 10 agents",
+    bottleneck: "<b>What limits you:</b> review. You can't read ten agents' work closely, and a worker can't ask you a question mid-task. The brief has to carry everything, and someone other than the author has to judge the result.",
+    add: [
+      ["A complete brief before anything spawns. pstack's fields: goal, scope, context, acceptance, verify, timebox, forbidden actions, report shape, standing orders. \"Missing fields are a refuse-to-spawn condition.\"", "orch"],
+      ["A verdict from an agent that didn't write the code, ideally on a different model family. pstack: \"CI green is an input to a verdict, not a verdict.\"", "orch"],
+      ["Fixed report shapes: PASS, ISSUES or BLOCKED, with the exact SHAs and method the brief asked for. A missing report is respawned once, then logged as a gap.", "swarm"],
+      ["For races (several agents on one brief), the selection rule decided before spawning: first pass, rank all, or best-of.", "swarm"],
+    ],
+    breaks: [
+      ["Vague briefs fail quietly: pstack notes a worker cannot ask you a question.", "orch"],
+      ["Self-graded work: a green check from the agent that wrote the change says little about whether it's right.", "ship"],
+    ],
+    quote: ["You may be able to get away with running up to 10 agents in parallel with worktrees", "Lauren Tan, pstack guide Pt. 1", "tan1"],
+    gate: [
+      "No agent spawns without every brief field filled in.",
+      "Every verdict comes from an agent that didn't write the change.",
+      "Verdicts are recorded against the commit SHA they checked.",
+      "You read verdicts and evidence, not transcripts.",
+    ],
+    limits: [
+      ["Claude Code: by default, spawning a 21st concurrent subagent in a session fails; subagents nest up to three layers deep.", "ccSub"],
+      ["Claude Code dynamic workflows: up to 16 concurrent agents by default.", "ccWorkflows"],
+    ],
+    sources: ["orch", "swarm", "ship", "tan1", "ccSub", "ccWorkflows"],
+    diagram: {
+      boxes: [
+        { id: "you", x: 20, y: 125, w: 90, h: 50, label: "You", sub: "write briefs" },
+        { id: "brief", x: 150, y: 125, w: 120, h: 50, label: "Brief", sub: "9 fields or no spawn", new: true },
+        { id: "verifier", x: 470, y: 55, w: 140, h: 50, label: "Verifier", sub: "other model family", new: true },
+        { id: "ledger", x: 470, y: 195, w: 140, h: 50, label: "Verdict ledger", sub: "per commit SHA", new: true },
+        { id: "read", x: 650, y: 125, w: 90, h: 50, label: "You", sub: "read verdicts" },
+      ],
+      clusters: [{ id: "w", x: 300, y: 85, w: 130, h: 130, n: 10, label: "10 workers" }],
+      edges: [["you", "brief", ""], ["brief", "w", "spawn"], ["w", "verifier", "PASS / ISSUES / BLOCKED"], ["verifier", "ledger", "verdict", "", true], ["ledger", "read", ""]],
+    },
+  },
+  {
+    n: "~50", name: "Dozens", hint: "coordinators + one writer",
+    title: "Dozens · Coordinators and one writer per thing",
+    count: "dozens of agents",
+    bottleneck: "<b>What limits you:</b> coordination and shared state. One coordinator can't absorb every report, and agents racing on the same branch, lock or memory file slow each other down or overwrite each other.",
+    add: [
+      ["A coordinator that writes no code (\"It never authors or edits code\") and sub-coordinators only when one can't keep up, each capped at roughly ten children in a rolling window, never in blocking batches.", "orch"],
+      ["Exactly one writer per piece of state: pstack's program store says \"Every file has exactly one writer.\"", "orch"],
+      ["One stacker per stack. Workers never rebase. After any rebase, recheck each verdict's patch-id, because a rebase \"can silently invalidate a verdict without touching a check\".", "ship"],
+      ["Shared memory with guardrails: versions you can roll back, a hash check before every write, read-only organisation-wide memory and writable per-agent scratchpads.", "mukta"],
+      ["Retry by failure mode, then give up: pstack respawns with smaller scope after a context cap, retries network drops as-is, and abandons a unit after two retries.", "orch"],
+    ],
+    breaks: [
+      ["Cursor found that with shared locks, \"Twenty agents would slow down to the effective throughput of two or three\". They moved to planners that spawn sub-planners.", "cursorScale"],
+      ["In Anthropic's compiler run, parallel agents all hit the same bug, fixed it, and overwrote each other's changes until a known-good oracle split the work.", "carlini"],
+    ],
+    quote: null,
+    gate: [
+      "Every state file, ledger and memory store has one writer, or every write is version-checked.",
+      "Only the stacker rebases, and a rebase re-checks each verdict.",
+      "Work is pushed as it lands, so a dead worker loses nothing verified.",
+      "From the ledger alone you can say why each unit failed.",
+    ],
+    limits: [
+      ["Claude Managed Agents memory: every change creates an immutable version; writes can carry a content_sha256 precondition.", "maMemory"],
+      ["GitHub merge queue: build concurrency and group size each between 1 and 100.", "ghMq"],
+    ],
+    sources: ["orch", "ship", "cursorScale", "carlini", "mukta", "maMemory", "ghMq"],
+    diagram: {
+      boxes: [
+        { id: "you", x: 15, y: 125, w: 80, h: 50, label: "You", sub: "gates only" },
+        { id: "coord", x: 125, y: 125, w: 120, h: 50, label: "Coordinator", sub: "writes no code", new: true },
+        { id: "s1", x: 280, y: 35, w: 105, h: 44, label: "Sub-coord", sub: "≤ ~10 in flight", new: true },
+        { id: "s2", x: 280, y: 128, w: 105, h: 44, label: "Sub-coord", sub: "≤ ~10 in flight", new: true },
+        { id: "s3", x: 280, y: 221, w: 105, h: 44, label: "Sub-coord", sub: "≤ ~10 in flight", new: true },
+        { id: "stacker", x: 580, y: 30, w: 170, h: 46, label: "Stacker", sub: "only one rebases", new: true },
+        { id: "ledger", x: 580, y: 127, w: 170, h: 46, label: "Ledger + store", sub: "one writer per file" },
+        { id: "mem", x: 580, y: 224, w: 170, h: 46, label: "Shared memory", sub: "versioned · hash-checked", new: true },
+      ],
+      clusters: [
+        { id: "c1", x: 410, y: 32, w: 120, h: 50, n: 10 },
+        { id: "c2", x: 410, y: 125, w: 120, h: 50, n: 10 },
+        { id: "c3", x: 410, y: 218, w: 120, h: 50, n: 10 },
+      ],
+      edges: [["you", "coord", ""], ["coord", "s1", ""], ["coord", "s2", ""], ["coord", "s3", ""], ["s1", "c1", ""], ["s2", "c2", ""], ["s3", "c3", ""], ["c1", "stacker", "", "", true], ["c2", "ledger", "verdicts"], ["c3", "mem", "", "", true]],
+    },
+  },
+  {
+    n: "100s", name: "Hundreds", hint: "cloud, budgets, limits",
+    title: "Hundreds · Cloud fleets, budgets and outside limits",
+    count: "hundreds of agents",
+    bottleneck: "<b>What limits you:</b> everything outside the repo: machine capacity, API rate limits, GitHub's limits on creating content, CI capacity, cost, and agents drifting over long runs. Lessons now have to travel between sessions, not just within one.",
+    add: [
+      ["Workers in the cloud, not on a laptop. pstack: \"Restacks run in cloud. A local restack at this scale takes the laptop down.\" Cursor's Projects run subagents remotely through one coordinator.", "orch"],
+      ["A budget that stops spawning early: \"By roughly 70% of it, stop spawning and land what is verified.\" Landing is continuous, never a final phase.", "orch"],
+      ["Human gates only where they belong: irreversible actions and product calls reach you; retries, restacks and CI flakes don't.", "orch"],
+      ["Periodic fresh starts: Cursor still restarts agents to combat \"drift and tunnel vision\".", "cursorScale"],
+      ["Learning across runs, with a person approving: pstack's reflect turns transcripts into proposed skill edits (\"Do not auto-apply\"). Anthropic's dreaming proposes a cleaned memory store for review.", "reflect"],
+    ],
+    breaks: [
+      ["GitHub caps content creation at 80 requests a minute and 500 an hour. Hundreds of agents opening PRs and comments hit that quickly.", "ghRest"],
+      ["Token cost grows with the fleet: Anthropic's multi-agent research system used about 15× the tokens of chat.", "research"],
+    ],
+    quote: ["most runs would peak at several hundred agents", "Cursor, on its long-running agent experiments", "cursorSelf"],
+    gate: [
+      "You check in on gates, not on progress.",
+      "A budget stops spawning before it runs out, and verified work lands continuously.",
+      "Your peak stays under API, GitHub and CI limits, with cost tracked per run.",
+      "Repeated mistakes across runs become proposed rule or memory changes that a person approves.",
+    ],
+    limits: [
+      ["Claude Code dynamic workflows: concurrency configurable up to 256; 1,000 agents total per run.", "ccWorkflows"],
+      ["Claude API: per-model RPM and token-per-minute limits by usage tier; a spend-cap 429 has no retry-after.", "apiLimits"],
+      ["GitHub Actions: concurrent jobs are capped per plan.", "ghActions"],
+      ["Claude Managed Agents dreams: 1 to 100 sessions per dream; research preview.", "maDreams"],
+    ],
+    sources: ["orch", "reflect", "cursorScale", "cursorSelf", "cursorProjects", "tan1", "tanTalk", "maDreams", "ghRest", "ghActions", "apiLimits", "research", "ccWorkflows"],
+    diagram: {
+      boxes: [
+        { id: "you", x: 15, y: 30, w: 80, h: 46, label: "You", sub: "twice a day" },
+        { id: "coord", x: 15, y: 127, w: 105, h: 46, label: "Coordinator", sub: "in the cloud" },
+        { id: "budget", x: 15, y: 224, w: 105, h: 46, label: "Budget", sub: "stop at ~70%", new: true },
+        { id: "stacker", x: 600, y: 30, w: 150, h: 46, label: "Stacker → queue", sub: "lands continuously" },
+        { id: "limits", x: 600, y: 127, w: 150, h: 46, label: "Outside limits", sub: "API · GitHub · CI", new: true },
+        { id: "dream", x: 600, y: 224, w: 150, h: 46, label: "Learn across runs", sub: "from transcripts · human OKs", new: true },
+      ],
+      zones: [{ x: 150, y: 14, w: 430, h: 272, label: "cloud fleet", new: true }],
+      clusters: [{ id: "fleet", x: 175, y: 40, w: 385, h: 230, n: 200, label: "" }],
+      edges: [["you", "coord", "gates"], ["budget", "coord", "", "", true], ["coord", "fleet", ""], ["fleet", "stacker", ""], ["fleet", "limits", "", "", true], ["fleet", "dream", "", "", true]],
+    },
+  },
+];
+
+const $ = (id) => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+function svg(tag, attrs = {}, text) {
+  const n = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+  if (text != null) n.textContent = text;
+  return n;
+}
+function el(tag, attrs = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) if (v != null && v !== false) n.setAttribute(k, v);
+  for (const k of kids) if (k != null && k !== false) n.append(k);
+  return n;
+}
+function srcLink(key) {
+  const [t, u] = S[key];
+  return el("a", { href: u, title: t }, "source");
+}
+
+function drawDiagram(stage) {
+  const g = $("dg");
+  [...g.querySelectorAll(":scope > :not(title)")].forEach((n) => n.remove());
+  $("dg-title").textContent = `Diagram: ${stage.title}`;
+  const defs = svg("defs");
+  for (const [id, cls] of [["ah", "dg-arrow"], ["ahn", "dg-arrow-new"]]) {
+    const m = svg("marker", { id, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto-start-reverse" });
+    m.append(svg("path", { d: "M0,0 L10,5 L0,10 z", class: cls }));
+    defs.append(m);
+  }
+  g.append(defs);
+  const d = stage.diagram;
+  const rects = {};
+  for (const z of d.zones || []) {
+    g.append(svg("rect", { x: z.x, y: z.y, width: z.w, height: z.h, rx: 12, class: `dg-zone${z.new ? " new" : ""}` }));
+    g.append(svg("text", { x: z.x + 10, y: z.y + 13, class: `dg-zl${z.new ? " new" : ""}` }, z.label + (z.new ? " · new" : "")));
+  }
+  for (const c of d.clusters || []) {
+    rects[c.id] = c;
+    const cols = Math.ceil(Math.sqrt(c.n * c.w / c.h));
+    const rows = Math.ceil(c.n / cols);
+    const dx = c.w / cols, dy = (c.h - (c.label ? 16 : 0)) / rows;
+    const r = Math.max(1.6, Math.min(5.5, Math.min(dx, dy) * 0.32));
+    for (let i = 0; i < c.n; i++) {
+      const cx = c.x + dx * (i % cols) + dx / 2, cy = c.y + dy * Math.floor(i / cols) + dy / 2;
+      g.append(svg("circle", { cx: cx.toFixed(1), cy: cy.toFixed(1), r: r.toFixed(1), class: "dg-dot" }));
+    }
+    if (c.label) g.append(svg("text", { x: c.x + c.w / 2, y: c.y + c.h - 2, "text-anchor": "middle", class: "dg-sub" }, c.label));
+  }
+  for (const b of d.boxes) rects[b.id] = b;
+  const center = (r) => [r.x + r.w / 2, r.y + r.h / 2];
+  function edgePoint(r, tx, ty) {
+    const [cx, cy] = center(r);
+    const dx = tx - cx, dy = ty - cy;
+    if (!dx && !dy) return [cx, cy];
+    const sx = (r.w / 2) / Math.abs(dx || 1e-9), sy = (r.h / 2) / Math.abs(dy || 1e-9);
+    const s = Math.min(sx, sy);
+    return [cx + dx * s, cy + dy * s];
+  }
+  for (const [a, b, label, mode, isNew] of d.edges) {
+    const ra = rects[a], rb = rects[b];
+    const [ax, ay] = center(ra), [bx, by] = center(rb);
+    const cls = `dg-edge${isNew ? " new" : ""}`;
+    const marker = `url(#${isNew ? "ahn" : "ah"})`;
+    if (mode === "over") {
+      const y = Math.min(ra.y, rb.y) - 24;
+      const x1 = ra.x + ra.w / 2, x2 = rb.x + rb.w / 2;
+      g.append(svg("path", { d: `M${x1},${ra.y} V${y} H${x2} V${rb.y - 2}`, class: cls, "marker-end": marker }));
+      if (label) g.append(svg("text", { x: (x1 + x2) / 2, y: y - 5, "text-anchor": "middle", class: "dg-el" }, label));
+      continue;
+    }
+    if (mode === "back") {
+      const y = Math.max(ra.y + ra.h, rb.y + rb.h) + 22;
+      const x1 = ra.x + ra.w / 2, x2 = rb.x + rb.w / 2;
+      g.append(svg("path", { d: `M${x1},${ra.y + ra.h} V${y} H${x2} V${rb.y + rb.h + 2}`, class: cls, "marker-end": marker }));
+      if (label) g.append(svg("text", { x: (x1 + x2) / 2, y: y + 12, "text-anchor": "middle", class: "dg-el" }, label));
+      continue;
+    }
+    const [x1, y1] = edgePoint(ra, bx, by), [x2, y2] = edgePoint(rb, ax, ay);
+    g.append(svg("line", { x1, y1, x2, y2, class: cls, "marker-end": marker }));
+    if (label) g.append(svg("text", { x: (x1 + x2) / 2, y: (y1 + y2) / 2 - 5, "text-anchor": "middle", class: "dg-el" }, label));
+  }
+  for (const b of d.boxes) {
+    g.append(svg("rect", { x: b.x, y: b.y, width: b.w, height: b.h, rx: 8, class: `dg-box${b.new ? " new" : ""}` }));
+    g.append(svg("text", { x: b.x + b.w / 2, y: b.y + b.h / 2 - (b.sub ? 2 : -4), "text-anchor": "middle", class: "dg-label" }, b.label));
+    if (b.sub) g.append(svg("text", { x: b.x + b.w / 2, y: b.y + b.h / 2 + 13, "text-anchor": "middle", class: "dg-sub" }, b.sub));
+  }
+}
+
+// Gate ticks are a per-viewer convenience; storage may be unavailable.
+const KEY = "lab-fleet-gates-v1";
+let ticks = {};
+try { ticks = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch { ticks = {}; }
+function saveTicks() { try { localStorage.setItem(KEY, JSON.stringify(ticks)); } catch { /* ignore */ } }
+const gateDone = (i) => STAGES[i].gate.every((_, j) => ticks[`${i}.${j}`]);
+
+let cur = 0;
+function buildLadder() {
+  const ol = $("ladder");
+  STAGES.forEach((s, i) => {
+    const b = el("button", { type: "button", class: "rung", "data-i": i, "aria-label": `Stage ${i + 1} of ${STAGES.length}: ${s.title}` },
+      el("span", { class: "dot" }, s.n), el("span", { class: "name" }, s.name), el("span", { class: "hint" }, s.hint));
+    b.addEventListener("click", () => go(i));
+    ol.append(el("li", {}, b));
+  });
+}
+function renderLadder() {
+  document.querySelectorAll(".rung").forEach((b, i) => {
+    b.classList.toggle("past", i < cur);
+    if (i === cur) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current");
+    b.querySelector(".done")?.remove();
+    if (gateDone(i)) b.append(el("span", { class: "done", "aria-hidden": "true" }, "✓"));
+  });
+  $("fill").style.width = `${(cur / (STAGES.length - 1)) * 80}%`;
+}
+function renderReady() {
+  const last = cur === STAGES.length - 1;
+  const done = gateDone(cur);
+  const p = $("st-ready");
+  p.className = `ready ${done ? "yes" : "no"}`;
+  p.textContent = done ? (last ? "✓ All four hold: this is the setup the sources describe at hundreds." : `✓ All checks hold: try stage ${STAGES[cur + 1].n}.`) : "Tick each one only when it holds today.";
+  renderLadder();
+}
+function render() {
+  const s = STAGES[cur];
+  $("st-title").textContent = s.title;
+  $("st-count").textContent = `stage ${cur + 1} of ${STAGES.length} · ${s.count}`;
+  $("st-bottleneck").innerHTML = s.bottleneck;
+  drawDiagram(s);
+  $("st-add").replaceChildren(...s.add.map(([t, k]) => el("li", {}, t, " ", el("span", { class: "src" }, srcLink(k)))));
+  $("st-breaks").replaceChildren(...s.breaks.map(([t, k]) => el("li", {}, t, " ", el("span", { class: "src" }, srcLink(k)))));
+  $("st-quote").replaceChildren(...(s.quote ? [el("p", { class: "quote" }, el("q", {}, s.quote[0]), ` (${s.quote[1]}, `, srcLink(s.quote[2]), ")")] : []));
+  const last = cur === STAGES.length - 1;
+  $("st-gate-h").textContent = last ? "Running well at this size when" : "Ready for the next stage when";
+  $("st-gate").replaceChildren(...s.gate.map((t, j) => {
+    const id = `g-${cur}-${j}`;
+    const cb = el("input", { type: "checkbox", id });
+    cb.checked = !!ticks[`${cur}.${j}`];
+    cb.addEventListener("change", () => { ticks[`${cur}.${j}`] = cb.checked; saveTicks(); renderReady(); });
+    return el("li", {}, el("label", { for: id }, cb, el("span", {}, t)));
+  }));
+  $("st-limits").replaceChildren(...s.limits.map(([t, k]) => el("li", {}, t, " ", el("span", { class: "src" }, srcLink(k)))));
+  $("st-sources").replaceChildren(...s.sources.map((k) => el("li", {}, el("a", { href: S[k][1] }, S[k][0]))));
+  $("prev").disabled = cur === 0;
+  $("next").disabled = last;
+  $("next").textContent = last ? "Top of the ladder" : `Next: ${STAGES[cur + 1].n} →`;
+  $("prev").textContent = cur === 0 ? "← Previous stage" : `← ${STAGES[cur - 1].n}`;
+  document.querySelectorAll("#glance-body tr").forEach((tr, i) => tr.classList.toggle("cur", i === cur));
+  renderReady();
+}
+function go(i, push = true) {
+  cur = Math.max(0, Math.min(STAGES.length - 1, i));
+  render();
+  if (push) { try { history.replaceState(null, "", `#stage-${cur + 1}`); } catch { /* ignore */ } }
+}
+function buildGlance() {
+  const add = ["A check it can't edit; lessons as checks", "Worktree per agent; split on seams", "Complete briefs; independent verdicts per SHA", "Coordinators; one writer per state; one stacker", "Cloud workers; budget stop; human gates; learning across runs"];
+  $("glance-body").replaceChildren(...STAGES.map((s, i) => {
+    const a = el("a", { href: `#stage-${i + 1}` }, s.n === "1" ? "1" : s.n);
+    a.addEventListener("click", (e) => { e.preventDefault(); go(i); $("stage").scrollIntoView({ behavior: "smooth", block: "start" }); });
+    return el("tr", {}, el("td", {}, a, ` · ${s.name}`), el("td", {}, s.bottleneck.replace(/<[^>]+>/g, "").replace(/^What limits you:\s*/, "").split(". ")[0] + "."), el("td", {}, add[i]), el("td", {}, s.gate[0]));
+  }));
+}
+
+buildLadder();
+buildGlance();
+$("prev").addEventListener("click", () => go(cur - 1));
+$("next").addEventListener("click", () => go(cur + 1));
+addEventListener("keydown", (e) => {
+  if (e.target.closest("input, textarea, select")) return;
+  if (e.key === "ArrowRight") go(cur + 1);
+  if (e.key === "ArrowLeft") go(cur - 1);
+});
+const m = /^#stage-(\d)$/.exec(location.hash);
+go(m ? Number(m[1]) - 1 : 0, false);
+addEventListener("hashchange", () => { const h = /^#stage-(\d)$/.exec(location.hash); if (h) go(Number(h[1]) - 1, false); });
+</script>
+</body>
+</html>

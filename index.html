@@ -76,7 +76,8 @@ a.tool span { color: var(--muted); }
 .tool.next em { font-family: var(--font-mono); font-style: normal; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--flower); }
 footer { margin-top: 36px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--rule); padding-top: 14px; }
 footer a { color: var(--accent); }
-a.tool .upd { font-family: var(--font-mono); font-style: normal; font-size: 11.5px; letter-spacing: .04em; color: var(--muted); }
+a.tool .upd { justify-self: start; font-family: var(--font-mono); font-style: normal; font-size: 12.5px; font-weight: 600; letter-spacing: .03em; color: var(--fg); background: color-mix(in srgb, var(--accent) 16%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); border-radius: 999px; padding: 1px 10px; }
+a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); color: var(--bg); }
 </style>
 <link rel="stylesheet" href="site-nav.css">
 </head>
@@ -158,9 +159,17 @@ a.tool .upd { font-family: var(--font-mono); font-style: normal; font-size: 11.5
     <a class="tool" href="patterns/"><strong>One Pattern, Three Languages</strong><span>Everyday SRE tasks (logs, APIs, AWS cleanup, Kubernetes, Prometheus, fleet checks, exporters) in Python, Go and Ruby, to compare how each language structures the same job, and what breaks at scale.</span><em class="upd">updated <time datetime="2026-10-13">13 Oct 2026</time></em></a>
     <a class="tool" href="iac/"><strong>Infrastructure as Code, Drawn</strong><span>Running IaC well on a team and across an org: remote state and locking, modules, environments, plan and apply in CI with policy checks, drift, safety rails, testing, and scale.</span><em class="upd">updated <time datetime="2026-10-13">13 Oct 2026</time></em></a>
     <a class="tool" href="agentic/"><strong>Agentic Engineering, Drawn</strong><span>How Stripe, Spotify, Shopify and others run hundreds of coding agents and ship safely: harnesses the model can't skip, verifiers it can't edit, no route to prod, risk-tiered review, and Lauren Tan's pstack.</span><em class="upd">updated <time datetime="2026-10-12">12 Oct 2026</time></em></a>
+    <a class="tool" href="fleet/"><strong>One Agent to Hundreds</strong><span>A five-stage ladder from one coding agent you trust to hundreds in parallel: what each stage adds, what breaks without it, and the checks that say you're ready for the next. Built on Lauren Tan's pstack, with Anthropic, Cursor and Claude Code sources.</span></a>
     <a class="tool" href="ownership/"><strong>Ownership at Scale</strong><span>Research on how very large companies decide who owns code and services: OWNERS files and CODEOWNERS, service registries synced from HR, routing pages, incidents, vulnerabilities and costs to owners, keeping it accurate through reorgs, and fleet-wide changes that route around owners.</span><em class="upd">updated <time datetime="2026-10-13">13 Oct 2026</time></em></a>
   </div>
   <footer><a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab">source</a></footer>
 </div>
+<script>
+// Tiles updated in the last 3 days get a filled "updated" pill.
+for (const t of document.querySelectorAll("a.tool .upd time")) {
+  const days = (Date.now() - Date.parse(t.getAttribute("datetime") + "T00:00:00")) / 864e5;
+  if (days >= 0 && days < 3) t.parentElement.classList.add("fresh");
+}
+</script>
 </body>
 </html>
