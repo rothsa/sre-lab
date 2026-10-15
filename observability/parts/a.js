@@ -59,7 +59,7 @@ export const CHAPTERS = [
     ],
     agentic: [
       "Assistants now turn plain questions into queries: Grafana Assistant handles querying and dashboards in conversation, New Relic AI helps build NRQL, and Honeycomb's Canvas works from your schema plus sample telemetry values (none of these pages states a preview or GA label). Choosing the right signal for the question is still your call, so read the generated PromQL, LogQL or NRQL before trusting the chart: a plausible query on the wrong signal or label is the new silent error.",
-      "LLM calls and agent runs are now a workload you observe with the same three signals. OpenTelemetry's GenAI conventions (Development status, not stable) define token-usage counters, duration histograms, and spans per model call and per tool call; prompt and response content on those spans is Opt-In because it likely holds user data, so treat it like request bodies, never like metric labels.",
+      "LLM calls and agent runs are now a workload you observe with the same three signals. OpenTelemetry's GenAI conventions (Development status, not stable) define token-usage counters, duration histograms, and spans per model call and per tool call; prompt and response content on those spans is Opt-In because it likely holds user data, so treat it like request bodies, never like metric labels. Claude Platform traces (beta, October 2026) follow these conventions, so agent spans can sit beside your service traces in the same tools.",
       "Investigation agents walk the same loop of metric, exemplar, trace and logs, so the `TraceId` on your log records and exemplars on your histograms decide how far they get. Mid-incident they gather evidence read-only and a human decides; ask for the exact queries and links behind a conclusion, or treat it as a hypothesis (see Agentic Engineering, Drawn).",
     ],
     quiz: [
@@ -69,6 +69,7 @@ export const CHAPTERS = [
     ],
     incidents: [],
     sources: [
+      { title: "Claude: Agent observability on the Claude Platform (Oct 2026)", url: "https://claude.com/resources/articles/agent-observability-on-the-claude-platform" },
       { title: "OpenTelemetry: Signals", url: "https://opentelemetry.io/docs/concepts/signals/" },
       { title: "OpenTelemetry: Logs", url: "https://opentelemetry.io/docs/concepts/signals/logs/" },
       { title: "OpenTelemetry: Metrics", url: "https://opentelemetry.io/docs/concepts/signals/metrics/" },
@@ -297,7 +298,7 @@ service:
       "Capacity is roughly retention seconds times samples per second times 1-2 bytes per sample. Sample rate is targets times series per target divided by the interval, so halving the interval doubles disk.",
     ],
     agentic: [
-      "Agents now read metrics through assistants and MCP servers (Grafana Assistant, for one, queries your data sources under your own permissions), so `job`, `instance` and your metric names become an API that agents consume. Absence is the trap: a target dropped by `relabel_configs` has no `up` series at all, and an agent that finds no data can call the service healthy, so ask which series it actually checked.",
+      "Agents now read metrics through assistants and MCP servers (Grafana Assistant, for one, queries your data sources under your own permissions; Prometheus took an MCP server into its own GitHub org in October 2026, and it serves the TSDB admin endpoints only when started with `--dangerous.enable-tsdb-admin-tools`), so `job`, `instance` and your metric names become an API that agents consume. Absence is the trap: a target dropped by `relabel_configs` has no `up` series at all, and an agent that finds no data can call the service healthy, so ask which series it actually checked.",
       "LLM workloads add new series: OTel GenAI token counters and duration histograms (Development status, names may still change) reach Prometheus or Mimir through the Collector, so `sample_limit` and `metric_relabel_configs` apply to them like any exporter. The spec asks for `error.type` to be the provider's error code or another low-cardinality identifier; keep `gen_ai.request.model` bounded too, and never put prompt text or conversation IDs in labels.",
       "Ask an agent to size a server or a `remote_write` queue and it will give confident numbers; check them against this chapter's arithmetic (targets times series per target divided by the interval, 1-2 bytes per sample) and against `prometheus_remote_storage_samples_pending`. A model's idea of defaults can be stale, and the fundamentals still decide capacity.",
     ],
@@ -337,6 +338,8 @@ remote_write:
     codeNote: "The `prometheus.io/scrape` annotation is a common convention, not a built-in: it only works because the `keep` rule checks for it. The queue settings shown are the defaults.",
     incidents: ["grafana-labs-2019-pod-priority-preemption"],
     sources: [
+      { title: "prometheus/prometheus-mcp (TSDB admin tools flag)", url: "https://github.com/prometheus/prometheus-mcp" },
+      { title: "OpenTelemetry: OTel and Prometheus interoperability (12 Oct 2026)", url: "https://opentelemetry.io/blog/2026/otel-prometheus-interoperability/" },
       { title: "Prometheus overview", url: "https://prometheus.io/docs/introduction/overview/" },
       { title: "Prometheus configuration", url: "https://prometheus.io/docs/prometheus/latest/configuration/configuration/" },
       { title: "Jobs and instances", url: "https://prometheus.io/docs/concepts/jobs_instances/" },

@@ -241,6 +241,7 @@ export const CHAPTERS = [
       "Agents can draft items and even open the PR for one, but each item still has one human owner. An agent can be the assignee for the work; a person owns the outcome, reviews the change and verifies the measurable end state.",
       "Agent-drafted lists lean toward volume. Apply the same gate (specific, one owner, priority, measurable end) and keep only the top priorities, or the tracker fills with plausible low-value tickets. DORA 2025 ties AI's link to lower delivery stability to more change without strong controls.",
       "If an agent contributed, the fix is a guard on the agent, not a prompt tweak: a narrower tool set, a read-only identity, human approval for high-impact actions, as in OWASP LLM06:2025. Rewording the prompt is the agent version of \"be more careful\".",
+      "Make the agent learn like an on-call engineer. Most investigation agents start every incident from scratch; a 2026 research system, SDO, turns each resolved incident into a playbook plus a detector script and calls the model only when a detector fires, which cut resolution time on recurring faults by 52% across 11 open-source microservice apps. The durable action item is the check, not the transcript.",
     ],
     quiz: [
       { q: "Rewrite \"improve monitoring of notifications\" as a good action item.", a: "Something like: \"Add a monitor on delivery rate for each notification type that pages when any one drops; owner: one named engineer; P1; done when a test drop pages.\" Datadog added per-type monitors after its 2016 incident." },
@@ -249,6 +250,7 @@ export const CHAPTERS = [
     ],
     incidents: ["aws-2017-s3-us-east-1-typo", "datadog-2016-pagerduty-notifications-skipped", "cloudflare-2024-pdx01-power-failover"],
     sources: [
+      { title: "Li et al.: A Self-Defining Operator for Distributed Applications (arXiv 2610.14547, Oct 2026)", url: "https://arxiv.org/abs/2610.14547" },
       WB_PM,
       SRE_PM,
       { title: "PagerDuty Incident Response: The Postmortem Process", url: "https://response.pagerduty.com/after/post_mortem_process/" },

@@ -355,6 +355,7 @@ export const CHAPTERS = [
       "DORA 2024: a 25% increase in AI adoption was associated with a 1.5% decrease in delivery throughput and a 7.2% decrease in delivery stability, which DORA linked to larger batches. DORA 2025 found a positive relationship with throughput but a still-negative one with stability (no percentages given), framing AI as an amplifier of the testing, version control and feedback loops a team already has.",
       "More agent PRs land on the same merge queue: each is another group to build, and one flaky test ejects agent and human PRs alike. Size build concurrency and group limits for PR volume rather than headcount, and watch queue wait and eject rate; small agent PRs keep the batch-size problem DORA describes from coming back.",
       "AI review is extra signal, not an approver: Copilot code review does not count toward required approvals by default (an opt-in Copilot approvals setting is in public preview), skips dependency manifests, and the person who asked Copilot cloud agent for a PR cannot approve it. The failure mode is a human approval that restates the bot's summary, so required human review stays in branch protection.",
+      "Verify an agent's fix with the check that raised it. GitHub's agentic autofix (GA 15 October 2026) reruns CodeQL to confirm the fix closes the alert before it opens a PR for review, while its AI Scan findings on PRs are advisory and cannot block merges through ruleset requirements.",
     ],
     quiz: [
       { q: "Two PRs each pass CI, merge, and main breaks. How does a merge queue prevent this?", a: "It tests each PR on a temporary branch containing main plus every PR ahead of it, and only merges commits whose combined result passed." },
@@ -363,6 +364,8 @@ export const CHAPTERS = [
     ],
     incidents: [],
     sources: [
+      { title: "GitHub Changelog: Agentic autofix for code scanning alerts GA (15 Oct 2026)", url: "https://github.blog/changelog/2026-10-15-agentic-autofix-for-code-scanning-alerts-general-availability" },
+      { title: "GitHub Changelog: AI Scan for pull requests GA (15 Oct 2026)", url: "https://github.blog/changelog/2026-10-15-ai-scan-for-pull-requests-generally-available" },
       { title: "GitHub: managing a merge queue", url: "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue" },
       { title: "DORA's software delivery metrics", url: "https://dora.dev/guides/dora-metrics/" },
       { title: "DORA capability: trunk-based development", url: "https://dora.dev/capabilities/trunk-based-development/" },

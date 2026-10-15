@@ -327,7 +327,7 @@ export const CHAPTERS = [
       { text: "Node-by-node. `kubectl cordon node-1` marks it unschedulable (the `node.kubernetes.io/unschedulable` taint). Nothing moves yet: running Pods stay, new ones go elsewhere.", on: ["kubectl", "api", "kubelet1", "taint", "t1"], flow: ["e-cmd"] },
       { text: "`kubectl drain node-1 --ignore-daemonsets` cordons if needed, then asks the Eviction API to remove each Pod. DaemonSet Pods are left alone; unmanaged Pods need `--force`, and Pods with `emptyDir` need `--delete-emptydir-data`.", on: ["kubectl", "api", "pod1", "t2"], flow: ["e-cmd", "e-evict"] },
       { text: "An eviction is a delete that checks PodDisruptionBudgets. If removing `web-a` would leave fewer than `minAvailable: 2` healthy Pods, the API server answers 429 and drain retries later.", on: ["api", "pdb", "t2"], flow: ["e-pdb"] },
-      { text: "The budget allows it, so `web-a` is shut down gracefully and taken out of EndpointSlices. Its ReplicaSet creates a replacement, and the scheduler places it on a schedulable node.", on: ["cm", "podnew", "kubelet2", "pod1"], flow: ["e-repl", "e-evict"] },
+      { text: "The budget allows it, so `web-a` is shut down gracefully and marked terminating in EndpointSlices, so it gets no new traffic. Its ReplicaSet creates a replacement, and the scheduler places it on a schedulable node.", on: ["cm", "podnew", "kubelet2", "pod1"], flow: ["e-repl", "e-evict"] },
       { text: "Once `web-d` is Ready, the budget has room again and the next eviction can go ahead. A PDB slows a drain down to what the app can survive.", on: ["pdb", "podnew", "pod2", "pod3"] },
       { text: "With node-1 empty (except DaemonSets), upgrade the kubelet, plus the runtime or OS image if needed. kube-proxy usually runs as a DaemonSet and is upgraded cluster-wide. Draining first is required: in-place minor kubelet upgrades aren't supported.", on: ["kubelet1", "t3"] },
       { text: "`kubectl uncordon node-1` makes it schedulable again. Pods don't move back on their own; new and rescheduled Pods will land there over time.", on: ["kubectl", "kubelet1", "taint", "t4"], flow: ["e-cmd"] },
@@ -359,6 +359,7 @@ export const CHAPTERS = [
     ],
     incidents: ["reddit-2023-pi-day-k8s-upgrade", "taxjar-2021-eks-upgrade-security-group", "circleci-2023-kube-proxy-iptables", "zenml-2025-eks-upgrade-iam-regression"],
     sources: [
+      { title: "EndpointSlices: conditions (ready, serving, terminating)", url: "https://kubernetes.io/docs/concepts/services-networking/endpoint-slices/#conditions" },
       { title: "Version skew policy", url: "https://kubernetes.io/releases/version-skew-policy/" },
       { title: "Upgrading kubeadm clusters", url: "https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/" },
       { title: "Safely drain a node", url: "https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/" },

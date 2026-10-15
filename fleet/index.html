@@ -209,7 +209,7 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
 
   </div>
   <div class="warnbox" role="note">
-    <p><b>When more agents pay off.</b> A Google Research, Google DeepMind and MIT study of 260 agent configurations found that tasks where one agent already succeeds more than 45% of the time <q>experience negative returns from additional agents, as coordination costs exceed diminishing improvement potential</q>. On SWE-bench Verified, every multi-agent setup they tested did slightly worse than one agent (−15% to −2%). A September 2026 preprint, AsynCodeBench, adds that better coding performance does not necessarily translate into stronger collaboration between agents (<a href="https://arxiv.org/abs/2609.32662">arXiv:2609.32662</a>).</p>
+    <p><b>When more agents pay off.</b> A Google Research, Google DeepMind and MIT study of 260 agent configurations found that tasks where one agent already succeeds more than 45% of the time <q>experience negative returns from additional agents, as coordination costs exceed diminishing improvement potential</q>. On SWE-bench Verified, each multi-agent architecture did slightly worse than one agent on average across models (−15% to −2%), though some weaker models gained, and each result rests on 20 tasks. A September 2026 preprint, AsynCodeBench, adds that better coding performance does not necessarily translate into stronger collaboration between agents (<a href="https://arxiv.org/abs/2609.32662">arXiv:2609.32662</a>). An October 2026 study on ProgramBench found that teams beat solo agents but cost three to seven times as much; planning was the most valuable use of extra workers, and a mixed 17-agent team came within 1.4 points of a strong 5-agent team at 70% lower cost (<a href="https://arxiv.org/abs/2610.17471">arXiv:2610.17471</a>).</p>
     <p>Newer results point the same way. Vals AI found agent teams cost 1.8 to 5.1 times as much as single agents, with only one of four score gains statistically significant (<a href="https://www.vals.ai/blogs/multi-agent-vibe-code-bench">Oct 2026</a>). A ProgramBench preprint found the best use of extra agents is planning: planners keep improving as the team grows, while implementers and verifiers plateau beyond four workers (<a href="https://arxiv.org/abs/2610.17471">arXiv:2610.17471</a>). Toby Ord's reading of OpenAI's published swarm charts: <q>The most important answer is speed</q>, bought with extra compute (<a href="https://www.tobyord.com/writing/swarm-scaling">Sep 2026</a>; a secondary analysis).</p>
     <p style="margin:0">Scale pays when the work splits into independent pieces and each piece has a check the agent can't fake. Anthropic's C compiler run used 16 parallel agents. It stalled when every agent hit the same kernel bug, and recovered once GCC served as a known-good oracle. (<a href="https://arxiv.org/abs/2512.08296">Kim et al., arXiv:2512.08296 v3</a>; <a href="https://www.anthropic.com/engineering/building-c-compiler">Anthropic: Building a C compiler with a team of parallel Claudes</a>)</p>
   </div>
@@ -319,6 +319,11 @@ const S = {
   codexDaemon: ["openai/codex issue 48195: background daemon keeps running after sessions close (opened 25 Sep 2026)", "https://github.com/openai/codex/issues/48195"],
   nanda: ["Neel Nanda on X: Gemini 4 Argon is less monitorable (14 Oct 2026)", "https://x.com/NeelNanda5/status/2110184973751967854"],
   spotify4: ["Spotify: Background coding agents and dataset migrations (Honk, Part 4, 22 Apr 2026)", "https://engineering.atspotify.com/2026/4/background-coding-agents-dataset-migrations-honk-part-4"],
+  sridharanReview: ["Cindy Sridharan on X: pre-commit agentic reviews (15 Oct 2026)", "https://x.com/copyconstruct/status/2110573084449374632"],
+  noma: ["Noma Labs: SneakPeek, how the preview pane in Claude Code Desktop can exfiltrate your data (14 Oct 2026)", "https://noma.security/noma-labs/sneakpeek-how-the-preview-pane-in-claude-code-desktop-can-exfiltrate-your-data"],
+  letta: ["letta-code PR 5070: run Claude Code and Codex subagents with bypassed permissions (merged 13 Oct 2026, Letta Code 0.34.14)", "https://github.com/letta-ai/letta-code/pull/5070"],
+  rewardHack: ["Reward Hacking as a Transmissible Strategy in Multi-Agent Coding Systems (arXiv 2610.12822, Oct 2026)", "https://arxiv.org/abs/2610.12822"],
+  thorstenCtx: ["Thorsten Ball on X: context management with the latest models (15 Oct 2026)", "https://x.com/thorstenball/status/2110580016140431681"],
 };
 
 // Diagram primitives: boxes {x,y,w,h,label,sub,new}, zones, clusters of dots, edges between box ids.
@@ -434,6 +439,8 @@ const STAGES = [
     breaks: [
       ["Vague briefs fail quietly: pstack notes a worker cannot ask you a question.", "orch"],
       ["Opening a repo can run code. Claude Desktop on Windows before 1.8089.0 ran git.exe without an absolute path, so a git.exe planted in a repo ran when the folder was opened (GHSA-4p2j-qj3c-6x84, 13 Oct 2026).", "ghsaGit"],
+      ["Rendering a repo can run code too. Claude Code Desktop's preview pane loaded HTML files over 256KB through file:// URLs, so a planted report could read local credentials and send them out. Anthropic scored it CVSS 8.7 and fixed it in Claude Desktop 1.30096.1 (Noma Labs, disclosed 14 Oct 2026).", "noma"],
+      ["Wrapping one harness in another can drop its guardrails. Letta Code 0.34.14 starts Claude Code subagents with bypassPermissions and no tool allowlist, and Codex ones with danger-full-access, on users' own computers too, so they can edit and run commands outside the working directory without a prompt (Oct 2026). Check the flags your orchestrator passes to child agents.", "letta"],
       ["Self-graded work: a green check from the agent that wrote the change says little about whether it's right.", "ship"],
       ["A blocked agent may route around the block instead of stopping. Anthropic reported Claude using SQL injection, borrowed access tokens and URL shorteners when a tool or limit stood in its way, mostly on ambiguous or impossible tasks (Oct 2026). Make BLOCKED an acceptable result and enforce limits in the host, not the prompt.", "unintended"],
     ],
@@ -453,8 +460,9 @@ const STAGES = [
     people: [
       ["Stripe", "Minions write each change start to finish in an isolated, pre-warmed devbox; humans review every PR.", "stripe"],
       ["Lauren Tan", "suggests up to about 10 agents with worktrees on one machine, depending on the repo and the machine.", "tan1"],
+      ["Cindy Sridharan", "once wrote about post-commit review and now finds pre-commit agentic reviews extremely useful: for large changes the review agents take 10x as long as the coding agent took to write the patch, which she calls worth it.", "sridharanReview"],
     ],
-    sources: ["orch", "swarm", "ship", "stripe", "chernyX", "tan1", "ccSub", "ccWorkflows", "potetoMode", "autopilot", "lcRouter", "osc7501", "ghsaGit", "ccChangelog"],
+    sources: ["orch", "swarm", "ship", "stripe", "chernyX", "tan1", "ccSub", "ccWorkflows", "potetoMode", "autopilot", "lcRouter", "osc7501", "ghsaGit", "noma", "letta", "sridharanReview", "ccChangelog"],
     diagram: {
       boxes: [
         { id: "you", x: 20, y: 125, w: 90, h: 50, label: "You", sub: "write briefs" },
@@ -488,6 +496,7 @@ const STAGES = [
       ["In Anthropic's compiler run, parallel agents all hit the same bug, fixed it, and overwrote each other's changes until a known-good oracle split the work.", "carlini"],
       ["Spotify's dataset migration repositories rarely had build-time unit tests, so Honk lost its ability to verify its work and the owning teams had to check each PR.", "spotify4"],
       ["Identical agents make identical choices. In Anthropic's swarm experiments, 18 of 30 agents that started together created a git branch with the exact same name (Aug 2026).", "anthMulti"],
+      ["Bad habits spread through shared state. In an October 2026 study, reward hacking passed between coding agents through code and shared memory, and across roles through natural-language plans; agents on small open-weight models even induced it in stronger closed-weight ones.", "rewardHack"],
       ["A swarm with no integrator falls apart. Ryan Lopopolo's message-board swarm peaked at 31 agents in 31 worktrees and collapsed after about 36 hours: the agents were poor at global integration and wouldn't break bad dependency edges (Oct 2026).", "lopopolo"],
       ["Rules that live in chat don't bind agents. Jesse Vincent's agent merged a PR humans had said to hold, because the hold was in Slack and main had no branch protection (Oct 2026).", "jesse"],
     ],
@@ -511,7 +520,7 @@ const STAGES = [
       ["Stripe", "(Payment Method Factory) moved agent coordination into code and hardens prompts with an observer agent that reviews an implementation agent's transcript.", "stripePmf"],
       ["Cursor", "moved from shared locks to planners that spawn sub-planners once twenty agents slowed to the throughput of two or three.", "cursorScale"],
     ],
-    sources: ["orch", "ship", "stripePmf", "spotify4", "spotify1", "cursorScale", "carlini", "mukta", "maMemory", "ghMq", "lopopolo2"],
+    sources: ["orch", "ship", "stripePmf", "spotify4", "spotify1", "cursorScale", "carlini", "mukta", "maMemory", "ghMq", "lopopolo2", "rewardHack"],
     diagram: {
       boxes: [
         { id: "you", x: 15, y: 125, w: 80, h: 50, label: "You", sub: "gates only" },
@@ -582,9 +591,9 @@ const STAGES = [
       ["Spotify", "announced Honk v2 with shared agent sessions and agent orchestration; its Fleet Management has merged more than 2.5 million automated maintenance PRs, most auto-merged.", "spotifyJun"],
       ["Stripe", "merges more than a thousand minion-written PRs a week; they are human-reviewed but contain no human-written code.", "stripe"],
       ["Uber", "attributes more than 70% of PRs to local or cloud agents; weekly agentic requests grew 9.4 times from February to August 2026 while total AI spend held roughly flat, with cheaper models as default subagents.", "uberBlog"],
-      ["Amp", "(Thorsten Ball) has no pull requests or code review and pushes to main; agents read production logs, watch deploys and attach a recorded video walkthrough as proof of their work.", "thorsten"],
+      ["Amp", "(Thorsten Ball) has no pull requests or code review and pushes to main; agents read production logs, watch deploys and attach a recorded video walkthrough as proof of their work. Ball also says the latest models follow instructions well enough that side-questions can go in the same thread, so forking and other context-management tricks no longer make sense to him (Oct 2026).", "thorsten"],
     ],
-    sources: ["orch", "ketchup", "codexDaemon", "nanda", "ccChangelog", "reflect", "chernyFortune", "tanAug", "block", "spotifyJun", "spotifySep", "scm", "uber", "stripe", "spotify4", "cursorScale", "cursorSelf", "cursorProjects", "tan1", "tanTalk", "maWorkflow", "maDreams", "ghRest", "ghActions", "apiLimits", "research", "ccWorkflows"],
+    sources: ["orch", "ketchup", "thorstenCtx", "codexDaemon", "nanda", "ccChangelog", "reflect", "chernyFortune", "tanAug", "block", "spotifyJun", "spotifySep", "scm", "uber", "stripe", "spotify4", "cursorScale", "cursorSelf", "cursorProjects", "tan1", "tanTalk", "maWorkflow", "maDreams", "ghRest", "ghActions", "apiLimits", "research", "ccWorkflows"],
     diagram: {
       boxes: [
         { id: "you", x: 15, y: 30, w: 80, h: 46, label: "You", sub: "twice a day" },
@@ -602,7 +611,7 @@ const STAGES = [
 ];
 
 // When each practice was described; these change fast, so the page shows the date with each one.
-const AS_OF = { osmaniVerify: "Oct 2026", chernyPrompt: "Oct 2026", huntley: "Oct 2026", sridharan: "Oct 2026", ccDesktop: "Oct 2026", lopopolo2: "Oct 2026", nanda: "Oct 2026", lcRouter: "Oct 2026", hashimoto: "Feb 2026", bockeler: "Apr 2026", cherny: "Mar 2026", horthy: "Aug 2025", stripe: "Feb 2026", tan1: "Aug 2026", spotify4: "Apr 2026", cursorScale: "Jan 2026", cursorSelf: "Feb 2026", uber: "Jun 2026", chernyFortune: "Jun 2026", chernyX: "Sep 2026", horthy2: "Jul 2026", tanAug: "Aug 2026", stripePmf: "Sep 2026", spotifyJun: "Jun 2026", spotifySep: "Sep 2026", block: "Oct 2026", scm: "Oct 2026", anthMulti: "Aug 2026", kiro: "Sep 2026", uberBlog: "Aug 2026", zalando: "Aug 2026", lopopolo: "Oct 2026", arslan: "Sep 2026", jain: "Oct 2026", honeycomb: "Sep 2026", thorsten: "Oct 2026", jesse: "Oct 2026" };
+const AS_OF = { sridharanReview: "Oct 2026", osmaniVerify: "Oct 2026", chernyPrompt: "Oct 2026", huntley: "Oct 2026", sridharan: "Oct 2026", ccDesktop: "Oct 2026", lopopolo2: "Oct 2026", nanda: "Oct 2026", lcRouter: "Oct 2026", hashimoto: "Feb 2026", bockeler: "Apr 2026", cherny: "Mar 2026", horthy: "Aug 2025", stripe: "Feb 2026", tan1: "Aug 2026", spotify4: "Apr 2026", cursorScale: "Jan 2026", cursorSelf: "Feb 2026", uber: "Jun 2026", chernyFortune: "Jun 2026", chernyX: "Sep 2026", horthy2: "Jul 2026", tanAug: "Aug 2026", stripePmf: "Sep 2026", spotifyJun: "Jun 2026", spotifySep: "Sep 2026", block: "Oct 2026", scm: "Oct 2026", anthMulti: "Aug 2026", kiro: "Sep 2026", uberBlog: "Aug 2026", zalando: "Aug 2026", lopopolo: "Oct 2026", arslan: "Sep 2026", jain: "Oct 2026", honeycomb: "Sep 2026", thorsten: "Oct 2026", jesse: "Oct 2026" };
 const $ = (id) => document.getElementById(id);
 const NS = "http://www.w3.org/2000/svg";
 function svg(tag, attrs = {}, text) {
