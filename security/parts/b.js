@@ -66,7 +66,7 @@ export const CHAPTERS = [
     agentic: [
       "Keep secrets out of the model's context: anything in a prompt, tool result or pasted `env` can end up in transcripts and telemetry, and the OTel GenAI conventions keep prompt capture opt-in because it is likely to hold sensitive data. Agents should call a tool that uses a credential, not read the credential.",
       "Credential brokering replaces keys in agent config. AgentCore Identity keeps OAuth tokens and API keys in a vault for agents acting on behalf of users, and Claude Code GitHub Actions can use OIDC instead of a stored key; Cursor's cloud agents show runtime secrets as `[REDACTED]`. Humans still own scope, rotation and who can fetch each one.",
-      "Agents create new copies as readily as people do: in commits, logs and tool config (K8sGPT stores backend API keys in plain text). Keep secret scanning on agent PRs in pre-commit and CI, and treat any secret that entered an agent's context as exposed and rotate it.",
+      "Agents create new copies as readily as people do: in commits, logs and tool config (K8sGPT stores backend API keys in plain text). Keep secret scanning on agent PRs in pre-commit and CI (GitHub push protection has blocked Anthropic API keys by default since 13 October 2026), and treat any secret that entered an agent's context as exposed and rotate it.",
     ],
     code: [
       { lang: "bash", label: "Dynamic DB credential", src: "$ vault read database/creds/web\nKey                Value\nlease_id           database/creds/web/2f6a...\nlease_duration     1h\nlease_renewable    true\npassword           (generated)\nusername           v-web-x7Q2...\n\n# incident: kill every credential from this role\n$ vault lease revoke -prefix database/creds/web" },
@@ -86,6 +86,7 @@ export const CHAPTERS = [
       "heroku-2022-github-oauth-token-theft",
     ],
     sources: [
+      { title: "GitHub Changelog: Secret scanning blocks Anthropic keys by default (2026-10-13)", url: "https://github.blog/changelog/2026-10-13-secret-scanning-blocks-anthropic-keys-by-default-adds-salesforce" },
       { title: "Vault: Lease, renew, and revoke", url: "https://developer.hashicorp.com/vault/docs/concepts/lease" },
       { title: "Vault: Database secrets engine", url: "https://developer.hashicorp.com/vault/docs/secrets/databases" },
       { title: "Vault: Kubernetes auth method", url: "https://developer.hashicorp.com/vault/docs/auth/kubernetes" },

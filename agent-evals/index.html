@@ -192,6 +192,8 @@ class RetryBudget(Evaluator):
       <li><b>The checks only see instrumented tools.</b> A call that doesn't record a span, or a span without its arguments, is invisible. In the OpenTelemetry conventions, tool arguments and results are opt-in attributes because they can be sensitive, so a real trace may not contain the service name these checks rely on.</li>
       <li><b>Passing sample cases doesn't establish real-world reliability.</b> Nine scripted cases show what the checks catch; they say nothing about how often a real agent goes wrong on incidents nobody wrote down.</li>
       <li><b>Detecting excessive calls after the run doesn't prevent them.</b> The retry loop below already spent its calls (and in one case 40 seconds of timeouts) before any evaluator looked. Enforce call budgets, rate limits and approval for changes like rollbacks at runtime, in the tool layer.</li>
+      <li><b>Eval harnesses have bugs too.</b> An October 2026 audit of one agent benchmark found a reward-function defect that changed the environment state before post-run scoring. Another study found that tests which reproduce a bug can still accept an incorrect patch. Audit the oracle before trusting a score.</li>
+      <li><b>A model swap can change the API, not just the answers.</b> Gemini 4 Argon (GA 13 October 2026) ignores <code>temperature</code>, <code>top_p</code> and <code>top_k</code>, so an eval that fixed those settings no longer tests what it says. Pin model IDs and rerun the evals on every swap.</li>
       <li><b>Synthetic data.</b> The incidents, services, results and timings are made up, and the agents are deterministic Python functions, not models. The output checks use simple keyword matching that suits this fixed data and would be too weak for free-form answers.</li>
     </ul>
 
@@ -203,6 +205,9 @@ class RetryBudget(Evaluator):
       <li><a href="https://pydantic.dev/docs/ai/evals/evaluators/built-in/">Pydantic Evals: built-in evaluators</a> and the <a href="https://pydantic.dev/docs/ai/api/pydantic_evals/evaluators/">evaluators API reference (MaxToolCalls)</a></li>
       <li><a href="https://pydantic.dev/docs/ai/evals/how-to/logfire-integration/">Pydantic Evals: Logfire integration (span capture, send_to_logfire)</a></li>
       <li><a href="https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md">OpenTelemetry GenAI semantic conventions: execute tool span</a> (status: Development)</li>
+      <li><a href="https://arxiv.org/abs/2610.16067">Chen: When agent evaluation becomes unreliable (arXiv 2610.16067, 12 October 2026)</a></li>
+      <li><a href="https://arxiv.org/abs/2610.18004">Lu et al.: SWEPatchTest, evaluating software tests beyond reproduction (arXiv 2610.18004, 13 October 2026)</a></li>
+      <li><a href="https://ai.google.dev/gemini-api/docs/latest-model">Gemini API: What's new in Gemini 4 Argon (13 October 2026)</a></li>
       <li><a href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/">OWASP Top 10 for LLM Applications: LLM06:2025 Excessive Agency</a></li>
     </ul>
     <p class="summary" id="version"></p>

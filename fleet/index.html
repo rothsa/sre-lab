@@ -217,7 +217,7 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
     <h3 style="font-size:17px;margin-top:22px">Honest limits</h3>
     <ul class="limits">
       <li><b>The stage sizes are illustrative.</b> 1, 3, 10, dozens and hundreds are where the cited sources describe things breaking (worktrees, about ten agents per coordinator drain, Cursor's lock contention at twenty). They are not measured thresholds, and your breakpoints depend on the repo, the tasks and your checks.</li>
-      <li><b>pstack moves fast.</b> Quotes are from the repository as of 14 October 2026 (version 0.15.24). Its README still says it was built at Cursor. Lauren Tan's GitHub profile now lists xAI, and her recent talk introduces her as working on Grok Bot. Since 0.15.24 Orchestrate no longer uses Graphite (<code>gt</code>): it walks the PR base chain itself, and Shipping and Babysit also say never to require it.</li>
+      <li><b>pstack moves fast.</b> Quotes are from the repository as of 14 October 2026 (version 0.15.25). Its README still says it was built at Cursor. Lauren Tan's GitHub profile now lists xAI, and her recent talk introduces her as working on Grok Bot. Since 0.15.24 Orchestrate no longer uses Graphite (<code>gt</code>): it walks the PR base chain itself, and Shipping and Babysit also say never to require it.</li>
       <li><b>"Hundreds" is the sources' word.</b> In her pstack guide (31 August 2026), Lauren Tan writes that you may get away with up to 10 agents in parallel with worktrees, and promises a later post on running hundreds of subagents in parallel in the cloud. Cursor reports runs that <q>peak at several hundred agents</q>. No source here gives an exact count for any one person's setup.</li>
       <li><b>Company numbers are the companies' own.</b> Stripe's and Spotify's figures are from their engineering blogs, Uber's from its engineering blog and AI Engineer World's Fair talk page, Kiro's from its own team, and Boris Cherny's from The Pragmatic Engineer's write-up of their interview. Block's are from an interview Anthropic published. None is independently measured.</li>
       <li><b>Cost is real.</b> Anthropic reports that its multi-agent research system used about 15 times the tokens of a chat. Claude Code's docs say agent teams use about 7 times the tokens of a standard session in plan mode. Measure before you scale.</li>
@@ -303,6 +303,21 @@ const S = {
   thorsten: ["Thorsten Ball on X: how the Amp team ships (13 Oct 2026)", "https://x.com/thorstenball/status/2110035978685747457"],
   danluu: ["Dan Luu: How well do agents use test and verification techniques? (7 Sep 2026)", "https://danluu.com/agentic-testing/"],
   jesse: ["Jesse Vincent: Today at work (5 Oct 2026)", "https://blog.fsck.com/2026/10/05/today-at-work/"],
+  osmaniVerify: ["Addy Osmani: Agentic verification (14 Oct 2026)", "https://addyo.substack.com/p/agentic-verification"],
+  chernyPrompt: ["Boris Cherny on X: what a good prompt says (6 Oct 2026)", "https://x.com/bcherny/status/2107565388250874193"],
+  huntley: ["Geoffrey Huntley: nobody should type code by hand anymore. here's what's left. (13 Oct 2026)", "https://ghuntley.com/agency/"],
+  sridharan: ["Cindy Sridharan: How to effectively debug when you no longer understand the code (10 Oct 2026)", "https://copyconstruct.medium.com/how-to-effectively-debug-when-you-no-longer-understand-the-code-bd3dcb2c5f7b"],
+  ccDesktop: ["Claude Devs on X: the Claude Code desktop app for side-by-side sessions (14 Oct 2026)", "https://x.com/ClaudeDevs/status/2110445847922245974"],
+  potetoMode: ["pstack: poteto-mode skill (Match the model to the job)", PS + "skills/poteto-mode/SKILL.md"],
+  autopilot: ["pstack: autopilot-full playbook", PS + "skills/poteto-mode/playbooks/autopilot-full.md"],
+  ketchup: ["pstack: ketchup skill", PS + "skills/ketchup/SKILL.md"],
+  osc7501: ["Mitchell Hashimoto: Program status, OSC 7501 (6 Oct 2026)", "https://mitchellh.com/writing/program-status-osc7501"],
+  lcRouter: ["LangChain: How to build a model router in the harness (Oct 2026)", "https://www.langchain.com/blog/how-to-build-a-model-router-in-the-harness"],
+  ccChangelog: ["Claude Code CHANGELOG (2.1.296 to 2.1.300, 9-14 Oct 2026)", "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md"],
+  ghsaGit: ["GHSA-4p2j-qj3c-6x84: Claude Desktop on Windows ran a repo-local git.exe (13 Oct 2026)", "https://github.com/anthropics/claude-code/security/advisories/GHSA-4p2j-qj3c-6x84"],
+  lopopolo2: ["Ryan Lopopolo on X: tests that fail the build on duplicate code (10 Oct 2026)", "https://x.com/_lopopolo/status/2108991956642934796"],
+  codexDaemon: ["openai/codex issue 48195: background daemon keeps running after sessions close (opened 25 Sep 2026)", "https://github.com/openai/codex/issues/48195"],
+  nanda: ["Neel Nanda on X: Gemini 4 Argon is less monitorable (14 Oct 2026)", "https://x.com/NeelNanda5/status/2110184973751967854"],
   spotify4: ["Spotify: Background coding agents and dataset migrations (Honk, Part 4, 22 Apr 2026)", "https://engineering.atspotify.com/2026/4/background-coding-agents-dataset-migrations-honk-part-4"],
 };
 
@@ -319,6 +334,9 @@ const STAGES = [
       ["A rule for repeated corrections: the second time you say something, make it a lint rule, CI check, hook or script instead of more prompt text.", "encode"],
       ["The simplest memory that works: a short instructions file (such as CLAUDE.md) checked into the repo.", "mukta"],
       ["Both halves of a harness: guides that steer the agent before it acts (conventions, docs, examples) and sensors that check after (tests, linters, type checkers). Fast deterministic sensors are cheap enough to run on every change.", "bockeler"],
+      ["A brief in three parts. Boris Cherny (Oct 2026): what you want it to do, how much effort you want it to spend, and \"How it should verify that it did the right thing\".", "chernyPrompt"],
+      ["\"Done\" defined before the work starts. Addy Osmani (Oct 2026): \"The bottleneck has moved from writing code to knowing it's correct\"; the human now reviews \"evidence and not just diffs\".", "osmaniVerify"],
+      ["Debug from facts, not from reading the code. Cindy Sridharan (Oct 2026) calls code \"an unreliable narrator\", maps every plausible hypothesis to every high-fidelity signal, and treats each human intervention as a gap in the process.", "sridharan"],
       ["A slow climb to trust: redo your own finished work with the agent, then hand it end-of-day tasks, then the slam dunks. Every mistake it makes gets a harness fix so it doesn't happen again.", "hashimoto"],
       ["A harness can matter more than the model. In a martinfowler.com experiment, a cost-optimized model passed 178 hidden acceptance tests in 3 of 10 runs alone and 10 of 10 with guides and sensors, cheaper per run than the stronger model without them (Naresh Jain, Oct 2026).", "jain"],
     ],
@@ -337,8 +355,9 @@ const STAGES = [
     people: [
       ["Mitchell Hashimoto", "climbed six steps, from dropping the chatbot to always having an agent running, and still runs one agent at a time by choice.", "hashimoto"],
       ["Birgitta Böckeler", "(Thoughtworks) frames the whole job as guides before the agent acts and sensors after.", "bockeler"],
+      ["Geoffrey Huntley", "says he pushes to main and no longer does pull requests; ownership replaces review, and a pre-commit hook fails a bad commit and injects a prompt telling the agent what to fix (his own practice, Oct 2026).", "huntley"],
     ],
-    sources: ["prove", "encode", "correct", "harness", "hashimoto", "bockeler", "mukta", "tanLoops"],
+    sources: ["prove", "encode", "correct", "harness", "hashimoto", "bockeler", "mukta", "tanLoops", "chernyPrompt", "osmaniVerify", "sridharan", "huntley"],
     diagram: {
       boxes: [
         { id: "you", x: 30, y: 120, w: 110, h: 50, label: "You", sub: "task + review" },
@@ -357,6 +376,7 @@ const STAGES = [
     bottleneck: "<b>What limits you:</b> collisions. Agents editing the same files overwrite each other, and your attention splits three ways.",
     add: [
       ["One worktree or branch per agent. A worktree is a fresh checkout, so each one sets up its own environment.", "ccWorktrees"],
+      ["Tools built for side-by-side sessions. Claude Code's desktop app (Oct 2026) starts a nested session for each parallel task, offers a worktree per folder, and shows in a sidebar which sessions need you.", "ccDesktop"],
       ["Split on seams: disjoint files, services or layers run in parallel; anything that writes shared state goes to one agent. pstack: \"Shared writes serialize.\"", "feature"],
       ["A reason for each split. pstack's checkpoint asks for the smallest safe decomposition: \"If one worker is best, name why.\"", "feature"],
       ["Plan in layers, then read the code. In 2025 Dex Horthy stressed reviewing research and plans, because a bad line of research can become thousands of bad lines of code. In July 2026 he wrote that models can't yet judge code quality, so \"the judge is you -- so we're gonna put the code review back\": he plans in four phases (product requirements, system architecture, program design, vertical slices) and builds one to three slices at a time while reviewing the code.", "horthy2"],
@@ -380,7 +400,7 @@ const STAGES = [
       ["Boris Cherny", "(creator of Claude Code) ran 5 parallel Claude instances, each in its own checkout, shipping 20 to 30 PRs a day, per The Pragmatic Engineer. By June he described managing hundreds of agents (see Hundreds).", "cherny"],
       ["Dex Horthy", "(HumanLayer) plans in four phases before code, then has a model build one to three vertical slices at a time while he reviews the code. His closing advice: \"Read the dang code.\"", "horthy2"],
     ],
-    sources: ["ccWorktrees", "feature", "horthy2", "horthy", "cherny", "ccTeams", "ccCosts"],
+    sources: ["ccWorktrees", "feature", "horthy2", "horthy", "cherny", "ccTeams", "ccCosts", "ccDesktop"],
     diagram: {
       boxes: [
         { id: "you", x: 30, y: 125, w: 100, h: 50, label: "You", sub: "split + review" },
@@ -406,9 +426,14 @@ const STAGES = [
       ["Fast feedback before CI. Stripe's agents run in devboxes that start in 10 seconds, run lints on every push in under five seconds, and get \"often one, at most two, CI runs\", only after fixing everything they can locally.", "stripe"],
       ["A higher bar for agent-written production code. Boris Cherny wrote in September 2026 that it should be higher than for human-written code; Anthropic backs this with many lint rules and tests, Claude-driven end-to-end tests, Claude-powered fuzzers running daily, and automated code and security reviews.", "chernyX"],
       ["A model for each role. Searching and log reading go to a small model, edits stay on the main model, and the hardest planning moves up a tier. Anthropic's cost guide warns that a subagent that inherits the main model \"inherits its price too\" (Sep 2026); Uber defaults subagents to a weaker, cheaper model and keeps the strong one for planning and evaluation (Aug 2026).", "claudeDevCost"],
+      ["Effort per spawn. pstack (Oct 2026): \"Match the model to the job.\" Pick each spawn's reasoning level, use fast mode \"only when the job is urgent, meaning CI or trunk is red or a person is blocked\", and keep verification on the swarm model.", "potetoMode"],
+      ["One full verification per head, not per change. pstack: \"A full swarm runs once, at the code-ready head.\" A rebase or minor fix \"gets a single verifier at the new head.\"", "autopilot"],
+      ["Route models in the harness, which knows the task. LangChain moved model choice into its Open SWE harness; in its own test, median cost per task fell 64% and merged PRs did not measurably change (29.2% vs 27.3%, p = 0.49).", "lcRouter"],
+      ["Status you can see without reading screens. Mitchell Hashimoto's OSC 7501 lets a program tell the terminal it is working, waiting on you, finished or failed. Claude Code added it in 2.1.295 and Codex merged it on 9 Oct 2026.", "osc7501"],
     ],
     breaks: [
       ["Vague briefs fail quietly: pstack notes a worker cannot ask you a question.", "orch"],
+      ["Opening a repo can run code. Claude Desktop on Windows before 1.8089.0 ran git.exe without an absolute path, so a git.exe planted in a repo ran when the folder was opened (GHSA-4p2j-qj3c-6x84, 13 Oct 2026).", "ghsaGit"],
       ["Self-graded work: a green check from the agent that wrote the change says little about whether it's right.", "ship"],
       ["A blocked agent may route around the block instead of stopping. Anthropic reported Claude using SQL injection, borrowed access tokens and URL shorteners when a tool or limit stood in its way, mostly on ambiguous or impossible tasks (Oct 2026). Make BLOCKED an acceptable result and enforce limits in the host, not the prompt.", "unintended"],
     ],
@@ -423,12 +448,13 @@ const STAGES = [
       ["Claude Code: by default, spawning a 21st concurrent subagent in a session fails (CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS changes it); subagents nest up to three layers deep.", "ccSub"],
       ["Claude Code dynamic workflows: up to 16 agents at once by default, fewer on machines with fewer CPUs; a run that schedules more than 25 agents or 1.5 million projected tokens shows a Large workflow warning.", "ccWorkflows"],
       ["Plan quota scales with agent count: Claude Code's docs say ten agents in parallel use quota roughly ten times as fast as one.", "ccAgentView"],
+      ["Claude Code 2.1.296 added CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL to run every workflow agent on one model; since 2.1.300 an agent.spawn mod hook can rewrite a workflow agent's prompt and model instead of only refusing it.", "ccChangelog"],
     ],
     people: [
       ["Stripe", "Minions write each change start to finish in an isolated, pre-warmed devbox; humans review every PR.", "stripe"],
       ["Lauren Tan", "suggests up to about 10 agents with worktrees on one machine, depending on the repo and the machine.", "tan1"],
     ],
-    sources: ["orch", "swarm", "ship", "stripe", "chernyX", "tan1", "ccSub", "ccWorkflows"],
+    sources: ["orch", "swarm", "ship", "stripe", "chernyX", "tan1", "ccSub", "ccWorkflows", "potetoMode", "autopilot", "lcRouter", "osc7501", "ghsaGit", "ccChangelog"],
     diagram: {
       boxes: [
         { id: "you", x: 20, y: 125, w: 90, h: 50, label: "You", sub: "write briefs" },
@@ -449,9 +475,10 @@ const STAGES = [
     add: [
       ["A coordinator that writes no code (\"It never authors or edits code\") and sub-coordinators only when one can't keep up, each capped at roughly ten children in a rolling window, never in blocking batches. Cursor Projects and Claude Code Projects both use this shape: a coordinator that directs agents and doesn't write code.", "orch"],
       ["Exactly one writer per piece of state: pstack's program store says \"Every file has exactly one writer.\"", "orch"],
-      ["One stacker per stack. Workers never rebase. After any rebase, recheck each verdict's patch-id, because a rebase \"can silently invalidate a verdict without touching a check\".", "ship"],
+      ["One stacker per stack. Workers never rebase. After any rebase, recheck each verdict's patch-id, because a chain rebase \"moves every PR above it to a new SHA without failing any check\".", "ship"],
       ["Shared memory with guardrails: versions you can roll back, a hash check before every write, read-only organisation-wide memory and writable per-agent scratchpads.", "mukta"],
       ["Retry by failure mode, then give up: pstack respawns with smaller scope after a context cap, retries network drops as-is, and abandons a unit after two retries.", "orch"],
+      ["A check against duplicate work. Ryan Lopopolo's agent added tests that walk the source for code that is \"substantively the same\" and fail the build (Oct 2026).", "lopopolo2"],
       ["Tests before agents where old code has none. Without build-time tests, an agent can't verify its own change, and the checking lands back on the owning teams.", "spotify4"],
       ["Flag judgment calls instead of guessing: Spotify had its agent leave those fields unchanged and add a comment linking to the human migration guide for the reviewing team.", "spotify4"],
       ["Coordinate in code where the steps are predictable. Stripe found an LLM orchestrator agent expensive, slow and sometimes unreliable, and concluded that \"predictable coordination is better implemented in code\", aiming for each plan step to map to one pull request.", "stripePmf"],
@@ -484,7 +511,7 @@ const STAGES = [
       ["Stripe", "(Payment Method Factory) moved agent coordination into code and hardens prompts with an observer agent that reviews an implementation agent's transcript.", "stripePmf"],
       ["Cursor", "moved from shared locks to planners that spawn sub-planners once twenty agents slowed to the throughput of two or three.", "cursorScale"],
     ],
-    sources: ["orch", "ship", "stripePmf", "spotify4", "spotify1", "cursorScale", "carlini", "mukta", "maMemory", "ghMq"],
+    sources: ["orch", "ship", "stripePmf", "spotify4", "spotify1", "cursorScale", "carlini", "mukta", "maMemory", "ghMq", "lopopolo2"],
     diagram: {
       boxes: [
         { id: "you", x: 15, y: 125, w: 80, h: 50, label: "You", sub: "gates only" },
@@ -513,6 +540,7 @@ const STAGES = [
       ["Workers in the cloud, not on a laptop. pstack: \"Chain rebases run in cloud. A local rebase at this scale takes the laptop down.\" Cursor's Projects run subagents remotely through one coordinator.", "orch"],
       ["A budget that stops spawning early: \"By roughly 70% of it, stop spawning and land what is verified.\" Landing is continuous, never a final phase.", "orch"],
       ["Human gates only where they belong: irreversible actions and product calls reach you; retries, restacks and CI flakes don't.", "orch"],
+      ["Check-ins that stay short. pstack's autopilot arms an hourly audit loop, and its /ketchup catch-up keeps the reply \"well under 150 words\".", "ketchup"],
       ["Periodic fresh starts: Cursor still restarts agents to combat \"drift and tunnel vision\".", "cursorScale"],
       ["Learning across runs, with a person approving: pstack's reflect turns transcripts into proposed skill edits (\"Do not auto-apply\"). Anthropic's dreaming proposes a cleaned memory store for review.", "reflect"],
       ["Shared gateways instead of per-agent wiring: Uber describes a central model gateway with workload identity and PII redaction, and an MCP gateway with CLI-style tool access that it says cut fleet-wide token use by more than 40% (the talk gave no baseline or measurement window). Its August 2026 engineering post adds that weekly agentic requests grew 9.4 times from February to August while total AI spend held roughly flat since April.", "uberBlog"],
@@ -529,6 +557,9 @@ const STAGES = [
       ["Git hosting gives way too. GitHub says thousands of agents on their own branches produce a sustained write rate, and it is rebuilding its Git storage for agent-scale load (Oct 2026).", "ghScale"],
       ["Incidents follow throughput. Honeycomb roughly doubled its merged PRs a day and then saw 1.5 times the incidents, per its AI Native Dev episode notes (Sep 2026).", "honeycomb"],
       ["A finished run isn't a passed run. Claude Managed Agents docs say a workflow run's result \"doesn't say whether the work passed\"; read each thread for failures.", "maWorkflow"],
+      ["Caps need testing. Claude Code 2.1.299 fixed a mod that could keep a headless run going past --max-budget-usd; check that your cap actually stops a run.", "ccChangelog"],
+      ["Agent CLIs change under you. Since Codex CLI 0.157.0, per an open user-filed issue, opening a session starts a background daemon that keeps running after every window closes and pins the first session's environment. Pin CLI versions on fleet hosts.", "codexDaemon"],
+      ["Reading the agent's reasoning gets weaker. Neel Nanda (Google DeepMind): Gemini 4 Argon \"is significantly less monitorable than past models\" and can evade a chain-of-thought and action monitor to do simple sabotage half the time (Oct 2026). Gate on checks, not on transcripts.", "nanda"],
     ],
     quote: ["most runs would peak at several hundred agents", "Cursor, on its long-running agent experiments", "cursorSelf"],
     gate: [
@@ -553,7 +584,7 @@ const STAGES = [
       ["Uber", "attributes more than 70% of PRs to local or cloud agents; weekly agentic requests grew 9.4 times from February to August 2026 while total AI spend held roughly flat, with cheaper models as default subagents.", "uberBlog"],
       ["Amp", "(Thorsten Ball) has no pull requests or code review and pushes to main; agents read production logs, watch deploys and attach a recorded video walkthrough as proof of their work.", "thorsten"],
     ],
-    sources: ["orch", "reflect", "chernyFortune", "tanAug", "block", "spotifyJun", "spotifySep", "scm", "uber", "stripe", "spotify4", "cursorScale", "cursorSelf", "cursorProjects", "tan1", "tanTalk", "maWorkflow", "maDreams", "ghRest", "ghActions", "apiLimits", "research", "ccWorkflows"],
+    sources: ["orch", "ketchup", "codexDaemon", "nanda", "ccChangelog", "reflect", "chernyFortune", "tanAug", "block", "spotifyJun", "spotifySep", "scm", "uber", "stripe", "spotify4", "cursorScale", "cursorSelf", "cursorProjects", "tan1", "tanTalk", "maWorkflow", "maDreams", "ghRest", "ghActions", "apiLimits", "research", "ccWorkflows"],
     diagram: {
       boxes: [
         { id: "you", x: 15, y: 30, w: 80, h: 46, label: "You", sub: "twice a day" },
@@ -571,7 +602,7 @@ const STAGES = [
 ];
 
 // When each practice was described; these change fast, so the page shows the date with each one.
-const AS_OF = { hashimoto: "Feb 2026", bockeler: "Apr 2026", cherny: "Mar 2026", horthy: "Aug 2025", stripe: "Feb 2026", tan1: "Aug 2026", spotify4: "Apr 2026", cursorScale: "Jan 2026", cursorSelf: "Feb 2026", uber: "Jun 2026", chernyFortune: "Jun 2026", chernyX: "Sep 2026", horthy2: "Jul 2026", tanAug: "Aug 2026", stripePmf: "Sep 2026", spotifyJun: "Jun 2026", spotifySep: "Sep 2026", block: "Oct 2026", scm: "Oct 2026", anthMulti: "Aug 2026", kiro: "Sep 2026", uberBlog: "Aug 2026", zalando: "Aug 2026", lopopolo: "Oct 2026", arslan: "Sep 2026", jain: "Oct 2026", honeycomb: "Sep 2026", thorsten: "Oct 2026", jesse: "Oct 2026" };
+const AS_OF = { osmaniVerify: "Oct 2026", chernyPrompt: "Oct 2026", huntley: "Oct 2026", sridharan: "Oct 2026", ccDesktop: "Oct 2026", lopopolo2: "Oct 2026", nanda: "Oct 2026", lcRouter: "Oct 2026", hashimoto: "Feb 2026", bockeler: "Apr 2026", cherny: "Mar 2026", horthy: "Aug 2025", stripe: "Feb 2026", tan1: "Aug 2026", spotify4: "Apr 2026", cursorScale: "Jan 2026", cursorSelf: "Feb 2026", uber: "Jun 2026", chernyFortune: "Jun 2026", chernyX: "Sep 2026", horthy2: "Jul 2026", tanAug: "Aug 2026", stripePmf: "Sep 2026", spotifyJun: "Jun 2026", spotifySep: "Sep 2026", block: "Oct 2026", scm: "Oct 2026", anthMulti: "Aug 2026", kiro: "Sep 2026", uberBlog: "Aug 2026", zalando: "Aug 2026", lopopolo: "Oct 2026", arslan: "Sep 2026", jain: "Oct 2026", honeycomb: "Sep 2026", thorsten: "Oct 2026", jesse: "Oct 2026" };
 const $ = (id) => document.getElementById(id);
 const NS = "http://www.w3.org/2000/svg";
 function svg(tag, attrs = {}, text) {

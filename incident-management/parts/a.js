@@ -219,6 +219,7 @@ export const CHAPTERS = [
     ],
     agentic: [
       "\"What changed?\" is where agents help most: they line up deploys, flag flips and config pushes against the start of impact from your own change history. A human still decides to roll back, and a finding without the queries behind it is a hypothesis.",
+      "When nobody fully understands the code, debug from evidence. Cindy Sridharan (October 2026) calls code \"an unreliable narrator\" and maps every plausible hypothesis to every high-fidelity signal before trusting a story about the code.",
       "Vendor investigation agents mostly stop at findings: New Relic says Autopilot \"recommends actions but does not take them\", Gemini Cloud Assist investigations (preview) never use the caller's token to mutate data, and Bits can end \"inconclusive\". Mitigation stays a human call through the normal rollback path.",
       "If an agent's start at alert time is logged as the acknowledgement, time to acknowledge looks better while time to detect, which starts at impact, is unchanged. Record agent start and human ack as separate timestamps so the timeline shows who did what.",
     ],
@@ -229,6 +230,7 @@ export const CHAPTERS = [
     ],
     incidents: ["wikimedia-2025-www-portal-redirect-loop", "lootlocker-2025-db-provider-cert-expiry", "travisci-2017-worker-rollback-missing-tag", "cloudflare-2023-workers-kv-rollback", "knightcapital-2012-power-peg-deploy"],
     sources: [
+      { title: "Cindy Sridharan: How to effectively debug when you no longer understand the code (2026-10-10)", url: "https://copyconstruct.medium.com/how-to-effectively-debug-when-you-no-longer-understand-the-code-bd3dcb2c5f7b" },
       { title: "The Site Reliability Workbook: Incident Response", url: "https://sre.google/workbook/incident-response/" },
       { title: "Site Reliability Engineering: Emergency Response", url: "https://sre.google/sre-book/emergency-response/" },
       { title: "incident.io guide: The lifecycle of an incident", url: "https://incident.io/guide/response/the-lifecycle-of-an-incident" },
