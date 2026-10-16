@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Engineering for the Next Agent, Drawn</title>
+<meta name="description" content="How to build agent systems that get better when the model does, in step-through diagrams: assets that carry forward, durable and disposable layers, forecasting capability with its caveats, scaffolding you will delete, evals, safe model upgrades, boundaries that hold, and interfaces that outlive models.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<link rel="stylesheet" href="../drawn/drawn.css">
+<link rel="stylesheet" href="../site-nav.css">
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
+<div class="shell">
+  <nav class="toc" aria-label="Chapters">
+    <details id="tocBox" open><summary>Chapters</summary><ol id="toc"></ol></details>
+  </nav>
+  <main>
+    <div class="kicker"><a href="../">SRE Lab</a> · explainers<span class="updated"> · updated <time datetime="2026-10-15">15 Oct 2026</time></span></div>
+    <h1>Engineering for the Next Agent, Drawn</h1>
+    <p class="lede">Agent engineering builds on itself. Skills, instruction files, tools and evals written for last year's model still work with this year's, and often work better. Prompt workarounds and step-by-step scaffolding get deleted. The model you build for today is usually replaced within months, so this explainer is about engineering for the agent that is coming: what to invest in, what to keep thin, how to read the capability trends without overtrusting them, and how to upgrade without breaking production.</p>
+    <p class="lede">Step through each diagram with the buttons or your arrow keys, then use the 30-second answer, the gotchas and the quiz. Every number is dated and linked to the lab, vendor or researcher that published it; forecasts are shown with their caveats.</p>
+    <div id="chapters"></div>
+    <footer>
+      <p>Diagrams and wording by Sally Roth. Sources are linked in each chapter; real-world examples come from <a href="../incidents/">The Incident Files</a>. Companion explainer: <a href="../agentic/">Agentic Engineering, Drawn</a>.</p>
+      <p>Part of <a href="../">SRE Lab</a> · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab/tree/main/next-agent">source</a></p>
+    </footer>
+  </main>
+</div>
+<script type="module">
+import { mountExplainer } from "../drawn/engine.js";
+import { CHAPTERS } from "./diagrams.js";
+await mountExplainer(CHAPTERS, { key: "next-agent", collapseSourcesOver: 0 });
+</script>
+</body>
+</html>
