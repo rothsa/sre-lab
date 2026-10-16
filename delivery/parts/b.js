@@ -373,7 +373,7 @@ export const CHAPTERS = [
       { title: "DORA: Impact of generative AI in software development", url: "https://dora.dev/ai/gen-ai-report/report/" },
       { title: "Google Cloud blog: Announcing the 2024 DORA report", url: "https://cloud.google.com/blog/products/devops-sre/announcing-the-2024-dora-report" },
       { title: "Google Cloud blog: Announcing the 2025 DORA report", url: "https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report" },
-      { title: "GitHub Docs: About Copilot code review", url: "https://docs.github.com/en/copilot/concepts/agents/code-review" },
+      { title: "GitHub Docs: About Copilot code review", url: "https://docs.github.com/en/copilot/concepts/agent-capabilities/agent-powered-workflows-and-operations/code-review" },
       { title: "GitHub Docs: Risks and mitigations for Copilot cloud agent", url: "https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/risks-and-mitigations" },
       { title: "GitHub changelog: Stacked pull requests generally available (6 Oct 2026)", url: "https://github.blog/changelog/2026-10-06-stacked-pull-requests-generally-available/" },
     ],

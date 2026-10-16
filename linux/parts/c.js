@@ -160,7 +160,7 @@ export const CHAPTERS = [
     agentic: [
       "An agent may reach for `dig`, which skips nsswitch, `/etc/hosts` and the search list. Require `getent ahosts NAME` as the evidence of what the app sees, and check the image's libc first: musl and Go's resolver don't follow the glibc path drawn here.",
       "Editing `/etc/hosts` or `resolv.conf` to make a lookup work is a host-wide, silent change: a pinned `/etc/hosts` entry wins over DNS for every program until someone removes it. Agent-proposed resolver changes go through config management and review like any other.",
-      "Inside an agent sandbox, DNS may not work the same way: Claude Code's Linux sandbox has no direct network route, so tools that don't use its HTTP proxy fail with `Temporary failure in name resolution`. Treat that as a property of the sandbox before you treat it as a DNS outage.",
+      "Inside an agent sandbox, DNS may not work the same way: Claude Code's Linux sandbox has no direct network route, so tools that don't use its HTTP proxy can't resolve hosts; the docs show `curl --noproxy '*'` failing with `Could not resolve host`. Treat that as a property of the sandbox before you treat it as a DNS outage.",
     ],
     quiz: [
       { q: "`dig api.internal` returns 10.0.0.5 but the app connects to 10.0.0.9. What do you check?", a: "`/etc/hosts` and the `hosts:` line in `nsswitch.conf`. `files` usually comes before `dns`, and dig never reads either. `getent ahosts api.internal` shows what getaddrinfo returns." },

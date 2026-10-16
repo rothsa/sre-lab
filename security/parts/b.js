@@ -399,7 +399,7 @@ export const CHAPTERS = [
       { title: "Grafana Assistant: Your data and security", url: "https://grafana.com/docs/grafana-cloud/platform/grafana-assistant/privacy-and-security/security/" },
       { title: "OpenTelemetry GenAI semantic conventions (Development)", url: "https://github.com/open-telemetry/semantic-conventions-genai" },
       { title: "GitHub: Risks and mitigations for Copilot cloud agent", url: "https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/risks-and-mitigations" },
-      { title: "GitHub: About Copilot code review", url: "https://docs.github.com/en/copilot/concepts/agents/code-review" },
+      { title: "GitHub: About Copilot code review", url: "https://docs.github.com/en/copilot/concepts/agent-capabilities/agent-powered-workflows-and-operations/code-review" },
     ],
   },
 ];

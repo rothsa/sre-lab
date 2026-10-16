@@ -149,6 +149,7 @@ export const CHAPTERS = [
     ],
     say30: "I treat context as a budget with three tiers. Always-on: a short AGENTS.md with build and test commands, plus org rules managed centrally. On demand: skills and playbooks that load when the task matches, MCP tools behind a gateway that exposes a curated subset, and the agent's own file reads. Isolated: subagents that return summaries. The task is context too, so like Spotify I put one change per prompt with a verifiable goal. Compaction drops early instructions, so anything that must always hold becomes a hook or CI check, not a sentence.",
     gotchas: [
+      "Compaction doesn't cure fixation. Fork-and-Flush (Oct 2026) found agents stay stuck on a wrong idea despite periodic compaction, so long runs keep state in files and restart with a fresh context.",
       "Private runs build no team habits. DoorDash's first Slack integration opened a private channel per run; public threads are what built trust. Shopify's River refuses DMs.",
       "A 1M-token window is not a 1M-token budget. Uber's default config auto-compacts at 400K tokens even on 1M-context models, and quality drops as the window fills anyway.",
       "Stale context is followed confidently. Amazon said in March 2026 that one of its recent retail incidents involved an engineer following AI advice inferred from an outdated internal wiki. Point rules at scripts, not facts that change.",
@@ -172,6 +173,7 @@ export const CHAPTERS = [
     codeNote: "Illustrative, with made-up commands and keys. The repo file is short and only says what the model cannot infer. The playbook follows the shape DoorDash describes: one YAML file per task that declares the tools and permissions a gateway may grant, and mixes agent steps with deterministic ones.",
     incidents: ["stack-overflow-2014-iptables-haproxy"],
     sources: [
+      { title: "Fork-and-Flush (arXiv 2610.07447, 5 Oct 2026)", url: "https://arxiv.org/abs/2610.07447" },
       { title: "AGENTS.md", url: "https://agents.md/" },
       { title: "Claude Code: Best practices", url: "https://code.claude.com/docs/en/best-practices" },
       { title: "Claude Code: How Claude Code works", url: "https://code.claude.com/docs/en/how-claude-code-works" },

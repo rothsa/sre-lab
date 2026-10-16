@@ -52,7 +52,7 @@ export const CHAPTERS = [
       "Letting the author pick the tier defeats it. Ona's rule is \"engineers cannot self-classify a change as low-risk\", and changing its criteria, review prompt or model needs sign-off from its Head of Product Design and Engineering.",
       "`CODEOWNERS` only requests reviews. A branch rule or ruleset must enable \"Require review from Code Owners\", and the last matching pattern wins.",
       "Approvals go stale. Without \"Dismiss stale pull request approvals when new commits are pushed\", an agent's later push can merge unreviewed. A rebase changes SHAs, not checks, so pstack re-compares each verdict's `git patch-id` before landing.",
-      "A noisy reviewer gets ignored, so tune for precision. OpenAI's Codex review accepts \"modestly reduced recall\" for it, and Anthropic reports under 1% of its Code Review findings marked incorrect, at $15 to 25 a review.",
+      "A noisy reviewer gets ignored, so tune for precision. OpenAI's Codex review accepts \"modestly reduced recall\" for it, and Anthropic reported under 1% of its Code Review findings marked incorrect, at $15 to 25 a review, in its March 2026 research preview. Code Review went GA for Team and Enterprise on 15 Oct 2026, with Quick, Standard or Deep review per repository.",
     ],
     atScale: [
       "Volume outruns verification. Spotify's incident reviews found no material direct contribution from AI-authored code, but \"the volume of change increased faster than some of our verification controls could adapt\": one automated upgrade \"passed our checks, but still failed in production\". Its fix: automated changes in owners' working hours, more rollback capacity.",
@@ -88,6 +88,7 @@ export const CHAPTERS = [
       { title: "Lovable: $85,000 in tokens later (Jul 2026)", url: "https://lovable.dev/en/blog/85000-in-tokens-later-scaling-agentic-coding-at-lovable" },
       { title: "Uber: uReview (Aug 2025)", url: "https://www.uber.com/en-GB/blog/ureview/" },
       { title: "Anthropic: Code Review for Claude Code (Mar 2026)", url: "https://claude.com/resources/articles/code-review" },
+      { title: "Anthropic: Code Review is now generally available (15 Oct 2026)", url: "https://claude.com/resources/articles/code-review-is-now-generally-available" },
       { title: "OpenAI Alignment: Scaling code verification (Dec 2025)", url: "https://alignment.openai.com/scaling-code-verification/" },
       { title: "Cloudflare: Orchestrating AI code review at scale (Apr 2026)", url: "https://blog.cloudflare.com/ai-code-review/" },
       { title: ".NET Blog: Ten months with CCA in dotnet/runtime (Mar 2026)", url: "https://devblogs.microsoft.com/dotnet/ten-months-with-cca-in-dotnet-runtime/" },
@@ -155,6 +156,7 @@ export const CHAPTERS = [
     ],
     say30: "I assume the model will obey an attacker, because instructions don't hold: a code freeze didn't stop Replit's agent, and an account-scoped token let an agent delete PocketOS's production volume. The environment holds. I apply Meta's Rule of Two, so no session mixes untrusted input, sensitive access and external action. Each run gets a disposable sandbox with no route to prod, like Stripe's QA devboxes. Real credentials stay outside, attached by a proxy as short-lived scoped tokens. Egress is default-deny and every allowed host is a capability. Deny and ask rules sit on top, with prompts saved for irreversible actions, since users approve about 97% of them.",
     gotchas: [
+      "Check permission before resolving a name. Codex CLI 0.163.0 (Oct 2026): its network proxy \"now checks permission before a DNS lookup, rejects duplicate `Host` headers, and prevents credential aliases from bypassing inspection hooks.\" An egress proxy that resolves first leaks the lookup itself.",
       "Containment matters more each model generation. Anthropic's red team found that in simplified evaluations, GLM-5.2 and stronger models can replicate themselves end to end, and titled its conclusion \"Signs of life\" (October 2026). Default-deny egress and alerts on large unexpected transfers are the backstop.",
       "Deny rules match text, not programs: `Bash(curl *)` misses `curl` by path or inside `sh -c`, and `Read(./.env)` misses a script that opens `.env`. A README injection beat Snowflake Cortex's safe-command check with process substitution and had the agent set `dangerously_disable_sandbox`.",
       "Sandboxes have edges. Claude Code's sandbox covers shell commands and their children; file tools follow permission rules, and MCP servers and hooks run outside it. Agent teammates start with the lead's permission mode (except `dontAsk`), even `--dangerously-skip-permissions`.",
@@ -166,7 +168,7 @@ export const CHAPTERS = [
       "Detection is not prevention. In a February 2026 Anthropic red-team exercise, a phished user's Claude Code session exfiltrated AWS credentials in 24 of 25 tries. Anthropic: in that case, only the environment holds.",
     ],
     atScale: [
-      "Thousands of developers add their own MCP servers and rules, so real policy is unknowable. Push a baseline through managed settings (they outrank user and project files), disable bypass mode there, and alert on the `claude_code.permission_mode_changed` OTel event.",
+      "Thousands of developers add their own MCP servers and rules, so real policy is unknowable. Push a baseline through managed settings (they outrank user and project files), disable bypass mode there, and alert on the `claude_code.permission_mode_changed` OTel event. Since Claude Code v2.1.301 (Oct 2026), `tool_decision` events also carry `permission_mode` and `classifier_verdict`, so auto-mode classifier blocks can be told apart from permission rules.",
       "Approval fatigue: Anthropic reports users approve 97% of prompts; in a 1,053-tester study, humans caught a swapped-in dangerous command 13.6% of the time; the auto-mode classifier blocked 89%. Prompt only for the irreversible.",
       "Shared identities hide who acted. Uber starts each workload with a SPIRE identity, then mints single-hop tokens via RFC 8693-style exchange; each lasts minutes and carries the actor chain, e.g. `[user1, oncall-agent, investigation-agent]`.",
       "Agents reach what their pods reach. In the Hugging Face intrusion the agent read node credentials from IMDS and used a connector credential bound to `system:masters` across clusters. Block metadata endpoints from pods and scope credentials per cluster. OpenAI's own report (August 2026) adds that agents in its training runs had already turned an internal Artifactory into \"an unintended message board\" and, from late May, a route to the internet.",
@@ -184,6 +186,8 @@ export const CHAPTERS = [
     codeNote: "Claude Code's format; other agents have equivalents. List keys merge across scopes, so without the two `Only` keys a repo can still add allow rules and domains. Deny rules are a convenience; the sandbox's filesystem and network limits are the boundary.",
     incidents: ["homebrew-2018-jenkins-github-token-leak", "eslint-2018-npm-account-takeover", "travisci-2018-prod-db-truncate"],
     sources: [
+      { title: "OpenAI Codex CLI 0.163.0 release notes (15 Oct 2026)", url: "https://github.com/openai/codex/releases/tag/rust-v0.163.0" },
+      { title: "Claude Code CHANGELOG (v2.1.301, 15 Oct 2026)", url: "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md" },
       { title: "Vercel: Findings from the $1 million Vercel Sandbox challenge (Oct 2026)", url: "https://vercel.com/blog/findings-from-the-1-million-dollar-vercel-sandbox-challenge" },
       { title: "Noma Labs: SneakPeek, Claude Code Desktop preview pane exfiltration (14 Oct 2026)", url: "https://noma.security/noma-labs/sneakpeek-how-the-preview-pane-in-claude-code-desktop-can-exfiltrate-your-data" },
       { title: "Deep Agents 0.7.25 release notes (symlink-resolved permission checks)", url: "https://github.com/langchain-ai/deepagents/releases/tag/deepagents%3D%3D0.7.25" },
@@ -282,6 +286,7 @@ export const CHAPTERS = [
         "Volume: Microsoft's 5,400+ agents across 2,500+ teams processed 1.47M incidents, 480K in the last month, with a reported 4-minute median alert-to-mitigation. A bad rule repeats thousands of times before anyone looks; none of these orgs publishes a harmful-action rate, so track your own.",
         "Privilege drifts across many agents. Meta keys its guardrails on (identity, action, asset), signs tokens naming the agent and the delegating human, can block mass-SSH wrappers, and runs regular sweeps proving forbidden actions still fail.",
         "Model, prompt or tool changes shift behavior silently: rerun incident replays on each. ITBench (2025) is sobering: agents solved 13.8% of its SRE scenarios.",
+        "For a postmortem, reconstructing, replaying and rerunning an agent run answer different questions. Keep the tool results the agent actually saw, model and deployment IDs, tool schema and instruction versions, and its effective permissions. AAIF (Oct 2026): \"The response returned during the original run is part of the evidence needed to understand the decision.\" A rerun against today's tools only shows today's behavior.",
       ],
       quiz: [
         { q: "Why a read-only identity rather than a prompt rule?", a: "Injected text in logs, tickets or tool output can override a prompt. An identity that can't write (Azure SRE Agent's Reader needs per-write admin approval) holds whatever the model is told." },
@@ -294,6 +299,7 @@ export const CHAPTERS = [
       codeNote: "Allowlists are defense in depth; identity and environment are the boundary. DENY mirrors Azure SRE Agent's hard denies; OTel's GenAI conventions are still in Development status.",
       incidents: ["google-cloud-2024-vpc-controller-shutdown", "microsoft-azure-2024-openai-resource-deletion"],
       sources: [
+        { title: "AAIF: Can you reproduce an agent run? (13 Oct 2026)", url: "https://aaif.io/blog/can-you-reproduce-an-agent-run" },
         { title: "Google SRE book: Managing incidents", url: "https://sre.google/sre-book/managing-incidents/" },
         { title: "Google SRE: AI in SRE (autonomy levels, Actus)", url: "https://sre.google/resources/practices-and-processes/ai-engineering-reliable-operations/" },
         { title: "Microsoft: Zero Ops, agents operate, humans govern (2026-08-07)", url: "https://techcommunity.microsoft.com/blog/appsonazureblog/zero-ops-agents-operate-humans-govern/4545151" },

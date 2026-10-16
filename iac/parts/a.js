@@ -491,7 +491,7 @@ deny contains msg if {
       { title: "AWS CloudFormation: change sets", url: "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-changesets.html" },
       { title: "Crossplane: managed resources", url: "https://docs.crossplane.io/latest/managed-resources/managed-resources/" },
       { title: "GitHub: risks and mitigations for Copilot cloud agent", url: "https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/risks-and-mitigations" },
-      { title: "GitHub: Copilot code review", url: "https://docs.github.com/en/copilot/concepts/agents/code-review" },
+      { title: "GitHub: Copilot code review", url: "https://docs.github.com/en/copilot/concepts/agent-capabilities/agent-powered-workflows-and-operations/code-review" },
     ],
   },
 ];

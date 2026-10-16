@@ -342,7 +342,7 @@ export const CHAPTERS = [
       { title: "Grafana Mimir: Runtime configuration (per-tenant overrides)", url: "https://grafana.com/docs/mimir/latest/configure/about-runtime-configuration/" },
       { title: "Grafana Mimir runbooks", url: "https://grafana.com/docs/mimir/latest/manage/mimir-runbooks/" },
       { title: "CNCF blog (Chronosphere guest post): What is high cardinality?", url: "https://www.cncf.io/blog/2022/05/23/what-is-high-cardinality/" },
-      { title: "GitHub Docs: About Copilot code review", url: "https://docs.github.com/en/copilot/concepts/agents/code-review" },
+      { title: "GitHub Docs: About Copilot code review", url: "https://docs.github.com/en/copilot/concepts/agent-capabilities/agent-powered-workflows-and-operations/code-review" },
     ],
   },
 ];

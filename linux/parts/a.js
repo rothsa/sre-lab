@@ -334,7 +334,7 @@ export const CHAPTERS = [
       "Per-cgroup `memory.pressure` shows which container is stalling, and `memory.oom.group` makes a cgroup die whole instead of losing one worker. Both matter more as more workloads share a node.",
     ],
     agentic: [
-      "Agent sandboxes are cgroups too. Give each agent session or sandbox Pod its own `memory.max` and `pids.max`, so a runaway test suite or fork loop ends in a cgroup OOM or `EAGAIN` inside the sandbox, not a node-wide OOM; `memory.oom.group` then kills the whole sandbox instead of leaving it half alive.",
+      "Agent sandboxes are cgroups too. Give each agent session or sandbox Pod its own `memory.max` and `pids.max`, so a runaway test suite or fork loop ends in a cgroup OOM or `EAGAIN` inside the sandbox, not a node-wide OOM; `memory.oom.group` then kills the whole sandbox instead of leaving it half alive. Since agent-sandbox v1.0.7 (Oct 2026), sandboxd reports a command killed by signal n as exit code 128+n (137 for SIGKILL), like a shell, instead of -1.",
       "kubernetes-sigs/agent-sandbox adds a `Sandbox` CRD (API `v1beta1`, under SIG Apps) for one stateful Pod per agent runtime. Isolation comes from the RuntimeClass, such as gVisor or Kata, not the CRD; under gVisor the Pod talks to a user-space application kernel that doesn't implement every `/proc` or `/sys` file, so cgroup files read inside may not match the node's.",
       "An agent looking at `OOMKilled` can suggest raising the limit. The human checks `memory.stat` (`anon` vs `file`) and `memory.events` first, because a cache-heavy container rarely needs more memory and a leaking one only dies later.",
     ],

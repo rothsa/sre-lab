@@ -324,6 +324,15 @@ const S = {
   letta: ["letta-code PR 5070: run Claude Code and Codex subagents with bypassed permissions (merged 13 Oct 2026, Letta Code 0.34.14)", "https://github.com/letta-ai/letta-code/pull/5070"],
   rewardHack: ["Reward Hacking as a Transmissible Strategy in Multi-Agent Coding Systems (arXiv 2610.12822, Oct 2026)", "https://arxiv.org/abs/2610.12822"],
   thorstenCtx: ["Thorsten Ball on X: context management with the latest models (15 Oct 2026)", "https://x.com/thorstenball/status/2110580016140431681"],
+  fastMode: ["Claude Platform release notes: fast mode out of research preview for Opus 5.5 (15 Oct 2026)", "https://platform.claude.com/docs/en/release-notes/overview"],
+  huntleyOveralls: ["Geoffrey Huntley: Overalls (research preview, Oct 2026)", "https://overalls.dev/"],
+  ampSoc2: ["Amp: That's not SOC 2 compliant (13 Aug 2026)", "https://ampcode.com/notes/thats-not-soc-2-compliant"],
+  sridharanMd: ["Cindy Sridharan on X: how she built her CLAUDE.md (16 Oct 2026)", "https://x.com/copyconstruct/status/2111068549469098492"],
+  forkFlush: ["Fork-and-Flush (arXiv 2610.07447, 5 Oct 2026)", "https://arxiv.org/abs/2610.07447"],
+  tanForget: ["Tan et al.: Scaling Discovery Requires Forgetting (arXiv 2610.20563, 14 Oct 2026)", "https://arxiv.org/abs/2610.20563"],
+  breunig: ["Drew Breunig: Context Inertia (14 Oct 2026)", "https://www.dbreunig.com/2026/10/14/context-inertia.html"],
+  xbowChrome: ["XBOW Labs: Zero to calc in six days, inside XBOW's Chrome full chain (13 Oct 2026)", "https://xbow.com/labs/research/zero-to-calc-in-six-days-inside-xbow-chrome-full-chain"],
+  zigler: ["Dev Interrupted (Andrew Zigler): Your agents should ask the factory first (15 Oct 2026)", "https://devinterrupted.substack.com/p/your-agents-should-ask-the-factory"],
 };
 
 // Diagram primitives: boxes {x,y,w,h,label,sub,new}, zones, clusters of dots, edges between box ids.
@@ -338,6 +347,7 @@ const STAGES = [
       ["Evidence in every report: what it ran and what it saw, so you can rerun it.", "prove"],
       ["A rule for repeated corrections: the second time you say something, make it a lint rule, CI check, hook or script instead of more prompt text.", "encode"],
       ["The simplest memory that works: a short instructions file (such as CLAUDE.md) checked into the repo.", "mukta"],
+      ["Instructions drawn from code you admire. Cindy Sridharan (Oct 2026) built her CLAUDE.md by having Claude read her favourite programming books and blogs, the best open-source projects, and code by the engineers she respects most.", "sridharanMd"],
       ["Both halves of a harness: guides that steer the agent before it acts (conventions, docs, examples) and sensors that check after (tests, linters, type checkers). Fast deterministic sensors are cheap enough to run on every change.", "bockeler"],
       ["A brief in three parts. Boris Cherny (Oct 2026): what you want it to do, how much effort you want it to spend, and \"How it should verify that it did the right thing\".", "chernyPrompt"],
       ["\"Done\" defined before the work starts. Addy Osmani (Oct 2026): \"The bottleneck has moved from writing code to knowing it's correct\"; the human now reviews \"evidence and not just diffs\".", "osmaniVerify"],
@@ -361,8 +371,9 @@ const STAGES = [
       ["Mitchell Hashimoto", "climbed six steps, from dropping the chatbot to always having an agent running, and still runs one agent at a time by choice.", "hashimoto"],
       ["Birgitta Böckeler", "(Thoughtworks) frames the whole job as guides before the agent acts and sensors after.", "bockeler"],
       ["Geoffrey Huntley", "says he pushes to main and no longer does pull requests; ownership replaces review, and a pre-commit hook fails a bad commit and injects a prompt telling the agent what to fix (his own practice, Oct 2026).", "huntley"],
+      ["Geoffrey Huntley", "is building Overalls, a self-hosted platform that gives each agent its own persistent Firecracker microVM, with Claude Code and Codex installed and no API keys on the machine (research preview, launching 3 Nov 2026).", "huntleyOveralls"],
     ],
-    sources: ["prove", "encode", "correct", "harness", "hashimoto", "bockeler", "mukta", "tanLoops", "chernyPrompt", "osmaniVerify", "sridharan", "huntley"],
+    sources: ["prove", "encode", "correct", "harness", "hashimoto", "bockeler", "mukta", "tanLoops", "chernyPrompt", "osmaniVerify", "sridharan", "huntley", "huntleyOveralls", "sridharanMd"],
     diagram: {
       boxes: [
         { id: "you", x: 30, y: 120, w: 110, h: 50, label: "You", sub: "task + review" },
@@ -432,6 +443,7 @@ const STAGES = [
       ["A higher bar for agent-written production code. Boris Cherny wrote in September 2026 that it should be higher than for human-written code; Anthropic backs this with many lint rules and tests, Claude-driven end-to-end tests, Claude-powered fuzzers running daily, and automated code and security reviews.", "chernyX"],
       ["A model for each role. Searching and log reading go to a small model, edits stay on the main model, and the hardest planning moves up a tier. Anthropic's cost guide warns that a subagent that inherits the main model \"inherits its price too\" (Sep 2026); Uber defaults subagents to a weaker, cheaper model and keeps the strong one for planning and evaluation (Aug 2026).", "claudeDevCost"],
       ["Effort per spawn. pstack (Oct 2026): \"Match the model to the job.\" Pick each spawn's reasoning level, use fast mode \"only when the job is urgent, meaning CI or trunk is red or a person is blocked\", and keep verification on the swarm model.", "potetoMode"],
+      ["Fast mode is now a plain API option. On 15 Oct 2026 fast mode for Claude Opus 5.5 left research preview: no access request or beta header, premium pricing, and the gain is output tokens per second, not time to first token. Opus 5 and Opus 4.8 fast mode stay in research preview.", "fastMode"],
       ["One full verification per head, not per change. pstack: \"A full swarm runs once, at the code-ready head.\" A rebase or minor fix \"gets a single verifier at the new head.\"", "autopilot"],
       ["Route models in the harness, which knows the task. LangChain moved model choice into its Open SWE harness; in its own test, median cost per task fell 64% and merged PRs did not measurably change (29.2% vs 27.3%, p = 0.49).", "lcRouter"],
       ["Status you can see without reading screens. Mitchell Hashimoto's OSC 7501 lets a program tell the terminal it is working, waiting on you, finished or failed. Claude Code added it in 2.1.295 and Codex merged it on 9 Oct 2026.", "osc7501"],
@@ -462,7 +474,7 @@ const STAGES = [
       ["Lauren Tan", "suggests up to about 10 agents with worktrees on one machine, depending on the repo and the machine.", "tan1"],
       ["Cindy Sridharan", "once wrote about post-commit review and now finds pre-commit agentic reviews extremely useful: for large changes the review agents take 10x as long as the coding agent took to write the patch, which she calls worth it.", "sridharanReview"],
     ],
-    sources: ["orch", "swarm", "ship", "stripe", "chernyX", "tan1", "ccSub", "ccWorkflows", "potetoMode", "autopilot", "lcRouter", "osc7501", "ghsaGit", "noma", "letta", "sridharanReview", "ccChangelog"],
+    sources: ["orch", "swarm", "ship", "stripe", "chernyX", "tan1", "ccSub", "ccWorkflows", "potetoMode", "fastMode", "autopilot", "lcRouter", "osc7501", "ghsaGit", "noma", "letta", "sridharanReview", "ccChangelog"],
     diagram: {
       boxes: [
         { id: "you", x: 20, y: 125, w: 90, h: 50, label: "You", sub: "write briefs" },
@@ -551,10 +563,13 @@ const STAGES = [
       ["Human gates only where they belong: irreversible actions and product calls reach you; retries, restacks and CI flakes don't.", "orch"],
       ["Check-ins that stay short. pstack's autopilot arms an hourly audit loop, and its /ketchup catch-up keeps the reply \"well under 150 words\".", "ketchup"],
       ["Periodic fresh starts: Cursor still restarts agents to combat \"drift and tunnel vision\".", "cursorScale"],
+      ["Keep the work, drop the context. Two October 2026 papers point the same way: Fork-and-Flush forks agents that inherit the workspace but start \"with a fresh chat context\", and Tan et al. found each agent \"becomes anchored to its own past attempts\". Drew Breunig sums it up as \"throw the context away and keep the work.\"", "forkFlush"],
       ["Learning across runs, with a person approving: pstack's reflect turns transcripts into proposed skill edits (\"Do not auto-apply\"). Anthropic's dreaming proposes a cleaned memory store for review.", "reflect"],
       ["Shared gateways instead of per-agent wiring: Uber describes a central model gateway with workload identity and PII redaction, and an MCP gateway with CLI-style tool access that it says cut fleet-wide token use by more than 40% (the talk gave no baseline or measurement window). Its August 2026 engineering post adds that weekly agentic requests grew 9.4 times from February to August while total AI spend held roughly flat since April.", "uberBlog"],
       ["Standardize what agents will touch. Spotify concluded that large, complex migrations depend on consolidating and standardising its data landscape and enforcing testing requirements.", "spotify4"],
       ["Review by risk, not volume. Zalando's bot scores every PR by risk using rules drawn from its own past incidents and auto-approves the low-risk third (Aug 2026). Patrick Debois: factories become autonomous \"by making mistakes survivable\", not review perfect (Sep 2026).", "zalando"],
+      ["Backpressure from review. Before it starts new work, a session checks how many of its PRs still wait for a first review and triages those instead: \"the loop reads the queue before it adds to it\" (Andrew Zigler, Oct 2026).", "zigler"],
+      ["Split a hard goal into parallel campaigns. XBOW built a Chrome exploit chain by splitting the work \"into parallel campaigns with narrower goals\" and giving each stage a clean interface; humans picked targets and challenged results (Oct 2026).", "xbowChrome"],
       ["A hard spend cap per run. Anthropic's automation guide suggests starting at three to five times a normal run's cost; a run that hits its cap pauses instead of failing, so a cap set too low looks like a quiet run (Oct 2026).", "claudeDevAuto"],
     ],
     breaks: [
@@ -592,8 +607,9 @@ const STAGES = [
       ["Stripe", "merges more than a thousand minion-written PRs a week; they are human-reviewed but contain no human-written code.", "stripe"],
       ["Uber", "attributes more than 70% of PRs to local or cloud agents; weekly agentic requests grew 9.4 times from February to August 2026 while total AI spend held roughly flat, with cheaper models as default subagents.", "uberBlog"],
       ["Amp", "(Thorsten Ball) has no pull requests or code review and pushes to main; agents read production logs, watch deploys and attach a recorded video walkthrough as proof of their work. Ball also says the latest models follow instructions well enough that side-questions can go in the same thread, so forking and other context-management tricks no longer make sense to him (Oct 2026).", "thorsten"],
+      ["Amp", "passes SOC 2 without pull requests: it limits who can push, requires signed commits on main, blocks main on failed CI, and links every commit to the agent thread that produced it. \"SOC 2 doesn't require pull requests\" (Aug 2026).", "ampSoc2"],
     ],
-    sources: ["orch", "ketchup", "thorstenCtx", "codexDaemon", "nanda", "ccChangelog", "reflect", "chernyFortune", "tanAug", "block", "spotifyJun", "spotifySep", "scm", "uber", "stripe", "spotify4", "cursorScale", "cursorSelf", "cursorProjects", "tan1", "tanTalk", "maWorkflow", "maDreams", "ghRest", "ghActions", "apiLimits", "research", "ccWorkflows"],
+    sources: ["orch", "ketchup", "thorstenCtx", "codexDaemon", "nanda", "ccChangelog", "reflect", "chernyFortune", "tanAug", "block", "spotifyJun", "spotifySep", "scm", "uber", "stripe", "spotify4", "cursorScale", "cursorSelf", "cursorProjects", "tan1", "tanTalk", "maWorkflow", "maDreams", "ghRest", "ghActions", "apiLimits", "research", "ccWorkflows", "forkFlush", "tanForget", "breunig", "zigler", "xbowChrome", "ampSoc2"],
     diagram: {
       boxes: [
         { id: "you", x: 15, y: 30, w: 80, h: 46, label: "You", sub: "twice a day" },
@@ -611,7 +627,7 @@ const STAGES = [
 ];
 
 // When each practice was described; these change fast, so the page shows the date with each one.
-const AS_OF = { sridharanReview: "Oct 2026", osmaniVerify: "Oct 2026", chernyPrompt: "Oct 2026", huntley: "Oct 2026", sridharan: "Oct 2026", ccDesktop: "Oct 2026", lopopolo2: "Oct 2026", nanda: "Oct 2026", lcRouter: "Oct 2026", hashimoto: "Feb 2026", bockeler: "Apr 2026", cherny: "Mar 2026", horthy: "Aug 2025", stripe: "Feb 2026", tan1: "Aug 2026", spotify4: "Apr 2026", cursorScale: "Jan 2026", cursorSelf: "Feb 2026", uber: "Jun 2026", chernyFortune: "Jun 2026", chernyX: "Sep 2026", horthy2: "Jul 2026", tanAug: "Aug 2026", stripePmf: "Sep 2026", spotifyJun: "Jun 2026", spotifySep: "Sep 2026", block: "Oct 2026", scm: "Oct 2026", anthMulti: "Aug 2026", kiro: "Sep 2026", uberBlog: "Aug 2026", zalando: "Aug 2026", lopopolo: "Oct 2026", arslan: "Sep 2026", jain: "Oct 2026", honeycomb: "Sep 2026", thorsten: "Oct 2026", jesse: "Oct 2026" };
+const AS_OF = { fastMode: "Oct 2026", huntleyOveralls: "Oct 2026", ampSoc2: "Aug 2026", sridharanMd: "Oct 2026", forkFlush: "Oct 2026", tanForget: "Oct 2026", breunig: "Oct 2026", xbowChrome: "Oct 2026", zigler: "Oct 2026", sridharanReview: "Oct 2026", osmaniVerify: "Oct 2026", chernyPrompt: "Oct 2026", huntley: "Oct 2026", sridharan: "Oct 2026", ccDesktop: "Oct 2026", lopopolo2: "Oct 2026", nanda: "Oct 2026", lcRouter: "Oct 2026", hashimoto: "Feb 2026", bockeler: "Apr 2026", cherny: "Mar 2026", horthy: "Aug 2025", stripe: "Feb 2026", tan1: "Aug 2026", spotify4: "Apr 2026", cursorScale: "Jan 2026", cursorSelf: "Feb 2026", uber: "Jun 2026", chernyFortune: "Jun 2026", chernyX: "Sep 2026", horthy2: "Jul 2026", tanAug: "Aug 2026", stripePmf: "Sep 2026", spotifyJun: "Jun 2026", spotifySep: "Sep 2026", block: "Oct 2026", scm: "Oct 2026", anthMulti: "Aug 2026", kiro: "Sep 2026", uberBlog: "Aug 2026", zalando: "Aug 2026", lopopolo: "Oct 2026", arslan: "Sep 2026", jain: "Oct 2026", honeycomb: "Sep 2026", thorsten: "Oct 2026", jesse: "Oct 2026" };
 const $ = (id) => document.getElementById(id);
 const NS = "http://www.w3.org/2000/svg";
 function svg(tag, attrs = {}, text) {

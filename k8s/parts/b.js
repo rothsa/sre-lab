@@ -163,7 +163,7 @@ export const CHAPTERS = [
     ],
     agentic: [
       "NetworkPolicy is how you cut the third leg of the lethal trifecta for in-cluster agents: private data plus untrusted input plus outbound access. A default-deny egress policy with named destinations does that, but only if the CNI plugin enforces policy.",
-      "Agent Sandbox gets kernel and network isolation for agent-run code from gVisor or Kata via RuntimeClass; the Sandbox CRD itself does not isolate. Verify the RuntimeClass is set and that the sandbox namespace has default-deny egress that still allows DNS.",
+      "Agent Sandbox gets kernel and network isolation for agent-run code from gVisor or Kata via RuntimeClass; the Sandbox CRD itself does not isolate. Verify the RuntimeClass is set and that the sandbox namespace has default-deny egress that still allows DNS. Bearer-token auth on the in-sandbox daemon, sandboxd, is optional (v1.0.7, Oct 2026): \"If neither flag is set, behavior is unchanged. NetworkPolicy is still the primary boundary.\"",
       "Cross-node connectivity bugs still need the packet path: veth, routes, overlay, conntrack. Agents can run the checks, but node-level debugging via `kubectl debug node/...` or host access is effectively root on the node, so keep it with humans.",
     ],
     quiz: [

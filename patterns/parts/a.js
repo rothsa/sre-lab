@@ -469,7 +469,7 @@ end` },
     agentic: [
       "A generated client may hand-roll a `while` loop with `time.sleep` around each call. Ask for the existing policy instead (urllib3 `Retry`, retryablehttp's `CheckRetry`, faraday-retry, or just `gh api --paginate`), then check what those libraries leave to you: `timeout=` on every requests call, POST excluded from retries, `:raise_error` listed before `:retry`.",
       "Hallucinated APIs look exactly like real ones: a keyword argument the library doesn't accept, or a Faraday option from another version. OWASP LLM09:2025 lists models suggesting non-existent libraries, and attackers register commonly hallucinated package names, so check every import and option against the docs and the lock file before installing anything.",
-      "Retry layers multiply when the API is an LLM provider: Anthropic's SDKs already retry twice by default and honor `retry-after`, so a retry loop around them multiplies attempts. A spend-cap 429 carries no `retry-after` and won't clear by retrying, which is the 403-versus-429 lesson from GitHub again.",
+      "Retry layers multiply when the API is an LLM provider: Anthropic's SDKs already retry twice by default and honor `retry-after`, so a retry loop around them multiplies attempts. A tier spend-cap 429 carries no `retry-after` and won't clear by retrying, and a spend limit you set yourself returns 400, which is the 403-versus-429 lesson from GitHub again.",
     ],
     code: [
       { lang: "python", label: "Python · requests + urllib3 Retry", src: `import os

@@ -192,7 +192,7 @@ class RetryBudget(Evaluator):
       <li><b>The checks only see instrumented tools.</b> A call that doesn't record a span, or a span without its arguments, is invisible. In the OpenTelemetry conventions, tool arguments and results are opt-in attributes because they can be sensitive, so a real trace may not contain the service name these checks rely on.</li>
       <li><b>Passing sample cases doesn't establish real-world reliability.</b> Nine scripted cases show what the checks catch; they say nothing about how often a real agent goes wrong on incidents nobody wrote down.</li>
       <li><b>Detecting excessive calls after the run doesn't prevent them.</b> The retry loop below already spent its calls (and in one case 40 seconds of timeouts) before any evaluator looked. Enforce call budgets, rate limits and approval for changes like rollbacks at runtime, in the tool layer.</li>
-      <li><b>Eval harnesses have bugs too.</b> An October 2026 audit of one agent benchmark found a reward-function defect that changed the environment state before post-run scoring. Another study found that tests which reproduce a bug can still accept an incorrect patch. Audit the oracle before trusting a score.</li>
+      <li><b>Eval harnesses have bugs too.</b> An October 2026 audit of one agent benchmark found a reward-function defect that changed the environment state before post-run scoring. Another study found that tests which reproduce a bug can still accept an incorrect patch. Audit the oracle before trusting a score. ProgramBench now scores only its expected tests and drops tests a submission wrote itself (12 October 2026).</li>
       <li><b>A model swap can change the API, not just the answers.</b> Gemini 4 Argon (GA 13 October 2026) ignores <code>temperature</code>, <code>top_p</code> and <code>top_k</code>, so an eval that fixed those settings no longer tests what it says. Pin model IDs and rerun the evals on every swap.</li>
       <li><b>A judge can believe the agent.</b> An October 2026 paper on agent verification notes that a judge may accept unsupported claims, "including an agent's own reports of success"; its verifier checks the environment state and the execution trace instead. These checks read spans for the same reason, not the agent's summary.</li>
       <li><b>Synthetic data.</b> The incidents, services, results and timings are made up, and the agents are deterministic Python functions, not models. The output checks use simple keyword matching that suits this fixed data and would be too weak for free-form answers.</li>
@@ -200,6 +200,7 @@ class RetryBudget(Evaluator):
 
     <h3>Sources</h3>
     <ul class="sources">
+      <li><a href="https://github.com/facebookresearch/ProgramBench/commit/895f65916bc5ba34a915d36da321fde0301125ad">ProgramBench commit 895f659: drop tests the submission wrote itself (12 Oct 2026)</a></li>
       <li><a href="https://pydantic.dev/docs/ai/evals/evals/">Pydantic Evals: overview (Dataset, Case, evaluate_sync)</a></li>
       <li><a href="https://pydantic.dev/docs/ai/evals/evaluators/span-based/">Pydantic Evals: span-based evaluation (HasMatchingSpan, SpanQuery, SpanTree)</a></li>
       <li><a href="https://pydantic.dev/docs/ai/evals/evaluators/custom/">Pydantic Evals: custom evaluators (EvaluatorContext, EvaluationReason)</a></li>
