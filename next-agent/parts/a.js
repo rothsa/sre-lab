@@ -37,7 +37,7 @@ export const CHAPTERS = [
     steps: [
       { text: "Top: the models, each replaced within months. Bottom: what a team builds around them. The bet of this explainer is that the bottom row compounds and the top row is rented." },
       { text: "Each model arrives with quirks, and teams patch them: firmer wording, retries, parsers, fixed step sequences. Those patches are tuned to one model and are the first thing to go when it is replaced.", on: ["m1", "wk"], flow: ["e-wk1"] },
-      { text: "The turnover is fast. Anthropic's Claude Sonnet 3.7 launched on 24 February 2025 and was retired 360 days later; Claude Sonnet 4 lasted 389 days. Chapter 3 shows the release dates and the shrinking gaps between them.", on: ["m1", "m2", "m3"], flow: ["e-12", "e-23"] },
+      { text: "The turnover is fast. Anthropic's Claude Sonnet 3.7 launched on 24 February 2025 and was retired 360 days later; Claude Sonnet 4 lasted 389 days. Chapter 3 shows the dates; Engineering on an Exponential turns them into horizons.", on: ["m1", "m2", "m3"], flow: ["e-12", "e-23"] },
       { text: "Workarounds often turn harmful. Anthropic's prompting guide says firm wording added for older models, such as \"CRITICAL: You MUST\", can make newer ones overtrigger, and advises dialing it back. OpenAI's GPT-5 guide reports a \"be thorough\" prompt that became counterproductive.", on: ["wk", "m2"], flow: ["e-wk2"] },
       { text: "Skills carry forward. A skill is a folder with a `SKILL.md`; only its description sits in context until it is needed. Agent Skills became an open standard in December 2025, so a skill written for one model, or one tool, loads in the next.", on: ["skills", "m1"], flow: ["e-skill"] },
       { text: "Instruction files carry forward: `AGENTS.md` and `CLAUDE.md` hold build commands, conventions and context that every session loads. They describe your codebase, not the model, so they stay true after an upgrade.", on: ["instr", "m2"] },
@@ -195,7 +195,7 @@ export const CHAPTERS = [
       { text: "Cost: Epoch AI (March 2025) found the price to reach a fixed benchmark score fell 9x to 900x a year, median 50x, and warned the fastest drops may not persist. Frontier training compute grows about 5x a year (Epoch, 2026).", on: ["price"] },
       { text: "Context: Epoch measured the longest windows growing about 30x a year from mid-2023 (June 2025). In October 2026 the three labs' newest models list about 1M tokens, far below that line. Quality also falls as inputs grow (Chroma, July 2025). Trends bend.", on: ["ctx"] },
       { text: "Plan with ranges, not points. Design the roadmap for the model you expect in 6 to 12 months, so you don't build what it will make free (chapter 4).", on: ["metr", "expect"], flow: ["e-inform"] },
-      { text: "Check at every release, and keep the current pinned model as a working fallback. If the expected capability doesn't arrive, the product still ships on today's model, with today's scaffolding switched on.", on: ["expect", "check", "fallback"], flow: ["e-each", "e-miss"] },
+      { text: "Check at every release, and keep the current pinned model as a working fallback. If it doesn't arrive, the product still ships on today's model and scaffolding. The companion explainer Engineering on an Exponential turns them into horizons.", on: ["expect", "check", "fallback"], flow: ["e-each", "e-miss"] },
     ],
     say30: "I plan for the model I expect in 6 to 12 months and keep a fallback on the one I have. The trends are real but noisy. METR's task horizon has been doubling every few months, about 89 days on its 2026 suite since 2024, but it covers self-contained software tasks, its suite tops out around 16 hours, and the tracker is no longer updated. SWE-bench Verified saturated and was dropped as contaminated. Epoch saw prices for a fixed capability fall 9 to 900 times a year, and today's context windows sit near a million tokens, well below the earlier trend line. So I check at every release whether the capability I bet on arrived.",
     gotchas: [
@@ -205,7 +205,7 @@ export const CHAPTERS = [
       "Faster developers are not guaranteed: METR's early-2025 study found experienced open-source developers 19% slower with AI; its 2026 follow-up suggests speedups now, but calls the evidence very weak.",
     ],
     atScale: [
-      "Agents create load faster than plans assume: in May and June 2025 Neon saw database creation rise 5x and branch creation 50x from agent platforms, hitting Kubernetes and control-plane limits. Forecast agent-driven load as a capacity input.",
+      "Agents create load faster than plans assume: in May and June 2025 Neon saw database creation rise more than 5x, driven by agentic AI platforms, and branch creation more than 50x, hitting cluster and control-plane limits. Forecast agent-driven load as a capacity input.",
       "Cheaper tokens invite more of them: per-token price falls, but agents that run longer and in parallel can raise total spend. Budget per task and per team, not per token.",
       "Roadmaps across dozens of teams anchor on one forecast. Publish the capability assumptions each plan depends on, with a date to re-check them at each release.",
     ],
