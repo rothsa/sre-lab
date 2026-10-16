@@ -9,7 +9,7 @@ export const CHAPTERS = [
     question: "Why does agent engineering build on itself across model generations, and which of your assets compound while others reset?",
     view: [940, 340],
     groups: [
-      { id: "g-models", label: "Models: replaced every few months (chapter 3)", x: 5, y: 10, w: 930, h: 200 },
+      { id: "g-models", label: "Models: a new frontier one every few weeks (chapter 3)", x: 5, y: 10, w: 930, h: 200 },
       { id: "g-assets", label: "What you build once and carry forward", x: 5, y: 225, w: 930, h: 105 },
     ],
     nodes: [
@@ -35,7 +35,7 @@ export const CHAPTERS = [
       { id: "e-tr", from: "traces", to: "evals" },
     ],
     steps: [
-      { text: "Top: the models, each replaced within months. Bottom: what a team builds around them. The bet of this explainer is that the bottom row compounds and the top row is rented." },
+      { text: "Top: the models, each overtaken within weeks. Bottom: what a team builds around them. The bet of this explainer is that the bottom row compounds and the top row is rented." },
       { text: "Each model arrives with quirks, and teams patch them: firmer wording, retries, parsers, fixed step sequences. Those patches are tuned to one model and are the first thing to go when it is replaced.", on: ["m1", "wk"], flow: ["e-wk1"] },
       { text: "The turnover is fast. Anthropic's Claude Sonnet 3.7 launched on 24 February 2025 and was retired 360 days later; Claude Sonnet 4 lasted 389 days. Chapter 3 shows the dates; Engineering on an Exponential turns them into horizons.", on: ["m1", "m2", "m3"], flow: ["e-12", "e-23"] },
       { text: "Workarounds often turn harmful. Anthropic's prompting guide says firm wording added for older models, such as \"CRITICAL: You MUST\", can make newer ones overtrigger, and advises dialing it back. OpenAI's GPT-5 guide reports a \"be thorough\" prompt that became counterproductive.", on: ["wk", "m2"], flow: ["e-wk2"] },
@@ -89,7 +89,7 @@ export const CHAPTERS = [
       { id: "g-dur", label: "Durable: facts about your world", x: 10, y: 220, w: 440, h: 190 },
     ],
     nodes: [
-      { id: "model", label: "Model", sub: "swapped every few months", x: 20, y: 25, w: 420, h: 50 },
+      { id: "model", label: "Model", sub: "overtaken every few weeks", x: 20, y: 25, w: 420, h: 50 },
       { id: "d1", label: "Prompt hacks", sub: "CRITICAL, MUST", x: 20, y: 125, w: 135, h: 60 },
       { id: "d2", label: "Fixed steps", sub: "rigid sequencing", x: 165, y: 125, w: 135, h: 60 },
       { id: "d3", label: "Repair parsers", sub: "fix broken JSON", x: 310, y: 125, w: 130, h: 60 },

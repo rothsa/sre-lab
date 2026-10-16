@@ -6,7 +6,7 @@ export const CHAPTERS = [
     id: "mindset",
     n: 5,
     title: "The mindset shift",
-    question: "What has to change in how an engineer thinks when the tools improve every few months?",
+    question: "What has to change in how an engineer thinks when the tools improve every few weeks?",
     view: [960, 370],
     nodes: [
       { id: "f1", label: "\"Can it do this?\"", sub: "a yes or no, once", x: 20, y: 20, w: 300, h: 54 },
@@ -28,7 +28,7 @@ export const CHAPTERS = [
       { id: "e5", from: "f5", to: "t5", label: "shift" },
     ],
     steps: [
-      { text: "Five shifts, each from a habit that worked when tools changed every few years to one that works when they change every few months." },
+      { text: "Five shifts, each from a habit that worked when tools changed every few years to one that works when they change every few weeks." },
       { text: "From \"can it?\" to \"when will it?\". A no today is a data point on a curve. Keep failing tasks as a capability suite that starts at a low pass rate (Anthropic, January 2026) and re-run it each release: a not-yet ladder.", on: ["f1", "t1"], flow: ["e1"] },
       { text: "From yearly re-planning to re-testing every release, for capabilities only. The invariants in chapter 1 still get the ten-year view; what speeds up is how often you check your assumptions about the model.", on: ["f2", "t2"], flow: ["e2"] },
       { text: "From writing to specifying, directing and verifying. In Anthropic's internal study (August 2025) engineers expected their roles to shift toward reviewing and managing AI work; Karpathy (April 2026) describes the job as coordinating fallible agents while keeping correctness, security and maintainability.", on: ["f3", "t3"], flow: ["e3"] },
@@ -228,7 +228,7 @@ export const CHAPTERS = [
       { text: "Reliable agent-run systems: boundaries that hold, restorable data, rollback, SLOs for agent workflows. Every agent incident needs someone who understands the system underneath.", on: ["you", "k4"], flow: ["e-k4"] },
       { text: "Learning from incidents: Google's SRE book treats blameless postmortems as a tenet of SRE culture. As agents act more, the organizations that learn fastest from failures improve fastest.", on: ["you", "k5"], flow: ["e-k5"] },
       { text: "Keep the skills that supervision needs. Anthropic's engineers described a paradox: supervising the model takes the coding skills that heavy use can erode, and some practice without AI on purpose.", on: ["k1", "k3", "c1"] },
-      { text: "Back to the start: capabilities will keep changing in months. The engineer who can see what must still be true in ten years, and design for it, becomes more valuable on an exponential, not less.", on: ["you", "k2", "k4"] },
+      { text: "Back to the start: capabilities will keep changing in weeks. The engineer who can see what must still be true in ten years, and design for it, becomes more valuable on an exponential, not less.", on: ["you", "k2", "k4"] },
     ],
     say30: "I split skills the way I split systems. Some compete with the curve: typing code fast, recalling API details, tricks for one model. Those lose value each release. Others compound with it: judgment and taste about what good looks like, writing specs and invariants, verification and evals, building reliable systems that agents run in, and learning from incidents. Those gain value because agents produce more work that needs directing and proving. I also keep practicing the fundamentals, since supervising agents needs the skills heavy use can erode. On an exponential, seeing what must still be true in ten years is the senior skill.",
     gotchas: [
@@ -244,7 +244,7 @@ export const CHAPTERS = [
     quiz: [
       { q: "Name three skills that compound with agent capability and one that competes with it.", a: "Compound: judgment and taste, specs and invariants, verification and evals, reliable agent-run systems, learning from incidents. Compete: producing code quickly, memorised API details, model-specific prompt tricks." },
       { q: "What is the supervision paradox Anthropic's engineers described?", a: "Supervising AI output takes the coding skills that heavy AI use can erode, so some engineers deliberately practice without AI to keep them." },
-      { q: "How does the explainer's long-horizon thesis apply to a career?", a: "Capabilities change in months, so tool-specific skills churn; the ability to see what must still be true in ten years and design guarantees for it grows in value." },
+      { q: "How does the explainer's long-horizon thesis apply to a career?", a: "Capabilities change in weeks, so tool-specific skills churn; the ability to see what must still be true in ten years and design guarantees for it grows in value." },
     ],
     incidents: [],
     sources: [
