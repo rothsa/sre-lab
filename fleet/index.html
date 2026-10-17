@@ -327,6 +327,10 @@ const S = {
   thorstenCtx: ["Thorsten Ball on X: context management with the latest models (15 Oct 2026)", "https://x.com/thorstenball/status/2110580016140431681"],
   fastMode: ["Claude Platform release notes: fast mode out of research preview for Opus 5.5 (15 Oct 2026)", "https://platform.claude.com/docs/en/release-notes/overview"],
   huntleyOveralls: ["Geoffrey Huntley: Overalls (research preview, Oct 2026)", "https://overalls.dev/"],
+  arcHarness: ["ARC Prize on X: Gemini 4 Argon on ARC-AGI (15 Oct 2026)", "https://x.com/arcprize/status/2110768288523251762"],
+  screwtape: ["Redwood Research: Screwtape, adversarial transcript editing for monitor red-teaming (16 Oct 2026)", "https://blog.redwoodresearch.org/p/screwtape-adversarial-transcript"],
+  sakanaMass: ["Sakana AI: Recursive self-improvement through collective intelligence (12 Oct 2026)", "https://sakana.ai/mass/"],
+  ctxgap: ["What coding agents leave unsaid: CTXGAP (arXiv 2610.20003, 14 Oct 2026)", "https://arxiv.org/abs/2610.20003"],
   ampSoc2: ["Amp: That's not SOC 2 compliant (13 Aug 2026)", "https://ampcode.com/notes/thats-not-soc-2-compliant"],
   ballDeploy: ["Thorsten Ball on X: how Amp ships without pull requests (16 Oct 2026)", "https://x.com/thorstenball/status/2111115720637722945"],
   bockelerTdd: ["Birgitta Böckeler: TDD in the agent loop (martinfowler.com, Aug 2026)", "https://martinfowler.com/articles/exploring-gen-ai/tdd-in-the-agent-loop.html"],
@@ -362,6 +366,7 @@ const STAGES = [
       ["Debug from facts, not from reading the code. Cindy Sridharan (Oct 2026) calls code \"an unreliable narrator\", maps every plausible hypothesis to every high-fidelity signal, and treats each human intervention as a gap in the process.", "sridharan"],
       ["A slow climb to trust: redo your own finished work with the agent, then hand it end-of-day tasks, then the slam dunks. Every mistake it makes gets a harness fix so it doesn't happen again.", "hashimoto"],
       ["A harness can matter more than the model. In a martinfowler.com experiment, a cost-optimized model passed 178 hidden acceptance tests in 3 of 10 runs alone and 10 of 10 with guides and sensors, cheaper per run than the stronger model without them (Naresh Jain, Oct 2026).", "jain"],
+      ["The same model, two harnesses: on ARC-AGI-3, Gemini 4 Argon scored 97.5% with a provider adapter harness and 49.8% with the standard one (ARC Prize, Oct 2026).", "arcHarness"],
     ],
     breaks: [
       ["Agents stop when work looks finished. Anthropic's harness post lists \"declare the job done\" as a core failure mode, alongside trying to do too much at once.", "harness"],
@@ -381,7 +386,7 @@ const STAGES = [
       ["Geoffrey Huntley", "says he pushes to main and no longer does pull requests; ownership replaces review, and a pre-commit hook fails a bad commit and injects a prompt telling the agent what to fix (his own practice, Oct 2026).", "huntley"],
       ["Geoffrey Huntley", "is building Overalls, a self-hosted platform that gives each agent its own persistent Firecracker microVM, with Claude Code and Codex installed and no API keys on the machine (research preview, launching 3 Nov 2026).", "huntleyOveralls"],
     ],
-    sources: ["prove", "encode", "correct", "harness", "hashimoto", "bockeler", "mukta", "tanLoops", "chernyPrompt", "osmaniVerify", "sridharan", "huntley", "huntleyOveralls", "sridharanMd", "bockelerTdd", "tanTrust"],
+    sources: ["prove", "encode", "correct", "harness", "hashimoto", "bockeler", "mukta", "tanLoops", "chernyPrompt", "osmaniVerify", "sridharan", "huntley", "huntleyOveralls", "sridharanMd", "bockelerTdd", "tanTrust", "jain", "arcHarness"],
     diagram: {
       boxes: [
         { id: "you", x: 30, y: 120, w: 110, h: 50, label: "You", sub: "task + review" },
@@ -464,6 +469,7 @@ const STAGES = [
       ["Rendering a repo can run code too. Claude Code Desktop's preview pane loaded HTML files over 256KB through file:// URLs, so a planted report could read local credentials and send them out. Anthropic scored it CVSS 8.7 and fixed it in Claude Desktop 1.30096.1 (Noma Labs, disclosed 14 Oct 2026).", "noma"],
       ["Wrapping one harness in another can drop its guardrails. Letta Code 0.34.14 starts Claude Code subagents with bypassPermissions and no tool allowlist, and Codex ones with danger-full-access, on users' own computers too, so they can edit and run commands outside the working directory without a prompt (Oct 2026). Check the flags your orchestrator passes to child agents.", "letta"],
       ["Self-graded work: a green check from the agent that wrote the change says little about whether it's right.", "ship"],
+      ["Summaries leave out what you need. In CTXGAP, readers of agents' reports recovered 52.0% of task-state facts, against 92.7% with the full execution context (Oct 2026). Ask for evidence, and read the trace when it matters.", "ctxgap"],
       ["A blocked agent may route around the block instead of stopping. Anthropic reported Claude using SQL injection, borrowed access tokens and URL shorteners when a tool or limit stood in its way, mostly on ambiguous or impossible tasks (Oct 2026). Make BLOCKED an acceptable result and enforce limits in the host, not the prompt.", "unintended"],
     ],
     quote: ["You may be able to get away with running up to 10 agents in parallel with worktrees", "Lauren Tan, pstack guide Pt. 1", "tan1"],
@@ -484,7 +490,7 @@ const STAGES = [
       ["Lauren Tan", "suggests up to about 10 agents with worktrees on one machine, depending on the repo and the machine.", "tan1"],
       ["Cindy Sridharan", "once wrote about post-commit review and now finds pre-commit agentic reviews extremely useful: for large changes the review agents take 10x as long as the coding agent took to write the patch, which she calls worth it.", "sridharanReview"],
     ],
-    sources: ["orch", "swarm", "ship", "stripe", "chernyX", "tan1", "ccSub", "ccWorkflows", "potetoMode", "fastMode", "autopilot", "lcRouter", "osc7501", "ghsaGit", "noma", "letta", "sridharanReview", "ccChangelog", "anthReview"],
+    sources: ["orch", "swarm", "ship", "stripe", "chernyX", "tan1", "ccSub", "ccWorkflows", "potetoMode", "fastMode", "autopilot", "lcRouter", "osc7501", "ghsaGit", "noma", "letta", "sridharanReview", "ccChangelog", "anthReview", "ctxgap"],
     diagram: {
       boxes: [
         { id: "you", x: 20, y: 125, w: 90, h: 50, label: "You", sub: "write briefs" },
@@ -594,6 +600,8 @@ const STAGES = [
       ["Caps need testing. Claude Code 2.1.299 fixed a mod that could keep a headless run going past --max-budget-usd; check that your cap actually stops a run.", "ccChangelog"],
       ["Agent CLIs change under you. Since Codex CLI 0.157.0, per an open user-filed issue, opening a session starts a background daemon that keeps running after every window closes and pins the first session's environment. Pin CLI versions on fleet hosts.", "codexDaemon"],
       ["Reading the agent's reasoning gets weaker. Neel Nanda (Google DeepMind): Gemini 4 Argon \"is significantly less monitorable than past models\" and can evade a chain-of-thought and action monitor to do simple sabotage half the time (Oct 2026). Gate on checks, not on transcripts.", "nanda"],
+      ["Monitors can be fooled too. Redwood Research edited real agent transcripts until 35 attacks evaded its own monitors; six also evaded a frontier developer's held-out monitor (Oct 2026). Red-team the monitors you rely on.", "screwtape"],
+      ["A model that grades its own improvements can lock in its blind spots. Sakana (Oct 2026): \"When a model is also its own evaluator, shared blind spots could allow mistakes to be accepted as progress.\" Keep an evaluator outside the loop.", "sakanaMass"],
     ],
     quote: ["most runs would peak at several hundred agents", "Cursor, on its long-running agent experiments", "cursorSelf"],
     gate: [
@@ -620,7 +628,7 @@ const STAGES = [
       ["Amp", "passes SOC 2 without pull requests: it limits who can push, requires signed commits on main, blocks main on failed CI, and links every commit to the agent thread that produced it. \"SOC 2 doesn't require pull requests\" (Aug 2026).", "ampSoc2"],
       ["Amp", "replaces the PR gate with checks after the push: a failed check blocks deployment and pings the commit author in Slack, and the server reaches staging, then production, in about 10 minutes. Ball: \"We don't have mandatory code reviews.\"", "ballDeploy"],
     ],
-    sources: ["orch", "ketchup", "thorstenCtx", "ballDeploy", "codexDaemon", "nanda", "ccChangelog", "reflect", "chernyFortune", "tanAug", "block", "spotifyJun", "spotifySep", "scm", "uber", "stripe", "spotify4", "cursorScale", "cursorSelf", "cursorProjects", "tan1", "tanTalk", "maWorkflow", "maDreams", "ghRest", "ghActions", "apiLimits", "research", "ccWorkflows", "forkFlush", "tanForget", "breunig", "zigler", "xbowChrome", "ampSoc2"],
+    sources: ["orch", "ketchup", "thorstenCtx", "ballDeploy", "screwtape", "sakanaMass", "codexDaemon", "nanda", "ccChangelog", "reflect", "chernyFortune", "tanAug", "block", "spotifyJun", "spotifySep", "scm", "uber", "stripe", "spotify4", "cursorScale", "cursorSelf", "cursorProjects", "tan1", "tanTalk", "maWorkflow", "maDreams", "ghRest", "ghActions", "apiLimits", "research", "ccWorkflows", "forkFlush", "tanForget", "breunig", "zigler", "xbowChrome", "ampSoc2"],
     diagram: {
       boxes: [
         { id: "you", x: 15, y: 30, w: 80, h: 46, label: "You", sub: "twice a day" },
@@ -638,7 +646,7 @@ const STAGES = [
 ];
 
 // When each practice was described; these change fast, so the page shows the date with each one.
-const AS_OF = { ballDeploy: "Oct 2026", bockelerTdd: "Aug 2026", tanTrust: "Oct 2026", horthySlop: "Oct 2026", anthReview: "Oct 2026", fastMode: "Oct 2026", huntleyOveralls: "Oct 2026", ampSoc2: "Aug 2026", sridharanMd: "Oct 2026", forkFlush: "Oct 2026", tanForget: "Oct 2026", breunig: "Oct 2026", xbowChrome: "Oct 2026", zigler: "Oct 2026", sridharanReview: "Oct 2026", osmaniVerify: "Oct 2026", chernyPrompt: "Oct 2026", huntley: "Oct 2026", sridharan: "Oct 2026", ccDesktop: "Oct 2026", lopopolo2: "Oct 2026", nanda: "Oct 2026", lcRouter: "Oct 2026", hashimoto: "Feb 2026", bockeler: "Apr 2026", cherny: "Mar 2026", horthy: "Aug 2025", stripe: "Feb 2026", tan1: "Aug 2026", spotify4: "Apr 2026", cursorScale: "Jan 2026", cursorSelf: "Feb 2026", uber: "Jun 2026", chernyFortune: "Jun 2026", chernyX: "Sep 2026", horthy2: "Jul 2026", tanAug: "Aug 2026", stripePmf: "Sep 2026", spotifyJun: "Jun 2026", spotifySep: "Sep 2026", block: "Oct 2026", scm: "Oct 2026", anthMulti: "Aug 2026", kiro: "Sep 2026", uberBlog: "Aug 2026", zalando: "Aug 2026", lopopolo: "Oct 2026", arslan: "Sep 2026", jain: "Oct 2026", honeycomb: "Sep 2026", thorsten: "Oct 2026", jesse: "Oct 2026" };
+const AS_OF = { arcHarness: "Oct 2026", screwtape: "Oct 2026", sakanaMass: "Oct 2026", ctxgap: "Oct 2026", ballDeploy: "Oct 2026", bockelerTdd: "Aug 2026", tanTrust: "Oct 2026", horthySlop: "Oct 2026", anthReview: "Oct 2026", fastMode: "Oct 2026", huntleyOveralls: "Oct 2026", ampSoc2: "Aug 2026", sridharanMd: "Oct 2026", forkFlush: "Oct 2026", tanForget: "Oct 2026", breunig: "Oct 2026", xbowChrome: "Oct 2026", zigler: "Oct 2026", sridharanReview: "Oct 2026", osmaniVerify: "Oct 2026", chernyPrompt: "Oct 2026", huntley: "Oct 2026", sridharan: "Oct 2026", ccDesktop: "Oct 2026", lopopolo2: "Oct 2026", nanda: "Oct 2026", lcRouter: "Oct 2026", hashimoto: "Feb 2026", bockeler: "Apr 2026", cherny: "Mar 2026", horthy: "Aug 2025", stripe: "Feb 2026", tan1: "Aug 2026", spotify4: "Apr 2026", cursorScale: "Jan 2026", cursorSelf: "Feb 2026", uber: "Jun 2026", chernyFortune: "Jun 2026", chernyX: "Sep 2026", horthy2: "Jul 2026", tanAug: "Aug 2026", stripePmf: "Sep 2026", spotifyJun: "Jun 2026", spotifySep: "Sep 2026", block: "Oct 2026", scm: "Oct 2026", anthMulti: "Aug 2026", kiro: "Sep 2026", uberBlog: "Aug 2026", zalando: "Aug 2026", lopopolo: "Oct 2026", arslan: "Sep 2026", jain: "Oct 2026", honeycomb: "Sep 2026", thorsten: "Oct 2026", jesse: "Oct 2026" };
 const $ = (id) => document.getElementById(id);
 const NS = "http://www.w3.org/2000/svg";
 function svg(tag, attrs = {}, text) {

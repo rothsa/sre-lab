@@ -119,7 +119,7 @@ footer a, .prose a, .sources a { color: var(--accent); }
 <body>
 <nav class="site-nav" aria-label="Site" style="max-width:1180px"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
 <main class="wrap">
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · agent evals<span class="updated"> · updated <time datetime="2026-10-16">16 Oct 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · agent evals<span class="updated"> · updated <time datetime="2026-10-17">17 Oct 2026</time></span></div>
   <h1>Did the Agent Do It Right?</h1>
   <p class="lede">An AI agent can write a confident, plausible incident explanation and still be wrong: it looked at the wrong service, or it hammered the same failing call until something worked. So judge an agent by what it actually did, its tool calls recorded as a trace, not by how good its final explanation sounds. Pick an incident and compare three runs.</p>
   <p class="sim-badge" role="note"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v4M8 11.6v.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Simulated runs, synthetic data: scripted agents, made-up incidents, no LLM</p>
@@ -196,6 +196,8 @@ class RetryBudget(Evaluator):
       <li><b>Eval harnesses have bugs too.</b> An October 2026 audit of one agent benchmark found a reward-function defect that changed the environment state before post-run scoring. Another study found that tests which reproduce a bug can still accept an incorrect patch. Audit the oracle before trusting a score. ProgramBench now scores only its expected tests and drops tests a submission wrote itself (12 October 2026).</li>
       <li><b>A model swap can change the API, not just the answers.</b> Gemini 4 Argon (GA 13 October 2026) ignores <code>temperature</code>, <code>top_p</code> and <code>top_k</code>, so an eval that fixed those settings no longer tests what it says. Pin model IDs and rerun the evals on every swap.</li>
       <li><b>A judge can believe the agent.</b> An October 2026 paper on agent verification notes that a judge may accept unsupported claims, "including an agent's own reports of success"; its verifier checks the environment state and the execution trace instead. These checks read spans for the same reason, not the agent's summary.</li>
+      <li><b>Reports drop what a reviewer needs.</b> In CTXGAP (October 2026), readers of an agent's reports recovered 52.0% of task-state facts, against 92.7% for readers of the full execution context. Check the trace when it matters.</li>
+      <li><b>A judge's "first mistake" is often not the cause.</b> Four frontier judges labelling failed agent runs agreed on the exact step in only 21 of 57 cases, and flagged mistakes in successful runs; restarting from a measured point helped where restarting at the judge's label did not (October 2026).</li>
       <li><b>Synthetic data.</b> The incidents, services, results and timings are made up, and the agents are deterministic Python functions, not models. The output checks use simple keyword matching that suits this fixed data and would be too weak for free-form answers.</li>
     </ul>
 
@@ -210,6 +212,8 @@ class RetryBudget(Evaluator):
       <li><a href="https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md">OpenTelemetry GenAI semantic conventions: execute tool span</a> (status: Development)</li>
       <li><a href="https://arxiv.org/abs/2610.16067">Chen: When agent evaluation becomes unreliable (arXiv 2610.16067, 12 October 2026)</a></li>
       <li><a href="https://arxiv.org/abs/2610.18004">Lu et al.: SWEPatchTest, evaluating software tests beyond reproduction (arXiv 2610.18004, 13 October 2026)</a></li>
+      <li><a href="https://arxiv.org/abs/2610.20003">What coding agents leave unsaid, CTXGAP (arXiv 2610.20003, 14 October 2026)</a></li>
+      <li><a href="https://arxiv.org/abs/2610.17633">Executable prefix values for locating agent failures (arXiv 2610.17633, 13 October 2026)</a></li>
       <li><a href="https://arxiv.org/abs/2610.17724">Sauron: Evidence-First Agentic Verification (arXiv 2610.17724, 13 October 2026)</a></li>
       <li><a href="https://ai.google.dev/gemini-api/docs/latest-model">Gemini API: What's new in Gemini 4 Argon (13 October 2026)</a></li>
       <li><a href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/">OWASP Top 10 for LLM Applications: LLM06:2025 Excessive Agency</a></li>
