@@ -149,7 +149,7 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
 <body>
 <nav class="site-nav" aria-label="Site" style="max-width:1180px"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
 <main class="wrap">
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · agent fleets<span class="updated"> · updated <time datetime="2026-10-16">16 Oct 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · agent fleets<span class="updated"> · updated <time datetime="2026-10-17">17 Oct 2026</time></span></div>
   <h1>One Agent to Hundreds</h1>
   <p class="lede">Running hundreds of coding agents is not one agent times a hundred. Each jump in scale breaks something the smaller setup got away with: your review time, shared files, one coordinator's attention, then rate limits and cost. Step up one stage at a time. Each stage says what to add, what breaks without it, and how to tell you're ready for the next.</p>
   <p class="lede">The main thread is <a href="https://github.com/cursor/plugins/tree/main/pstack">pstack</a>, Lauren Tan's published agent workflow, alongside what Stripe, Spotify, Uber, Cursor and Anthropic publish about their agent fleets and how Mitchell Hashimoto, Dex Horthy and Boris Cherny describe their own ramp-ups. Stage sizes are teaching breakpoints, not thresholds from a study.</p>
@@ -314,7 +314,7 @@ const S = {
   ketchup: ["pstack: ketchup skill", PS + "skills/ketchup/SKILL.md"],
   osc7501: ["Mitchell Hashimoto: Program status, OSC 7501 (6 Oct 2026)", "https://mitchellh.com/writing/program-status-osc7501"],
   lcRouter: ["LangChain: How to build a model router in the harness (Oct 2026)", "https://www.langchain.com/blog/how-to-build-a-model-router-in-the-harness"],
-  ccChangelog: ["Claude Code CHANGELOG (2.1.296 to 2.1.300, 9-14 Oct 2026)", "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md"],
+  ccChangelog: ["Claude Code CHANGELOG (2.1.296 to 2.1.302, 9-16 Oct 2026)", "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md"],
   ghsaGit: ["GHSA-4p2j-qj3c-6x84: Claude Desktop on Windows ran a repo-local git.exe (13 Oct 2026)", "https://github.com/anthropics/claude-code/security/advisories/GHSA-4p2j-qj3c-6x84"],
   lopopolo2: ["Ryan Lopopolo on X: tests that fail the build on duplicate code (10 Oct 2026)", "https://x.com/_lopopolo/status/2108991956642934796"],
   codexDaemon: ["openai/codex issue 48195: background daemon keeps running after sessions close (opened 25 Sep 2026)", "https://github.com/openai/codex/issues/48195"],
@@ -328,6 +328,11 @@ const S = {
   fastMode: ["Claude Platform release notes: fast mode out of research preview for Opus 5.5 (15 Oct 2026)", "https://platform.claude.com/docs/en/release-notes/overview"],
   huntleyOveralls: ["Geoffrey Huntley: Overalls (research preview, Oct 2026)", "https://overalls.dev/"],
   ampSoc2: ["Amp: That's not SOC 2 compliant (13 Aug 2026)", "https://ampcode.com/notes/thats-not-soc-2-compliant"],
+  ballDeploy: ["Thorsten Ball on X: how Amp ships without pull requests (16 Oct 2026)", "https://x.com/thorstenball/status/2111115720637722945"],
+  bockelerTdd: ["Birgitta Böckeler: TDD in the agent loop (martinfowler.com, Aug 2026)", "https://martinfowler.com/articles/exploring-gen-ai/tdd-in-the-agent-loop.html"],
+  tanTrust: ["Lauren Tan on X: how do you trust your agents' work more? (16 Oct 2026)", "https://x.com/poteto/status/2111133080526495985"],
+  horthySlop: ["Dex Horthy: Benchmarking new models on SlopCodeBench (Oct 2026)", "https://github.com/humanlayer/advanced-context-engineering-for-coding-agents/blob/main/benchmarking-new-models-on-slop-code-bench.md"],
+  anthReview: ["Claude Code team: How the Claude Code team does code review (claude.dev, 15 Oct 2026)", "https://claude.dev/blog/solving-code-review-at-anthropic/"],
   sridharanMd: ["Cindy Sridharan on X: how she built her CLAUDE.md (16 Oct 2026)", "https://x.com/copyconstruct/status/2111068549469098492"],
   forkFlush: ["Fork-and-Flush (arXiv 2610.07447, 5 Oct 2026)", "https://arxiv.org/abs/2610.07447"],
   tanForget: ["Tan et al.: Scaling Discovery Requires Forgetting (arXiv 2610.20563, 14 Oct 2026)", "https://arxiv.org/abs/2610.20563"],
@@ -350,8 +355,10 @@ const STAGES = [
       ["The simplest memory that works: a short instructions file (such as CLAUDE.md) checked into the repo.", "mukta"],
       ["Instructions drawn from code you admire. Cindy Sridharan (Oct 2026) built her CLAUDE.md by having Claude read her favourite programming books and blogs, the best open-source projects, and code by the engineers she respects most.", "sridharanMd"],
       ["Both halves of a harness: guides that steer the agent before it acts (conventions, docs, examples) and sensors that check after (tests, linters, type checkers). Fast deterministic sensors are cheap enough to run on every change.", "bockeler"],
+      ["Feedback on outcomes, not rules about method. Birgitta Böckeler (Aug 2026) tested telling agents to write tests first, saw no sign it was worth the effort, and has \"stopped telling my coding agents to write tests first\"; she spends the effort on automated feedback on the result instead.", "bockelerTdd"],
       ["A brief in three parts. Boris Cherny (Oct 2026): what you want it to do, how much effort you want it to spend, and \"How it should verify that it did the right thing\".", "chernyPrompt"],
       ["\"Done\" defined before the work starts. Addy Osmani (Oct 2026): \"The bottleneck has moved from writing code to knowing it's correct\"; the human now reviews \"evidence and not just diffs\".", "osmaniVerify"],
+      ["Trust effort spent top-down. Lauren Tan (Oct 2026) puts most of it into the codebase (types, invariants, boundaries: \"make the easy thing the right thing\"), then lints, tests and CI, then prose rules such as AGENTS.md, and the least into human review, which is \"the hardest to scale\".", "tanTrust"],
       ["Debug from facts, not from reading the code. Cindy Sridharan (Oct 2026) calls code \"an unreliable narrator\", maps every plausible hypothesis to every high-fidelity signal, and treats each human intervention as a gap in the process.", "sridharan"],
       ["A slow climb to trust: redo your own finished work with the agent, then hand it end-of-day tasks, then the slam dunks. Every mistake it makes gets a harness fix so it doesn't happen again.", "hashimoto"],
       ["A harness can matter more than the model. In a martinfowler.com experiment, a cost-optimized model passed 178 hidden acceptance tests in 3 of 10 runs alone and 10 of 10 with guides and sensors, cheaper per run than the stronger model without them (Naresh Jain, Oct 2026).", "jain"],
@@ -374,7 +381,7 @@ const STAGES = [
       ["Geoffrey Huntley", "says he pushes to main and no longer does pull requests; ownership replaces review, and a pre-commit hook fails a bad commit and injects a prompt telling the agent what to fix (his own practice, Oct 2026).", "huntley"],
       ["Geoffrey Huntley", "is building Overalls, a self-hosted platform that gives each agent its own persistent Firecracker microVM, with Claude Code and Codex installed and no API keys on the machine (research preview, launching 3 Nov 2026).", "huntleyOveralls"],
     ],
-    sources: ["prove", "encode", "correct", "harness", "hashimoto", "bockeler", "mukta", "tanLoops", "chernyPrompt", "osmaniVerify", "sridharan", "huntley", "huntleyOveralls", "sridharanMd"],
+    sources: ["prove", "encode", "correct", "harness", "hashimoto", "bockeler", "mukta", "tanLoops", "chernyPrompt", "osmaniVerify", "sridharan", "huntley", "huntleyOveralls", "sridharanMd", "bockelerTdd", "tanTrust"],
     diagram: {
       boxes: [
         { id: "you", x: 30, y: 120, w: 110, h: 50, label: "You", sub: "task + review" },
@@ -416,8 +423,9 @@ const STAGES = [
     people: [
       ["Boris Cherny", "(creator of Claude Code) ran 5 parallel Claude instances, each in its own checkout, shipping 20 to 30 PRs a day, per The Pragmatic Engineer. By June he described managing hundreds of agents (see Hundreds).", "cherny"],
       ["Dex Horthy", "(HumanLayer) plans in four phases before code, then has a model build one to three vertical slices at a time while he reviews the code. His closing advice: \"Read the dang code.\"", "horthy2"],
+      ["Dex Horthy", "benchmarked new models on keeping a codebase working as requirements change and found them improving only slowly: \"I think we'll be keeping the lights on for a while to come.\"", "horthySlop"],
     ],
-    sources: ["ccWorktrees", "feature", "horthy2", "horthy", "cherny", "ccTeams", "ccCosts", "ccDesktop"],
+    sources: ["ccWorktrees", "feature", "horthy2", "horthySlop", "horthy", "cherny", "ccTeams", "ccCosts", "ccDesktop"],
     diagram: {
       boxes: [
         { id: "you", x: 30, y: 125, w: 100, h: 50, label: "You", sub: "split + review" },
@@ -442,6 +450,7 @@ const STAGES = [
       ["For races (several agents on one brief), the selection rule decided before spawning: first pass, rank all, or best-of.", "swarm"],
       ["Fast feedback before CI. Stripe's agents run in devboxes that start in 10 seconds, run lints on every push in under five seconds, and get \"often one, at most two, CI runs\", only after fixing everything they can locally.", "stripe"],
       ["A higher bar for agent-written production code. Boris Cherny wrote in September 2026 that it should be higher than for human-written code; Anthropic backs this with many lint rules and tests, Claude-driven end-to-end tests, Claude-powered fuzzers running daily, and automated code and security reviews.", "chernyX"],
+      ["Review tiers set by risk. The Claude Code team (Oct 2026): a classifier reads each change and picks its tier; automated review can clear a low-risk change, and the riskiest code needs two people. \"The change sets the tier, not the author,\" and \"An agent's approval never counts as a person's.\"", "anthReview"],
       ["A model for each role. Searching and log reading go to a small model, edits stay on the main model, and the hardest planning moves up a tier. Anthropic's cost guide warns that a subagent that inherits the main model \"inherits its price too\" (Sep 2026); Uber defaults subagents to a weaker, cheaper model and keeps the strong one for planning and evaluation (Aug 2026).", "claudeDevCost"],
       ["Effort per spawn. pstack (Oct 2026): \"Match the model to the job.\" Pick each spawn's reasoning level, use fast mode \"only when the job is urgent, meaning CI or trunk is red or a person is blocked\", and keep verification on the swarm model.", "potetoMode"],
       ["Fast mode is now a plain API option. On 15 Oct 2026 fast mode for Claude Opus 5.5 left research preview: no access request or beta header, premium pricing, and the gain is output tokens per second, not time to first token. Opus 5 and Opus 4.8 fast mode stay in research preview.", "fastMode"],
@@ -465,7 +474,7 @@ const STAGES = [
       "You read verdicts and evidence, not transcripts.",
     ],
     limits: [
-      ["Claude Code: by default, spawning a 21st concurrent subagent in a session fails (CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS changes it); subagents nest up to three layers deep.", "ccSub"],
+      ["Claude Code: by default, spawning a 21st concurrent subagent in a session fails (CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS changes it); subagents nest up to three layers deep. Since 2.1.302 (Oct 2026), fork subagents are on by default in claude -p and the Agent SDK too (CLAUDE_CODE_FORK_SUBAGENT=0 turns them off), and at most 12 prompt or agent hooks for one event run at a time.", "ccSub"],
       ["Claude Code dynamic workflows: up to 16 agents at once by default, fewer on machines with fewer CPUs; a run that schedules more than 25 agents or 1.5 million projected tokens shows a Large workflow warning.", "ccWorkflows"],
       ["Plan quota scales with agent count: Claude Code's docs say ten agents in parallel use quota roughly ten times as fast as one.", "ccAgentView"],
       ["Claude Code 2.1.296 added CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL to run every workflow agent on one model; since 2.1.300 an agent.spawn mod hook can rewrite a workflow agent's prompt and model instead of only refusing it.", "ccChangelog"],
@@ -475,7 +484,7 @@ const STAGES = [
       ["Lauren Tan", "suggests up to about 10 agents with worktrees on one machine, depending on the repo and the machine.", "tan1"],
       ["Cindy Sridharan", "once wrote about post-commit review and now finds pre-commit agentic reviews extremely useful: for large changes the review agents take 10x as long as the coding agent took to write the patch, which she calls worth it.", "sridharanReview"],
     ],
-    sources: ["orch", "swarm", "ship", "stripe", "chernyX", "tan1", "ccSub", "ccWorkflows", "potetoMode", "fastMode", "autopilot", "lcRouter", "osc7501", "ghsaGit", "noma", "letta", "sridharanReview", "ccChangelog"],
+    sources: ["orch", "swarm", "ship", "stripe", "chernyX", "tan1", "ccSub", "ccWorkflows", "potetoMode", "fastMode", "autopilot", "lcRouter", "osc7501", "ghsaGit", "noma", "letta", "sridharanReview", "ccChangelog", "anthReview"],
     diagram: {
       boxes: [
         { id: "you", x: 20, y: 125, w: 90, h: 50, label: "You", sub: "write briefs" },
@@ -609,8 +618,9 @@ const STAGES = [
       ["Uber", "attributes more than 70% of PRs to local or cloud agents; weekly agentic requests grew 9.4 times from February to August 2026 while total AI spend held roughly flat, with cheaper models as default subagents.", "uberBlog"],
       ["Amp", "(Thorsten Ball) has no pull requests or code review and pushes to main; agents read production logs, watch deploys and attach a recorded video walkthrough as proof of their work. Ball also says the latest models follow instructions well enough that side-questions can go in the same thread, so forking and other context-management tricks no longer make sense to him (Oct 2026).", "thorsten"],
       ["Amp", "passes SOC 2 without pull requests: it limits who can push, requires signed commits on main, blocks main on failed CI, and links every commit to the agent thread that produced it. \"SOC 2 doesn't require pull requests\" (Aug 2026).", "ampSoc2"],
+      ["Amp", "replaces the PR gate with checks after the push: a failed check blocks deployment and pings the commit author in Slack, and the server reaches staging, then production, in about 10 minutes. Ball: \"We don't have mandatory code reviews.\"", "ballDeploy"],
     ],
-    sources: ["orch", "ketchup", "thorstenCtx", "codexDaemon", "nanda", "ccChangelog", "reflect", "chernyFortune", "tanAug", "block", "spotifyJun", "spotifySep", "scm", "uber", "stripe", "spotify4", "cursorScale", "cursorSelf", "cursorProjects", "tan1", "tanTalk", "maWorkflow", "maDreams", "ghRest", "ghActions", "apiLimits", "research", "ccWorkflows", "forkFlush", "tanForget", "breunig", "zigler", "xbowChrome", "ampSoc2"],
+    sources: ["orch", "ketchup", "thorstenCtx", "ballDeploy", "codexDaemon", "nanda", "ccChangelog", "reflect", "chernyFortune", "tanAug", "block", "spotifyJun", "spotifySep", "scm", "uber", "stripe", "spotify4", "cursorScale", "cursorSelf", "cursorProjects", "tan1", "tanTalk", "maWorkflow", "maDreams", "ghRest", "ghActions", "apiLimits", "research", "ccWorkflows", "forkFlush", "tanForget", "breunig", "zigler", "xbowChrome", "ampSoc2"],
     diagram: {
       boxes: [
         { id: "you", x: 15, y: 30, w: 80, h: 46, label: "You", sub: "twice a day" },
@@ -628,7 +638,7 @@ const STAGES = [
 ];
 
 // When each practice was described; these change fast, so the page shows the date with each one.
-const AS_OF = { fastMode: "Oct 2026", huntleyOveralls: "Oct 2026", ampSoc2: "Aug 2026", sridharanMd: "Oct 2026", forkFlush: "Oct 2026", tanForget: "Oct 2026", breunig: "Oct 2026", xbowChrome: "Oct 2026", zigler: "Oct 2026", sridharanReview: "Oct 2026", osmaniVerify: "Oct 2026", chernyPrompt: "Oct 2026", huntley: "Oct 2026", sridharan: "Oct 2026", ccDesktop: "Oct 2026", lopopolo2: "Oct 2026", nanda: "Oct 2026", lcRouter: "Oct 2026", hashimoto: "Feb 2026", bockeler: "Apr 2026", cherny: "Mar 2026", horthy: "Aug 2025", stripe: "Feb 2026", tan1: "Aug 2026", spotify4: "Apr 2026", cursorScale: "Jan 2026", cursorSelf: "Feb 2026", uber: "Jun 2026", chernyFortune: "Jun 2026", chernyX: "Sep 2026", horthy2: "Jul 2026", tanAug: "Aug 2026", stripePmf: "Sep 2026", spotifyJun: "Jun 2026", spotifySep: "Sep 2026", block: "Oct 2026", scm: "Oct 2026", anthMulti: "Aug 2026", kiro: "Sep 2026", uberBlog: "Aug 2026", zalando: "Aug 2026", lopopolo: "Oct 2026", arslan: "Sep 2026", jain: "Oct 2026", honeycomb: "Sep 2026", thorsten: "Oct 2026", jesse: "Oct 2026" };
+const AS_OF = { ballDeploy: "Oct 2026", bockelerTdd: "Aug 2026", tanTrust: "Oct 2026", horthySlop: "Oct 2026", anthReview: "Oct 2026", fastMode: "Oct 2026", huntleyOveralls: "Oct 2026", ampSoc2: "Aug 2026", sridharanMd: "Oct 2026", forkFlush: "Oct 2026", tanForget: "Oct 2026", breunig: "Oct 2026", xbowChrome: "Oct 2026", zigler: "Oct 2026", sridharanReview: "Oct 2026", osmaniVerify: "Oct 2026", chernyPrompt: "Oct 2026", huntley: "Oct 2026", sridharan: "Oct 2026", ccDesktop: "Oct 2026", lopopolo2: "Oct 2026", nanda: "Oct 2026", lcRouter: "Oct 2026", hashimoto: "Feb 2026", bockeler: "Apr 2026", cherny: "Mar 2026", horthy: "Aug 2025", stripe: "Feb 2026", tan1: "Aug 2026", spotify4: "Apr 2026", cursorScale: "Jan 2026", cursorSelf: "Feb 2026", uber: "Jun 2026", chernyFortune: "Jun 2026", chernyX: "Sep 2026", horthy2: "Jul 2026", tanAug: "Aug 2026", stripePmf: "Sep 2026", spotifyJun: "Jun 2026", spotifySep: "Sep 2026", block: "Oct 2026", scm: "Oct 2026", anthMulti: "Aug 2026", kiro: "Sep 2026", uberBlog: "Aug 2026", zalando: "Aug 2026", lopopolo: "Oct 2026", arslan: "Sep 2026", jain: "Oct 2026", honeycomb: "Sep 2026", thorsten: "Oct 2026", jesse: "Oct 2026" };
 const $ = (id) => document.getElementById(id);
 const NS = "http://www.w3.org/2000/svg";
 function svg(tag, attrs = {}, text) {

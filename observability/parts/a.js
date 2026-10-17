@@ -147,6 +147,7 @@ export const CHAPTERS = [
       "Backpressure only works if the upstream retries. `memory_limiter` returns a retryable error; a sender that does not retry loses that data for good.",
       "Tail sampling needs all spans of a trace on one Collector. Plain round-robin load balancing in front of tail samplers silently produces partial traces and wrong decisions.",
       "OTLP delivery is guaranteed per hop only, and retries after reconnects can create duplicates.",
+      "Telemetry schemas are interfaces. Collector Contrib v0.160.0 lets the hostmetrics process scraper opt in to release-candidate metrics, which change names, units and attributes (`state` becomes `cpu.mode`). The Collector stays healthy while shared queries break, so canary the switch against dashboards and alerts first.",
     ],
     atScale: [
       "The Collector becomes a fleet you operate: agents on every node, gateways per cluster or region, a sampling tier. Each needs its own dashboards; the loadbalancing exporter exposes `otelcol_loadbalancer_num_backends` and backend latency.",
@@ -217,6 +218,7 @@ service:
     incidents: ["stackdriver-2013-cassandra-queue-coupling", "honeycomb-2019-ingest-memory-leak", "railway-2023-metrics-agent-cpu-softlock"],
     sources: [
       { title: "OpenTelemetry Collector: Architecture", url: "https://opentelemetry.io/docs/collector/architecture/" },
+      { title: "OpenTelemetry: Versioned metrics in hostmetrics, the first release-candidate metrics (13 Oct 2026)", url: "https://opentelemetry.io/blog/2026/hostmetrics-process-scraper-rc/" },
       { title: "OpenTelemetry Collector: Configuration", url: "https://opentelemetry.io/docs/collector/configuration/" },
       { title: "Collector deployment: Agent", url: "https://opentelemetry.io/docs/collector/deploy/agent/" },
       { title: "Collector deployment: Gateway", url: "https://opentelemetry.io/docs/collector/deploy/gateway/" },

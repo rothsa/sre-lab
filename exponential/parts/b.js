@@ -56,6 +56,7 @@ export const CHAPTERS = [
     sources: [
       { title: "Anthropic: Demystifying evals for AI agents (2026-01-09)", url: "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" },
       { title: "Anthropic: How AI is transforming work at Anthropic (2025-12-02)", url: "https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic" },
+      { title: "Anthropic: How employment is changing at Anthropic (2026-10-16)", url: "https://www.anthropic.com/research/employment-at-anthropic" },
       { title: "Andrej Karpathy: Sequoia Ascent 2026 summary (2026-04-30)", url: "https://karpathy.bearblog.dev/sequoia-ascent-2026/" },
       { title: "Anthropic: Scaling Managed Agents (2026-04-08)", url: "https://www.anthropic.com/engineering/managed-agents" },
       { title: "METR: Early-2025 AI and experienced open-source developers (2025-07-10)", url: "https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/" },
@@ -105,6 +106,7 @@ export const CHAPTERS = [
     say30: "Agent output can double every few months, but the stages that turn it into shipped, trusted work don't: human attention, review, trust and approvals, compute budget and organizational change. METR found none of 15 hand-reviewed agent fixes mergeable even when tests passed, and Claude Code users approve 93% of permission prompts, so neither review nor prompts scale by themselves. I engineer each limit: sandboxes so people are asked less often, deterministic checks before review, autonomy gated by evals, budgets per task, and reversible pilots for org change. And I measure throughput end to end, because people overestimate their own speedup.",
     gotchas: [
       "Adding agents in front of a fixed review stage just grows the queue. Measure lead time to merge, not pull requests opened.",
+      "Reading agent output is now a job of its own. Anthropic says that by August 2026 its interactive agent hours outnumbered employees' six to one, and reading all of their agents' output would take half their work week.",
       "A high approval rate is a symptom, not a success metric: it usually means prompts are too frequent to read.",
       "Cheaper tokens can raise the bill: as tasks get longer and run in parallel, spend per task rises even when price per token falls.",
     ],
