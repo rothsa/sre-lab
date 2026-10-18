@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Graphs and Loops, Drawn</title>
+<meta name="description" content="What it means to stop prompting agents and build loops and graphs that prompt them instead: where the viral quote comes from, what loops and graphs are, whether you draw them or describe them, and how to get your agent to build them for you.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<link rel="stylesheet" href="../drawn/drawn.css">
+<link rel="stylesheet" href="../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
+<div class="shell">
+  <nav class="toc" aria-label="Chapters">
+    <details id="tocBox" open><summary>Chapters</summary><ol id="toc"></ol></details>
+  </nav>
+  <main>
+    <div class="kicker"><a href="../">SRE Lab</a> · explainers<span class="updated"> · updated <time datetime="2026-10-17">17 Oct 2026</time></span></div>
+    <h1>Graphs and Loops, Drawn</h1>
+    <p class="lede">"I'm not prompting my agents anymore, I'm building graphs and loops so they can build the agents for me." In August 2026 that line went viral, first credited to an unnamed Anthropic engineer and then to Boris Cherny, while Andrej Karpathy's name was attached to similar posts about graphs. Neither of them said it, but both said something close, and the idea is real: instead of typing each prompt, you write the loop or the small program that does the prompting, and the agent writes most of that for you.</p>
+    <p class="lede">This explainer answers the practical questions. What is a loop, and what is a graph? Do you draw them or describe them? How do you get your agent to build them? Step through each diagram with the buttons or your arrow keys, then use the 30-second answer, the gotchas and the quiz. Every quote is dated and linked to the person or vendor who said it.</p>
+    <div id="chapters"></div>
+    <footer>
+      <p>Diagrams and wording by Sally Roth. Sources are linked in each chapter. Companion explainers: <a href="../fleet/">One Agent to Hundreds</a>, <a href="../agentic/">Agentic Engineering, Drawn</a> and <a href="../next-agent/">Engineering for the Next Agent, Drawn</a>.</p>
+      <p>Part of <a href="../">SRE Lab</a> · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab/tree/main/loops">source</a></p>
+    </footer>
+  </main>
+</div>
+<script type="module">
+import { mountExplainer } from "../drawn/engine.js";
+import { CHAPTERS } from "./diagrams.js";
+await mountExplainer(CHAPTERS, { key: "loops", collapseSourcesOver: 0 });
+</script>
+</body>
+</html>
