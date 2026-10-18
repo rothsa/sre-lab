@@ -42,8 +42,8 @@ The landing page ([`index.html`](index.html)) carries a dated changelog of resea
 ```bash
 for d in */check.mjs; do (cd "$(dirname "$d")" && node check.mjs) || exit 1; done   # explainer specs
 node worker/test-down-or-me.mjs     # Down or Me cron cycle: triage retries, notification (Node 22+)
-node worker/test-planb.mjs
-node worker/test-access.mjs          # Plan B guardrails and step detection (Node 22+)
+node worker/test-planb.mjs          # Plan B guardrails and step detection (Node 22+)
+node worker/test-access.mjs         # private board: Access JWT checks, fails closed
 (cd incidents && npm ci && node evalnode.mjs .)                                       # search quality
 ```
 
