@@ -42,7 +42,8 @@ The landing page ([`index.html`](index.html)) carries a dated changelog of resea
 ```bash
 for d in */check.mjs; do (cd "$(dirname "$d")" && node check.mjs) || exit 1; done   # explainer specs
 node worker/test-down-or-me.mjs     # Down or Me cron cycle: triage retries, notification (Node 22+)
-node worker/test-planb.mjs          # Plan B guardrails and step detection (Node 22+)
+node worker/test-planb.mjs
+node worker/test-access.mjs          # Plan B guardrails and step detection (Node 22+)
 (cd incidents && npm ci && node evalnode.mjs .)                                       # search quality
 ```
 
@@ -62,7 +63,7 @@ cron (5 min) ─► HTTP / status-page / game-server checks ─► D1 history
 
 - Jev is called only from the Worker. The API key is a Wrangler secret and never reaches the browser.
 - A daily cap (`JEV_DAILY_CAP`, default 200) bounds cost even if something loops.
-- The public board lists only generic services; the private board sits behind Cloudflare Access.
+- The public board lists only generic services. The private board requires Cloudflare Access: `/private/api/status` verifies the Access JWT (signature, issuer, audience, expiry, owner email) and fails closed (403) unless `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` and `OWNER_EMAIL` are set. The `cf-access-authenticated-user-email` header alone is never trusted.
 
 ## How Plan B works
 
@@ -140,7 +141,7 @@ scripts/                maintenance (stamp-updated.py)
 
 - **Pages project `sre-lab`** serves the pages and the status API (Pages Functions in `functions/`, D1 binding). Custom domain lab.sallyroth.dev via a CNAME at the DNS host.
 - **Worker `down-or-me`** runs only the 5-minute cron (no public URL) and writes to the same D1 database.
-- **Alerts** are sent with Resend. **The private board** is at `sre-lab-97p.pages.dev/private/status/` behind Cloudflare Access.
+- **Alerts** are sent with Resend. **The private board** is at `sre-lab-97p.pages.dev/private/status/` behind Cloudflare Access (an Access application on both hostnames for `/private/*`; set `ACCESS_TEAM_DOMAIN` = `<team>.cloudflareaccess.com` and `ACCESS_AUD` = the application AUD tag as Pages env vars).
 
 ## Setup (owner)
 
