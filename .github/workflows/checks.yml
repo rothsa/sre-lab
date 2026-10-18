@@ -1,0 +1,50 @@
+name: checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  node:
+    name: Explainer checks and worker tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Explainer checks (*/check.mjs)
+        run: |
+          fail=0
+          for d in */check.mjs; do
+            echo "::group::$d"
+            node "$d" || fail=1
+            echo "::endgroup::"
+          done
+          exit $fail
+      - name: Worker tests
+        run: |
+          node worker/test-down-or-me.mjs
+          node worker/test-planb.mjs
+          node worker/test-access.mjs
+      # Not run here: incidents/evalnode.mjs. It downloads the embedding model through
+      # @huggingface/transformers on every run, which is slow and flaky in CI. Run it locally.
+
+  tofu:
+    name: OpenTofu fmt and validate (no credentials)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.13.1
+          tofu_wrapper: false
+      - run: tofu fmt -check -recursive
+      - run: tofu init -backend=false -input=false
+      - run: tofu validate
