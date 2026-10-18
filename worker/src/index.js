@@ -49,13 +49,18 @@ async function runCycle(env) {
     }
 
     const changed = !state || state.status === "up";
-    const stale = state && state.last_jev_ts && now - state.last_jev_ts > JEV_RECHECK_MIN * 60_000;
+    // A null last_jev_ts while a problem continues means triage never ran for it (daily cap
+    // reached, or the call failed), so retry on this cycle instead of waiting for recovery.
+    const stale = state && (!state.last_jev_ts || now - state.last_jev_ts > JEV_RECHECK_MIN * 60_000);
     const since = changed ? now : state.since;
     await env.DB.prepare("INSERT INTO state (target, status, since, last_jev_ts, notified) VALUES (?, ?, ?, NULL, 0) ON CONFLICT(target) DO UPDATE SET status=excluded.status, since=?")
       .bind(t.id, newStatus, since, since).run();
 
     if (!(changed || stale)) continue;
     if (!(await takeJevBudget(env))) continue; // daily cap reached: show on board, no AI call
+    // Record the attempt before calling, so a failing Jev call is retried every JEV_RECHECK_MIN
+    // minutes rather than on every 5-minute cycle (or never).
+    await env.DB.prepare("UPDATE state SET last_jev_ts = ? WHERE target = ?").bind(now, t.id).run();
 
     const history = await recentHistory(env, t.id);
     const verdict = await askJev(env, { target: t, result: r, history, failingNow, totalTargets: TARGETS.length, problemSince: new Date(since).toISOString() });
@@ -63,7 +68,6 @@ async function runCycle(env) {
 
     await env.DB.prepare("INSERT INTO verdicts (ts, target, cause, confidence, notify_prob, model) VALUES (?, ?, ?, ?, ?, ?)")
       .bind(now, t.id, verdict.cause, verdict.confidence, verdict.notifyProb, verdict.model).run();
-    await env.DB.prepare("UPDATE state SET last_jev_ts = ? WHERE target = ?").bind(now, t.id).run();
 
     const shouldNotify = verdict.notifyProb >= NOTIFY_MIN_CONFIDENCE && verdict.confidence >= NOTIFY_MIN_CONFIDENCE
       && (verdict.cause === "real_outage" || verdict.cause === "degraded") && !(state && state.notified);
@@ -181,6 +185,7 @@ async function wowRealmCheck(t, env) {
   if (!env.BLIZZARD_CLIENT_ID || !env.BLIZZARD_CLIENT_SECRET) return { skipped: true };
   const tokenRes = await fetch("https://oauth.battle.net/token", {
     method: "POST",
+    signal: AbortSignal.timeout(CHECK_TIMEOUT_MS),
     headers: { Authorization: "Basic " + btoa(`${env.BLIZZARD_CLIENT_ID}:${env.BLIZZARD_CLIENT_SECRET}`), "Content-Type": "application/x-www-form-urlencoded" },
     body: "grant_type=client_credentials",
   });
