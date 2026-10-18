@@ -8,7 +8,7 @@ Static page: `index.html` renders chapter specs into inline SVG. No build step, 
 
 | File | What |
 |---|---|
-| `index.html` | Page shell, styles, and the renderer (SVG drawing, stepping, study aids) |
+| `index.html` | Page shell, styles, and the renderer (SVG drawing, stepping, summaries and notes) |
 | `diagrams.js` | Collects the chapters from `parts/` and sorts them by number |
 | `parts/*.js` | Chapter specs (data only) |
 | `check.mjs` | Integrity and layout checks: `node check.mjs [chapter-id ...]` |
@@ -26,9 +26,9 @@ Static page: `index.html` renders chapter specs into inline SVG. No build step, 
   nodes:  [{ id, label, sub, kind, x, y, w, h }],    // boxes; kind: store | actor | pod | q | note
   edges:  [{ id, from, to, label, via, labelPos, labelAt, dashed, bidir }],
   steps:  [{ text, on: [ids], flow: [edge ids] }],   // step 1 is the unlit overview
-  say30: "A ready-to-say interview answer, about 120 words or fewer.",
-  gotchas: ["2-4 traps interviewers probe"],
-  quiz: [{ q, a }, { q, a }, { q, a }],               // exactly 3
+  say30: "The \"In short\" summary: the idea in about 120 words or fewer.",
+  gotchas: ["2-4 common traps and misconceptions"],
+  quiz: [{ q, a }, { q, a }, { q, a }],               // exactly 3, shown as "Questions to think through"
   incidents: ["ids from ../incidents/data/incidents.json"],
   sources: [{ title, url }],                          // kubernetes.io pages the chapter is based on
 }
