@@ -155,7 +155,7 @@ footer a { color: var(--accent); }
 
       <div class="panel">
         <div class="row"><h2>Prometheus alert rules</h2><button type="button" class="copy" id="copy">Copy</button></div>
-        <p class="explain">Assumes an <code>http_requests_total</code> counter with a <code>code</code> label. Swap in your own SLI.</p>
+        <p class="explain">Assumes an <code>http_requests_total</code> counter with <code>code</code> and <code>service</code> labels. Recording rules compute each window once; the four conditions above become one page alert and one ticket alert, as in the SRE Workbook, so a big outage pages once. Swap in your own SLI.</p>
         <pre id="rules"></pre>
       </div>
     </section>
@@ -322,18 +322,41 @@ function drawChart(W, rows, incH) {
 }
 
 function rulesYaml(slo, rows) {
+  // Workbook pattern: recording rules per window, then one page alert and one ticket alert,
+  // each an OR of its (long AND short) window pairs, so one outage sends one page, not four.
   const err = +(1 - slo).toFixed(6);
-  const ratio = (w) => `sum(rate(http_requests_total{code=~"5.."}[${w}])) / sum(rate(http_requests_total[${w}]))`;
-  const items = rows.map((r) => `  - alert: ErrorBudgetBurn${r.longLbl.replace(/\W/g, "")}
+  const rec = (w) => `service:slo_errors_per_request:ratio_rate${w}`;
+  const windows = [...new Set(rows.flatMap((r) => [r.shortLbl, r.longLbl]))];
+  const records = windows.map((w) => `  - record: ${rec(w)}
     expr: |
-      (${ratio(r.longLbl)}) > (${r.thr} * ${err})
+      sum by (service) (rate(http_requests_total{code=~"5.."}[${w}]))
+      /
+      sum by (service) (rate(http_requests_total[${w}]))`).join("\n");
+  const cond = (r) => `(
+        ${rec(r.longLbl)} > (${r.thr} * ${err})
       and
-      (${ratio(r.shortLbl)}) > (${r.thr} * ${err})
+        ${rec(r.shortLbl)} > (${r.thr} * ${err})
+      )`;
+  const alert = (sev, name) => {
+    const rs = rows.filter((r) => r.sev === sev);
+    return `  - alert: ${name}
+    expr: |
+      ${rs.map(cond).join("\n      or\n      ")}
     labels:
-      severity: ${r.sev}
+      severity: ${sev}
     annotations:
-      summary: "Burning error budget at ${r.thr}x or faster (${r.longLbl}/${r.shortLbl} windows)"`).join("\n");
-  return `# SLO ${(slo * 100).toFixed(2).replace(/\.?0+$/, "")}% — error budget ${err * 100}%\ngroups:\n- name: slo-burn\n  rules:\n${items}`;
+      summary: "{{ $labels.service }} is burning its error budget too fast (${sev})"
+      description: "Fires when any of these hold on both windows: ${rs.map((r) => `${r.thr}x over ${r.longLbl}/${r.shortLbl}`).join(", ")}."`;
+  };
+  return `# SLO ${(slo * 100).toFixed(2).replace(/\.?0+$/, "")}% — error budget ${err * 100}%
+groups:
+- name: slo-burn-recording
+  rules:
+${records}
+- name: slo-burn-alerts
+  rules:
+${alert("page", "ErrorBudgetBurnPage")}
+${alert("ticket", "ErrorBudgetBurnTicket")}`;
 }
 
 $("burn").addEventListener("input", (e) => { burn = sliderToBurn(+e.target.value); update(); });
