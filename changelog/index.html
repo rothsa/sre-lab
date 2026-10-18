@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Changelog · SRE Lab</title>
+<meta name="description" content="Every daily research pass on the SRE Lab, newest first: what changed on which page, each change checked against a primary source.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<style>
+/* Jungle theme: a sunlit canopy in light mode, the jungle at night (with fireflies) in dark mode.
+   Vines hang from the top; tools sit on mossy cards; planned work is "still growing". */
+:root {
+  --bg: #eef5e6; --bg2: #dcebcf; --panel: #fbfdf6; --fg: #14261a; --muted: #4a6250; --rule: #c4d9b3;
+  --accent: #1f7a3a; --leaf: #3f9a4f; --leaf2: #2d7a3c; --vine: #24563a; --flower: #d9481e; --glow: transparent;
+  --font-display: "Archivo", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #08130d; --bg2: #0d2016; --panel: #102318; --fg: #e3f0de; --muted: #9fb8a2; --rule: #21402c; --accent: #8fdc7a; --leaf: #2e6b3d; --leaf2: #1f4f2c; --vine: #1a3a26; --flower: #ff7a4d; --glow: #e8ff8a; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #08130d; --bg2: #0d2016; --panel: #102318; --fg: #e3f0de; --muted: #9fb8a2; --rule: #21402c; --accent: #8fdc7a; --leaf: #2e6b3d; --leaf2: #1f4f2c; --vine: #1a3a26; --flower: #ff7a4d; --glow: #e8ff8a; color-scheme: dark; }
+* { box-sizing: border-box; }
+body {
+  margin: 0; color: var(--fg); font-family: var(--font-body); line-height: 1.55; min-height: 100vh;
+  background:
+    radial-gradient(ellipse 80% 40% at 50% -5%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
+    linear-gradient(180deg, var(--bg2) 0%, var(--bg) 38%, var(--bg) 100%);
+  background-attachment: fixed;
+}
+.canopy { position: absolute; inset: 0 0 auto 0; height: 230px; overflow: hidden; pointer-events: none; color: var(--leaf); }
+.canopy svg { position: absolute; top: 0; height: 230px; }
+.canopy .left { left: -20px; width: 300px; }
+.canopy .right { right: -20px; width: 300px; transform: scaleX(-1); }
+@media (max-width: 700px) { .canopy .left, .canopy .right { width: 170px; height: 150px; } .canopy { height: 150px; } }
+@media (prefers-reduced-motion: no-preference) {
+  .canopy .sway { transform-origin: top center; animation: sway 7s ease-in-out infinite; }
+  .canopy .sway.b { animation-duration: 9s; animation-delay: -3s; }
+  @keyframes sway { 0%, 100% { transform: rotate(-1.4deg); } 50% { transform: rotate(1.4deg); } }
+}
+.fireflies { position: fixed; inset: 0; pointer-events: none; }
+.fireflies i { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--glow); box-shadow: 0 0 10px 3px var(--glow); opacity: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .fireflies i { animation: blink 6s ease-in-out infinite, drift 14s ease-in-out infinite alternate; }
+  @keyframes blink { 0%, 100% { opacity: 0; } 45%, 55% { opacity: .85; } }
+  @keyframes drift { to { transform: translate(40px, -60px); } }
+}
+.wrap { position: relative; max-width: 760px; margin: 0 auto; padding-inline: 16px; padding-block: 120px 56px; }
+@media (max-width: 700px) { .wrap { padding-top: 96px; } }
+.kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(40px, 8vw, 66px); margin: 6px 0 12px; line-height: .98; letter-spacing: -.01em; }
+h1 .leafy { color: var(--accent); }
+p.lede { color: var(--muted); max-width: 62ch; font-size: 17px; }
+.tools { display: grid; gap: 14px; margin-top: 24px; }
+a.tool {
+  position: relative; display: grid; gap: 4px; padding: 18px 18px 18px 58px; color: inherit; text-decoration: none;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--leaf) 10%, var(--panel)) 0%, var(--panel) 60%);
+  border: 1px solid var(--rule); border-radius: 18px 6px 18px 6px;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--leaf) 25%, transparent);
+  transition: transform .2s, border-color .2s, box-shadow .2s;
+}
+a.tool::before {
+  content: ""; position: absolute; left: 18px; top: 20px; width: 24px; height: 24px; background: var(--leaf);
+  border-radius: 0 70% 0 70%; transform: rotate(-12deg); box-shadow: inset -3px 3px 0 color-mix(in srgb, var(--leaf2) 60%, transparent);
+}
+a.tool:hover, a.tool:focus-visible { border-color: var(--accent); outline: none; box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--accent) 60%, transparent); }
+@media (prefers-reduced-motion: no-preference) { a.tool:hover, a.tool:focus-visible { transform: translateY(-2px) rotate(-.25deg); } }
+a.tool strong { font-family: var(--font-display); font-weight: 800; font-size: 21px; }
+a.tool span { color: var(--muted); }
+.grow-head { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin: 36px 0 0; }
+.grow-head svg { width: 22px; height: 22px; color: var(--accent); }
+.tool.next { position: relative; display: grid; gap: 4px; padding: 16px 16px 16px 58px; border: 1.5px dashed var(--rule); border-radius: 18px 6px 18px 6px; background: color-mix(in srgb, var(--panel) 45%, transparent); }
+.tool.next::before { content: ""; position: absolute; left: 22px; top: 22px; width: 14px; height: 14px; border: 2px solid var(--leaf); border-radius: 0 70% 0 70%; transform: rotate(-12deg); }
+.tool.next strong { font-family: var(--font-display); font-weight: 800; font-size: 19px; color: var(--muted); }
+.tool.next span { color: var(--muted); }
+.tool.next em { font-family: var(--font-mono); font-style: normal; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--flower); }
+footer { margin-top: 36px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--rule); padding-top: 14px; }
+footer a { color: var(--accent); }
+a.tool .upd { justify-self: start; font-family: var(--font-mono); font-style: normal; font-size: 12.5px; font-weight: 600; letter-spacing: .03em; color: var(--fg); background: color-mix(in srgb, var(--accent) 16%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); border-radius: 999px; padding: 1px 10px; }
+a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+/* Featured tile: the one explainer to start with. A stronger leaf wash and an accent border, nothing louder. */
+.featured > a.tool { padding-top: 22px; padding-bottom: 22px; border: 1.5px solid color-mix(in srgb, var(--accent) 60%, var(--rule)); background: linear-gradient(135deg, color-mix(in srgb, var(--leaf) 26%, var(--panel)) 0%, var(--panel) 75%); box-shadow: 0 8px 22px -14px color-mix(in srgb, var(--accent) 70%, transparent); }
+.featured > a.tool strong { font-size: 24px; }
+.featured > a.tool .feat { font-family: var(--font-mono); font-style: normal; font-size: 11.5px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+/* Section headings between tile groups. */
+.section-head { font-family: var(--font-mono); font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin: 30px 0 -4px; }
+.section-note { color: var(--muted); margin: 0; font-size: 15px; }
+.changelog .all { font-family: var(--font-mono); font-size: 13px; }
+.changelog .all a { color: var(--accent); }
+/* Changelog: one entry per daily research pass, newest first and open; minor edits folded into one line. */
+.changelog { margin-top: 44px; }
+.changelog h2 { font-family: var(--font-display); font-weight: 800; font-size: 24px; margin: 0 0 4px; }
+.changelog > p { color: var(--muted); margin: 0 0 12px; }
+.changelog details { border-top: 1px solid var(--rule); padding: 10px 0; }
+.changelog summary { cursor: pointer; font-family: var(--font-mono); font-size: 13px; font-weight: 600; letter-spacing: .04em; color: var(--accent); }
+.changelog ul { margin: 8px 0 2px; padding-left: 20px; }
+.changelog li { margin: 4px 0; }
+.changelog li.minor { color: var(--muted); }
+</style>
+<link rel="stylesheet" href="../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+<div class="wrap">
+  <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog</div>
+  <h1 id="changelog-h">Changelog</h1>
+  <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
+    <p>What each daily research pass changed, newest first. Every change is checked against a primary source. The lab landing page shows the latest three.</p>
+    <details open><summary><time datetime="2026-10-17">17 Oct 2026</time></summary><ul>
+      <li>New: Graphs and Loops, Drawn. What it means to stop prompting and build the loops and graphs that prompt your agents, who really said it, whether to draw or describe them, and how to get your agent to build them.</li>
+      <li>One Agent to Hundreds: Lauren Tan's “inverse pyramid” for trusting agent work, Birgitta Böckeler on dropping test-first prompts, Dex Horthy's SlopCodeBench results, the Claude Code team's risk-tiered review, and how Amp gates deploys without pull requests.</li>
+      <li>Plan B: DeepSeek-V4.1-Flash-1017 adds MIT-licensed open weights, and a new note on why failing over costs you the prompt cache.</li>
+      <li>Plan B: OpenCode's breach, tied to a distillation attack on users with linked provider keys, and what it means for keys you hand to a harness.</li>
+      <li>Engineering on an Exponential and Engineering for the Next Agent: Epoch's new price trend (about 13x cheaper a year for the same performance) replaces its March 2025 range.</li>
+      <li>Verification research on One Agent to Hundreds and Did the Agent Do It Right?: what agents' reports leave out, where judges place the first mistake, monitors fooled by edited transcripts, and self-grading loops.</li>
+      <li class="minor">Smaller: Claude Code 2.1.302 fork-subagent default (fleet), Copilot approvals preview (Ownership), an OpenTelemetry versioned-metrics gotcha (Observability), Anthropic's agent-hours data (Exponential), pstack wording (Agentic), a harness-dependence example and METR's cheating caveat, and this changelog.</li>
+    </ul></details>
+    <details><summary><time datetime="2026-10-16">16 Oct 2026</time></summary><ul>
+      <li>Engineering on an Exponential: frontier models now leapfrog each other every few weeks, not every few months; a full source check of it and of Engineering for the Next Agent.</li>
+      <li>Fleet and agentic pages: Opus 5.5 fast mode out of research preview, Claude Code Review GA, context resets, review backpressure, XBOW's parallel campaigns, Amp's SOC 2 without pull requests.</li>
+      <li class="minor">Smaller: about 60 edits across agent evals, Linux, Kubernetes, Terraform and patterns; moved GitHub links on four pages; a site icon.</li>
+    </ul></details>
+    <details><summary><time datetime="2026-10-15">15 Oct 2026</time></summary><ul>
+      <li>Plan B: Meta's Muse Spark Open weights make open models a failover tier again.</li>
+      <li>Agent security: the SneakPeek preview-pane flaw, a Vercel microVM escape, Letta subagent permissions, a Deep Agents symlink fix.</li>
+      <li class="minor">Smaller: 27 edits across nine pages, including Kubernetes readiness, reviewer simulations, Claude's OpenTelemetry GenAI traces, Prometheus MCP and GitHub autofix.</li>
+    </ul></details>
+    <details><summary><time datetime="2026-10-14">14 Oct 2026</time></summary><ul>
+      <li>Gemini 4 Argon GA, added as a dated example of an API change; pstack 0.15.24 updates on Agentic Engineering.</li>
+      <li class="minor">Smaller: 21 edits across agentic, fleet, Terraform, IaC, Kubernetes, security and delivery (Kiro sandbox GA, a Copilot for Visual Studio CVE, Terraform MCP, kubectl-ai, GitHub Actions workload identity).</li>
+    </ul></details>
+    <details><summary><time datetime="2026-10-13">13 Oct 2026</time></summary><ul>
+      <li>15 fixes on seven pages: IaC drift and lock timeouts, AWS SourceIdentity provenance, Linux effective memory.min, Transparent Huge Pages stalls, Prometheus 3.15 native histograms.</li>
+      <li class="minor">Smaller: a dead link replaced and per-version Terraform changelog links.</li>
+    </ul></details>
+    <details><summary><time datetime="2026-10-12">12 Oct 2026</time></summary><ul>
+      <li>The Incident Files: two new records, Docker Hub PAT transfer and Fly.io readiness checks (318 in all).</li>
+      <li class="minor">Smaller: TLS 1.3 now cites RFC 9846, an agent-team permissions note, a restored Cloudflare incident link and Kubernetes doc links.</li>
+    </ul></details>
+    <details><summary><time datetime="2026-10-11">11 Oct 2026</time></summary><ul>
+      <li>The Incident Files: six new records (310 to 316).</li>
+      <li>Accuracy updates: Collector component renames, agent-sandbox status, Terraform 1.16 lifecycle destroy, ECR replication, GitHub Actions cache limits.</li>
+      <li class="minor">Smaller: 43 moved links updated across 10 pages.</li>
+    </ul></details>
+    <details><summary><time datetime="2026-10-10">10 Oct 2026</time></summary><ul>
+      <li>39 verified fixes in 18 files: stale versions, Datadog renames, the MCP 2026-07-28 spec, SLSA v1.2, OpenTelemetry Profiles alpha, and three Incident Files records.</li>
+      <li class="minor">Smaller: moved links and accuracy fixes in the ownership essay.</li>
+    </ul></details>
+  </section>
+  <footer><a href="../">SRE Lab</a> · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab">source</a></footer>
+</div>
+</body>
+</html>
