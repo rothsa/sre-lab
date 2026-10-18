@@ -1,6 +1,6 @@
 # SRE Lab
 
-Small, working reliability-engineering tools and step-through explainers, live at **lab.sallyroth.dev**.
+A reliability-first lab, live at **lab.sallyroth.dev**: small, working SRE tools (an SLO burn simulator, Down or Me uptime triage, Plan B AI failover, The Incident Files postmortem search, agent evals) and illustrated, step-through explainers on incident management, observability, Kubernetes, Linux, infrastructure as code, delivery and security. Engineering with AI agents is its own section.
 
 ## Tools
 
@@ -28,14 +28,19 @@ Step-through diagrams rendered from chapter specs in `<topic>/parts/*.js` by the
 | [Observability, Drawn](observability/) | OpenTelemetry and the Collector, Prometheus scraping and PromQL, tracing and sampling, Loki, alerting |
 | [Security for SREs, Drawn](security/) | AWS policy evaluation, federation, TLS 1.3 and mTLS, secret rotation, segmentation, least privilege, audit |
 | [One Pattern, Three Languages](patterns/) | Everyday SRE tasks in Python, Go and Ruby, side by side |
+| [Ownership at Scale](ownership/) | How large companies decide and keep track of who owns code and services (single page) |
+
+### AI engineering
+
+| Page | Covers |
+|---|---|
 | [Agentic Engineering, Drawn](agentic/) | Harnesses, verification, review, sandboxes and scoped credentials for running many coding agents |
 | [Engineering for the Next Agent, Drawn](next-agent/) | Building for future models: evals, safe model upgrades, durable interfaces |
 | [Engineering on an Exponential, Drawn](exponential/) | Planning horizons and the invariants that hold while model capability moves fast |
 | [Graphs and Loops, Drawn](loops/) | Writing the loops and graphs that drive agents, with checks and stop conditions |
 | [One Agent to Hundreds](fleet/) | A five-stage ladder for scaling coding agents (single page, no diagram engine) |
-| [Ownership at Scale](ownership/) | How large companies decide and keep track of who owns code and services (single page) |
 
-The landing page ([`index.html`](index.html)) carries a dated changelog of research passes. `scripts/stamp-updated.py` restamps each page's "updated" date from git history.
+The full dated changelog of research passes is at [`changelog/`](changelog/index.html). The landing page ([`index.html`](index.html)) shows only the latest three entries: add each new entry at the top of both, and drop the oldest from the landing page. The landing page groups tiles as Start here, Tools, Reliability explainers, and AI engineering. `scripts/stamp-updated.py` restamps each page's "updated" date from git history.
 
 ## Checks
 
@@ -122,7 +127,8 @@ Workers AI for a run this size is a tiny fraction of the free daily neuron allow
 ## Layout
 
 ```
-index.html              lab landing page and changelog (Cloudflare Pages)
+index.html              lab landing page: tools, explainers, latest changelog entries (Cloudflare Pages)
+changelog/index.html    full changelog of daily research passes
 slo/index.html          SLO Burn Simulator
 status/index.html       Down or Me board, public (/status/)
 private/status/         Down or Me board, owner only (/private/status/)
