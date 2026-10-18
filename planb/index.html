@@ -103,7 +103,7 @@ footer a, .prose a { color: var(--accent); }
 <body>
 <nav class="site-nav" aria-label="Site" style="max-width:920px"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
 <main class="wrap">
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · failover<span class="updated"> · updated <time datetime="2026-10-17">17 Oct 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · failover<span class="updated"> · updated <time datetime="2026-10-18">18 Oct 2026</time></span></div>
   <h1>Plan B</h1>
   <p class="lede">Pick a made-up incident and ask an AI model for the first three triage steps. Then break the primary model on purpose and watch a backup model, from a different provider, answer instead. Each attempt shows how it ended and how long it took.</p>
 
@@ -183,6 +183,7 @@ footer a, .prose a { color: var(--accent); }
         <li><b>Model IDs can move under you.</b> Since 8 October 2026, Gemini API requests to <code>gemini-3.7-flash</code> are automatically routed to <code>gemini-3.8-flash</code>, and <code>gemini-3.5-flash</code> to <code>gemini-3.6-flash</code>. Health checks won't show that; watch deprecation notices too, and record which model answered. GitHub Agentic Workflows now has Copilot reject silent substitution of the configured model (v0.92.0, October 2026).</li>
         <li><b>Open weights are a failover tier again.</b> On 15 October 2026 Meta released the weights of Muse Spark Open (816B total parameters, 42B active, 1M-token context) under a license with limited commercial terms, and hosts including Together AI, Fireworks, Groq and OpenRouter served it from day one. A second host of the same weights fails over without changing models, but Meta's full evaluation report is still to come, so run your own evals before trusting it as a backup. Two days later DeepSeek released DeepSeek-V4.1-Flash-1017 with MIT-licensed weights on Hugging Face.</li>
         <li><b>Failover costs you the cache.</b> Gateways keep a conversation on one provider so its prompt stays cached; Vercel AI Gateway's session affinity "sends each turn to the provider that served the one before it" and runs by default on text and chat requests (October 2026). The first turn after a failover reads the prompt without that cache, so expect it to be slower and to cost more.</li>
+        <li><b>Failover can change what tools cost.</b> When Claude Code or Codex run against DeepSeek's API, their server-side web search and fetch calls go to DeepSeek's Search and Fetch APIs. Those calls are free until per-request billing starts on 1 November 2026 (Beijing time), and each API has its own 5 requests-per-second limit per account. Budget the backup's tool calls, not only its tokens.</li>
         <li><b>A harness that holds your provider keys is part of your blast radius.</b> On 17 October 2026 OpenCode reported a breach "related to a large scale distillation attack" that affected 1.4% of OpenCode Console users, "a subset of users who had external providers linked"; it said the incident was ongoing. Give each harness its own provider key that you can revoke on its own, and alert on spend you can't account for.</li>
         <li><b>A safeguard block isn't an outage.</b> Since 24 September 2026 Anthropic charges again for requests its safeguards block before Claude responds, in specific areas such as distillation. Failing over on a block pays for two calls and won't change the policy; handle it as an answer, not as a 5xx.</li>
       </ul>
@@ -191,6 +192,7 @@ footer a, .prose a { color: var(--accent); }
           <li><a href="https://platform.claude.com/docs/en/api/errors">Claude API errors</a></li>
           <li><a href="https://research.meta.ai/blog/muse-spark-open">Meta: Introducing Muse Spark Open (15 October 2026)</a></li>
           <li><a href="https://api-docs.deepseek.com/news/news261017">DeepSeek: DeepSeek-V4.1-Flash-1017 release (17 October 2026)</a></li>
+          <li><a href="https://api-docs.deepseek.com/guides/search/">DeepSeek API docs: Search and Fetch (billing from 1 November 2026)</a></li>
           <li><a href="https://vercel.com/changelog/ai-gateway-logs-now-show-session-affinity">Vercel: AI Gateway logs now show session affinity (October 2026)</a></li>
           <li><a href="https://github.com/github/gh-aw/releases/tag/v0.92.0">GitHub Agentic Workflows v0.92.0 release notes</a></li>
           <li><a href="https://ai.google.dev/gemini-api/docs/changelog">Gemini API changelog (8 October 2026 routing)</a></li>

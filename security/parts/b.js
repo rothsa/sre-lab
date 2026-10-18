@@ -54,6 +54,7 @@ export const CHAPTERS = [
       "Storing secrets in Vault's KV engine is not the same as dynamic secrets: KV entries carry no lease and never rotate unless something rotates them.",
       "In envelope encryption the encrypted data key sits next to the data on purpose. That's safe only because decrypting it needs a KMS call that the key policy allows, and that call is logged.",
       "Rotation outages usually come from ordering: deleting the old credential before the new one is confirmed in use by every consumer, in the right environment.",
+      "Logs prove use, not exposure. From August 2024 until a fix on 30 September 2026, converting a Docker Hub account to an organization moved its personal access tokens to a new owner without rotating them (CVE-2026-105445). \"Registry logs show when a token is used, not that it exists\", so Docker treated every moved token as affected and deactivated them unless the owner asked to keep one. Use organization tokens, not a person's, for automation.",
     ],
     atScale: [
       "Secret sprawl: with thousands of services, copies end up in CI variables, Kubernetes Secrets, wikis and laptops, and nobody can answer \"who has this key?\" Teams centralize in one manager, record an owner and purpose per secret, and run secret scanners in pre-commit hooks and CI.",
@@ -86,6 +87,7 @@ export const CHAPTERS = [
       "heroku-2022-github-oauth-token-theft",
     ],
     sources: [
+      { title: "Docker: Docker Hub security advisory CVE-2026-105445 (2026-10-12)", url: "https://www.docker.com/blog/docker-hub-security-advisory-cve-2026-105445/" },
       { title: "GitHub Changelog: Secret scanning blocks Anthropic keys by default (2026-10-13)", url: "https://github.blog/changelog/2026-10-13-secret-scanning-blocks-anthropic-keys-by-default-adds-salesforce" },
       { title: "Vault: Lease, renew, and revoke", url: "https://developer.hashicorp.com/vault/docs/concepts/lease" },
       { title: "Vault: Database secrets engine", url: "https://developer.hashicorp.com/vault/docs/secrets/databases" },
