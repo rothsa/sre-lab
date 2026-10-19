@@ -218,7 +218,7 @@ export const CHAPTERS = [
       "Duration metrics like MTTR are skewed and noisy across incidents of very different shapes; Google's report on incident metrics finds them poorly suited to decisions or trends, and swapping the mean for a median or percentile does not fix that. Fix: treat per-severity distributions as context rather than a target, measure impact against SLOs, and read individual incidents.",
     ],
     agentic: [
-      "\"What changed?\" is where agents help most: they line up deploys, flag flips and config pushes against the start of impact from your own change history. A human still decides to roll back, and a finding without the queries behind it is a hypothesis.",
+      "\"What changed?\" is where agents help most: they line up deploys, flag flips and config pushes against the start of impact from your own change history. A human still decides to roll back, and a finding without the queries behind it is a hypothesis. Devin Oncall (GA October 2026) puts it plainly: a recent deployment \"is a lead to investigate, not a causal explanation\", and a second review agent checks the first one's work.",
       "When nobody fully understands the code, debug from evidence. Cindy Sridharan (October 2026) calls code \"an unreliable narrator\" and maps every plausible hypothesis to every high-fidelity signal before trusting a story about the code.",
       "Vendor investigation agents mostly stop at findings: New Relic says Autopilot \"recommends actions but does not take them\", Gemini Cloud Assist investigations (preview) never use the caller's token to mutate data, and Bits can end \"inconclusive\". Mitigation stays a human call through the normal rollback path.",
       "If an agent's start at alert time is logged as the acknowledgement, time to acknowledge looks better while time to detect, which starts at impact, is unchanged. Record agent start and human ack as separate timestamps so the timeline shows who did what.",
@@ -230,6 +230,7 @@ export const CHAPTERS = [
     ],
     incidents: ["wikimedia-2025-www-portal-redirect-loop", "lootlocker-2025-db-provider-cert-expiry", "travisci-2017-worker-rollback-missing-tag", "cloudflare-2023-workers-kv-rollback", "knightcapital-2012-power-peg-deploy"],
     sources: [
+      { title: "Cognition: Introducing Devin Oncall (15 Oct 2026)", url: "https://devin.ai/blog/introducing-devin-oncall" },
       { title: "Cindy Sridharan: How to effectively debug when you no longer understand the code (2026-10-10)", url: "https://copyconstruct.medium.com/how-to-effectively-debug-when-you-no-longer-understand-the-code-bd3dcb2c5f7b" },
       { title: "The Site Reliability Workbook: Incident Response", url: "https://sre.google/workbook/incident-response/" },
       { title: "Site Reliability Engineering: Emergency Response", url: "https://sre.google/sre-book/emergency-response/" },

@@ -418,7 +418,7 @@ export const CHAPTERS = [
     agentic: [
       "Storage is where an agent mistake is permanent: with `reclaimPolicy: Delete`, deleting a PVC deletes the disk. Keep `delete` on PVCs, PVs and StatefulSets out of agent RBAC; OWASP LLM06:2025 names excessive permissions and asks for human approval of high-impact actions.",
       "Agents can diagnose a Pending PVC quickly from events: binding mode, zone, attach limits, `ResourceExhausted`. Check the node's CSI allocatable count and the disk's zone before accepting 'add a node' as the fix.",
-      "Agent Sandbox can give each agent storage that survives restarts. Those volumes hold whatever the agent wrote, possibly secrets or customer data, so idle agent workspaces need a retention and cleanup policy you own.",
+      "Agent Sandbox can give each agent storage that survives restarts. Those volumes hold whatever the agent wrote, possibly secrets or customer data, so idle agent workspaces need a retention and cleanup policy you own. Since v1.37 (beta, on by default) a PVC gets an `Unused` condition once no running or Pending Pod uses it; finished Pods don't count, and its `lastTransitionTime` is the idle-since time. Treat it as a review queue, not permission to delete: Kubernetes only reports it.",
     ],
     quiz: [
       { q: "Why would you use `volumeBindingMode: WaitForFirstConsumer`?", a: "So the volume is provisioned or bound only after a Pod using it is scheduled, in a topology (such as a zone) that node can reach. With `Immediate`, a zonal disk can end up where the Pod can't run." },
@@ -427,6 +427,7 @@ export const CHAPTERS = [
     ],
     incidents: [],
     sources: [
+      { title: "Kubernetes v1.37: tracking when a PersistentVolumeClaim was last used (Beta)", url: "https://kubernetes.io/blog/2026/09/21/kubernetes-v1-37-pvc-last-used-time/" },
       { title: "Persistent volumes", url: "https://kubernetes.io/docs/concepts/storage/persistent-volumes/" },
       { title: "Storage classes", url: "https://kubernetes.io/docs/concepts/storage/storage-classes/" },
       { title: "Volumes (CSI)", url: "https://kubernetes.io/docs/concepts/storage/volumes/" },

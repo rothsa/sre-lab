@@ -203,7 +203,14 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
   <section class="changelog" aria-labelledby="changelog-h">
     <h2 id="changelog-h">Changelog</h2>
     <p>What each daily research pass changed, newest first. Every change is checked against a primary source.</p>
-    <details open><summary><time datetime="2026-10-18">18 Oct 2026</time></summary><ul>
+    <details open><summary><time datetime="2026-10-19">19 Oct 2026</time></summary><ul>
+      <li>Did the Agent Do It Right?: three new limits. A guard model can be talked out of its verdict by fake policy text, a grader that reads only the final reply fails good runs, and judges drift unless people keep checking them.</li>
+      <li>One Agent to Hundreds: give each agent its own identity and contain a misbehaving one in steps, keep formal checks in sync with the code they cover, and define done as verified, not compiled.</li>
+      <li>Plan B: a retired DeepSeek model name now quietly gets a newer model, and why unnamed stealth models don't belong in a failover path.</li>
+      <li>Kubernetes: the new PVC <code>Unused</code> condition is a cleanup review queue, not permission to delete an agent's workspace.</li>
+      <li class="minor">Smaller: Devin Oncall on deploys as leads, not causes (Incident Management), Agent Sandbox warm pools and scheduling gates (Kubernetes), the OpenTelemetry tool call id and a Claude Code telemetry fix (Agentic), a moved PagerDuty link, an archived Ona link.</li>
+    </ul></details>
+    <details><summary><time datetime="2026-10-18">18 Oct 2026</time></summary><ul>
       <li>Agentic Engineering: the Vercel microVM escape now has a CVE and fixed kernels, and a new item on an Agent SDK flaw where a session ID became a command-line flag.</li>
       <li>One Agent to Hundreds: checks you have seen fail (pstack's new formal verification skill), Addy Osmani on layered verification instead of line-by-line review, and pstack's updated catch-up rules.</li>
       <li>Did the Agent Do It Right?: graders can be reward-hacked too, and why each eval task gets its own microVM.</li>

@@ -67,7 +67,7 @@ export const CHAPTERS = [
     agentic: [
       "Scaling stays with the controllers built for it. An agent running `kubectl scale` on an HPA-managed Deployment is overwritten on the next sync, so changes belong in the HPA's min, max or metrics, reviewed like any other change.",
       "Agents can read HPA conditions and Pending Pods quickly and explain why no node arrived. Check that the explanation uses requests, not usage, since both the HPA's percentage and node autoscalers work from requests.",
-      "Agent workloads are bursty and mostly idle. Agent Sandbox can scale idle sandboxes to zero and keep a SandboxWarmPool for fast starts; the pool size trades cost for latency, a capacity decision like HPA `minReplicas`.",
+      "Agent workloads are bursty and mostly idle. Agent Sandbox can scale idle sandboxes to zero and keep a SandboxWarmPool for fast starts; the pool size trades cost for latency, a capacity decision like HPA `minReplicas`. Since v1.0.7 a warm pool keeps members whose Pods wait on scheduling gates, such as a Kueue admission, instead of deleting them as stuck.",
     ],
     quiz: [
       { q: "An HPA targets 50% CPU. 3 Pods each request 200m and use 300m. What does it do?", a: "Utilization is 300m / 200m = 150%. desired = ceil(3 × 150/50) = 9 Pods, capped at `maxReplicas`. The default scale-up rate (100% or 4 Pods per 15s, whichever is more) gets it there in two steps: 7, then 9." },
@@ -76,6 +76,7 @@ export const CHAPTERS = [
     ],
     incidents: [],
     sources: [
+      { title: "Agent Sandbox v1.0.7 release notes", url: "https://github.com/kubernetes-sigs/agent-sandbox/releases/tag/v1.0.7" },
       { title: "Horizontal Pod Autoscaling", url: "https://kubernetes.io/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/" },
       { title: "Resource metrics pipeline", url: "https://kubernetes.io/docs/tasks/debug/debug-cluster/resource-metrics-pipeline/" },
       { title: "Autoscaling workloads", url: "https://kubernetes.io/docs/concepts/workloads/autoscaling/" },
