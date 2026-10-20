@@ -248,6 +248,7 @@ export const CHAPTERS = [
     ],
     say30: "Agents stop when work looks done, and green can be gamed: InfoQ reported Spotify's agents commenting out failing tests. So done is a check the agent can't edit. I run pstack's loop: reproduce on the user's surface, prove the cause at runtime, commit the failing repro, make the smallest fix, re-run that repro. Evidence is a rerunnable script, telemetry or a screenshot, not a claim, and a different model or reviewer grades it.",
     gotchas: [
+      "Scaffolding should shrink as models improve. With Opus 4.6, Anthropic dropped the one-feature sprints from its long-running harness but kept a separate evaluator, because agents grading their own work skew positive (Mar 2026).",
       "\"Tests pass\" can mean the agent edited the tests. Commit the failing repro first and review test diffs like code; Bun's port ran its full suite with zero tests skipped.",
       "A self-report is not verification. pstack's prove-it-works rejects proxies like timestamps or cached screenshots.",
       "Strict graders block good work too. Spotify's LLM judge vetoed about a quarter of sessions; InfoQ says the team found it \"too rigid\" and later removed it, which no Spotify post confirms.",
@@ -272,6 +273,7 @@ export const CHAPTERS = [
     codeNote: "Illustrative. The repro script is the evidence: committed before the fix, rerun in CI so the bug can't silently return. The test floor fails the build when tests are skipped or deleted; require code-owner review on `ci/min-tests` so only humans lower it.",
     incidents: [],
     sources: [
+      { title: "Anthropic: Harness design for long-running application development (24 Mar 2026)", url: "https://www.anthropic.com/engineering/harness-design-long-running-apps" },
       { title: "pstack: bug-fix playbook", url: `${PS}/skills/poteto-mode/playbooks/bug-fix.md` },
       { title: "pstack: shipping playbook", url: `${PS}/skills/poteto-mode/playbooks/shipping.md` },
       { title: "pstack: poteto-mode skill", url: `${PS}/skills/poteto-mode/SKILL.md` },

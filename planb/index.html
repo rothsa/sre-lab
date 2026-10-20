@@ -187,10 +187,14 @@ footer a, .prose a { color: var(--accent); }
         <li><b>Failover can change what tools cost.</b> When Claude Code or Codex run against DeepSeek's API, their server-side web search and fetch calls go to DeepSeek's Search and Fetch APIs. Those calls are free until per-request billing starts on 1 November 2026 (Beijing time), and each API has its own 5 requests-per-second limit per account. Budget the backup's tool calls, not only its tokens.</li>
         <li><b>A harness that holds your provider keys is part of your blast radius.</b> On 17 October 2026 OpenCode reported a breach "related to a large scale distillation attack" that affected 1.4% of OpenCode Console users, "a subset of users who had external providers linked"; it said the incident was ongoing. Give each harness its own provider key that you can revoke on its own, and alert on spend you can't account for.</li>
         <li><b>A safeguard block isn't an outage.</b> Since 24 September 2026 Anthropic charges again for requests its safeguards block before Claude responds, in specific areas such as distillation. Failing over on a block pays for two calls and won't change the policy; handle it as an answer, not as a 5xx.</li>
+        <li><b>Your AI guardrail is a dependency too.</b> On 19 October 2026 Cloudflare reported an issue "affecting Gateway application controls and Data Loss Prevention (DLP) inspection for certain Google Gemini traffic"; a fix for the controls rolled out that evening while DLP prompt logging and enforcement were still being restored. Decide in advance whether AI traffic fails closed when the guard is down.</li>
+        <li><b>A shared gateway must bind sessions to callers.</b> Envoy AI Gateway before 1.2.0-rc1 resumed an MCP session without checking that it belonged to the caller, and its Helm chart's default seed made session IDs forgeable (GHSA-953h-535j-jg2v, 19 October 2026, medium). Change default secrets on day one.</li>
       </ul>
       <h3>Sources</h3>
       <ul class="sources">
           <li><a href="https://platform.claude.com/docs/en/api/errors">Claude API errors</a></li>
+          <li><a href="https://www.cloudflarestatus.com/incidents/3z8y23zn7tr2">Cloudflare status: Secure Web Gateway and DLP enforcement issues for Google Gemini (19 October 2026)</a></li>
+          <li><a href="https://github.com/advisories/GHSA-953h-535j-jg2v">GitHub advisory GHSA-953h-535j-jg2v: Envoy AI Gateway MCP session resume (19 October 2026)</a></li>
           <li><a href="https://research.meta.ai/blog/muse-spark-open">Meta: Introducing Muse Spark Open (15 October 2026)</a></li>
           <li><a href="https://api-docs.deepseek.com/news/news261017">DeepSeek: DeepSeek-V4.1-Flash-1017 release (17 October 2026)</a></li>
           <li><a href="https://api-docs.deepseek.com/">DeepSeek API docs: legacy model names (deepseek-v4-flash retired)</a></li>

@@ -111,6 +111,7 @@ publish:
       "Cache scope follows branches: a run can restore from its own branch and the default branch (pull requests also from the base), never from sibling branches. A cold feature branch is normal; keep the default branch's cache warm.",
       "With loose status checks a green pull request can still break main if the base moved after its run. Strict mode or a merge queue closes that gap.",
       "A self-hosted runner that is not ephemeral keeps files, credentials and processes from earlier jobs, so one job can affect the next.",
+      "`runs-on: ubuntu-latest` is a moving dependency. GitHub moves it from Ubuntu 24.04 to 26.04 gradually between 19 October and 19 November 2026, and some preinstalled tools are updated or removed, so the same commit can fail with no change in your repo. Pin `ubuntu-24.04` until you have tested `ubuntu-26.04`; even a pinned image still gets tool updates.",
     ],
     atScale: [
       "Queue time: when the runner fleet is too small, jobs sit queued while dashboards show short run times. Track queue time per runner label, scale runners from `workflow_job` events or Actions Runner Controller, and use ephemeral one-job runners so scale-in is safe.",
@@ -132,6 +133,7 @@ publish:
     ],
     incidents: ["homebrew-2018-jenkins-github-token-leak", "buildkite-2022-build-matrix-retry-explosion", "circleci-2022-session-cookie-theft-secrets-exfil"],
     sources: [
+      { title: "GitHub changelog: Ubuntu 26 GA and ubuntu-latest migration (17 Sep 2026)", url: "https://github.blog/changelog/2026-09-17-ubuntu-26-generally-available-and-latest-migration/" },
       { title: "GitHub Docs: Caching dependencies to speed up workflows", url: "https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching" },
       { title: "GitHub Docs: Running variations of jobs in a workflow (matrix)", url: "https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/run-job-variations" },
       { title: "GitHub Docs: GitHub-hosted runners", url: "https://docs.github.com/en/actions/concepts/runners/github-hosted-runners" },
@@ -376,6 +378,7 @@ spec:
       "GitOps suits agents because their only write path is a pull request to the config repo: Argo CD applies it, so the agent needs no cluster credentials. The human reviews the rendered result (`argocd app diff` or the PR's rendered manifests), not just the values-file line, because one Helm value can change dozens of objects.",
       "Mid-incident, an agent can gather evidence read-only from `argocd app get`, sync status, health and recent commits; a human decides whether to pause auto-sync, revert or roll back. An agent given write access that runs `kubectl edit` on a `selfHeal` app is reverted within seconds, and one pointed at the wrong Application or cluster context starts a second incident.",
       "Deletions are the risky agent edit: with prune enabled, removing a manifest from Git deletes the live object. Require human review for PRs that delete files under app paths, and remember that an agent reporting `Synced` has said nothing about `Healthy`.",
+      "Read-only is not always passive. `argocd app diff --local --server-side-generate` uploads files for the repo server to render, and advisory GHSA-9v9p-x54c-58gc (7 Oct 2026, critical) showed that a crafted Kustomize ref there could run commands with only Application `get`; blocking egress doesn't stop it. Before an agent runs local diffs, confirm Argo CD is patched (3.3.15, 3.4.10, 3.5.4 or later; the advisory lists no 2.x fix), or render diffs in CI instead.",
     ],
     quiz: [
       { q: "An Argo CD app shows `Synced` and `Degraded`. What does that tell you?", a: "Argo CD applied exactly what Git says, but the resulting resources are unhealthy, for example a Deployment whose new Pods don't become ready. The fix is a new commit (revert or fix forward), not another sync." },
@@ -384,6 +387,7 @@ spec:
     ],
     incidents: ["knightcapital-2012-power-peg-deploy"],
     sources: [
+      { title: "Argo CD advisory GHSA-9v9p-x54c-58gc: a Kustomize remote ref can run commands in the repo-server (7 Oct 2026)", url: "https://github.com/argoproj/argo-cd/security/advisories/GHSA-9v9p-x54c-58gc" },
       { title: "Argo CD: Core concepts", url: "https://argo-cd.readthedocs.io/en/stable/core_concepts/" },
       { title: "Argo CD: Architecture", url: "https://argo-cd.readthedocs.io/en/stable/operator-manual/architecture/" },
       { title: "Argo CD: Automated sync policy", url: "https://argo-cd.readthedocs.io/en/stable/user-guide/auto_sync/" },

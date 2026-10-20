@@ -276,6 +276,7 @@ exit(main(ARGV))                          # SystemExit: ensure blocks still run`
       "Agents handle this shape well: describe one log line and the question, and a `Counter` or `bufio.Scanner` version arrives quickly. Review it for this chapter's traps (`sc.Err()` checked after the loop, paths normalized to routes, no threads added to a CPU-bound parser on GIL-enabled CPython or CRuby, where they usually add no throughput; check the runtime and libraries first), then run the jq or awk baseline on the same file and diff the counts.",
       "If the logs already live in Loki, Elasticsearch or Datadog, the right output from an agent is a query in that platform's language, not a script that copies gigabytes to a laptop. Better still is a counter and a histogram from the service, so the question becomes a metrics query.",
       "Pasting raw log lines into an agent sends whatever they contain (tokens, emails, user IDs) to the model provider; even K8sGPT's `--anonymize` leaves log and event data unmasked. Logs are also untrusted input that can carry prompt injection, so give the agent the schema and a scrubbed sample, not the production file.",
+      "Before accepting an agent's speedup (workers, threads, a faster parser), ask where the time goes. Python 3.15 (October 2026) ships a sampling profiler: run `python -m profiling.sampling run --mode=cpu --flamegraph -o cpu.html report.py`, then again with `--mode=wall`; time that shows up only in wall mode is waiting, not parsing. The docs warn that runs under a second may not collect enough samples.",
     ],
     code: [
       { lang: "python", label: "Python · json, collections, statistics (stdlib)", src: `import gzip
@@ -386,6 +387,7 @@ end` },
     ],
     incidents: [],
     sources: [
+      { title: "Python 3.15: profiling.sampling (Tachyon sampling profiler)", url: "https://docs.python.org/3.15/library/profiling.sampling.html" },
       { title: "Python: statistics.quantiles", url: "https://docs.python.org/3/library/statistics.html" },
       { title: "Python: gzip", url: "https://docs.python.org/3/library/gzip.html" },
       { title: "Python: threading (GIL note)", url: "https://docs.python.org/3/library/threading.html" },

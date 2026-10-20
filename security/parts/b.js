@@ -371,6 +371,7 @@ export const CHAPTERS = [
       "Auditors will ask who made a change an agent made. CloudTrail records the role session, so give agents their own roles and require `sts:SourceIdentity`, set by your IdP or launcher rather than the agent, so the launching human appears on the agent's API events (CloudTrail omits it when an AWS service or service-linked role acts for a federated identity); Kubernetes audit shows the agent only if it has its own service account.",
       "Platform logs show what changed, not why: Grafana documents that Assistant actions run under the user's identity in user-level audit logs that exclude chat transcripts. Keep the agent's own record of prompts, tool calls and approvals, for example OTel GenAI agent spans (Development status), with content capture opt-in.",
       "Approval evidence still maps to a named person: Copilot's cloud agent can't approve or merge its own PR, a PR it opens under its own app identity needs one extra approval, and Copilot code reviews don't count toward required approvals by default. The new failure is technically human approval rubber-stamped across a flood of agent PRs, so sample approvals for real review.",
+      "Attackers run agents too. In an attack Wiz's incident team investigated (Oct 2026), an AI agent ran the whole operation, from a Kafka UI exploit to cluster-admin, at a pace that can reach hundreds or thousands of actions an hour. \"Every phase of this attack appeared in a different log source, and no single one told the full story.\" Correlate cloud, Kubernetes, identity and CI logs, and after a compromise rotate all credentials on compromised resources rather than tracing which were read.",
     ],
     code: [
       { lang: "yaml", label: "Kubernetes audit policy", src: "apiVersion: audit.k8s.io/v1\nkind: Policy\nrules:\n  # noisy system watches: skip\n  - level: None\n    users: [\"system:kube-proxy\"]\n    verbs: [\"watch\"]\n  # never log secret values\n  - level: Metadata\n    resources:\n      - group: \"\"\n        resources: [\"secrets\", \"configmaps\"]\n  # everything else: who, what, when\n  - level: Metadata" },
@@ -388,6 +389,7 @@ export const CHAPTERS = [
       "sentry-2016-s3-backup-acl",
     ],
     sources: [
+      { title: "Wiz: Loud, fast, and everywhere, anatomy of a real AI-driven cloud attack (19 Oct 2026)", url: "https://www.wiz.io/blog/anatomy-of-ai-driven-cloud-attacks" },
       { title: "CloudTrail concepts", url: "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-concepts.html" },
       { title: "Validating CloudTrail log file integrity", url: "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-log-file-validation-intro.html" },
       { title: "S3 Object Lock", url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html" },

@@ -108,7 +108,17 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
   <h1 id="changelog-h">Changelog</h1>
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
     <p>What each daily research pass changed, newest first. Every change is checked against a primary source. The lab landing page shows the latest three.</p>
-    <details open><summary><time datetime="2026-10-19">19 Oct 2026</time></summary><ul>
+    <details open><summary><time datetime="2026-10-20">20 Oct 2026</time></summary><ul>
+      <li>One Agent to Hundreds: treat a handoff as a claim to recheck, run a sentinel agent with a kill switch, let gates that need a person fail closed, and remember that more parallel agents is not the goal. New lines on Meta's thin orchestrator, Stripe's agent-run ML experiments and Steve Yegge's 20+ agents.</li>
+      <li>One Agent to Hundreds: worktree cleanup that could lose commits and turn caps a plugin could outlive (both fixed in Claude Code 2.1.304), and GitHub refusing anonymous clones under unusual traffic.</li>
+      <li>Agentic Engineering: sandbox defaults that loosen on upgrade, step-up scopes for MCP, installs that don't verify packages, credentials in shared agent memory, and model-only vulnerability reports that bounced.</li>
+      <li>Did the Agent Do It Right?: read transcripts, not just scores; score the artifact, not the steps; measure recall; and benchmarks are losing their human baseline.</li>
+      <li>Delivery: <code>ubuntu-latest</code> moves to Ubuntu 26.04 by 19 November, and a "read-only" Argo CD diff that could run commands.</li>
+      <li>Security: attackers run agents too, and no single log shows the whole attack.</li>
+      <li>Plan B: your AI guardrail is a dependency too, and a shared gateway must bind MCP sessions to callers.</li>
+      <li class="minor">Smaller: Python 3.15's sampling profiler (Patterns), ITBench-AA and Anthropic's harness follow-up (Agentic), a Codex daemon update, Devin's reviewed skill edits, Harrison Chase on re-tuning harnesses and pstack 0.15.29 (fleet), two moved links (Incident Management).</li>
+    </ul></details>
+    <details><summary><time datetime="2026-10-19">19 Oct 2026</time></summary><ul>
       <li>Did the Agent Do It Right?: three new limits. A guard model can be talked out of its verdict by fake policy text, a grader that reads only the final reply fails good runs, and judges drift unless people keep checking them.</li>
       <li>One Agent to Hundreds: give each agent its own identity and contain a misbehaving one in steps, keep formal checks in sync with the code they cover, and define done as verified, not compiled.</li>
       <li>Plan B: a retired DeepSeek model name now quietly gets a newer model, and why unnamed stealth models don't belong in a failover path.</li>

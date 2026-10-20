@@ -53,6 +53,7 @@ export const CHAPTERS = [
       "`CODEOWNERS` only requests reviews. A branch rule or ruleset must enable \"Require review from Code Owners\", and the last matching pattern wins.",
       "Approvals go stale. Without \"Dismiss stale pull request approvals when new commits are pushed\", an agent's later push can merge unreviewed. A rebase changes SHAs, not checks, so pstack re-compares each verdict's `git patch-id` before landing.",
       "A noisy reviewer gets ignored, so tune for precision. OpenAI's Codex review accepts \"modestly reduced recall\" for it, and Anthropic reported under 1% of its Code Review findings marked incorrect, at $15 to 25 a review, in its March 2026 research preview. Code Review went GA for Team and Enterprise on 15 Oct 2026, with Quick, Standard or Deep review per repository.",
+      "Model-only findings still need a check on delivery. Anthropic's OSS Scanner (launched 8 Oct 2026) sends opted-in open-source projects vulnerability reports that are \"fully model-generated, without human review or triage\", each with a reproducer and, when available, a candidate patch; in an early check, Anthropic's reviewers found 85 of 97 critical and high findings met its disclosure bar. In the first week most emailed reports bounced, probably because mail filters flagged the proofs of concept as malware, so reports now go out encrypted.",
     ],
     atScale: [
       "Volume outruns verification. Spotify's incident reviews found no material direct contribution from AI-authored code, but \"the volume of change increased faster than some of our verification controls could adapt\": one automated upgrade \"passed our checks, but still failed in production\". Its fix: automated changes in owners' working hours, more rollback capacity.",
@@ -74,6 +75,8 @@ export const CHAPTERS = [
     codeNote: "Tiers mix Zalando's incident-derived levels and Ona's exclusions. Turn on \"Require review from Code Owners\", \"Require approval of the most recent reviewable push\" and \"Require merge queue\", or these files only suggest.",
     incidents: [],
     sources: [
+      { title: "Anthropic: Launching an opt-in vulnerability-finding service for open source (8 Oct 2026)", url: "https://www.anthropic.com/research/launching-opt-in-vuln-finding-service-for-open-source" },
+      { title: "Punit (Anthropic) on X: OSS Scanner first week, emailed reports bounced (19 Oct 2026)", url: "https://x.com/thepunit/status/2112269363835490450" },
       { title: "Google: How is Google using AI for internal code migrations? (2025)", url: "https://arxiv.org/html/2501.06972v1" },
       { title: "Spotify: Coding is no longer the constraint (Jun 2026)", url: "https://engineering.atspotify.com/2026/6/code-with-claude-coding-is-no-longer-the-constraint" },
       { title: "Spotify: What we learned and fixed about quality at higher velocity (Sep 2026)", url: "https://engineering.atspotify.com/2026/9/ai-changed-how-spotify-builds-what-we-learned-and-fixed-about-quality-at-higher-velocity" },
@@ -161,6 +164,10 @@ export const CHAPTERS = [
       "Deny rules match text, not programs: `Bash(curl *)` misses `curl` by path or inside `sh -c`, and `Read(./.env)` misses a script that opens `.env`. A README injection beat Snowflake Cortex's safe-command check with process substitution and had the agent set `dangerously_disable_sandbox`.",
       "Sandboxes have edges. Claude Code's sandbox covers shell commands and their children; file tools follow permission rules, and MCP servers and hooks run outside it. Agent teammates start with the lead's permission mode (except `dontAsk`), even `--dangerously-skip-permissions`.",
       "GitHub Copilot's local sandbox (GA October 2026) has similar edges: it is off by default, contains processes rather than running a VM or container, its in-process file tools check policy themselves on a best-effort basis, and remote MCP servers are never sandboxed. Kiro's local sandbox (GA 14 October 2026) is also off by default and leaves the agent itself outside it; only the commands it runs are contained.",
+      "Read sandbox defaults on every upgrade. Copilot CLI 1.0.100 (19 Oct 2026): \"Sandbox allows local network access by default so commands can reach localhost and private-network services.\" If agents run next to internal services, deny those addresses in config.",
+      "Grant scopes as the task needs them. Cloudflare's API MCP server (19 Oct 2026) supports step-up authorization: \"Grant only the required scopes when you connect, then authorize more on demand as your agent performs a task.\"",
+      "Installs don't check what they fetch. Trail of Bits (Oct 2026) tested 25 package managers: fewer than half checked lockfile packages for tampering by default, only two verified every download, and \"the repository signatures are not checked when running `npm install`\". An agent runs the default install, so pin hashes in lockfiles and verify them in CI.",
+      "Shared memory needs an owner on every secret. In an October 2026 study, agents given another user's credential in memory, presented as the user's own, used it in 80 to 94 percent of runs; naming the credential's owner cut misuse from 92 to 1 of 305 paired runs.",
       "Protected-file checks must compare canonical paths. Copilot in Visual Studio blocked writes to `.mcp.json` by name, but an injected agent wrote `.mcp.json.` and Windows dropped the trailing dot, planting an MCP server (CVE-2026-103572, patched 13 October 2026). Deep Agents had the same class of bug: its permission rules checked the requested path, then followed symlinks (fixed in 0.7.25, October 2026).",
       "Values an app passes to an agent CLI are input too. The Python Claude Agent SDK passed its `resume` session ID to the CLI unchecked, so a value starting with `-` became a flag: an attacker could add `--mcp-config` and run a command at startup, past the SDK's permission controls (CVE-2026-96620, critical, fixed in 0.2.121). Validate IDs before they reach a command line.",
       "A microVM is a strong boundary, not an absolute one. Vercel's 2026 sandbox bounty turned up a Linux kernel IPv4 checksum flaw (CVE-2026-99999) that let a guest leak host memory and, on matching KVM and Firecracker setups, run commands on the host. Fixed stable kernels shipped on 15 October 2026, so patch the hosts. Keep default-deny egress and no secrets in the sandbox as the layers behind it.",
@@ -187,6 +194,10 @@ export const CHAPTERS = [
     codeNote: "Claude Code's format; other agents have equivalents. List keys merge across scopes, so without the two `Only` keys a repo can still add allow rules and domains. Deny rules are a convenience; the sandbox's filesystem and network limits are the boundary.",
     incidents: ["homebrew-2018-jenkins-github-token-leak", "eslint-2018-npm-account-takeover", "travisci-2018-prod-db-truncate"],
     sources: [
+      { title: "GitHub Copilot CLI 1.0.100 release notes (19 Oct 2026)", url: "https://github.com/github/copilot-cli/releases/tag/v1.0.100" },
+      { title: "Cloudflare changelog: API MCP server supports step-up authorization (19 Oct 2026)", url: "https://developers.cloudflare.com/changelog/post/2026-10-19-cloudflare-mcp-step-up/" },
+      { title: "Trail of Bits: Package managers have an integrity problem (14 Oct 2026)", url: "https://blog.trailofbits.com/2026/10/14/package-managers-have-an-integrity-problem/" },
+      { title: "Whose Credential Is It? Owner attribution in agent memory (arXiv 2610.25707, 19 Oct 2026)", url: "https://arxiv.org/abs/2610.25707" },
       { title: "OpenAI Codex CLI 0.163.0 release notes (15 Oct 2026)", url: "https://github.com/openai/codex/releases/tag/rust-v0.163.0" },
       { title: "Claude Code CHANGELOG (v2.1.301, 15 Oct 2026)", url: "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md" },
       { title: "Vercel: Findings from the $1 million Vercel Sandbox challenge (Oct 2026)", url: "https://vercel.com/blog/findings-from-the-1-million-dollar-vercel-sandbox-challenge" },
@@ -288,7 +299,7 @@ export const CHAPTERS = [
         "Automation fails fleet-wide in one step: a 2024 Google Cloud maintenance job ignored its zone parameter and stopped VPC controllers in every zone; an Azure automation change deleted resources in 14 regions in about 40 minutes. Google adds agent rate limits, circuit breakers, auto-downgrade of risky requests and a fleet-wide \"Red Button\".",
         "Volume: Microsoft's 5,400+ agents across 2,500+ teams processed 1.47M incidents, 480K in the last month, with a reported 4-minute median alert-to-mitigation. A bad rule repeats thousands of times before anyone looks; none of these orgs publishes a harmful-action rate, so track your own.",
         "Privilege drifts across many agents. Meta keys its guardrails on (identity, action, asset), signs tokens naming the agent and the delegating human, can block mass-SSH wrappers, and runs regular sweeps proving forbidden actions still fail.",
-        "Model, prompt or tool changes shift behavior silently: rerun incident replays on each. ITBench (2025) is sobering: agents solved 13.8% of its SRE scenarios.",
+        "Model, prompt or tool changes shift behavior silently: rerun incident replays on each. ITBench (2025) is sobering: agents solved 13.8% of its SRE scenarios. Its 2026 successor, ITBench-AA from Artificial Analysis with IBM, asks for the root causes of 59 Kubernetes incidents, and at launch every frontier model scored below 50% (May 2026).",
         "For a postmortem, reconstructing, replaying and rerunning an agent run answer different questions. Keep the tool results the agent actually saw, model and deployment IDs, tool schema and instruction versions, and its effective permissions. AAIF (Oct 2026): \"The response returned during the original run is part of the evidence needed to understand the decision.\" A rerun against today's tools only shows today's behavior.",
       ],
       quiz: [
@@ -302,6 +313,7 @@ export const CHAPTERS = [
       codeNote: "Allowlists are defense in depth; identity and environment are the boundary. DENY mirrors Azure SRE Agent's hard denies; OTel's GenAI conventions are still in Development status.",
       incidents: ["google-cloud-2024-vpc-controller-shutdown", "microsoft-azure-2024-openai-resource-deletion"],
       sources: [
+      { title: "Artificial Analysis: ITBench-AA launch, with IBM (27 May 2026)", url: "https://artificialanalysis.ai/articles/itbench-aa-launch" },
         { title: "OpenTelemetry GenAI semconv: tool call id required only when the model supplied one (17 Oct 2026)", url: "https://github.com/open-telemetry/semantic-conventions-genai/commit/0b9555d1c8665d5383a10d09a75625766564cea6" },
         { title: "AAIF: Can you reproduce an agent run? (13 Oct 2026)", url: "https://aaif.io/blog/can-you-reproduce-an-agent-run" },
         { title: "Google SRE book: Managing incidents", url: "https://sre.google/sre-book/managing-incidents/" },
