@@ -246,7 +246,7 @@ export const CHAPTERS = [
     quiz: [
       { q: "Name three skills that compound with agent capability and one that competes with it.", a: "Compound: judgment and taste, specs and invariants, verification and evals, reliable agent-run systems, learning from incidents. Compete: producing code quickly, memorised API details, model-specific prompt tricks." },
       { q: "What is the supervision paradox Anthropic's engineers described?", a: "Supervising AI output takes the coding skills that heavy AI use can erode, so some engineers deliberately practice without AI to keep them." },
-      { q: "How does the explainer's long-horizon thesis apply to a career?", a: "Capabilities change in weeks, so tool-specific skills churn; the ability to see what must still be true in ten years and design guarantees for it grows in value." },
+      { q: "How does the explainer's long-horizon thesis apply to a career?", a: "Capability compounds over months across many releases, so tool-specific skills churn; the ability to plan for the slope, see what must still be true in ten years, and design guarantees for it grows in value." },
     ],
     incidents: [],
     sources: [

@@ -7,8 +7,8 @@
 <meta name="description" content="Real public postmortems, searchable by symptom, and the recurring failure patterns that keep coming back, with how companies warded them off.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@800;900&display=swap">
 <style>
-/* Layout: a case-file header, the search box with results, then a grid of recurring
-   failure patterns ("monsters") with how to ward each off, then what's missing.
+/* Layout: a case-file header, a grid of recurring failure patterns ("monsters") with how
+   to ward each off, then the search box with results, then what's missing.
    The theme is deliberately dark: these are horror stories. */
 :root {
   --bg: #0b0a0e; --bg2: #121017; --panel: #17141d; --fg: #ece6dc; --muted: #a59d93; --rule: #2c2633;
@@ -84,11 +84,16 @@ footer p { margin: 0 0 8px; }
 <body>
 <nav class="site-nav" aria-label="Site" style="max-width:1040px"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
 <div class="wrap">
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · case files<span class="updated"> · updated <time datetime="2026-10-19">19 Oct 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · case files<span class="updated"> · updated <time datetime="2026-10-20">20 Oct 2026</time></span></div>
   <h1>The Incident <span>Files</span></h1>
   <p class="sub">Real outages. Real breaches. Told by the companies that lived through them.</p>
-  <p class="lede">Common failures repeat: expired certificates, config pushes that go everywhere at once, retry storms, databases running out of IDs, keys left where someone could find them. Describe a failure mode and this page pulls the matching case files, leading with what caused each one and what fixed it. It's meant for the time around incidents, not the middle of one: readiness and design reviews, on-call training, and postmortems that point to known patterns and preventions. Mid-incident, the job is capturing data from your own system, because every system is its own thing.</p>
+  <p class="lede">Common failures repeat: expired certificates, config pushes that go everywhere at once, retry storms, databases running out of IDs, keys left where someone could find them. This page starts with those patterns and how companies warded them off, then lets you describe a failure mode and pull the matching case files, leading with what caused each one and what fixed it. It's meant for the time around incidents, not the middle of one: readiness and design reviews, on-call training, and postmortems that point to known patterns and preventions. Mid-incident, the job is capturing data from your own system, because every system is its own thing.</p>
 
+  <h2>The monsters that keep coming back</h2>
+  <p class="sub">Recurring patterns across these files, and how the companies involved warded them off afterwards.</p>
+  <div class="monsters" id="monsters"></div>
+
+  <h2>Search the files</h2>
   <form class="search" id="form" role="search">
     <input id="q" type="search" autocomplete="off" value="DNS broke everything" placeholder="Describe a failure" aria-label="Describe a failure">
   </form>
@@ -96,10 +101,6 @@ footer p { margin: 0 0 8px; }
   <div class="status" id="status" aria-live="polite">Opening the files…</div>
   <div class="resultsHead" id="resultsHead"></div>
   <div class="results" id="results"></div>
-
-  <h2>The monsters that keep coming back</h2>
-  <p class="sub">Recurring patterns across these files, and how the companies involved warded them off afterwards.</p>
-  <div class="monsters" id="monsters"></div>
 
   <h2>What's missing</h2>
   <p class="why">Public postmortems lean toward availability incidents a company is comfortable telling: a clever root cause, a fast fix, lessons learned. Security incidents, often the costliest, are published less often, later, and with less detail, because lawyers, regulators and disclosure rules shape what gets said. This collection includes a set of credential leaks and supply-chain compromises, but like anything built from public writing, it underrepresents the failures companies would rather not discuss.</p>

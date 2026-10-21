@@ -7,17 +7,6 @@ binding = "DB"
 database_name = "down-or-me"
 database_id = "f746c8d5-340e-42e5-ad68-ce312cd8def8"
 
-# Workers AI + AI Gateway binding for Plan B (/api/planb): env.AI.gateway("sre-lab").run([...])
-[ai]
-binding = "AI"
-
 # Pages secrets (set in the Pages project, never committed):
 #   PRIVATE_TARGETS   same JSON as the worker, so the private board can list them
 #   OWNER_EMAIL       the only Cloudflare Access login allowed to see the private board
-#   ANTHROPIC_API_KEY Plan B fallback step (dedicated lab key with a low spend limit)
-#   PLANB_SALT        Plan B: salt for the daily IP hash
-#   WORKERS_AI_TOKEN  Plan B, optional: only if the spike shows the workers-ai step needs a token
-
-[vars]
-# Not a secret: Plan B calls the AI Gateway REST endpoint with the account id.
-PLANB_ACCOUNT_ID = "983a6e91a3bea9819abb6c98447f3b01"

@@ -109,6 +109,8 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
     <p>What each daily research pass changed, newest first. Every change is checked against a primary source. The lab landing page shows the latest three.</p>
     <details open><summary><time datetime="2026-10-20">20 Oct 2026</time></summary><ul>
+      <li>Engineering on an Exponential: chapter 1 rewritten. Plan for the curve over months, not the next release, and when the model builds most of the system, separate its three roles (author, runtime, operator) with four tests: swap, regenerate, enforce, reverse.</li>
+      <li>The Incident Files now opens with the recurring patterns, with search below. Plan B is retired.</li>
       <li>One Agent to Hundreds: treat a handoff as a claim to recheck, run a sentinel agent with a kill switch, let gates that need a person fail closed, and remember that more parallel agents is not the goal. New lines on Meta's thin orchestrator, Stripe's agent-run ML experiments and Steve Yegge's 20+ agents.</li>
       <li>One Agent to Hundreds: worktree cleanup that could lose commits and turn caps a plugin could outlive (both fixed in Claude Code 2.1.304), and GitHub refusing anonymous clones under unusual traffic.</li>
       <li>Agentic Engineering: sandbox defaults that loosen on upgrade, step-up scopes for MCP, installs that don't verify packages, credentials in shared agent memory, and model-only vulnerability reports that bounced.</li>
