@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>One Agent to Hundreds</title>
-<meta name="description" content="How to get from one coding agent you trust to hundreds running in parallel, one stage at a time: what each stage adds, what breaks without it, and how to know you're ready for the next.">
+<meta name="description" content="How to get from one coding agent you trust to hundreds running in parallel, one stage at a time, then how an org scales that ladder across teams: what each stage adds, what breaks without it, and how to know you're ready for the next.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
 <style>
-/* Layout: a five-stage ladder. Pick a stage; the diagram grows, and the panels say what to add, what breaks, and when to move on. */
+/* Layout: a five-stage ladder for one engineer, then a two-stage org layer on top. Pick a stage; the diagram grows, and the panels say what to add, what breaks, and when to move on. */
 :root {
   --bg: #f4f6f8; --panel: #ffffff; --fg: #141c24; --muted: #5b6875; --rule: #d7dee5;
   --accent: #1f5fbf; --ok: #15803d; --warn: #a16207; --bad: #c2410c; --soft: #e8eef6;
@@ -45,6 +45,14 @@ code { font-family: var(--font-mono); font-size: .92em; }
 .rung[aria-current="step"] .dot { background: var(--accent); border-color: var(--accent); color: var(--bg); }
 .rung:focus-visible .dot { outline: 2px solid var(--accent); outline-offset: 3px; }
 .rung .done { position: absolute; top: -2px; right: calc(50% - 34px); z-index: 2; font-size: 12px; color: var(--ok); font-weight: 700; }
+.track { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 22px 0 -8px; }
+.track.org { color: var(--new); margin-top: 20px; }
+.ladder.org { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ladder.org::before, .ladder.org .fill { left: 25%; }
+.ladder.org::before { right: 25%; }
+.ladder.org .fill { background: var(--new); }
+.ladder.org .rung .dot, .ladder.org .rung.past .dot { border-color: var(--new); color: var(--new); font-size: 15px; }
+.ladder.org .rung[aria-current="step"] .dot { background: var(--new); border-color: var(--new); color: var(--bg); }
 
 .stage { margin-top: 24px; background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; }
 .stage-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 14px; padding: 16px 18px 6px; }
@@ -137,6 +145,7 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
   .ladder::before, .ladder .fill { top: 21px; }
   .rung .name { font-size: 12.5px; }
   .rung .done { right: calc(50% - 28px); }
+  .ladder.org .rung .dot { font-size: 13px; }
   .nav .keys { display: none; }
   .diagram { overflow-x: auto; }
   .diagram > svg { min-width: 640px; max-height: none; }
@@ -151,11 +160,14 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
 <main class="wrap">
   <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · agent fleets<span class="updated"> · updated <time datetime="2026-10-20">20 Oct 2026</time></span></div>
   <h1>One Agent to Hundreds</h1>
-  <p class="lede">Running hundreds of coding agents is not one agent times a hundred. Each jump in scale breaks something the smaller setup got away with: your review time, shared files, one coordinator's attention, then rate limits and cost. Step up one stage at a time. Each stage says what to add, what breaks without it, and how to tell you're ready for the next.</p>
+  <p class="lede">Running hundreds of coding agents is not one agent times a hundred. Each jump in scale breaks something the smaller setup got away with: your review time, shared files, one coordinator's attention, then rate limits and cost. Step up one stage at a time. Each stage says what to add, what breaks without it, and how to tell you're ready for the next. Then an org layer on top shows how a company runs many of these ladders at once: one platform, team budgets, pooled limits and an audit trail.</p>
   <p class="lede">The main thread is <a href="https://github.com/cursor/plugins/tree/main/pstack">pstack</a>, Lauren Tan's published agent workflow, alongside what Stripe, Spotify, Uber, Cursor and Anthropic publish about their agent fleets and how Mitchell Hashimoto, Dex Horthy and Boris Cherny describe their own ramp-ups. Stage sizes are teaching breakpoints, not thresholds from a study.</p>
 
   <nav aria-label="Stages">
+    <p class="track">One engineer's ladder</p>
     <ol class="ladder" id="ladder"><span class="fill" id="fill" aria-hidden="true"></span></ol>
+    <p class="track org">How an org scales it</p>
+    <ol class="ladder org" id="ladder-org"><span class="fill" id="fill-org" aria-hidden="true"></span></ol>
   </nav>
 
   <section class="stage" id="stage" aria-live="polite">
@@ -205,6 +217,7 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
   <div class="prose">
     <h2>How the pieces fit</h2>
     <p>Across the stages, the human's job moves from doing the work to writing briefs, then to reading verdicts, then to answering only the questions no experiment can settle. pstack's Orchestrate playbook describes the end state as <q>the human checking in twice a day instead of every five minutes</q>. Irreversible actions (force-pushes to shared branches, deploys, data deletion, customer messages) still wait for a person.</p>
+    <p>The ladder sits one level down inside the org layer. Each team climbs the five stages at its own pace. The org owns what the teams share: the platform and gateways, an identity per agent, each team's budget and quota, the pooled API and GitHub limits, the audit trail, and one fleet number that puts merge rate next to change failure rate.</p>
     <p>Two ideas carry the whole ladder. First, <b>evidence, not assertion</b>: a worker's "done" counts only with the evidence its brief asked for. pstack's swarm skill drops a report missing its SHAs, respawns the worker once, and records a second miss as a gap: <q>A gap does not count as a pass.</q> Second, <b>encode lessons in structure</b>: a correction you keep repeating becomes a lint rule, a check or a script. pstack's principle puts it bluntly: <q>The instruction is the symptom.</q></p>
     <p>Memory is the newer layer. In her AI Native DevCon talk, Anthropic's Lamis Mukta describes memory moving from CLAUDE.md files to skills to plain files that agents search with ordinary tools. It then needs versioning, a hash check before every write, and read-only organisation-wide memory beside writable per-agent scratchpads once many agents share it. "Dreaming" is a separate batch job that reads past sessions and proposes a cleaned-up memory store for a human to accept or reject. Claude Managed Agents documents the same mechanics (immutable memory versions, a <code>content_sha256</code> precondition on writes). Dreams are in research preview.</p>
 
@@ -222,6 +235,7 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
       <li><b>"Hundreds" is the sources' word.</b> In her pstack guide (31 August 2026), Lauren Tan writes that you may get away with up to 10 agents in parallel with worktrees, and promises a later post on running hundreds of subagents in parallel in the cloud. Cursor reports runs that <q>peak at several hundred agents</q>. No source here gives an exact count for any one person's setup.</li>
       <li><b>Company numbers are the companies' own.</b> Stripe's and Spotify's figures are from their engineering blogs, Uber's from its engineering blog and AI Engineer World's Fair talk page, Kiro's from its own team, and Boris Cherny's from The Pragmatic Engineer's write-up of their interview. Block's are from an interview Anthropic published. None is independently measured.</li>
       <li><b>Cost is real.</b> Anthropic reports that its multi-agent research system used about 15 times the tokens of a chat. Claude Code's docs say agent teams use about 7 times the tokens of a standard session in plan mode. Measure before you scale.</li>
+      <li><b>The org layer is my synthesis.</b> Its facts come from Claude and GitHub docs and from DORA's survey correlations. How the two org stages split the work, and their gates, are advice.</li>
       <li><b>Limits change.</b> The documented numbers below each stage are defaults as of October 2026. Check the linked docs before you plan around them.</li>
     </ul>
   </div>
@@ -361,6 +375,9 @@ const S = {
   codex163: ["OpenAI Codex CLI 0.163.0 release notes: restart the background server from /daemon (15 Oct 2026)", "https://github.com/openai/codex/releases/tag/rust-v0.163.0"],
   rehbergerSentinel: ["Johann Rehberger on X: a sentinel agent that kills the worker (12 Oct 2026)", "https://x.com/wunderwuzzi23/status/2109652730809840013"],
   devinSkills: ["Devin release notes: propose edits to shared plugins and skills (19 Oct 2026)", "https://docs.devin.ai/release-notes/overview"],
+  dora: ["Google Cloud: Announcing the 2025 DORA report (23 Sep 2025)", "https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report"],
+  ccMonitoring: ["Claude Code docs: monitoring usage (OpenTelemetry metrics and events)", "https://code.claude.com/docs/en/monitoring-usage"],
+  ccManaged: ["Claude Code docs: deploy managed settings", "https://code.claude.com/docs/en/managed-settings"],
 };
 
 // Diagram primitives: boxes {x,y,w,h,label,sub,new}, zones, clusters of dots, edges between box ids.
@@ -676,6 +693,101 @@ const STAGES = [
       edges: [["you", "coord", "gates"], ["budget", "coord", "", "", true], ["coord", "fleet", ""], ["fleet", "stacker", ""], ["fleet", "limits", "", "", true], ["fleet", "dream", "", "", true]],
     },
   },
+  {
+    layer: "org", n: "team", name: "Every team", hint: "one platform",
+    title: "Org 1 · One platform for every team",
+    count: "many teams, each on its own ladder",
+    bottleneck: "<b>What limits you:</b> every team building its own harness. Each team climbs the ladder above on its own, so without a platform you get many harnesses, many sets of credentials and no shared record of what agents did.",
+    add: [
+      ["A platform team that owns the harness, sandboxes and gateways, so teams bring tasks, not tooling. DORA's 2025 report found a direct correlation between a high-quality internal platform and an organization's ability to get value from AI.", "dora"],
+      ["One harness config on every machine. Claude Code applies managed settings above every other level, so no user or project value overrides them, and locks such as allowManagedHooksOnly and permissions.disableBypassPermissionsMode keep every team on the platform's hooks and permission rules.", "ccManaged"],
+      ["The ladder's checks as platform defaults: a check the agent can't edit, complete briefs, verdicts from an agent that didn't write the change, one writer per piece of state. Each team still climbs at its own pace.", "orch"],
+      ["Its own identity for every agent, issued by the platform. Microsoft's identity team (Oct 2026) argues an agent should not inherit its user's standing access, and should be contained in steps when it misbehaves.", "msInsiders"],
+      ["Agents on app identities, not people's tokens. On GitHub, an App installation gets its own rate limit, while a user's token shares one budget with every app acting for that user.", "ghRest"],
+    ],
+    breaks: [
+      ["More change without controls. DORA (Sep 2025): without strong automated testing, mature version control and fast feedback loops, more change volume leads to instability.", "dora"],
+      ["One busy agent can lock out a person. A GitHub App user token's limit is combined with every other app acting for that user and with the user's personal tokens. GitHub's own example: an app with a 15,000-request limit that makes 10,000 requests for a user uses up that user's 5,000.", "ghRest"],
+      ["Merged policy can reopen what you closed. When managed settings merge several admin sources, Claude Code adds a lower source's permission allow rules and hooks to the policy, so the docs say to merge only when every lower source is under an administrator's control.", "ccManaged"],
+    ],
+    quote: null,
+    gate: [
+      "Every team's agents run on the platform's harness, sandboxes and gateways.",
+      "Every agent acts under its own identity, never a person's token.",
+      "The ladder's checks are platform defaults that a team can't switch off.",
+    ],
+    limits: [
+      ["GitHub App installations: at least 5,000 requests an hour, rising with repositories and users to at most 12,500; 15,000 on Enterprise Cloud.", "ghRest"],
+      ["Claude Code on Claude for Teams and Enterprise: each member's usage draws from a seat allowance that resets on a rolling five-hour window and a weekly window, shared with Claude chat.", "ccCosts"],
+    ],
+    people: [],
+    sources: ["dora", "ccManaged", "orch", "msInsiders", "ghRest", "ccCosts"],
+    diagram: {
+      boxes: [
+        { id: "plat", x: 15, y: 125, w: 90, h: 50, label: "Platform", sub: "one harness", new: true },
+        { id: "gw", x: 125, y: 125, w: 125, h: 50, label: "Gateways", sub: "model · tools", new: true },
+        { id: "tA", x: 280, y: 35, w: 105, h: 44, label: "Team A", sub: "own ladder" },
+        { id: "tB", x: 280, y: 128, w: 105, h: 44, label: "Team B", sub: "own ladder" },
+        { id: "tC", x: 280, y: 221, w: 105, h: 44, label: "Team C", sub: "own ladder" },
+        { id: "ids", x: 580, y: 30, w: 170, h: 46, label: "Identity per agent", sub: "no borrowed tokens", new: true },
+        { id: "set", x: 580, y: 127, w: 170, h: 46, label: "Managed settings", sub: "hooks · permissions", new: true },
+        { id: "chk", x: 580, y: 224, w: 170, h: 46, label: "Ladder checks", sub: "platform defaults", new: true },
+      ],
+      clusters: [
+        { id: "c1", x: 410, y: 32, w: 120, h: 50, n: 10 },
+        { id: "c2", x: 410, y: 125, w: 120, h: 50, n: 10 },
+        { id: "c3", x: 410, y: 218, w: 120, h: 50, n: 10 },
+      ],
+      edges: [["plat", "gw", ""], ["gw", "tA", ""], ["gw", "tB", ""], ["gw", "tC", ""], ["tA", "c1", ""], ["tB", "c2", ""], ["tC", "c3", ""], ["c1", "ids", "", "", true], ["c2", "set", "", "", true], ["c3", "chk", "", "", true]],
+    },
+  },
+  {
+    layer: "org", n: "org", name: "Whole org", hint: "budgets, quotas, audit",
+    title: "Org 2 · Budgets, quotas and audit",
+    count: "hundreds of agents across the org",
+    bottleneck: "<b>What limits you:</b> limits every team shares. API quota, GitHub's limits, CI, review capacity and spend are pooled across the org, so one team's swarm can starve the rest. Leadership also needs one number that says whether the fleet helps.",
+    add: [
+      ["A budget per team, with the per-run caps from Hundreds under it. On Claude for Teams and Enterprise, spend past each seat's allowance can be capped for the organization, a group or one member.", "ccCosts"],
+      ["Quota split by team. Claude API limits are set per organization; give each team a workspace with lower spend and rate limits, which the docs say \"protects other Workspaces from potential overuse\". Organization-wide limits still apply, even if workspace limits add up to more.", "apiLimits"],
+      ["Quota sized for concurrency, not headcount. Claude Code's docs suggest 200k-300k tokens a minute per user for 1-5 users but 10k-15k for 500+, because fewer people use it at once in big orgs.", "ccCosts"],
+      ["An audit trail you can query. Claude Code can export an OpenTelemetry event for every tool permission decision, saying whether config, a hook or a person made it, and join it to the tool's result by tool_use_id. Amp goes further and links every commit to the agent thread that produced it (see Hundreds).", "ccMonitoring"],
+      ["Throughput and cost per team from the tools. The same OpenTelemetry metrics count pull requests created, commits and cost, tagged with organization and account IDs.", "ccMonitoring"],
+      ["One fleet number with two halves, per team: merge rate next to change failure rate. That is throughput next to stability, which DORA's 2025 report found moving in opposite directions as AI adoption grows. A team whose failures climb faster than its merges is scaling past its checks.", "dora"],
+    ],
+    breaks: [
+      ["Limits are pooled across agents. GitHub caps content creation at 80 requests a minute and 500 an hour, and an App installation's hourly budget stays the same however many agents use its tokens.", "ghRest"],
+      ["Claude Code competes with production. For organizations with custom rate limits, Claude Code traffic counts toward the org's overall API limits; a workspace rate limit caps its share.", "ccCosts"],
+      ["A spend cap stops every team at once. Past the org's monthly cap, every API request returns a 429 with no retry-after until the first of the next month, unless the limit is raised.", "apiLimits"],
+      ["Throughput rises faster than stability. DORA's 2025 report found AI adoption positively related to delivery throughput, but it \"does continue to have a negative relationship with software delivery stability\".", "dora"],
+      ["Audit has gaps by default. Claude Code exports events only when a logs exporter is configured, and leaves tool arguments out unless OTEL_LOG_TOOL_DETAILS=1.", "ccMonitoring"],
+    ],
+    quote: null,
+    gate: [
+      "Each team has its own budget and quota share, and no team's swarm can starve production.",
+      "Fleet peak stays under API, GitHub and CI limits, with cost tracked per team and per run.",
+      "Every agent commit traces to its run, its owner and the tool decisions behind it.",
+      "Merge rate is reported next to change failure rate, per team, never alone.",
+    ],
+    limits: [
+      ["Claude API monthly spend caps: $500 on Start, $1,000 on Build and $200,000 on Scale; Custom has none.", "apiLimits"],
+      ["Claude API workspaces: unset workspace limits match the organization's, and the default workspace can't have a spend limit.", "apiLimits"],
+    ],
+    people: [],
+    sources: ["ccCosts", "apiLimits", "ccMonitoring", "ampSoc2", "dora", "ghRest"],
+    diagram: {
+      boxes: [
+        { id: "teams", x: 15, y: 30, w: 105, h: 46, label: "Teams", sub: "budget each", new: true },
+        { id: "plat", x: 15, y: 127, w: 105, h: 46, label: "Platform", sub: "shared gateways" },
+        { id: "quota", x: 15, y: 224, w: 105, h: 46, label: "Quota split", sub: "per workspace", new: true },
+        { id: "stacker", x: 600, y: 30, w: 150, h: 46, label: "Stacker → queue", sub: "lands continuously" },
+        { id: "limits", x: 600, y: 127, w: 150, h: 46, label: "Pooled limits", sub: "API · GitHub · CI", new: true },
+        { id: "audit", x: 600, y: 224, w: 150, h: 46, label: "Audit · metrics", sub: "merges vs failures", new: true },
+      ],
+      zones: [{ x: 150, y: 14, w: 430, h: 272, label: "org fleet", new: true }],
+      clusters: [{ id: "fleet", x: 175, y: 40, w: 385, h: 230, n: 200, label: "" }],
+      edges: [["teams", "plat", "tasks"], ["quota", "plat", "", "", true], ["plat", "fleet", ""], ["fleet", "stacker", ""], ["fleet", "limits", "", "", true], ["fleet", "audit", "", "", true]],
+    },
+  },
 ];
 
 // When each practice was described; these change fast, so the page shows the date with each one.
@@ -782,9 +894,13 @@ function buildLadder() {
     const b = el("button", { type: "button", class: "rung", "data-i": i, "aria-label": `Stage ${i + 1} of ${STAGES.length}: ${s.title}` },
       el("span", { class: "dot" }, s.n), el("span", { class: "name" }, s.name), el("span", { class: "hint" }, s.hint));
     b.addEventListener("click", () => go(i));
-    ol.append(el("li", {}, b));
+    (s.layer === "org" ? $("ladder-org") : ol).append(el("li", {}, b));
   });
 }
+// The org layer sits on top of the engineer's ladder; each layer has its own track and its own top stage.
+const ORG0 = STAGES.findIndex((s) => s.layer === "org");
+const lastOfLayer = (i) => i === STAGES.length - 1 || STAGES[i + 1].layer !== STAGES[i].layer;
+const short = (i) => STAGES[i].layer === "org" ? STAGES[i].title.split(" · ")[0] : STAGES[i].n;
 function renderLadder() {
   document.querySelectorAll(".rung").forEach((b, i) => {
     b.classList.toggle("past", i < cur);
@@ -792,27 +908,29 @@ function renderLadder() {
     b.querySelector(".done")?.remove();
     if (gateDone(i)) b.append(el("span", { class: "done", "aria-hidden": "true" }, "✓"));
   });
-  $("fill").style.width = `${(cur / (STAGES.length - 1)) * 80}%`;
+  $("fill").style.width = `${(Math.min(cur, ORG0 - 1) / (ORG0 - 1)) * 80}%`;
+  $("fill-org").style.width = `${cur >= ORG0 ? ((cur - ORG0) / (STAGES.length - 1 - ORG0)) * 50 : 0}%`;
 }
 function renderReady() {
   const last = cur === STAGES.length - 1;
   const done = gateDone(cur);
   const p = $("st-ready");
   p.className = `ready ${done ? "yes" : "no"}`;
-  p.textContent = done ? (last ? "✓ All four hold: this is the setup the sources describe at hundreds." : `✓ All checks hold: try stage ${STAGES[cur + 1].n}.`) : "Tick each one only when it holds today.";
+  const next = last ? "" : STAGES[cur + 1].layer === "org" ? short(cur + 1) : `stage ${STAGES[cur + 1].n}`;
+  p.textContent = done ? (last ? "✓ All four hold: this is the org setup the sources describe." : lastOfLayer(cur) ? "✓ All four hold: this is the setup the sources describe at hundreds. Next, the org layer." : `✓ All checks hold: try ${next}.`) : "Tick each one only when it holds today.";
   renderLadder();
 }
 function render() {
   const s = STAGES[cur];
   $("st-title").textContent = s.title;
-  $("st-count").textContent = `stage ${cur + 1} of ${STAGES.length} · ${s.count}`;
+  $("st-count").textContent = s.layer === "org" ? `org layer ${cur - ORG0 + 1} of ${STAGES.length - ORG0} · ${s.count}` : `stage ${cur + 1} of ${ORG0} · ${s.count}`;
   $("st-bottleneck").innerHTML = s.bottleneck;
   drawDiagram(s);
   $("st-add").replaceChildren(...s.add.map(([t, k]) => el("li", {}, t, " ", el("span", { class: "src" }, srcLink(k)))));
   $("st-breaks").replaceChildren(...s.breaks.map(([t, k]) => el("li", {}, t, " ", el("span", { class: "src" }, srcLink(k)))));
   $("st-quote").replaceChildren(...(s.quote ? [el("p", { class: "quote" }, el("q", {}, s.quote[0]), ` (${s.quote[1]}, `, srcLink(s.quote[2]), ")")] : []));
   const last = cur === STAGES.length - 1;
-  $("st-gate-h").textContent = last ? "Running well at this size when" : "Ready for the next stage when";
+  $("st-gate-h").textContent = lastOfLayer(cur) ? "Running well at this size when" : "Ready for the next stage when";
   $("st-gate").replaceChildren(...s.gate.map((t, j) => {
     const id = `g-${cur}-${j}`;
     const cb = el("input", { type: "checkbox", id });
@@ -820,6 +938,7 @@ function render() {
     cb.addEventListener("change", () => { ticks[`${cur}.${j}`] = cb.checked; saveTicks(); renderReady(); });
     return el("li", {}, el("label", { for: id }, cb, el("span", {}, t)));
   }));
+  document.querySelector(".who").hidden = s.people.length === 0;
   $("st-people").replaceChildren(...s.people.map(([n, t, k]) => el("li", {}, el("b", {}, n), " ", t, " ", el("span", { class: "src" }, `as of ${AS_OF[k] || "2026"} · `, srcLink(k)))));
   $("st-limits").replaceChildren(...s.limits.map(([t, k]) => el("li", {}, t, " ", el("span", { class: "src" }, srcLink(k)))));
   const cited = [...s.add.map((x) => x[1]), ...s.breaks.map((x) => x[1]), ...s.limits.map((x) => x[1]), ...s.people.map((x) => x[2]), ...(s.quote ? [s.quote[2]] : [])];
@@ -827,8 +946,8 @@ function render() {
   $("st-sources").replaceChildren(...srcKeys.map((k) => el("li", {}, el("a", { href: S[k][1] }, S[k][0]))));
   $("prev").disabled = cur === 0;
   $("next").disabled = last;
-  $("next").textContent = last ? "Top of the ladder" : `Next: ${STAGES[cur + 1].n} →`;
-  $("prev").textContent = cur === 0 ? "← Previous stage" : `← ${STAGES[cur - 1].n}`;
+  $("next").textContent = last ? "Top of the org layer" : `Next: ${short(cur + 1)} →`;
+  $("prev").textContent = cur === 0 ? "← Previous stage" : `← ${short(cur - 1)}`;
   document.querySelectorAll("#glance-body tr").forEach((tr, i) => tr.classList.toggle("cur", i === cur));
   renderReady();
 }
@@ -838,9 +957,9 @@ function go(i, push = true) {
   if (push) { try { history.replaceState(null, "", `#stage-${cur + 1}`); } catch { /* ignore */ } }
 }
 function buildGlance() {
-  const add = ["A check it can't edit; guides and sensors; lessons as checks", "Worktree per agent; split on seams; plan before code", "Complete briefs; independent verdicts per SHA; local checks before CI", "Coordinators; one writer per state; one stacker; tests at old edges", "Cloud workers; budget stop; human gates; gateways; learning across runs"];
+  const add = ["A check it can't edit; guides and sensors; lessons as checks", "Worktree per agent; split on seams; plan before code", "Complete briefs; independent verdicts per SHA; local checks before CI", "Coordinators; one writer per state; one stacker; tests at old edges", "Cloud workers; budget stop; human gates; gateways; learning across runs", "Platform harness and gateways; managed settings; an identity per agent; ladder checks as defaults", "Team budgets and quota split; a queryable audit trail; merge rate next to change failure rate"];
   $("glance-body").replaceChildren(...STAGES.map((s, i) => {
-    const a = el("a", { href: `#stage-${i + 1}` }, s.n === "1" ? "1" : s.n);
+    const a = el("a", { href: `#stage-${i + 1}` }, short(i));
     a.addEventListener("click", (e) => { e.preventDefault(); go(i); $("stage").scrollIntoView({ behavior: "smooth", block: "start" }); });
     return el("tr", {}, el("td", {}, a, ` · ${s.name}`), el("td", {}, s.bottleneck.replace(/<[^>]+>/g, "").replace(/^What limits you:\s*/, "").split(". ")[0] + "."), el("td", {}, add[i]), el("td", {}, s.gate[0]), el("td", {}, s.people.map((x) => x[0]).join(", ")));
   }));
