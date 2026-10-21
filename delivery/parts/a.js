@@ -262,12 +262,12 @@ publish:
   {
     id: "gitops",
     n: 3,
-    title: "GitOps with Argo CD",
-    question: "With Argo CD, what actually happens between merging a manifest change and the cluster changing? And what happens when someone runs `kubectl edit` in production?",
+    title: "Desired-state control across hundreds of clusters",
+    question: "With Argo CD managing hundreds of clusters, how do you know how much of the fleet matches Git right now, and what is the policy when someone has to change production by hand?",
     view: [940, 520],
     groups: [
       { id: "g-argo", label: "Argo CD", x: 370, y: 20, w: 560, h: 250 },
-      { id: "g-cl", label: "Target cluster", x: 370, y: 320, w: 560, h: 180 },
+      { id: "g-cl", label: "Target cluster (one of hundreds)", x: 370, y: 320, w: 560, h: 180 },
     ],
     nodes: [
       { id: "eng", label: "Engineer", sub: "PR + review", kind: "actor", x: 10, y: 40, w: 120, h: 50 },
@@ -281,6 +281,8 @@ publish:
       { id: "kapi", label: "kube-apiserver", sub: "live state", x: 400, y: 360, w: 150, h: 50 },
       { id: "live", label: "Live objects", sub: "Deployment, Svc", kind: "pod", x: 600, y: 360, w: 160, h: 50 },
       { id: "manual", label: "kubectl edit", sub: "manual change", kind: "actor", x: 790, y: 360, w: 120, h: 50 },
+      { id: "fleet", label: "Drift metrics", sub: "argocd_app_info", kind: "store", x: 10, y: 440, w: 150, h: 50 },
+      { id: "bg", label: "Break-glass", sub: "deny window + PR", kind: "actor", x: 200, y: 440, w: 150, h: 50 },
     ],
     edges: [
       { id: "e-pr", from: "eng", to: "repo", label: "merges", labelPos: 0.5 },
@@ -294,43 +296,22 @@ publish:
       { id: "e-diff", from: "ctrl", to: "kapi", label: "watch, diff, apply", bidir: true, labelPos: 0.5 },
       { id: "e-live", from: "kapi", to: "live" },
       { id: "e-manual", from: "manual", to: "live" },
+      { id: "e-metrics", from: "ctrl", to: "fleet", label: "sync_status", via: [[590, 292], [200, 292]], labelAt: [300, 288] },
+      { id: "e-bg", from: "bg", to: "kapi", label: "time-boxed", labelPos: 0.5 },
     ],
     steps: [
-      { text: "Git holds the desired state; Argo CD keeps the cluster matching it. Nobody, including CI, pushes to the cluster directly. Press Next to follow one change and then one drift." },
-      { text: "A change to the cluster is a commit. An engineer merges a reviewed PR, or CI opens a PR that bumps the image digest. Git history becomes the audit log and the undo button.", on: ["eng", "ci", "repo"], flow: ["e-pr", "e-ci"] },
-      { text: "Argo CD notices the commit. A Git webhook to the API server triggers a refresh straight away; without one, the controller polls every `timeout.reconciliation`, by default 120 seconds plus up to 60 seconds of jitter.", on: ["repo", "api", "ctrl"], flow: ["e-hook", "e-refresh"] },
-      { text: "The repo server fetches the repo and renders plain manifests from Helm, Kustomize or YAML for that revision and path. Generated manifests are cached, by default for 24 hours, so unchanged paths aren't re-rendered.", on: ["ctrl", "reposrv", "repo", "redis"], flow: ["e-render", "e-fetch", "e-cache"] },
-      { text: "The application controller compares the target state from Git with the live state it watches through the cluster's API server. Any difference marks the Application `OutOfSync`; no difference is `Synced`.", on: ["ctrl", "kapi", "live"], flow: ["e-diff"] },
-      { text: "Sync applies the difference. With automated sync, Argo CD syncs only when the app is `OutOfSync`, and won't retry a failed sync against the same commit. Deleting a file from Git deletes the object only if `prune` is on; it's off by default.", on: ["ctrl", "kapi", "live"], flow: ["e-diff", "e-live"] },
-      { text: "Order is controlled with phases and waves: PreSync hooks (say, a migration Job) run first, then lower `sync-wave` numbers before higher ones. Each wave must be in sync and healthy before the next, with a 2 second pause between waves.", on: ["ctrl", "live"], flow: ["e-live"] },
-      { text: "Sync status and health are separate. Health is the worst of the app's resources: a Deployment is Healthy when the observed generation is current and all replicas are updated. An app can be `Synced` and `Degraded` at once.", on: ["ctrl", "live"] },
-      { text: "Drift: someone runs `kubectl edit` in production. The controller sees live state no longer matches Git and marks the app `OutOfSync`. With `selfHeal` on (off by default), it syncs the change away, by default after a 5 second timeout.", on: ["manual", "live", "kapi", "ctrl"], flow: ["e-manual", "e-diff"] },
-      { text: "At fleet size you don't write Applications by hand. An ApplicationSet uses generators (a list, every registered cluster, directories in Git) to create one Application per target. The older app-of-apps pattern does the same with a parent Application.", on: ["appset", "ctrl"], flow: ["e-appset"] },
-      { text: "Rollback is `git revert`. Argo CD's own rollback isn't available while automated sync is on, because Git would immediately win again.", on: ["eng", "repo", "ctrl"], flow: ["e-pr", "e-diff"] },
+      { text: "Git holds desired state and Argo CD pulls it into each cluster. At fleet size the question becomes how much of the fleet matches Git right now, and who may make it not match. Press Next." },
+      { text: "A change is a commit. An engineer merges a reviewed PR, or CI opens one that bumps an image digest. Git history is the audit log and the undo button, for one app or 300 clusters.", on: ["eng", "ci", "repo"], flow: ["e-pr", "e-ci"] },
+      { text: "A webhook triggers a refresh. Without one the controller polls every 120 seconds plus up to 60 of jitter. The repo server renders Helm or Kustomize into plain manifests for that commit.", on: ["repo", "api", "ctrl", "reposrv", "redis"], flow: ["e-hook", "e-refresh", "e-render", "e-fetch", "e-cache"] },
+      { text: "The controller diffs Git against live state: same is `Synced`, different is `OutOfSync`. Health is separate, so an app can be Synced and Degraded. Rollback is `git revert`.", on: ["ctrl", "kapi", "live"], flow: ["e-diff", "e-live"] },
+      { text: "ApplicationSets create one Application per target from generators, such as every cluster labeled `env: prod`. A newly registered cluster gets the standard set without anyone writing YAML.", on: ["appset", "ctrl"], flow: ["e-appset"] },
+      { text: "Drift: someone runs `kubectl edit`. The app goes OutOfSync. With `selfHeal` on (it's off by default) Argo CD puts Git's value back within seconds. For production, make auto-sync, prune and selfHeal the platform default.", on: ["manual", "live", "kapi", "ctrl"], flow: ["e-manual", "e-diff"] },
+      { text: "Drift is a fleet metric. `argocd_app_info` carries `sync_status` and `health_status`. Count OutOfSync apps by project and cluster, and how long each has been out. Minutes is a sync in flight. Days means a second source of truth.", on: ["ctrl", "fleet"], flow: ["e-metrics"] },
+      { text: "Break-glass is for when Git is too slow. Write down who may do it and how: a deny sync window or auto-sync off for that one app, make the fix, land the same change in Git, turn sync back on.", on: ["bg", "kapi", "manual"], flow: ["e-bg"] },
+      { text: "Sync windows also run freezes. A deny window blocks syncs on matching apps, namespaces or clusters, and deny beats allow. `manualSync: true` lets a human sync during the window while automation stays blocked.", on: ["bg", "ctrl"] },
+      { text: "Then measure break-glass: events per month, how long sync stayed paused, and whether Git caught up. A pause with no matching commit afterwards is drift someone chose and then forgot.", on: ["bg", "fleet"] },
     ],
     code: [
-      {
-        lang: "yaml",
-        label: "Application with auto-sync",
-        src: `apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: checkout-prod
-  namespace: argocd
-spec:
-  project: payments
-  source:
-    repoURL: https://git.example.com/deploy.git
-    targetRevision: main
-    path: apps/checkout/overlays/prod
-  destination:
-    server: https://prod-eu-1.example.com
-    namespace: checkout
-  syncPolicy:
-    automated:
-      prune: true      # delete what Git deleted
-      selfHeal: true   # undo manual drift`,
-      },
       {
         lang: "yaml",
         label: "ApplicationSet: one App per cluster",
@@ -356,49 +337,86 @@ spec:
         path: apps/checkout/overlays/prod
       destination:
         server: '{{server}}'
-        namespace: checkout`,
+        namespace: checkout
+      syncPolicy:
+        automated:
+          prune: true      # delete what Git deleted
+          selfHeal: true   # undo manual drift`,
+      },
+      {
+        lang: "yaml",
+        label: "AppProject: break-glass window",
+        src: `apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: payments
+  namespace: argocd
+spec:
+  syncWindows:
+    - kind: deny
+      schedule: '0 * * * *'
+      duration: 1h
+      applications: ['checkout-*']
+      clusters: ['prod-eu-1']
+      manualSync: true   # humans can still sync`,
+      },
+      {
+        lang: "promql",
+        label: "Drift across the fleet",
+        src: `# OutOfSync production apps, by project
+count by (project) (
+  argocd_app_info{sync_status="OutOfSync",
+                  project=~"prod-.*"})
+
+# share of apps Synced and Healthy
+  count(argocd_app_info{sync_status="Synced",
+                        health_status="Healthy"})
+/
+  count(argocd_app_info)`,
       },
     ],
-    codeNote: "A new cluster registered with label `env: prod` gets the checkout Application automatically. Turning on `prune` and `selfHeal` makes Git the only way to change the app.",
-    say30: "In GitOps, Git is the desired state and a controller in the cluster pulls it, instead of CI pushing to the cluster. In Argo CD, a commit triggers a refresh by webhook or by polling about every three minutes. The repo server renders manifests from Helm or Kustomize, and the application controller diffs them against live state: same is Synced, different is OutOfSync. Sync applies the change, ordered by phases and sync waves, and health is tracked separately, so Synced can still be Degraded. With self-heal on, a manual kubectl edit is reverted. Rollback is a git revert. At scale: ApplicationSets, controller sharding, more repo servers, and secrets kept out of Git.",
+    codeNote: "A new cluster registered with `env: prod` gets the checkout Application with prune and selfHeal on, so Git is the only normal way in. The deny window (here every hour for an hour, so always on while it exists) is the break-glass switch: add it by PR, remove it by PR once the fix is in Git, and `manualSync` keeps a human path open meanwhile. The label values in the PromQL depend on your Argo CD version; check your scraped output.",
+    say30: "Git is desired state, and Argo CD pulls it into every cluster and diffs it against live state. Synced and Healthy are separate, and rollback is a git revert. At fleet scale I run it as a control system. ApplicationSets give every new cluster the standard set. Production defaults are auto-sync with prune and selfHeal. Drift is a fleet metric from `argocd_app_info`: OutOfSync apps by project and cluster, and how long they've been out. Break-glass is written policy: a deny sync window or paused sync for one app, a fix, the same change in Git, sync back on. I count break-glass events and how long Git took to catch up.",
     gotchas: [
-      "`Synced` only means live matches Git. The app can be Synced and Degraded, for example a new image that crashloops. Gate on health, not sync status.",
-      "Automated sync doesn't prune by default. Deleting a manifest from Git leaves the object running until you prune, and turning prune on later can delete more than you expected.",
-      "`selfHeal` is off by default, so drift is reported but not fixed. With it on, an emergency `kubectl` fix during an incident gets reverted within seconds unless you pause auto-sync first.",
-      "Fields that other controllers own (replicas under an HPA, an injected `caBundle`) make an app permanently OutOfSync. Use `ignoreDifferences` or `managedFieldsManagers` rather than living with constant noise.",
+      "`Synced` only means live matches Git. An app can be Synced and Degraded, for example a new image that crashloops. Gate on health.",
+      "Automated sync doesn't prune by default. Deleting a manifest leaves the object running, and turning prune on later can delete more than you expected.",
+      "Fields other controllers own (replicas under an HPA, an injected `caBundle`) keep an app OutOfSync forever. Use `ignoreDifferences`, or the drift metric fills with noise.",
+      "A deny window with a wide wildcard freezes everything it matches. Scope it to one app and cluster, and add it by PR.",
     ],
     atScale: [
-      "One controller, thousands of apps: the controller defaults to 20 status and 10 operation processors; Argo CD's own example for about 1,000 apps raises them to 50 and 25. Past that, shard the controller StatefulSet by cluster (`ARGOCD_CONTROLLER_REPLICAS`); the round-robin and consistent-hashing algorithms are still marked experimental.",
-      "Repo server saturation: rendering Helm and Kustomize is CPU and memory heavy, and a burst of refreshes can OOM it. Symptoms are \"context deadline exceeded\" and slow syncs. Cap concurrent renders with `--parallelismlimit`, add replicas, and raise exec and repo-server timeouts deliberately.",
-      "Monorepos: one commit to a shared repo invalidates the manifest cache for every app pointing at it. The `argocd.argoproj.io/manifest-generate-paths` annotation limits regeneration to the paths an app actually uses, and webhooks replace polling thousands of apps on a timer.",
-      "Hundreds of clusters: ApplicationSets with a cluster generator create Applications as clusters are registered. Rolling a change across them in waves needs Progressive Syncs (RollingSync steps by label, each step Healthy before the next), which is beta and must be enabled explicitly.",
-      "Secrets: plaintext secrets can't go in Git. Argo CD recommends secret operators on the destination cluster (External Secrets Operator, Sealed Secrets, Secrets Store CSI driver) and cautions against injecting secrets during manifest generation, because rendered manifests are cached in plaintext in Redis.",
+      "Standard set per cluster from ApplicationSets with a cluster generator. Metric: clusters missing any app from the standard set.",
+      "Drift as a fleet SLO from `argocd_app_info`, by project and cluster, with an age threshold. Metric: share of production apps Synced and Healthy, and drift older than a day.",
+      "Break-glass policy: named roles, a scoped deny window or paused sync, a ticket, and a Git commit within a set time. Metric: break-glass events per month and time back to Git.",
+      "Waves across clusters: Progressive Syncs (beta, enabled explicitly) step clusters by label and wait for Healthy. Metric: share of fleet-wide changes that went out in waves.",
+      "Controller capacity: shard the controller by cluster and add repo servers; `argocd_app_reconcile` is a histogram of reconcile time. Metric: p99 reconcile time against a target.",
+      "Secrets stay out of Git, through secret operators on each cluster, because rendered manifests are cached in plaintext in Redis. Metric: Secret objects found in config repos. Target zero.",
     ],
     agentic: [
-      "GitOps suits agents because their only write path is a pull request to the config repo: Argo CD applies it, so the agent needs no cluster credentials. The human reviews the rendered result (`argocd app diff` or the PR's rendered manifests), not just the values-file line, because one Helm value can change dozens of objects.",
-      "Mid-incident, an agent can gather evidence read-only from `argocd app get`, sync status, health and recent commits; a human decides whether to pause auto-sync, revert or roll back. An agent given write access that runs `kubectl edit` on a `selfHeal` app is reverted within seconds, and one pointed at the wrong Application or cluster context starts a second incident.",
+      "GitOps suits agents because their only write path is a pull request to the config repo: Argo CD applies it, so the agent needs no cluster credentials. The human reviews the rendered result (`argocd app diff` or the PR's rendered manifests) as well as the values-file line, because one Helm value can change dozens of objects, and through an ApplicationSet, dozens of clusters.",
+      "Mid-incident, an agent can gather evidence read-only from `argocd app get`, sync status, health and recent commits; a human decides whether to open a break-glass window, revert or roll back. An agent given write access that runs `kubectl edit` on a `selfHeal` app is reverted within seconds, and one pointed at the wrong Application or cluster context starts a second incident.",
       "Deletions are the risky agent edit: with prune enabled, removing a manifest from Git deletes the live object. Require human review for PRs that delete files under app paths, and remember that an agent reporting `Synced` has said nothing about `Healthy`.",
       "Read-only is not always passive. `argocd app diff --local --server-side-generate` uploads files for the repo server to render, and advisory GHSA-9v9p-x54c-58gc (7 Oct 2026, critical) showed that a crafted Kustomize ref there could run commands with only Application `get`; blocking egress doesn't stop it. Before an agent runs local diffs, confirm Argo CD is patched (3.3.15, 3.4.10, 3.5.4 or later; the advisory lists no 2.x fix), or render diffs in CI instead.",
     ],
     quiz: [
-      { q: "An Argo CD app shows `Synced` and `Degraded`. What does that tell you?", a: "Argo CD applied exactly what Git says, but the resulting resources are unhealthy, for example a Deployment whose new Pods don't become ready. The fix is a new commit (revert or fix forward), not another sync." },
-      { q: "Someone scaled a Deployment by hand during an incident and Argo CD put it back. Why, and what should they have done?", a: "Self-heal was on, so the controller treated the change as drift and synced Git's value back. They should change the value in Git, or pause auto-sync for that app first, and exclude HPA-owned `replicas` with `ignoreDifferences` if an autoscaler manages it." },
+      { q: "Across 300 clusters, 4% of production apps are OutOfSync. Is that bad?", a: "It depends on age. Break it down by how long each app has been out, and by project. Minutes is syncs in flight. Days means someone changed production outside Git, or a field like HPA replicas needs `ignoreDifferences`. Check whether a break-glass event left them behind." },
+      { q: "Mid-incident, someone needs to scale a Deployment by hand, but selfHeal keeps reverting it. What's the policy?", a: "Break-glass: open a scoped deny sync window (or turn off auto-sync for that one app), make the change, then put the same value in Git and re-enable sync. Record the event so the drift metric and the break-glass count both show it." },
       { q: "Argo CD manages 3,000 apps and syncs have slowed to many minutes. Where do you look?", a: "Controller queues and processor counts, controller sharding across clusters, repo server render times and OOMs (parallelism limit, replicas), cache invalidation from a monorepo without `manifest-generate-paths`, and whether refresh relies on polling instead of webhooks." },
     ],
     incidents: ["knightcapital-2012-power-peg-deploy"],
     sources: [
+      { title: "OpenGitOps principles", url: "https://opengitops.dev/" },
+      { title: "Argo CD: Metrics", url: "https://argo-cd.readthedocs.io/en/stable/operator-manual/metrics/" },
+      { title: "Argo CD: Sync windows", url: "https://argo-cd.readthedocs.io/en/stable/user-guide/sync_windows/" },
       { title: "Argo CD advisory GHSA-9v9p-x54c-58gc: a Kustomize remote ref can run commands in the repo-server (7 Oct 2026)", url: "https://github.com/argoproj/argo-cd/security/advisories/GHSA-9v9p-x54c-58gc" },
       { title: "Argo CD: Core concepts", url: "https://argo-cd.readthedocs.io/en/stable/core_concepts/" },
       { title: "Argo CD: Architecture", url: "https://argo-cd.readthedocs.io/en/stable/operator-manual/architecture/" },
       { title: "Argo CD: Automated sync policy", url: "https://argo-cd.readthedocs.io/en/stable/user-guide/auto_sync/" },
-      { title: "Argo CD: Sync phases and waves", url: "https://argo-cd.readthedocs.io/en/stable/user-guide/sync-waves/" },
       { title: "Argo CD: Resource health", url: "https://argo-cd.readthedocs.io/en/stable/operator-manual/health/" },
       { title: "Argo CD: Diffing customization", url: "https://argo-cd.readthedocs.io/en/stable/user-guide/diffing/" },
       { title: "Argo CD: High availability", url: "https://argo-cd.readthedocs.io/en/stable/operator-manual/high_availability/" },
       { title: "Argo CD: Secret management", url: "https://argo-cd.readthedocs.io/en/stable/operator-manual/secret-management/" },
       { title: "Argo CD: ApplicationSet controller", url: "https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/" },
       { title: "Argo CD: Progressive Syncs", url: "https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/Progressive-Syncs/" },
-      { title: "Argo CD: Cluster bootstrapping (app of apps)", url: "https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/" },
       { title: "Argo CD: argocd app diff", url: "https://argo-cd.readthedocs.io/en/stable/user-guide/commands/argocd_app_diff/" },
     ],
   },
@@ -407,11 +425,11 @@ spec:
   {
     id: "progressive-delivery",
     n: 4,
-    title: "Canaries and blue-green with Argo Rollouts",
-    question: "How do you ship a new version to 5% of traffic, let metrics decide whether it goes to 100%, and roll back automatically if it doesn't?",
+    title: "Rollout policy as a platform default",
+    question: "How do you make wave-based, metric-gated rollout the default for every service in the fleet, and how do you measure how much of the fleet actually uses it?",
     view: [940, 510],
     groups: [
-      { id: "g-bg", label: "Blue-green alternative", x: 170, y: 330, w: 760, h: 170 },
+      { id: "g-plat", label: "Platform defaults (every service)", x: 10, y: 330, w: 920, h: 170 },
     ],
     nodes: [
       { id: "argo", label: "Argo CD sync", sub: "new image digest", kind: "actor", x: 10, y: 40, w: 140, h: 50 },
@@ -422,11 +440,10 @@ spec:
       { id: "router", label: "Traffic router", sub: "mesh or ingress", x: 200, y: 170, w: 170, h: 50 },
       { id: "stable", label: "Stable", sub: "v1 ReplicaSet", kind: "pod", x: 450, y: 150, w: 150, h: 50 },
       { id: "canary", label: "Canary", sub: "v2 ReplicaSet", kind: "pod", x: 450, y: 240, w: 150, h: 50 },
-      { id: "active", label: "Active Service", sub: "production", x: 200, y: 360, w: 150, h: 50 },
-      { id: "preview", label: "Preview Service", sub: "testing only", x: 200, y: 440, w: 150, h: 50 },
-      { id: "blue", label: "Blue", sub: "v1 ReplicaSet", kind: "pod", x: 450, y: 360, w: 150, h: 50 },
-      { id: "green", label: "Green", sub: "v2 ReplicaSet", kind: "pod", x: 450, y: 440, w: 150, h: 50 },
-      { id: "bgan", label: "Pre-promotion", sub: "AnalysisRun", x: 680, y: 440, w: 180, h: 50 },
+      { id: "tmpl", label: "Service template", sub: "Rollout + steps", x: 30, y: 380, w: 160, h: 50 },
+      { id: "pol", label: "Admission policy", sub: "Warn, then Deny", x: 240, y: 380, w: 160, h: 50 },
+      { id: "lib", label: "Analysis library", sub: "platform-owned", x: 450, y: 380, w: 160, h: 50 },
+      { id: "score", label: "Fleet scorecard", sub: "% gated deploys", kind: "store", x: 680, y: 380, w: 170, h: 50 },
     ],
     edges: [
       { id: "e-spec", from: "argo", to: "rctl", label: "new spec" },
@@ -437,23 +454,23 @@ spec:
       { id: "e-users", from: "users", to: "router", label: "requests" },
       { id: "e-tostable", from: "router", to: "stable", label: "80%", labelPos: 0.5 },
       { id: "e-tocanary", from: "router", to: "canary", label: "20%", labelPos: 0.5 },
-      { id: "e-act", from: "active", to: "blue", label: "selects" },
-      { id: "e-prev", from: "preview", to: "green", label: "selects" },
-      { id: "e-switch", from: "active", to: "green", label: "after promote", dashed: true, labelPos: 0.5 },
-      { id: "e-bgan", from: "green", to: "bgan", label: "tests v2" },
+      { id: "e-tmpl", from: "tmpl", to: "argo", label: "default spec", via: [[165, 300], [165, 130]], labelAt: [165, 262] },
+      { id: "e-pol", from: "pol", to: "tmpl", label: "checks", labelAt: [215, 399] },
+      { id: "e-lib", from: "lib", to: "analysis", label: "imports", via: [[625, 340], [625, 120]], labelAt: [652, 318] },
+      { id: "e-score", from: "prom", to: "score", label: "rollout_info", labelPos: 0.72 },
+      { id: "e-audit", from: "pol", to: "score", label: "audit events", dashed: true, via: [[320, 475], [765, 475]], labelAt: [545, 470] },
     ],
     steps: [
-      { text: "Two strategies. Top: a canary, where traffic shifts in steps while metrics are checked. Bottom: blue-green, where a full new copy waits behind a preview Service. Press Next to follow a canary that gets promoted, then one that gets aborted." },
-      { text: "Argo CD syncs a Rollout whose pod template has a new image digest. The Rollouts controller, which plays the role of the Deployment controller, creates a canary ReplicaSet and starts the `steps` list.", on: ["argo", "rctl", "canary"], flow: ["e-spec"] },
-      { text: "Step `setWeight: 20`: the controller tells the traffic router (Istio, NGINX, ALB, Gateway API and others) to send 20% to the canary. The stable ReplicaSet stays fully scaled, so traffic can snap back.", on: ["rctl", "router", "users", "stable", "canary"], flow: ["e-weight", "e-users", "e-tostable", "e-tocanary"] },
-      { text: "With no traffic router, weight is just the pod ratio: at 10 replicas, `setWeight: 10` means 1 canary pod and 9 stable. Small fleets can't do small percentages.", on: ["router", "stable", "canary"] },
-      { text: "Step `pause: {duration: 10m}` is bake time: the canary serves real traffic while nothing changes. `pause: {}` waits for a human to run `kubectl argo rollouts promote`.", on: ["rctl", "canary"] },
-      { text: "An AnalysisRun queries Prometheus on an interval, for example non-5xx requests divided by all requests, with `successCondition: result[0] >= 0.95`. It can run as a blocking step or in the background for the whole rollout.", on: ["rctl", "analysis", "prom", "canary"], flow: ["e-start", "e-query", "e-metrics"] },
-      { text: "Analysis passes, so the steps continue: 40%, 60%, 80%. After the last step the canary becomes the new stable, and the old ReplicaSet is scaled down after `scaleDownDelaySeconds` (30 by default with traffic routing).", on: ["rctl", "router", "stable", "canary"], flow: ["e-weight", "e-tostable", "e-tocanary"] },
-      { text: "The other ending: failed measurements exceed `failureLimit`. The rollout aborts, the canary weight drops to zero, and the Rollout is marked Degraded. Git still names the new version, so you fix forward or revert the commit.", on: ["analysis", "rctl", "router", "stable"], flow: ["e-start", "e-weight", "e-tostable"] },
-      { text: "If a measurement meets neither condition, the run is Inconclusive and the rollout pauses at its step until a human resumes or aborts. Empty Prometheus results and NaN need explicit handling in the conditions.", on: ["analysis", "prom"], flow: ["e-query"] },
-      { text: "Blue-green: the new ReplicaSet (green) is scaled up behind a preview Service while the active Service still selects blue. Pre-promotion analysis tests green before any user sees it; failure aborts.", on: ["active", "preview", "blue", "green", "bgan"], flow: ["e-act", "e-prev", "e-bgan"] },
-      { text: "Promotion switches the active Service's selector to green in one step. Post-promotion analysis can still fail and switch traffic back. Blue stays up for `scaleDownDelaySeconds` (30 by default), which is the window for an instant rollback.", on: ["active", "green", "blue"], flow: ["e-switch"] },
+      { text: "Top: one service's canary, as the worked example. Bottom: what the platform does so every service gets that canary without asking, and how you check that it does. Press Next." },
+      { text: "Google's SRE workbook says most of its incidents start with a binary or config push. So every change should go out in steps with a metric gate, and no team should have to build that machinery itself.", on: ["argo", "rctl", "router"] },
+      { text: "The default lives in the service template. A new service on the golden path starts as a Rollout with standard steps and the shared analysis wired in. A team that does nothing gets the safe path.", on: ["tmpl", "argo", "rctl"], flow: ["e-tmpl"] },
+      { text: "For one service: Argo CD syncs a new image, the Rollouts controller creates a canary ReplicaSet and tells the router to send it 20%. Stable stays fully scaled, so traffic can snap back.", on: ["argo", "rctl", "router", "users", "stable", "canary"], flow: ["e-spec", "e-weight", "e-users", "e-tostable", "e-tocanary"] },
+      { text: "An AnalysisRun queries Prometheus on an interval, say non-5xx over all requests, `>= 0.95`. Past `failureLimit` the rollout aborts and the canary drops to zero. Inconclusive pauses for a human.", on: ["rctl", "analysis", "prom", "canary"], flow: ["e-start", "e-query", "e-metrics"] },
+      { text: "Teams shouldn't each write that query. The platform ships AnalysisTemplates built from SLIs, with the empty-result guard already in. Google advises keeping canary metrics to about a dozen.", on: ["lib", "analysis", "prom"], flow: ["e-lib"] },
+      { text: "Defaults drift unless something checks them. A ValidatingAdmissionPolicy (stable since Kubernetes 1.30) can catch a production Deployment that skips the Rollout. Run it in Warn and Audit, fix what shows up, then switch to Deny.", on: ["pol", "tmpl"], flow: ["e-pol"] },
+      { text: "Some services need an exception: a singleton, a batch job, too little traffic to judge. Each exception gets an owner and an end date. A list that only grows means the policy is failing.", on: ["pol", "score"], flow: ["e-audit"] },
+      { text: "The scorecard says how much of the fleet really uses it. Argo Rollouts exports `rollout_info` and `analysis_run_info`. Join them with deploy records to get the share of production deploys that ran a gated canary, per org.", on: ["prom", "score", "pol"], flow: ["e-score", "e-audit"] },
+      { text: "Then check the gate does work. Compare change fail rate (DORA) for gated and ungated services, and count aborts per 100 deploys. A gate that never aborts is probably watching the wrong metric.", on: ["score", "analysis"] },
     ],
     code: [
       {
@@ -486,7 +503,7 @@ spec:
       },
       {
         lang: "yaml",
-        label: "AnalysisTemplate: success rate",
+        label: "AnalysisTemplate: shared success rate",
         src: `apiVersion: argoproj.io/v1alpha1
 kind: AnalysisTemplate
 metadata:
@@ -509,42 +526,76 @@ spec:
             sum(rate(http_requests_total{app="checkout",
               role="canary"}[5m]))`,
       },
+      {
+        lang: "yaml",
+        label: "Admission policy: prod ships as a Rollout",
+        src: `apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: prod-uses-rollouts
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["apps"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["deployments"]
+  validations:
+    - expression: >
+        has(object.metadata.labels) &&
+        'rollout-exception' in object.metadata.labels
+      message: "prod services ship as a Rollout"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: prod-uses-rollouts
+spec:
+  policyName: prod-uses-rollouts
+  validationActions: [Warn, Audit]   # Deny later
+  matchResources:
+    namespaceSelector:
+      matchLabels: {env: prod}`,
+      },
     ],
-    codeNote: "The analysis step blocks the rollout until it finishes. The `len(result) > 0` guard means a canary that got no traffic fails instead of passing by default.",
-    say30: "Argo Rollouts replaces a Deployment with a Rollout that has a strategy. For a canary, you list steps: set weight to 5%, pause to bake, run an analysis, increase the weight, repeat. With a traffic router like Istio or an ingress controller the weights are routing targets and the stable version stays fully scaled; without one, weight is approximated by pod counts. Analysis runs query metrics such as success rate from Prometheus; failing past the limit aborts, sends all traffic back to stable and marks the rollout Degraded, while inconclusive results pause for a human. Blue-green instead brings up a full green copy behind a preview Service, tests it, then flips the active Service, keeping blue briefly for rollback.",
+    codeNote: "The template ships the first two files to every new service. The policy starts in Warn and Audit so you can count violations before anything is blocked; `Deny` and `Warn` can't be combined, so switching is a one-line change to the binding.",
+    say30: "I want wave-based, metric-gated rollout to be what a team gets by doing nothing. The service template ships a Rollout with standard steps and a shared AnalysisTemplate built from SLIs, so nobody writes their own canary query. An admission policy catches production Deployments that skip it, in Warn and Audit first, Deny later, with exceptions that have owners and end dates. Then I measure it: the share of production deploys that ran a gated canary, per org, from rollout metrics joined to deploy records. And I check the gate works by comparing change fail rate for gated and ungated services. Config and flag pushes go through the same rings.",
     gotchas: [
-      "Without a traffic router, `setWeight` is approximated with replica counts. At 4 replicas you cannot send 5%; the smallest canary is 25%.",
-      "An abort doesn't change Git. The Rollout stays Degraded and Argo CD shows Degraded too, until someone reverts the commit or ships a fix.",
-      "An Inconclusive analysis pauses the rollout indefinitely. If nobody is watching, the release sits half-done.",
-      "Traffic shifting doesn't undo side effects. A schema migration or a message format change made by the canary stays after rollback, so changes must be backward compatible across both versions.",
+      "Without a traffic router, `setWeight` is a replica ratio. At 4 replicas the smallest canary is 25%, so small services need a router or bigger steps.",
+      "An abort doesn't change Git. The Rollout stays Degraded until someone reverts or fixes forward.",
+      "Traffic shifting doesn't undo side effects. Schema and message-format changes must work with both versions.",
+      "Warn shows the person applying the change and Audit only writes the audit log. Nobody reads either unless the scorecard counts them.",
     ],
     atScale: [
-      "Canaries without enough traffic: 5% of a low-traffic service may be a handful of requests per interval, so one error swings the rate, and zero traffic gives an empty result or NaN. Write conditions that treat empty results explicitly (`len(result) > 0`), measure over longer windows, or route test traffic to the canary with header routing where the router supports it.",
-      "Multi-cluster and regional waves: Argo Rollouts runs per cluster, with its controller installed in each, and does not coordinate across clusters. The wave across regions is orchestrated above it, for example Argo CD Progressive Syncs stepping through clusters by label and waiting for each step to be Healthy.",
-      "Bake time adds up: a 10 minute pause across 5 steps and 6 regional waves is hours per release, and with many deploys a day they queue or get batched. Bigger batches raise change fail rate and slow lead time (DORA). Teams shorten bakes by relying on automated analysis rather than long fixed pauses.",
-      "Capacity: canary with traffic routing keeps stable at 100% plus the canary, and blue-green runs two full copies. On a large fleet that is real money; `dynamicStableScale` scales stable down as traffic moves (slower rollback), and `previewReplicaCount` keeps green small until promotion.",
-      "Not just binaries: config, feature flags and content pushes can take down a fleet as fast as code, and several large outages came from changes that skipped staged rollout. Apply the same rings, bake times and automatic aborts to them.",
-      "The metrics pipeline is now in the deploy path: a slow or broken Prometheus stalls or aborts every rollout at once. Use dry-run mode to trial a new metric before it gates anything, and alert on analysis errors, not just failures.",
+      "Default on: the golden-path template ships a Rollout with shared steps and analysis. Metric: share of production deploys that ran a gated canary, per org, from `rollout_info` joined to deploy records.",
+      "Enforcement: admission policy in Warn and Audit, then Deny once violations are near zero. Metric: violations per week, and open exceptions, each with an owner and an end date.",
+      "Shared analysis library from SLIs, with an empty-result guard so a canary with no traffic fails. Metric: aborts per 100 deploys, and change fail rate for gated versus ungated services.",
+      "Waves across regions: Argo Rollouts works inside one cluster, so the regional wave is Argo CD Progressive Syncs (beta) or your deploy system. Metric: deploys that reached a second region before the first finished its bake. Target zero.",
+      "Config, flags and content go through rings too. Several large outages came from changes that skipped staged rollout. Metric: share of production config pushes that were staged.",
+      "Prometheus is now in every deploy path, so a broken one stalls all rollouts at once. Metric: AnalysisRun errors per hour, alerted to the platform team.",
     ],
     agentic: [
-      "Canaries with automated analysis are the main guardrail for agent-authored changes: the Rollout does not care who wrote the code, it checks error rate and latency at a small weight before sending more traffic. That holds only while humans own the AnalysisTemplate and step list; an agent PR that loosens a success condition or shortens a pause disables the check it is supposed to pass.",
-      "An agent can watch an in-flight rollout and summarize AnalysisRun results, which helps with the Inconclusive pause nobody noticed. Promoting past a pause or aborting stays a human call (`kubectl argo rollouts promote` / `abort`) or an automated rule in the spec, not an agent's judgment from chat.",
+      "Canaries with automated analysis are the main guardrail for agent-authored changes: the Rollout does not care who wrote the code, it checks error rate and latency at a small weight before sending more traffic. That holds only while the platform owns the shared AnalysisTemplates and step lists; an agent PR that loosens a success condition or shortens a pause disables the check it is supposed to pass, so those files need platform review.",
+      "An agent can watch in-flight rollouts across the fleet and summarize AnalysisRun results, which helps with the Inconclusive pause nobody noticed. Promoting past a pause or aborting stays a human call (`kubectl argo rollouts promote` / `abort`) or an automated rule in the spec, not an agent's judgment from chat.",
       "A canary only tests what traffic exercises, and rollback does not undo side effects. An agent PR that bundles a schema or message-format change with code can pass the canary and still be impossible to roll back, so ask for side-effecting changes in separate, backward-compatible PRs.",
     ],
     quiz: [
-      { q: "Your canary passed analysis, went to 100%, and then errors spiked. What could the analysis have missed?", a: "The canary may have seen too little traffic, or the wrong traffic, to be meaningful; the metric may not cover the failure (latency, a downstream dependency, one customer segment); or the problem only appears at full load. Add metrics, minimum traffic checks and a background analysis that keeps running through the final steps." },
+      { q: "Half your services run Rollouts. How do you find out whether the other half are protected?", a: "Measure it per org: the share of production deploys that ran a gated canary, from `rollout_info` and deploy records. List the ungated services with owners, check the admission policy's audit results, and make sure every exception has an end date." },
+      { q: "A team asks for an exception because their service gets 20 requests a minute. What do you offer?", a: "A canary on that traffic is noise. Offer longer analysis windows, header-routed test traffic to the canary, or bigger steps with a longer bake. If none fit, grant an exception with an owner and an end date, and still keep the regional waves." },
       { q: "An AnalysisRun failed. Exactly what does Argo Rollouts do, and what is left for you?", a: "It aborts: canary weight goes back to zero so stable takes all traffic, and the Rollout is marked Degraded. Git still declares the new version, so you revert or fix forward; the controller doesn't touch Git." },
-      { q: "When would you pick blue-green over a canary?", a: "When you can't run two versions side by side for real users, or want to test the full new copy before any user sees it, and can afford double capacity briefly. The cutover is all at once, so pre-promotion analysis and the short scale-down window for rollback matter." },
     ],
     incidents: ["crowdstrike-2024-channel-file-291", "microsoft-2014-azure-storage-infinite-loop"],
     sources: [
+      { title: "Google SRE workbook: Canarying releases", url: "https://sre.google/workbook/canarying-releases/" },
+      { title: "Kubernetes: Validating Admission Policy", url: "https://kubernetes.io/docs/reference/access-authn-authz/validating-admission-policy/" },
+      { title: "CNCF TAG App Delivery: Platforms white paper", url: "https://tag-app-delivery.cncf.io/whitepapers/platforms/" },
+      { title: "Argo Rollouts: Controller metrics", url: "https://argoproj.github.io/argo-rollouts/features/controller-metrics/" },
       { title: "Argo Rollouts: Concepts", url: "https://argoproj.github.io/argo-rollouts/concepts/" },
       { title: "Argo Rollouts: Canary", url: "https://argoproj.github.io/argo-rollouts/features/canary/" },
-      { title: "Argo Rollouts: Blue-green", url: "https://argoproj.github.io/argo-rollouts/features/bluegreen/" },
       { title: "Argo Rollouts: Analysis and progressive delivery", url: "https://argoproj.github.io/argo-rollouts/features/analysis/" },
       { title: "Argo Rollouts: Traffic management", url: "https://argoproj.github.io/argo-rollouts/features/traffic-management/" },
       { title: "Argo Rollouts: Rollout specification", url: "https://argoproj.github.io/argo-rollouts/features/specification/" },
-      { title: "Argo Rollouts: FAQ", url: "https://argoproj.github.io/argo-rollouts/FAQ/" },
       { title: "Argo CD: Progressive Syncs", url: "https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/Progressive-Syncs/" },
       { title: "DORA: Software delivery performance metrics", url: "https://dora.dev/guides/dora-metrics/" },
     ],
