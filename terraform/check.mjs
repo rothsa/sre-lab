@@ -118,10 +118,9 @@ for (const ch of CHAPTERS) {
   for (const x of ch.code || []) if (!x.lang || !x.src) err(c, "code entries need lang and src");
   if ((ch.code || []).length > 3) err(c, "at most 3 code columns");
   if ((ch.gotchas || []).length < 2) err(c, "needs at least 2 gotchas");
-  if ((ch.atScale || []).length < 3) err(c, "needs at least 3 atScale items (what breaks at 1000+ scale)");
+  if ("atScale" in ch) err(c, "atScale is retired; fold it into the steps");
   if ((ch.agentic || []).length < 2) err(c, "needs at least 2 agentic items (what changes in the agentic era)");
   if ((ch.agentic || []).length > 4) warn(c, "more than 4 agentic items");
-  if ((ch.atScale || []).length > 6) warn(c, "more than 6 atScale items");
   if ((ch.quiz || []).length !== 3) err(c, "needs exactly 3 quiz questions");
   if (!(ch.sources || []).length) err(c, "needs at least one source");
   for (const s of ch.sources || []) if (!/^https:\/\//.test(s.url)) warn(c, `source is not https: ${s.url}`);
