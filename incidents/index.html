@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>The Incident Files</title>
-<meta name="description" content="Real public postmortems, searchable by symptom, and the recurring failure patterns that keep coming back, with how companies warded them off.">
+<meta name="description" content="Real public postmortems, searchable by symptom, and the recurring failure patterns that keep coming back, with the controls that retire them.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@800;900&display=swap">
 <style>
 /* Layout: a case-file header, a grid of recurring failure patterns ("monsters") with how
@@ -67,6 +67,8 @@ mark { background: var(--mark); color: var(--bone); border-radius: 2px; padding:
 .monster .lore { font-style: italic; color: var(--muted); margin: 0; font-size: 14.5px; }
 .monster h4 { font-family: var(--font-type); font-weight: 400; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--moss); margin: 6px 0 0; }
 .monster ul { margin: 0; padding-left: 18px; display: grid; gap: 7px; font-size: 14.5px; }
+.monster .retired { display: block; font-size: 13.5px; color: var(--fg); margin-top: 3px; }
+.monster .retired b { font-family: var(--font-type); font-weight: 400; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--moss); margin-right: 6px; }
 .monster .seen { display: block; font-size: 12.5px; color: var(--muted); margin-top: 2px; }
 .monster .seen a { color: var(--muted); }
 .monster .seen a:hover { color: var(--ember); }
@@ -90,10 +92,10 @@ footer p { margin: 0 0 8px; }
   <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · case files<span class="updated"> · updated <time datetime="2026-10-20">20 Oct 2026</time></span></div>
   <h1>The Incident <span>Files</span></h1>
   <p class="sub">Real outages. Real breaches. Told by the companies that lived through them.</p>
-  <p class="lede">Common failures repeat. Start with the patterns below: how often each one shows up and how companies warded it off. Open one to see its case files, or search for a failure further down. This is for the time around incidents (readiness and design reviews, on-call training, postmortems); mid-incident, the job is capturing data from your own system.</p>
+  <p class="lede">Common failures repeat. Start with the patterns below: how often each one shows up and which org-wide controls retire it. Open one to see its case files, or search for a failure further down. This is for the time around incidents (readiness and design reviews, on-call training, postmortems); mid-incident, the job is capturing data from your own system.</p>
 
   <h2>The monsters that keep coming back</h2>
-  <p class="sub">Recurring patterns across these files, and how the companies involved warded them off afterwards.</p>
+  <p class="sub">Recurring patterns, org-wide controls that retire them, and the fleet number to watch.</p>
   <div class="monsters" id="monsters"></div>
 
   <h2>Search the files</h2>
@@ -129,7 +131,7 @@ footer p { margin: 0 0 8px; }
   </section>
 
   <footer>
-    <p class="method"><b>How it works.</b> Each case file holds facts and a summary written for this page from the company's own postmortem; follow the links to read the originals. Cases were found through <a href="https://github.com/danluu/post-mortems">danluu/post-mortems</a>. Search combines a small embedding model (<a href="https://huggingface.co/Xenova/all-MiniLM-L6-v2">all-MiniLM-L6-v2</a> via <a href="https://huggingface.co/docs/transformers.js">Transformers.js</a>, which matches by meaning) with BM25 keyword ranking, merged with reciprocal rank fusion. It runs entirely in your browser after a one-time 23&nbsp;MB download; nothing you type leaves your device. Monster groupings were proposed by the same model and confirmed by hand; each warding is this page's synthesis of what the cited companies changed or planned afterwards; the case files say which items were done and which were planned.</p>
+    <p class="method"><b>How it works.</b> Each case file holds facts and a summary written for this page from the company's own postmortem; follow the links to read the originals. Cases were found through <a href="https://github.com/danluu/post-mortems">danluu/post-mortems</a>. Search combines a small embedding model (<a href="https://huggingface.co/Xenova/all-MiniLM-L6-v2">all-MiniLM-L6-v2</a> via <a href="https://huggingface.co/docs/transformers.js">Transformers.js</a>, which matches by meaning) with BM25 keyword ranking, merged with reciprocal rank fusion. It runs entirely in your browser after a one-time 23&nbsp;MB download; nothing you type leaves your device. Monster groupings were proposed by the same model and confirmed by hand. Each control sums up what the cited companies changed or planned; the case files say which. The &ldquo;Retired when&rdquo; metrics are this page's suggestion, not the companies'.</p>
     <p>Part of <a href="../">SRE Lab</a> by Sally Roth · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab/tree/main/incidents">source</a></p>
   </footer>
 </div>
@@ -277,7 +279,7 @@ function renderMonsters() {
       <h3 id="m-${p.id}">${esc(p.name)}</h3>
       <p class="lore">${esc(p.lore)}</p>
       <details><summary>Ward it off (${p.ward.length})</summary>
-        <ul>${p.ward.map((w) => `<li>${esc(w.text)}<span class="seen">Seen at ${w.ids.map(cite).join(", ")}</span></li>`).join("")}</ul>
+        <ul>${p.ward.map((w) => `<li>${esc(w.text)}${w.retired ? `<span class="retired"><b>Retired when</b> ${esc(w.retired)}</span>` : ""}<span class="seen">Seen at ${w.ids.map(cite).join(", ")}</span></li>`).join("")}</ul>
       </details>
       <button class="btn" type="button" data-p="${p.id}">Open all ${p.members.length} files</button>
     </section>`).join("");

@@ -39,12 +39,12 @@ export const CHAPTERS = [
       { text: "One service, three signals, three stores. At the bottom are two things a fleet needs that one team doesn't: limits per team, and cost reported per team. Press Next." },
       { text: "Metrics aggregate in the process, so cost follows the number of series, each unique label set, not traffic. That makes them cheap to keep for months, which is why they drive dashboards and alerts. One unbounded label, like user ID, multiplies the series.", on: ["app", "metrics", "mstore"], flow: ["e-m", "e-ms"] },
       { text: "Logs cost per event, so they grow with traffic and verbosity. Loki indexes only stream labels and filters the text at query time.", on: ["app", "logs", "lstore"], flow: ["e-l", "e-ls"] },
-      { text: "Traces cost per span and grow with call depth. OpenTelemetry suggests sampling is worth considering from about 1,000 traces per second.", on: ["app", "traces", "tstore"], flow: ["e-t", "e-ts"] },
+      { text: "Traces cost per span and grow with call depth. OpenTelemetry suggests sampling is worth considering from about 1,000 traces per second. The fleet default: head sampling in the service template, and a shared tail tier that keeps errors and slow traces.", on: ["app", "traces", "tstore"], flow: ["e-t", "e-ts"] },
       { text: "The signals link up. An exemplar puts a trace ID on a metric sample, and log records carry `TraceId` and `SpanId`. Alert on a metric, open a slow trace, read that request's logs.", on: ["grafana", "mstore", "tstore", "lstore"], flow: ["e-qm", "e-ex", "e-tid"] },
-      { text: "The org rule for which signal: counts and rates are metrics, kept long. One request's path is a trace, sampled. The exact error is a log, kept short. A count you only ever graph shouldn't be a log line you parse.", on: ["metrics", "traces", "logs"] },
-      { text: "Limits make the rule real. Prometheus `sample_limit` fails the whole scrape when a target exposes too many samples. Loki has per-tenant limits such as `ingestion_rate_mb` and `max_streams_per_user`.", on: ["lim", "mstore", "lstore"], flow: ["e-lim1", "e-lim2"] },
-      { text: "Make teams tenants, or at least label everything by team. Mimir custom trackers count active series per label matcher, so you can report series per team. Loki's overrides exporter publishes each tenant's limits as metrics.", on: ["lim", "cost", "lstore", "mstore"], flow: ["e-c1"] },
-      { text: "Publish the number. Each team sees its series, log GB and spans per month, next to its owners. A team over budget gets a review that asks whether to drop unused series, sample, cut retention, or raise the budget.", on: ["cost", "lim"] },
+      { text: "The org rule for which signal: counts and rates are metrics, kept long. One request's path is a trace, sampled. The exact error is a log, kept short. Write it on one page with default retention for each, and check every new service against it.", on: ["metrics", "traces", "logs"] },
+      { text: "Limits make the rule real. Prometheus `sample_limit` fails the whole scrape when a target exposes too many samples. Loki has per-tenant limits such as `ingestion_rate_mb` and `max_streams_per_user`. Count limit hits per team each week.", on: ["lim", "mstore", "lstore"], flow: ["e-lim1", "e-lim2"] },
+      { text: "Make teams tenants, or at least label everything by team. Mimir custom trackers count active series per label matcher, so you can report series per team. Loki's overrides exporter publishes each tenant's limits as metrics. Spend with no owning team should trend to zero.", on: ["lim", "cost", "lstore", "mstore"], flow: ["e-c1"] },
+      { text: "Publish the number. Each team sees its series, log GB and spans per month, next to its owners. A team over budget two months running gets a review: drop unused series, sample, cut retention, or raise the budget. Fleet-wide, compare spend growth with traffic growth.", on: ["cost", "lim"] },
     ],
     say30: "Each signal costs differently. Metrics cost per series, so they're cheap to keep and drive alerts. Logs cost per event and grow with traffic. Traces cost per span and get sampled. They link through exemplars and trace IDs on log records. At org scale I write the rule down: counts are metrics, one request's path is a trace, the exact error is a log with short retention. Then I enforce it with limits per team, like Prometheus `sample_limit` and Loki per-tenant limits, and report cost per team using Mimir custom trackers and tenant metrics. Teams over budget get a review. I track how much spend is attributed to an owner, and spend growth against traffic growth.",
     gotchas: [
@@ -52,13 +52,6 @@ export const CHAPTERS = [
       "Logs and traces link only if trace context is there. One uninstrumented hop or a logger not wired to the SDK breaks the chain.",
       "Exemplars point to one trace. If sampling dropped it, the link goes nowhere.",
       "A scrape over `sample_limit` fails whole, so the target goes dark. Alert on scrape failures when you add limits.",
-    ],
-    atScale: [
-      "Signal rules: one page saying what gets a metric, a trace and a log, with default retention for each. Metric: share of new services that pass a telemetry review against it.",
-      "Hard limits per team: `sample_limit` on scrapes, per-tenant limits in Loki and Mimir. Metric: limit hits per team per week, and scrapes failed because of them.",
-      "Cost attribution: series per team from custom trackers, log GB per tenant, spans per service. Metric: share of telemetry spend with an owning team. Unattributed should trend to zero.",
-      "Sampling defaults: head sampling in the service template, tail sampling for errors and slow traces in a shared tier. Metric: kept traces per second against budget, and share of error traces kept.",
-      "Budget review for teams over budget two months running. Metric: teams over budget, and telemetry spend growth against traffic growth.",
     ],
     agentic: [
       "Assistants now turn plain questions into queries: Grafana Assistant handles querying and dashboards in conversation, New Relic AI helps build NRQL, and Honeycomb's Canvas works from your schema plus sample telemetry values (none of these pages states a preview or GA label). Choosing the right signal is still your call, so read the generated PromQL, LogQL or NRQL before trusting the chart: a plausible query on the wrong signal or label is the new silent error.",
@@ -144,12 +137,12 @@ export const CHAPTERS = [
       { text: "Apps export OTLP to an agent Collector on their node, gRPC on 4317 or HTTP on 4318. The agent adds host metadata and forwards to a gateway, usually one per cluster or region.", on: ["app", "agent", "recv"], flow: ["e-sdk", "e-ag"] },
       { text: "`memory_limiter` goes first. Over its soft limit it refuses data with a retryable error and the sender backs off. A sender that doesn't retry loses that data.", on: ["recv", "mem"], flow: ["e-p1", "e-refuse"] },
       { text: "Then `k8sattributes` (before batching, which drops the context it needs), redaction in `attributes`, then `batch`. This is where org rules live: strip personal data and high-cardinality attributes once, for everyone.", on: ["mem", "k8s", "attr", "batch"], flow: ["e-p2", "e-p3", "e-p4"] },
-      { text: "Each exporter gets its own copy. `loadbalancing` routes by trace ID so one tail sampler sees the whole trace, and keeps errors, slow traces and a share of the rest.", on: ["batch", "expo", "explb", "s1", "s2", "tback", "vback"], flow: ["e-fo1", "e-fo2", "e-v", "e-lb1", "e-lb2", "e-s1", "e-s2"] },
+      { text: "Each exporter gets its own copy. `loadbalancing` routes by trace ID so one tail sampler sees the whole trace. Scale that sampling tier only behind it, and watch `otelcol_loadbalancer_num_backends`: every change moves trace routes.", on: ["batch", "expo", "explb", "s1", "s2", "tback", "vback"], flow: ["e-fo1", "e-fo2", "e-v", "e-lb1", "e-lb2", "e-s1", "e-s2"] },
       { text: "Data is lost at the queues. In-memory queues die with the process, full queues drop new data, and a backend outage longer than the retry window (5 minutes by default) expires old data.", on: ["expo", "explb", "tback", "vback"] },
-      { text: "So give the pipeline SLOs from the Collector's own metrics. Delivery is `otelcol_exporter_sent_*` against `otelcol_receiver_accepted_*`. Refusals are `otelcol_receiver_refused_*`. Loss before the queue is `otelcol_exporter_enqueue_failed_*`.", on: ["batch", "slo"], flow: ["e-int"] },
-      { text: "Scale before it drops. The Collector docs suggest scaling out at about 60 to 70% queue use. If the queue stays full as you add Collectors, the backend is the bottleneck and more Collectors won't help.", on: ["slo", "expo", "explb"] },
-      { text: "The team that runs the pipeline carries its pager, paged on those SLOs. Product teams get a panel that says when missing data is the pipeline's fault, so they don't debug their own code for it.", on: ["slo", "oncall"], flow: ["e-oncall"] },
-      { text: "OpAMP (a beta spec) lets a server push config to agents, see their versions and health, and roll out upgrades. Without something like it, a config change across thousands of agents is a deploy you can't see.", on: ["opamp", "agent"], flow: ["e-opamp"] },
+      { text: "So give the pipeline SLOs from the Collector's own metrics, per signal and cluster. Delivery is `otelcol_exporter_sent_*` against `otelcol_receiver_accepted_*`. Refusals are `otelcol_receiver_refused_*`. Loss before the queue is `otelcol_exporter_enqueue_failed_*`.", on: ["batch", "slo"], flow: ["e-int"] },
+      { text: "Scale before it drops. The Collector docs suggest scaling out at about 60 to 70% queue use. If the queue stays full as you add Collectors, the backend is the bottleneck. Set `limit_mib` below the container's memory limit.", on: ["slo", "expo", "explb"] },
+      { text: "The team that runs the pipeline carries its pager, paged on those SLOs. Product teams get a panel that says when missing data is the pipeline's fault. Count the incidents where a product team noticed missing data before the pipeline team did.", on: ["slo", "oncall"], flow: ["e-oncall"] },
+      { text: "OpAMP (a beta spec) lets a server push config to agents, see their versions and health, and roll out upgrades. Without it, a config change across thousands of agents is a deploy you can't see. Track the share of agents on the current config and a supported version.", on: ["opamp", "agent"], flow: ["e-opamp"] },
     ],
     say30: "Apps send OTLP to an agent Collector on the node, then to a gateway. The pipeline is receivers, ordered processors and exporters: `memory_limiter` first, enrichment, redaction, then `batch`. Tail sampling needs trace-ID load balancing. Once every team depends on it, I run it as a tier-0 service. It gets SLOs from its own metrics: sent against accepted, refusals, and enqueue failures. The team that runs it carries the pager. It scales out at about 60 to 70% queue use, and checks the backend first if queues stay full. Config and versions are managed for the whole fleet, with OpAMP or GitOps, so one redaction rule applies everywhere.",
     gotchas: [
@@ -157,13 +150,6 @@ export const CHAPTERS = [
       "Tail sampling needs every span of a trace on one Collector. Round-robin in front of tail samplers silently makes partial traces.",
       "OTLP delivery is guaranteed per hop only, and retries after reconnects can create duplicates.",
       "Telemetry schemas are interfaces. Collector Contrib v0.160.0 lets the hostmetrics process scraper opt in to release-candidate metrics, which rename things (`state` becomes `cpu.mode`). The Collector stays healthy while shared queries break, so test the switch against the fleet's dashboards first.",
-    ],
-    atScale: [
-      "Pipeline SLOs from internal metrics: sent against accepted per signal, refused and enqueue_failed rates. Metric: share of accepted spans, points and records exported, per cluster.",
-      "A named on-call for the pipeline. Metric: pipeline pages per shift, and incidents where a product team found missing data before the pipeline team did.",
-      "Capacity rules: scale at about 60-70% queue use, and set `limit_mib` below the container limit. Metric: peak queue use per gateway, and memory_limiter refusals.",
-      "Stateful tiers scale only behind a load-balancing exporter. Metric: changes in `otelcol_loadbalancer_num_backends` per day, since each change moves trace routes.",
-      "Fleet config: OpAMP or GitOps, one standard pipeline with redaction in it. Metric: share of agents on the current config and a supported version.",
     ],
     agentic: [
       "Agent and LLM telemetry rides the same SDK-to-Collector path. The GenAI conventions keep `gen_ai.input.messages`, `gen_ai.output.messages` and `gen_ai.tool.call.arguments` Opt-In because they can carry user data; if a team turns capture on, the gateway's `attributes` or `transform` processor is where the platform deletes or hashes them for every team before any exporter ships a copy to a vendor.",
@@ -248,8 +234,8 @@ max by (exporter) (
   {
     id: "prometheus-scrape",
     n: 3,
-    title: "Prometheus: discovery, scrape and storage",
-    question: "How does Prometheus find what to scrape in Kubernetes, what happens on each scrape, and where do the samples live afterwards?",
+    title: "Prometheus topology: shards, HA and remote write",
+    question: "Hundreds of clusters each run Prometheus. How do you shard and pair the servers, get one global view, and prove no targets went missing?",
     view: [960, 500],
     groups: [
       { id: "g-prom", label: "Prometheus server", x: 170, y: 30, w: 600, h: 340 },
@@ -267,6 +253,8 @@ max by (exporter) (
       { id: "rwq", label: "remote_write", sub: "shards read WAL", x: 600, y: 290, w: 150, h: 56 },
       { id: "lts", label: "Long-term store", sub: "Mimir, Thanos", kind: "store", x: 600, y: 420, w: 150, h: 56 },
       { id: "global", label: "Global Prometheus", sub: "aggregates only", x: 185, y: 420, w: 160, h: 56 },
+      { id: "peers", label: "Clusters 2..N", sub: "HA pairs, shards", x: 810, y: 300, w: 140, h: 56 },
+      { id: "fleet", label: "Fleet SLIs", sub: "coverage, lag", kind: "store", x: 810, y: 420, w: 140, h: 56 },
     ],
     edges: [
       { id: "e-watch", from: "sd", to: "kapi", label: "watches", labelAt: [165, 62] },
@@ -280,33 +268,27 @@ max by (exporter) (
       { id: "e-rw", from: "wal", to: "rwq", label: "reads", labelPos: 0.5 },
       { id: "e-post", from: "rwq", to: "lts", label: "HTTP POST" },
       { id: "e-fed", from: "global", to: "head", label: "GET /federate" },
+      { id: "e-peer", from: "peers", to: "lts", label: "remote_write" },
+      { id: "e-sli", from: "fleet", to: "lts" },
     ],
     steps: [
-      { text: "One Prometheus server: discovery and relabeling decide what to scrape, the scrape loop pulls, and the TSDB stores. Remote write and federation move data out. Press Next to follow one scrape." },
-      { text: "`kubernetes_sd_configs` watches the Kubernetes API. With `role: pod` each declared container port (or a port-less container) becomes a candidate target; `endpoints`, `endpointslice`, `service`, `node` and `ingress` are the other roles. Each candidate carries `__address__` and `__meta_kubernetes_*` labels.", on: ["kapi", "sd"], flow: ["e-watch"] },
-      { text: "`relabel_configs` runs on targets before any scrape: `keep` only opted-in pods, copy namespace and pod name into real labels, rewrite `__address__` or `__metrics_path__`. Labels starting with `__` are then removed, and `instance` defaults to the address.", on: ["sd", "relabel"], flow: ["e-cand"] },
-      { text: "The scrape loop pulls each target's `/metrics` every `scrape_interval` (global default 1m, usually set lower). `job` and `instance` labels are attached to every series.", on: ["relabel", "scrape", "apppod"], flow: ["e-keep", "e-s1"] },
-      { text: "For every scrape Prometheus also writes `up` (1 if it succeeded, 0 if not), `scrape_duration_seconds` and `scrape_samples_scraped`. An exporter slower than `scrape_timeout` (default 10s, never above the interval) fails the whole scrape: `up` is 0 and no samples land.", on: ["scrape", "slow"], flow: ["e-s2"] },
-      { text: "`metric_relabel_configs` runs on the scraped samples as the last step, for example to drop expensive series. Then samples are appended to the in-memory head block. If `sample_limit` is exceeded, the entire scrape fails.", on: ["scrape", "head"], flow: ["e-ingest"] },
-      { text: "Every append is also written to the write-ahead log in 128MB segments. After a crash or restart, Prometheus replays the WAL to rebuild the head.", on: ["head", "wal"], flow: ["e-wal"] },
-      { text: "Head data is cut into two-hour blocks on disk, which are compacted into larger blocks in the background. Retention defaults to 15 days unless `--storage.tsdb.retention.time` or `.size` says otherwise. Local storage is not replicated.", on: ["head", "blocks"], flow: ["e-cut"] },
-      { text: "`remote_write` tails the WAL. Shards batch samples and POST them to long-term storage such as Mimir or Thanos, retrying with backoff. If the endpoint is down for more than about two hours, the WAL is compacted away and unsent samples are lost.", on: ["wal", "rwq", "lts"], flow: ["e-rw", "e-post"] },
-      { text: "Federation is the pull alternative: a global Prometheus scrapes `/federate` with `match[]` selectors for current values, usually only aggregated recording-rule series, and sets `honor_labels: true` to keep the source labels.", on: ["global", "head"], flow: ["e-fed"] },
+      { text: "One Prometheus server in detail, inside the box, and the fleet around it: other clusters writing to one long-term store, and the numbers that say the layout works. Press Next to follow one scrape, then the fleet decisions." },
+      { text: "`kubernetes_sd_configs` watches the Kubernetes API and turns pods or EndpointSlices into candidate targets with `__meta_kubernetes_*` labels. `relabel_configs` runs before any scrape: `keep` opted-in targets, copy namespace and pod into real labels. Every cluster gets this from one shared config.", on: ["kapi", "sd", "relabel"], flow: ["e-watch", "e-cand"] },
+      { text: "The scrape loop pulls `/metrics` every `scrape_interval` and writes `up` for each target. A scrape slower than `scrape_timeout`, or over `sample_limit`, fails whole: `up` is 0 and no samples land. A target that discovery never found has no `up` series at all.", on: ["relabel", "scrape", "apppod", "slow"], flow: ["e-keep", "e-s1", "e-s2"] },
+      { text: "Samples go to an in-memory head block, logged to a WAL in 128MB segments, then cut into two-hour blocks on disk, kept 15 days by default. Local storage is one node and not replicated, and the head lives in memory. That caps what one server can hold.", on: ["scrape", "head", "wal", "blocks"], flow: ["e-ingest", "e-wal", "e-cut"] },
+      { text: "Size each server. Disk is about retention seconds times samples per second times 1-2 bytes, and samples per second is targets times series per target over the interval. When a cluster outgrows one server, split its targets with a `hashmod` relabel rule, one shard per server.", on: ["relabel", "scrape", "blocks"] },
+      { text: "Run every server or shard as an HA pair with identical config. `external_labels` stamp `cluster` and replica on everything sent out. Mimir's HA tracker elects one replica per `cluster` value and drops the other's samples, so the store keeps one copy.", on: ["rwq", "lts", "peers"], flow: ["e-peer"] },
+      { text: "`remote_write` tails the WAL and POSTs batches to that store, which is the fleet's global view and long retention. One full shard queue blocks WAL reads for every shard. If the endpoint is down past two hours, the WAL is compacted and unsent samples are lost.", on: ["wal", "rwq", "lts"], flow: ["e-rw", "e-post"] },
+      { text: "Clusters that only ship data can run in `--agent` mode: the same discovery and scraping, a WAL cleared after each successful write, and no local queries, alerting or recording rules. The trade is that rules and alerts run centrally, so paging depends on the remote store.", on: ["sd", "scrape", "wal", "rwq"] },
+      { text: "Federation is the pull path: a global server scrapes `/federate` with `match[]` selectors for current values and sets `honor_labels: true`. Keep it to a few recording-rule aggregates. Full-resolution history belongs in remote write.", on: ["global", "head"], flow: ["e-fed"] },
+      { text: "Then measure the layout per cluster. Coverage: targets with `up == 1` against the targets you expect. Lag: highest queued minus highest sent timestamp; the Prometheus mixin alerts past 120 seconds. Capacity: active series per server against its plan.", on: ["fleet", "lts", "peers"], flow: ["e-sli"] },
     ],
-    say30: "Prometheus discovers targets, for example with `kubernetes_sd_configs` watching pods or EndpointSlices. `relabel_configs` filters and rewrites those targets using the `__meta_` labels. Then it pulls `/metrics` from each target every scrape interval, attaching `job` and `instance` and recording `up`, which is 0 when a scrape fails or times out. Samples go into an in-memory head block, protected by a write-ahead log, and every two hours become an immutable block on local disk with 15 days' retention by default. Local storage isn't replicated, so for long retention and a global view you `remote_write` to something like Mimir or Thanos. It reads from the WAL, so it survives short outages, about two hours.",
+    say30: "Every cluster gets the same Prometheus setup. Discovery and `relabel_configs` pick targets, the scrape loop records `up`, and samples sit in a WAL-backed head, then two-hour blocks on one node's disk. One server's head is finite, so I size from targets times series over the interval, shard with `hashmod` when a cluster outgrows a server, and run each shard as an HA pair with `cluster` and replica external labels. Everything goes over `remote_write` to a store like Mimir, which drops the duplicate replica and is the global view. Federation is only for a few aggregates. Per cluster I track target coverage, remote write lag against a two-minute line, and series against capacity.",
     gotchas: [
       "`relabel_configs` acts on targets before the scrape; `metric_relabel_configs` acts on samples after it. Dropping a noisy metric in `relabel_configs` does nothing.",
-      "`up == 0` only tells you Prometheus could not scrape. A target missing from discovery has no `up` series at all; alert with `absent()` for things that must exist.",
-      "A timeout or `sample_limit` breach drops the whole scrape, not just the slow part, so one heavy exporter leaves gaps in every series it serves.",
-      "A Prometheus server is a single node with non-replicated local storage. HA means running two identical servers and deduplicating downstream.",
-    ],
-    atScale: [
-      "One Prometheus has finite memory for the head block, so large estates run one server (often an HA pair) per cluster, or shard targets across servers with a `hashmod` relabel rule. Global queries then need a layer on top.",
-      "Federation pulls current values from `/federate` on each scrape and suits aggregated series. Remote write streams every sample from the WAL and is how most long-term stores (Mimir, Thanos receive, vendors) ingest at scale.",
-      "Remote write falling behind is the classic symptom of a slow backend: a full shard queue stops WAL reads for all shards. Watch `prometheus_remote_storage_samples_pending` and tune `max_shards`, `capacity` and `max_samples_per_send` (defaults 50, 10000 and 2000).",
-      "Slow exporters, often custom ones that query a database on every scrape, hit `scrape_timeout` and turn into `up == 0` gaps. Cache the expensive work in the exporter and serve the last result.",
-      "Restarting a busy Prometheus means replaying the WAL, which holds at least the last two hours of samples on busy servers, before the head is back. Large servers take a noticeable time to come back; HA pairs and staggered restarts hide the gap.",
-      "Capacity is roughly retention seconds times samples per second times 1-2 bytes per sample. Sample rate is targets times series per target divided by the interval, so halving the interval doubles disk.",
+      "`up == 0` alerts can't see a target that discovery or a `keep` rule dropped, because it has no `up` series. Coverage needs a list of expected targets, or `absent()` for jobs that must exist.",
+      "Give each HA pair its own `cluster` value. Mimir elects one replica per value, so shards that share one can't fail over on their own.",
+      "Restarting a busy server replays the WAL, at least the last two hours of samples, before the head is back. Stagger restarts so one replica of each pair stays up.",
     ],
     agentic: [
       "Agents now read metrics through assistants and MCP servers (Grafana Assistant, for one, queries your data sources under your own permissions; Prometheus took an MCP server into its own GitHub org in October 2026, and it serves the TSDB admin endpoints only when started with `--dangerous.enable-tsdb-admin-tools`), so `job`, `instance` and your metric names become an API that agents consume. Absence is the trap: a target dropped by `relabel_configs` has no `up` series at all, and an agent that finds no data can call the service healthy, so ask which series it actually checked.",
@@ -314,14 +296,16 @@ max by (exporter) (
       "Ask an agent to size a server or a `remote_write` queue and it will give confident numbers; check them against this chapter's arithmetic (targets times series per target divided by the interval, 1-2 bytes per sample) and against `prometheus_remote_storage_samples_pending`. A model's idea of defaults can be stale, and the fundamentals still decide capacity.",
     ],
     quiz: [
-      { q: "A pod is up and serving `/metrics`, but there is no series for it in Prometheus, not even `up`. Where do you look?", a: "Discovery and relabeling. The target was never discovered or a `keep`/`drop` rule in `relabel_configs` removed it. The targets page and service discovery page in the Prometheus UI show discovered labels before and after relabeling." },
-      { q: "What does remote write read from, and what happens if the endpoint is down for six hours?", a: "It tails the WAL. Requests are retried without loss for up to about two hours; after that the WAL has been compacted and the unsent samples are lost." },
-      { q: "When would you use federation instead of remote write?", a: "To pull a small set of already-aggregated series (for example recording-rule outputs) from many Prometheus servers into a global one. For full-resolution, long-term storage of everything, use remote write." },
+      { q: "Target coverage in one cluster fell from 99% to 93% after a config change, with no `up == 0` alerts. Where do you look?", a: "Discovery and relabeling. Targets dropped by a `keep` rule or never discovered have no `up` series, so nothing fires. The service discovery page shows labels before and after relabeling." },
+      { q: "When do you shard a cluster's Prometheus, and when do you run it in agent mode?", a: "Shard with `hashmod` when one server's series outgrow its memory and disk plan. Use agent mode when the cluster only ships data and rules can run centrally." },
+      { q: "Remote write lag on one cluster has been over two minutes for an hour. What's at risk?", a: "A slow backend or network, and one full shard queue blocks WAL reads for every shard. Check `prometheus_remote_storage_samples_pending`. Past about two hours down, unsent samples are lost." },
     ],
     code: [
-      { lang: "yaml", label: "prometheus.yml", src: `global:
+      { lang: "yaml", label: "prometheus.yml (shard 0, replica a)", src: `global:
   scrape_interval: 30s
-  scrape_timeout: 10s
+  external_labels:
+    cluster: prod-eu-1-s0   # one value per HA pair
+    __replica__: a          # its twin sets b
 scrape_configs:
   - job_name: kubernetes-pods
     kubernetes_sd_configs:
@@ -330,33 +314,43 @@ scrape_configs:
       - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
         action: keep
         regex: "true"
+      - source_labels: [__address__]
+        modulus: 2
+        target_label: __tmp_shard
+        action: hashmod
+      - source_labels: [__tmp_shard]
+        regex: "0"
+        action: keep
       - source_labels: [__meta_kubernetes_namespace]
         target_label: namespace
-      - source_labels: [__meta_kubernetes_pod_name]
-        target_label: pod
     metric_relabel_configs:
       - source_labels: [__name__]
         regex: "debug_.*"
         action: drop
     sample_limit: 50000
 remote_write:
-  - url: https://metrics.example.internal/api/v1/push
-    queue_config:
-      max_shards: 50
-      capacity: 10000
-      max_samples_per_send: 2000` },
+  - url: https://metrics.example.internal/api/v1/push` },
+      { lang: "promql", label: "Fleet SLIs", src: `# remote write lag in seconds; page past 120
+  prometheus_remote_storage_queue_highest_timestamp_seconds
+- prometheus_remote_storage_queue_highest_sent_timestamp_seconds
+
+# share of discovered pod targets scraped OK, per cluster
+avg by (cluster) (up{job="kubernetes-pods"})` },
     ],
-    codeNote: "The `prometheus.io/scrape` annotation is a common convention, not a built-in: it only works because the `keep` rule checks for it. The queue settings shown are the defaults.",
+    codeNote: "The `prometheus.io/scrape` annotation is a convention: it works because the `keep` rule checks for it. The two `hashmod` rules keep shard 0 of 2. `avg(up)` only counts discovered targets, so compare target counts with what should be running. The lag query is the one in the Prometheus mixin's PrometheusRemoteWriteBehind alert.",
     incidents: ["grafana-labs-2019-pod-priority-preemption"],
     sources: [
       { title: "prometheus/prometheus-mcp (TSDB admin tools flag)", url: "https://github.com/prometheus/prometheus-mcp" },
       { title: "OpenTelemetry: OTel and Prometheus interoperability (12 Oct 2026)", url: "https://opentelemetry.io/blog/2026/otel-prometheus-interoperability/" },
       { title: "Prometheus overview", url: "https://prometheus.io/docs/introduction/overview/" },
-      { title: "Prometheus configuration", url: "https://prometheus.io/docs/prometheus/latest/configuration/configuration/" },
+      { title: "Prometheus configuration (relabel, hashmod, external_labels)", url: "https://prometheus.io/docs/prometheus/latest/configuration/configuration/" },
       { title: "Jobs and instances", url: "https://prometheus.io/docs/concepts/jobs_instances/" },
       { title: "Prometheus storage", url: "https://prometheus.io/docs/prometheus/latest/storage/" },
       { title: "Remote write tuning", url: "https://prometheus.io/docs/practices/remote_write/" },
       { title: "Federation", url: "https://prometheus.io/docs/prometheus/latest/federation/" },
+      { title: "Prometheus Agent mode", url: "https://prometheus.io/docs/prometheus/latest/prometheus_agent/" },
+      { title: "Grafana Mimir: High-availability deduplication", url: "https://grafana.com/docs/mimir/latest/configure/configure-high-availability-deduplication/" },
+      { title: "Prometheus mixin alerts (PrometheusRemoteWriteBehind)", url: "https://monitoring.mixins.dev/prometheus/" },
       { title: "Honeycomb: AI policies (Honeycomb Intelligence)", url: "https://docs.honeycomb.io/security-compliance/ai-policies" },
       { title: "OpenTelemetry GenAI metrics", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-metrics.md" },
     ],
@@ -405,13 +399,13 @@ remote_write:
     steps: [
       { text: "Top three rows: the PromQL every team writes, and the mistake most make once. Bottom row: how the platform ships the right answer as a library, so hundreds of teams don't each work out p99 alone. Press Next." },
       { text: "Counters only go up and reset on restart. `rate(x[5m])` gives the per-second increase per series and handles resets. Then aggregate: `sum by (job) (rate(...))`. Sum first and a pod restart looks like a spike.", on: ["raw", "rate", "sumby"], flow: ["e-r1", "e-r2"] },
-      { text: "A histogram is counters too, one `_bucket` series per bound `le`. Rate each bucket, `sum by (job, le)`, then `histogram_quantile(0.99, ...)`. Drop `le` and the quantile breaks.", on: ["hist", "brate", "bsum", "hq"], flow: ["e-h1", "e-h2", "e-h3"] },
+      { text: "A histogram is counters too, one `_bucket` series per bound `le`. Rate each bucket, `sum by (job, le)`, then `histogram_quantile(0.99, ...)`. Drop `le` and the quantile breaks. Native histograms, once clients expose them and `scrape_native_histograms` is on, need one series per label set.", on: ["hist", "brate", "bsum", "hq"], flow: ["e-h1", "e-h2", "e-h3"] },
       { text: "The common wrong answer is averaging per-pod p99s from summaries. That isn't a p99 of anything. Repeat it across a few hundred teams and the fleet's latency dashboards disagree with each other.", on: ["podq", "avgq", "wrong"], flow: ["e-w1", "e-w2"] },
       { text: "So record the right expression once. Names follow `level:metric:operations`, like `job:http_requests:rate5m`. Prometheus's guidance: aggregate numerator and denominator separately, then divide, and list the labels you drop.", on: ["sumby", "rule"], flow: ["e-r3"] },
-      { text: "Teams read the recorded series. Dashboards get cheap, and two teams asking for checkout's p99 get the same number.", on: ["rule", "dash", "hq"], flow: ["e-rd", "e-h4"] },
-      { text: "SLO rules come from a spec. Sloth takes an SLO in its own format or OpenSLO and writes SLI recording rules over several windows, plus multiwindow burn-rate alerts at page and warning.", on: ["spec", "gen", "slorules"], flow: ["e-s1", "e-s2"] },
+      { text: "Teams read the recorded series, so two teams asking for checkout's p99 get the same number. A fleet-wide `rate()` over pod or path labels times out, so the library records the aggregate. Track the share of dashboard and alert queries that read recorded series.", on: ["rule", "dash", "hq"], flow: ["e-rd", "e-h4"] },
+      { text: "SLO rules come from a spec. Sloth takes an SLO in its own format or OpenSLO and writes SLI recording rules over several windows, plus multiwindow burn-rate alerts at page and warning. Track the share of tier-1 services whose alerts come from it.", on: ["spec", "gen", "slorules"], flow: ["e-s1", "e-s2"] },
       { text: "For shared components, use what exists. Monitoring mixins package Grafana dashboards, recording rules and alerts for Kubernetes, node exporter, Prometheus and more.", on: ["gen", "slorules"] },
-      { text: "Every rule in the library gets a `promtool` test in CI and a series `limit`. A renamed label then fails a build instead of quietly changing hundreds of dashboards.", on: ["slorules", "ci", "dash"], flow: ["e-s3", "e-s4"] },
+      { text: "Every rule in the library gets a `promtool` test in CI and a series `limit`. A renamed label then fails a build instead of quietly changing hundreds of dashboards. Rule changes merged without a test should be zero.", on: ["slorules", "ci", "dash"], flow: ["e-s3", "e-s4"] },
     ],
     say30: "The essentials don't change: `rate()` per series, then `sum by`. For p99 from a histogram, keep `le` in the aggregation and call `histogram_quantile` last. Never average p99s. At fleet scale I stop expecting every team to get that right. The platform ships a recording-rule library named `level:metric:operations`, and dashboards read it. SLO rules come from a generator like Sloth, from one spec per service. Shared components use monitoring mixins. Every rule has a `promtool` test in CI and a series limit. I measure how much of the fleet's dashboards and alerts read the library and how many hand-written burn-rate rules are left.",
     gotchas: [
@@ -419,13 +413,6 @@ remote_write:
       "Don't average ratios or averages either. Sum numerators and denominators, then divide.",
       "A histogram p99 is an estimate bounded by bucket edges. Between a 300ms and a 450ms bucket, the true value can be anywhere.",
       "A library nobody can find gets rebuilt. Publish each rule's name and meaning where teams build dashboards.",
-    ],
-    atScale: [
-      "Shared recording-rule library owned by the platform team. Metric: share of dashboard and alert queries that read recorded series rather than raw metrics.",
-      "Generated SLO rules from one spec format. Metric: share of tier-1 services whose burn-rate alerts come from the generator, and hand-written ones left.",
-      "Rule tests and limits: `promtool` tests in CI and a series `limit` on each rule. Metric: rule changes merged without a test (target zero) and rules hitting their limit.",
-      "Query cost: a fleet-wide `rate()` over pod or path labels times out, so record the aggregate and query that. Metric: slow queries and p99 query latency per tenant.",
-      "Native histograms store one series per label set instead of one per bucket, once clients expose them and `scrape_native_histograms` is on. Metric: bucket series as a share of all series.",
     ],
     agentic: [
       "Query helpers now draft queries from plain language (New Relic AI builds NRQL; Grafana Assistant drafts queries in conversation). Point them at the recorded series in the library, and use the rules in this chapter as the review checklist for anything they write against raw metrics: `rate()` before `sum`, `le` kept in `sum by`, no averaged quantiles, because a wrong query still draws a believable line.",

@@ -25,7 +25,8 @@
   ],
   "ward": [
    {
-    "text": "Roll config and rules out in stages, canary first, the same way you ship code.",
+    "text": "Config and rules ship in waves, canary first, enforced in tooling.",
+    "retired": "no push goes global outside break-glass.",
     "ids": [
      "crowdstrike-2024-channel-file-291",
      "microsoft-2014-azure-storage-infinite-loop",
@@ -35,28 +36,23 @@
     ]
    },
    {
-    "text": "Validate generated config like untrusted input: size, field counts, blanks.",
+    "text": "Gate generated config like untrusted input: size, field counts, bad values.",
+    "retired": "every config generator has one.",
     "ids": [
      "cloudflare-2025-bot-feature-file-panic",
      "crowdstrike-2024-channel-file-291",
-     "google-2025-service-control-null-pointer",
      "google-2009-malware-warning-slash",
      "google-2014-bad-config-logged-in-services"
     ]
    },
    {
-    "text": "Keep a kill switch and a known-good file you can push in minutes.",
+    "text": "Critical paths get a kill switch and fail open where safe.",
+    "retired": "drills restore known-good config in minutes.",
     "ids": [
      "google-2025-service-control-null-pointer",
+     "cloudflare-2025-waf-killswitch-lua-nil",
      "cloudflare-2025-bot-feature-file-panic",
      "cloudflare-2019-waf-regex"
-    ]
-   },
-   {
-    "text": "Where it's safe, fail open instead of failing everything.",
-    "ids": [
-     "cloudflare-2025-waf-killswitch-lua-nil",
-     "google-2025-service-control-null-pointer"
     ]
    }
   ]
@@ -79,7 +75,8 @@
   ],
   "ward": [
    {
-    "text": "Retry with exponential backoff and jitter, and audit client retry loops.",
+    "text": "Client libraries default to jittered backoff and a retry cap.",
+    "retired": "retry rates stay flat in outages.",
     "ids": [
      "spotify-2013-popcount-retry-cascade",
      "square-2017-multipass-redis-retries",
@@ -87,7 +84,8 @@
     ]
    },
    {
-    "text": "Let clients back in gradually instead of all at once.",
+    "text": "Readmit clients in steps after recovery.",
+    "retired": "post-recovery load stays under normal peak.",
     "ids": [
      "datadog-2020-service-discovery-dns-storm",
      "slack-2014-reconnect-storm",
@@ -95,17 +93,12 @@
     ]
    },
    {
-    "text": "Cache what clients ask for, so one outage doesn't become a query flood.",
+    "text": "Cache and single-flight hot lookups, health checks included.",
+    "retired": "no hot lookup is uncached.",
     "ids": [
      "spotify-2013-popcount-retry-cascade",
      "datadog-2020-service-discovery-dns-storm",
      "flyio-2026-readiness-check-netlink-herd"
-    ]
-   },
-   {
-    "text": "Give clients a degraded mode to fall back to.",
-    "ids": [
-     "launchdarkly-2025-aws-flag-delivery"
     ]
    }
   ]
@@ -124,24 +117,20 @@
   ],
   "ward": [
    {
-    "text": "Use 64-bit keys from day one, including foreign keys that point at them.",
+    "text": "Schema checks flag 32-bit keys and narrower foreign keys.",
+    "retired": "no 32-bit ID column remains.",
     "ids": [
      "basecamp-2018-int-overflow-read-only",
      "heroku-2023-fk-integer-overflow"
     ]
    },
    {
-    "text": "Alert on headroom: ID columns near their limit, transaction ID age.",
+    "text": "Alert on ID and transaction ID headroom everywhere; tune autovacuum early.",
+    "retired": "every database has headroom alerts.",
     "ids": [
      "heroku-2023-fk-integer-overflow",
-     "mandrill-2019-postgres-xid-wraparound"
-    ]
-   },
-   {
-    "text": "Tune and watch autovacuum before it's an emergency.",
-    "ids": [
-     "sentry-2015-postgres-xid-wraparound",
-     "mandrill-2019-postgres-xid-wraparound"
+     "mandrill-2019-postgres-xid-wraparound",
+     "sentry-2015-postgres-xid-wraparound"
     ]
    }
   ]
@@ -170,7 +159,8 @@
   ],
   "ward": [
    {
-    "text": "Alert long before anything expires, including internal and mTLS certificates, and check the whole chain.",
+    "text": "Inventory every cert, mTLS included, with full-chain expiry alerts.",
+    "retired": "no cert nears expiry unrenewed.",
     "ids": [
      "teamdynamix-2026-internal-tls-cert-expiry",
      "microsoft-azure-2013-storage-ssl-cert-expiry",
@@ -181,23 +171,20 @@
     ]
    },
    {
-    "text": "Automate issuance and rotation; manual renewals are where these hide.",
+    "text": "Automate rotation, and verify every endpoint serves the new cert.",
+    "retired": "no renewal is manual.",
     "ids": [
      "render-2024-expired-mtls-certs",
      "scorm-cloud-2020-client-cert-expiry",
-     "squiz-2023-edge-cert-expiry"
+     "jamf-2025-securedns-cert-expiry"
     ]
    },
    {
-    "text": "Test with future dates, expired certificates and leap days in QA.",
+    "text": "Test and review time code: expiry, leap days, backward clocks.",
+    "retired": "every tier-1 service runs them.",
     "ids": [
      "mozilla-2019-addons-cert-expiry",
-     "azure-2012-leap-day-certificate"
-    ]
-   },
-   {
-    "text": "Review code that measures time; reject negative durations.",
-    "ids": [
+     "azure-2012-leap-day-certificate",
      "cloudflare-2017-leap-second-rrdns"
     ]
    }
@@ -233,7 +220,8 @@
   ],
   "ward": [
    {
-    "text": "Make tools refuse dangerous scope: minimum capacity, no bulk deletes.",
+    "text": "Tools cap scope: minimum capacity, rate limits, no bulk deletes.",
+    "retired": "every destructive tool has caps.",
     "ids": [
      "aws-2017-s3-us-east-1-typo",
      "atlassian-2022-site-deletion-script",
@@ -243,26 +231,23 @@
     ]
    },
    {
-    "text": "Soft delete, and guard destructive commands against production.",
-    "ids": [
-     "atlassian-2022-site-deletion-script",
-     "travisci-2018-prod-db-truncate",
-     "keepthescore-2020-prod-db-dropped",
-     "linear-2024-truncate-cascade-data-loss"
-    ]
-   },
-   {
-    "text": "Make the target environment explicit, and get a second reviewer.",
+    "text": "Changes go through the pipeline, with an explicit environment and a second reviewer.",
+    "retired": "no prod change bypasses the pipeline.",
     "ids": [
      "cloudflare-2025-r2-credential-rotation",
      "aws-2012-elb-state-data-deletion",
-     "psf-2026-kubectl-wrong-context-scale-zero"
+     "psf-2026-kubectl-wrong-context-scale-zero",
+     "travisci-2018-prod-db-truncate",
+     "circleci-2025-manual-waf-rule-outage"
     ]
    },
    {
-    "text": "Block changes made outside the pipeline, and alert on drift.",
+    "text": "Soft delete by default, and revoke TRUNCATE in prod.",
+    "retired": "no prod role can truncate.",
     "ids": [
-     "circleci-2025-manual-waf-rule-outage"
+     "atlassian-2022-site-deletion-script",
+     "travisci-2018-prod-db-truncate",
+     "linear-2024-truncate-cascade-data-loss"
     ]
    }
   ]
@@ -293,7 +278,8 @@
   ],
   "ward": [
    {
-    "text": "Hunt down single-provider and single-facility dependencies on purpose.",
+    "text": "Find and remove single-provider and single-facility dependencies, tier-1 first.",
+    "retired": "tier-1 services pass facility-loss tests.",
     "ids": [
      "cloudflare-2023-pdx04-power-control-plane",
      "cloudflare-2025-workers-kv-storage",
@@ -301,20 +287,16 @@
     ]
    },
    {
-    "text": "Keep health checks shallow, so a slow database doesn't empty the load balancer.",
+    "text": "Shallow health checks; local config when discovery fails.",
+    "retired": "services pass drills with discovery off.",
     "ids": [
-     "buildkite-2016-db-downgrade-healthcheck"
+     "buildkite-2016-db-downgrade-healthcheck",
+     "datadog-2020-service-discovery-dns-storm"
     ]
    },
    {
-    "text": "Separate control plane from data plane, and keep a static local fallback.",
-    "ids": [
-     "datadog-2020-service-discovery-dns-storm",
-     "aws-2015-dynamodb-metadata-overload"
-    ]
-   },
-   {
-    "text": "Don't let your monitoring depend on the system it monitors.",
+    "text": "Monitoring runs outside the systems it watches.",
+    "retired": "alerting survives its target's outage.",
     "ids": [
      "roblox-2021-consul-streaming-boltdb"
     ]
@@ -341,7 +323,8 @@
   ],
   "ward": [
    {
-    "text": "Require 2FA everywhere, hardware keys for admins, no SMS fallback.",
+    "text": "Require 2FA everywhere, hardware keys for admins.",
+    "retired": "no account lacks 2FA or uses SMS.",
     "ids": [
      "gentoo-2018-github-org-takeover",
      "homebrew-2018-jenkins-github-token-leak",
@@ -349,7 +332,8 @@
     ]
    },
    {
-    "text": "Keep owners few and tokens narrow; scrub secrets from CI output.",
+    "text": "Few owners, narrow tokens, and secrets scrubbed from CI output.",
+    "retired": "every token has an expiry.",
     "ids": [
      "gentoo-2018-github-org-takeover",
      "homebrew-2018-jenkins-github-token-leak",
@@ -357,19 +341,13 @@
     ]
    },
    {
-    "text": "Have a rotate-everything runbook ready. Every one of these ended with one.",
+    "text": "Keep a rotate-everything runbook, and drill it.",
+    "retired": "rotating every prod secret takes hours.",
     "ids": [
      "circleci-2022-session-cookie-theft-secrets-exfil",
      "circleci-2013-mongohq-database-breach",
      "heroku-2022-github-oauth-token-theft",
      "cloudflare-2025-salesloft-drift-salesforce-breach",
-     "browserstack-2014-shellshock-aws-key-theft"
-    ]
-   },
-   {
-    "text": "Private-by-default buckets, encrypted backups, and no forgotten servers.",
-    "ids": [
-     "sentry-2016-s3-backup-acl",
      "browserstack-2014-shellshock-aws-key-theft"
     ]
    }
@@ -392,23 +370,20 @@
   ],
   "ward": [
    {
-    "text": "Monitor backups, and test restores automatically.",
-    "ids": [
-     "gitlab-2017-database-deletion"
-    ]
-   },
-   {
-    "text": "Rehearse failover in game days before you need it.",
-    "ids": [
-     "gocardless-2017-postgres-failover"
-    ]
-   },
-   {
-    "text": "Plan for how long a restore takes, not just whether one exists.",
+    "text": "Restore every datastore on a schedule, timed against its RTO.",
+    "retired": "every restore passes within RTO.",
     "ids": [
      "gitlab-2017-database-deletion",
      "atlassian-2022-site-deletion-script",
+     "linear-2024-truncate-cascade-data-loss",
      "pythonanywhere-2020-ebs-volume-failure"
+    ]
+   },
+   {
+    "text": "Fail over tier-1 databases in game days.",
+    "retired": "each passes a failover drill quarterly.",
+    "ids": [
+     "gocardless-2017-postgres-failover"
     ]
    }
   ]
@@ -430,22 +405,18 @@
   ],
   "ward": [
    {
-    "text": "Design to lose a whole facility, then prove it: by the second Portland outage, databases failed over on their own.",
+    "text": "Design control planes to lose a facility or zone, and drill it.",
+    "retired": "no failover needs a manual step.",
     "ids": [
      "cloudflare-2023-pdx04-power-control-plane",
-     "cloudflare-2024-pdx01-power-failover"
-    ]
-   },
-   {
-    "text": "Isolate control planes per zone, with failover to another region.",
-    "ids": [
+     "cloudflare-2024-pdx01-power-failover",
      "amazon-2011-eu-west-power-ebs",
-     "amazon-2012-us-east-1-storm-power",
-     "cloudflare-2023-pdx04-power-control-plane"
+     "amazon-2012-us-east-1-storm-power"
     ]
    },
    {
-    "text": "Keep manual overrides for automated power and cooling controls.",
+    "text": "Facility controls get redundancy and a manual bypass.",
+    "retired": "each site tests its bypass yearly.",
     "ids": [
      "amazon-2019-tokyo-cooling-control",
      "amazon-2011-eu-west-power-ebs"
