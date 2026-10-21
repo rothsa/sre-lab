@@ -1,12 +1,12 @@
 // Chapters 7-8: boundaries that hold as capability rises, interfaces that outlive models.
-// Spec format: see ../../k8s/README.md (plus `code`, `codeNote`, `atScale` from ../../drawn/README.md).
+// Spec format: see ../../k8s/README.md (plus `code` and `codeNote` from ../../drawn/README.md).
 
 export const CHAPTERS = [
   {
     id: "boundaries",
     n: 7,
     title: "Boundaries that hold as capability rises",
-    question: "The next model will be more capable and more persistent. Why does that call for stronger guardrails, and which ones survive a model swap?",
+    question: "Every team's agents will get a more capable, more persistent model. Why does that call for stronger guardrails, and which survive a fleet-wide swap?",
     view: [940, 430],
     groups: [
       { id: "g-sbx", label: "Sandbox: files and network isolated", x: 190, y: 10, w: 350, h: 300 },
@@ -38,27 +38,21 @@ export const CHAPTERS = [
     steps: [
       { text: "An agent with tools is a security design problem, and a model upgrade does not change that. Everything in this picture is enforced outside the model, so it holds whichever model sits in the middle." },
       { text: "Simon Willison's lethal trifecta (June 2025): private data, untrusted content and a way to send data out. Combine all three and an attacker can steal the data. Meta's Agents Rule of Two (October 2025) makes it policy: one session gets at most two.", on: ["untrusted", "private", "outside", "agent"], flow: ["e-in", "e-data"] },
-      { text: "Untrusted text becomes instructions. Meta calls prompt injection a \"fundamental, unsolved weakness\" in all LLMs. NIST's agent-hijacking tests (January 2025) show why fixed test lists mislead: new red-team attacks raised success on one model from 11% to 81%.", on: ["untrusted", "agent"], flow: ["e-in"] },
+      { text: "Untrusted text becomes instructions. Meta calls prompt injection a \"fundamental, unsolved weakness\" in all LLMs. NIST found new red-team attacks raised hijacking success on one model from 11% to 81%, so fixed test lists mislead.", on: ["untrusted", "agent"], flow: ["e-in"] },
       { text: "Every tool call passes a gate the model cannot edit. OWASP's Excessive Agency entry names three causes, too much functionality, permission and autonomy, and the fixes: fewer and narrower tools, least privilege, approval for high-impact actions.", on: ["agent", "policy"], flow: ["e-call"] },
-      { text: "The sandbox needs both walls. Anthropic (October 2025): without network isolation an agent could send out SSH keys; without filesystem isolation it could escape and reach the network. Anthropic reports sandboxing cut permission prompts by 84% in its internal use.", on: ["agent", "policy", "proxy"] },
-      { text: "Traffic leaves only through a proxy with an allowlist. Each allowed host is a capability you granted, so the list starts empty and grows by review.", on: ["policy", "proxy", "outside"], flow: ["e-egress", "e-out"] },
-      { text: "Real credentials stay outside the sandbox. Claude Code's Anthropic-hosted cloud sessions never put GitHub credentials in the VM: it holds a short-lived, session-scoped credential, and a proxy attaches the real one server-side.", on: ["policy", "creds", "systems"], flow: ["e-cred", "e-sys"] },
-      { text: "Irreversible actions go to a person. The MCP spec says there should always be a human able to deny a tool call. Keep prompts for what cannot be undone, or people approve on reflex.", on: ["policy", "human", "creds"], flow: ["e-ask", "e-ok"] },
-      { text: "Why capability raises the stakes: Claude 3.7 Sonnet's system card (February 2025) reports special-casing tests to make them pass. Claude 4 models (May 2025) showed about two-thirds less hard-coding in Anthropic's reward-hacking evals, yet \"still exhibit these behaviors\". Better models still find paths you did not intend.", on: ["agent", "policy"] },
-      { text: "Log every decision with the model ID, so a swap shows up as a change in denials and approvals. Anthropic's 16-model study (June 2025) found harmful choices in contrived simulations. In October 2026 Anthropic reported that several unintended actions it studied \"occurred during regular agentic use of Claude.\"", on: ["policy", "log"], flow: ["e-log"] },
+      { text: "The sandbox needs both walls. Without network isolation an agent could send out SSH keys; without filesystem isolation it could escape and reach the network. Anthropic reports sandboxing cut permission prompts by 84% internally, which matters when hundreds of engineers would otherwise approve by reflex.", on: ["agent", "policy", "proxy"] },
+      { text: "Traffic leaves only through a proxy with an allowlist that starts empty and grows by review. Tools get the same treatment: run an allowlisted internal MCP registry instead of ad hoc installs; the official MCP Registry is meant as the upstream for private enterprise subregistries.", on: ["policy", "proxy", "outside"], flow: ["e-egress", "e-out"] },
+      { text: "Real credentials stay outside the sandbox. Claude Code's Anthropic-hosted cloud sessions hold only a short-lived, session-scoped credential, and a proxy attaches the real one server-side. Shared agent credentials hide who acted, so mint a task-scoped token per run and log it with the model ID.", on: ["policy", "creds", "systems"], flow: ["e-cred", "e-sys"] },
+      { text: "Irreversible actions go to a person. The MCP spec says there should always be a human able to deny a tool call.", on: ["policy", "human", "creds"], flow: ["e-ask", "e-ok"] },
+      { text: "Why capability raises the stakes: Claude 3.7 Sonnet's system card (February 2025) reports special-casing tests to make them pass. Claude 4 models showed about two-thirds less hard-coding in Anthropic's reward-hacking evals, yet \"still exhibit these behaviors\".", on: ["agent", "policy"] },
+      { text: "Log every decision with the model ID and compare denial, approval and escalation rates before and after a swap. Anthropic's 16-model study (June 2025) found harmful choices in contrived simulations; in October 2026 it reported several unintended actions \"occurred during regular agentic use of Claude.\"", on: ["policy", "log"], flow: ["e-log"] },
     ],
-    say30: "I design guardrails that don't depend on which model is inside. The model can be talked into things, and prompt injection is still unsolved, so the boundary is the environment: a sandbox with both filesystem and network isolation, an egress allowlist that starts empty, credentials attached by a proxy outside the sandbox, and human approval only for irreversible actions. I apply the lethal trifecta, or Meta's Rule of Two: no session gets untrusted input, sensitive data and a way out together. A smarter model is more persistent at reaching its goal, including through paths I didn't intend, so I re-run adversarial tests on every upgrade.",
+    say30: "I design guardrails that hold whichever model the fleet runs. Prompt injection is still unsolved, so the boundary is the environment: a sandbox with filesystem and network isolation, an egress allowlist that starts empty, tools from an allowlisted internal MCP registry, and per-run scoped credentials attached by a proxy outside the sandbox. Human approval is only for irreversible actions, or hundreds of engineers approve by reflex. Meta's Rule of Two keeps untrusted input, sensitive data and a way out from meeting in one session. Every decision is logged with the model ID, so a swap shows up as a change in denial and approval rates.",
     gotchas: [
       "\"The new model is more aligned\" is not a control. Telling models not to misbehave reduced harmful choices in Anthropic's simulations but did not eliminate them; the sandbox and the gate work either way.",
       "Static injection test sets age fast. NIST found adaptive red-team attacks far stronger than the baseline set on the same model, so re-test with new attacks, not last year's list.",
       "Tool annotations such as read-only or destructive are hints. The MCP spec says clients must treat them as untrusted unless the server is trusted.",
       "Rule of Two is a design rule, not a filter: if a task truly needs all three legs, Meta's answer is supervision such as human approval, not a cleverer prompt.",
-    ],
-    atScale: [
-      "Approval fatigue across hundreds of engineers: if every call prompts, people approve by reflex. Anthropic reports sandboxing cut prompts by 84% in its internal use; save prompts for irreversible actions.",
-      "Shared agent credentials hide who acted and widen blast radius. Mint a short-lived, task-scoped token per run, outside the sandbox, and log it with the model ID.",
-      "Thousands of MCP servers: OpenAI's remote MCP asks for approval before data is shared by default, and the official MCP Registry is meant as the upstream for private enterprise subregistries. Run an allowlisted internal registry instead of ad hoc installs.",
-      "A model swap across a fleet changes behavior under the same policy. Compare denial, approval and escalation rates per model ID before and after, and alert on jumps.",
     ],
     quiz: [
       { q: "An agent reads public issues and holds a private-repo token. What must it not have?", a: "A way to communicate externally or change state, because it already has untrusted input and sensitive access. Either drop egress and writes, or drop the private token, or put a human approval on the third leg." },
@@ -91,7 +85,7 @@ export const CHAPTERS = [
     id: "interfaces",
     n: 8,
     title: "Interfaces that outlive models",
-    question: "You will switch models, and maybe vendors, several times. Where do you put the seams so your tools, instructions and traces survive every switch?",
+    question: "Hundreds of agents will switch models, and maybe vendors, several times. Where does a platform put the seams so tools, instructions and traces survive?",
     view: [960, 400],
     nodes: [
       { id: "ma", label: "Model, vendor A", sub: "pinned snapshot", x: 10, y: 30, w: 160, h: 50 },
@@ -119,26 +113,20 @@ export const CHAPTERS = [
       { id: "e-trace", from: "harness", to: "traces", label: "emits", labelPos: 0.55 },
     ],
     steps: [
-      { text: "Frontier models change every few weeks; your tools, data and instructions change slowly. The seams decide how much you rewrite on each switch. Put them where the slow-moving parts meet the fast-moving one." },
-      { text: "A model adapter gives the harness one call shape. The OpenAI Agents SDK describes itself as provider-agnostic, covering 100+ other LLMs; the Vercel AI SDK and LiteLLM do the same job. The adapter hides the call shape, not the behavior: evals still decide.", on: ["ma", "mb", "mn", "adapter", "harness"], flow: ["e-a", "e-b", "e-n", "e-h"] },
-      { text: "Tools sit behind an open protocol. Anthropic published MCP in November 2024; in December 2025 it moved to the Agentic AI Foundation under the Linux Foundation, co-founded by Anthropic, Block and OpenAI; Anthropic then counted more than 10,000 active public servers.", on: ["harness", "mcp", "servers"], flow: ["e-tools", "e-srv"] },
-      { text: "The protocol moves too. Spec versions are dated by their last breaking change: 2025-03-26 added OAuth-based authorization, 2025-06-18 structured tool output, 2025-11-25 experimental tasks, and 2026-07-28 made the core stateless. Pin a version and test upgrades like any dependency.", on: ["mcp", "servers"] },
-      { text: "Design tools for a reader that acts like an engineer: clear names, docs, errors that say how to fix the call, and safe retries. Anthropic changed a tool to require absolute paths and the model stopped making path mistakes. MCP's 2025-11-25 spec returns input errors to the model so it can correct itself.", on: ["servers", "systems"], flow: ["e-sys"] },
-      { text: "Structured outputs replace repair code. OpenAI says its mode makes responses adhere to your JSON Schema; Anthropic's went GA in February 2026 using constrained decoding. Refusals come back separately, and Anthropic notes token-limit stops can break the schema, so keep validation and drop the JSON-repair parser.", on: ["harness", "schema"], flow: ["e-schema"] },
-      { text: "Instructions live in open file formats. AGENTS.md is stewarded by the same foundation as MCP; Agent Skills (a folder with a `SKILL.md`) became an open standard in December 2025 and lists Claude Code, Codex, Gemini CLI, Copilot and Cursor among adopters.", on: ["files", "harness"], flow: ["e-files"] },
-      { text: "Traces in one schema let you compare models on the same task. OpenTelemetry's GenAI conventions cover client spans, metrics, events and MCP; they now live in their own repository with no published schema URL yet, so map to them in one place.", on: ["harness", "traces"], flow: ["e-trace"] },
+      { text: "Frontier models change every few weeks; your tools, data and instructions change slowly. The seams decide how much every team rewrites on each switch, so put them where the slow-moving parts meet the fast-moving one." },
+      { text: "A model adapter gives every harness one call shape. The OpenAI Agents SDK describes itself as provider-agnostic, covering 100+ other LLMs; the Vercel AI SDK and LiteLLM do the same job. The adapter hides the call shape, not the behavior: evals still decide.", on: ["ma", "mb", "mn", "adapter", "harness"], flow: ["e-a", "e-b", "e-n", "e-h"] },
+      { text: "Tools sit behind an open protocol: MCP, which moved to the Linux Foundation's Agentic AI Foundation in December 2025. One MCP server per internal system, listed in a reviewed internal registry, is written once and reused by every agent and model, instead of rebuilt for each new client.", on: ["harness", "mcp", "servers"], flow: ["e-tools", "e-srv"] },
+      { text: "The protocol moves too. Spec versions are dated by their last breaking change; 2026-07-28 made the core stateless and deprecated Roots, Sampling and Logging with a minimum 12-month window. Pin a version, test upgrades like any dependency, and inventory which servers use deprecated features.", on: ["mcp", "servers"] },
+      { text: "Design tools for a reader that acts like an engineer: few, namespaced tools with clear docs, errors that say how to fix the call, and safe retries. Anthropic changed a tool to require absolute paths and the model stopped making path mistakes.", on: ["servers", "systems"], flow: ["e-sys"] },
+      { text: "Structured outputs replace repair code: OpenAI's mode makes responses adhere to your JSON Schema, and Anthropic's went GA in February 2026. Refusals and token-limit stops can still break the schema, so keep validation.", on: ["harness", "schema"], flow: ["e-schema"] },
+      { text: "Instructions live in open file formats. AGENTS.md is stewarded by the same foundation as MCP; Agent Skills became an open standard in December 2025 and lists Claude Code, Codex, Gemini CLI, Copilot and Cursor among adopters. A skill discloses only its description until used.", on: ["files", "harness"], flow: ["e-files"] },
+      { text: "Traces in one schema, with the model ID as an attribute, let you compare models on the same task. OpenTelemetry's GenAI conventions cover client spans, metrics, events and MCP; they live in their own repository with no published schema URL yet, so map to them in one place.", on: ["harness", "traces"], flow: ["e-trace"] },
     ],
-    say30: "I put seams where slow-moving things meet fast-moving ones. Frontier models change every few weeks, so the harness talks to them through an adapter with one call shape and a pinned model ID. Tools sit behind MCP, which is now under a Linux Foundation fund with Anthropic, OpenAI and Block, and I pin the spec version. Tools are written for an engineer-like reader: clear names, actionable errors, idempotent calls. I use structured outputs instead of repair parsers but still validate. Instructions live in AGENTS.md and skills, and traces in one schema, so a new model drops in and the evals tell me whether it's better.",
+    say30: "I put seams where slow-moving things meet fast-moving ones. Frontier models change every few weeks, so every agent talks to them through one adapter with a pinned model ID. Each internal system gets one MCP server, listed in a reviewed internal registry and reused by every agent and model, with the spec version pinned and deprecations inventoried. Tools stay few and namespaced, with actionable errors. Structured outputs replace repair parsers, with validation kept. Instructions live in AGENTS.md and skills, and traces in one schema with the model ID as an attribute, so a new model drops in and the evals judge it.",
     gotchas: [
       "Provider-agnostic is not behavior-agnostic. The Agents SDK warns that other providers may lack structured outputs or hosted tools, and the same prompt can behave differently; the eval suite, not the adapter, makes a swap safe.",
       "Open protocols version too. MCP 2026-07-28 removed the initialize handshake and session header; a server pinned to an older version needs a planned migration, not a silent bump.",
       "Structured outputs guarantee shape, not truth. A schema-valid answer can still be wrong, and refusals or token limits can break the schema, so check `stop_reason` and validate values.",
-    ],
-    atScale: [
-      "Hundreds of internal tools wired per agent: each integration is rebuilt for every new client. One MCP server per system, listed in a reviewed internal registry, is written once and reused by every agent and model.",
-      "Tool lists grow until they crowd the context and confuse selection. Keep tools few and namespaced, and load detail on demand (skills disclose only their description until used).",
-      "Model fan-out: when several models serve one workload, traces without a shared schema can't be compared. Emit one span format with the model ID as an attribute.",
-      "Protocol upgrades across a fleet: MCP's 2026-07-28 release deprecated Roots, Sampling and Logging with a minimum 12-month window. Inventory which servers use them before that runs out.",
     ],
     quiz: [
       { q: "Why put an adapter between the harness and the model if the evals decide anyway?", a: "So a swap is a config change, not a rewrite: one call shape for every provider, a pinned model ID, and a fallback model. The evals then judge the swap; the adapter only makes it cheap to try." },

@@ -1,5 +1,5 @@
 // Chapters 5-6: workflows as reviewed artifacts; policy for unattended loops.
-// Spec format: see ../../k8s/README.md (plus `code`, `codeNote`, `atScale` from ../../drawn/README.md).
+// Spec format: see ../../k8s/README.md (plus `code` and `codeNote` from ../../drawn/README.md).
 
 export const CHAPTERS = [
   {
@@ -38,28 +38,23 @@ export const CHAPTERS = [
     ],
     steps: [
       { text: "Top row: the path a workflow takes from a team's description to a merged file. Middle: what gets generated along the way. Bottom: hosted canvases, and why work leaves them. At a few hundred teams, a workflow has to be a file you can find, diff and review." },
-      { text: "Teams describe the job and the agent writes the script. Claude Code's workflow docs say Claude writes the script for the task you describe, and you don't write it yourself. So reviewers look at the script, and the conversation that produced it doesn't matter much.", on: ["talk", "agent"], flow: ["e-desc"] },
+      { text: "Teams describe the job and the agent writes the script. Claude Code's workflow docs say Claude writes the script for the task you describe, so reviewers look at the script.", on: ["talk", "agent"], flow: ["e-desc"] },
       { text: "Saved to `.claude/workflows/`, a workflow is shared with everyone who clones the repo. That makes it an ordinary file. It goes in through a pull request, and git keeps the version history.", on: ["agent", "pr", "repo"], flow: ["e-pr"] },
-      { text: "Ownership uses tools you already have. GitHub's CODEOWNERS requests review from the owning team automatically, and branch protection can require a code owner's approval before merge. Put the workflows directory under the platform team as well as the team that runs it.", on: ["pr", "owners", "repo"], flow: ["e-rev", "e-merge"] },
-      { text: "Every PR gets a picture generated from the script. LangGraph renders a compiled graph as Mermaid with `draw_mermaid()`, and GitHub renders Mermaid in Markdown. Don't keep a hand-drawn diagram next to the code. Across hundreds of workflows, nobody notices when one drifts.", on: ["pr", "pic"], flow: ["e-pic"] },
-      { text: "One workflow, many repos. A plugin can ship workflows, namespaced by the plugin's name, so a shared release audit runs as `/acme-tools:release-audit` everywhere it's installed. A change to it can reach every team that uses it, so review it like a shared library.", on: ["repo", "plugin"], flow: ["e-plug"] },
-      { text: "Every run writes its script to a file under the session's directory. Diff it against the reviewed copy in the repo. If they differ, something ran that nobody reviewed.", on: ["repo", "runs"], flow: ["e-run"] },
+      { text: "Ownership uses tools you already have. GitHub's CODEOWNERS requests review from the owning team automatically, and branch protection can require a code owner's approval before merge. Make the platform team a co-owner of every workflows directory, so a few people see every new loop.", on: ["pr", "owners", "repo"], flow: ["e-rev", "e-merge"] },
+      { text: "Every PR gets a picture generated from the script. LangGraph renders a compiled graph as Mermaid with `draw_mermaid()`, and GitHub renders Mermaid in Markdown. Across hundreds of workflows, nobody notices when a hand-drawn diagram drifts.", on: ["pr", "pic"], flow: ["e-pic"] },
+      { text: "One workflow, many repos. A plugin can ship workflows, namespaced by the plugin's name, such as `/acme-tools:release-audit`. A change can reach every team that uses it, so version it, roll it out to a few repos first, and keep the previous version installable.", on: ["repo", "plugin"], flow: ["e-plug"] },
+      { text: "Every run writes its script to a file under the session's directory. Diff it against the reviewed copy in the repo and flag runs that don't match: something ran that nobody reviewed.", on: ["repo", "runs"], flow: ["e-run"] },
       { text: "What reviewers check: every loop back has an exit, every fan-out has a cap, a verify step runs before anything is reported or merged, and permissions are scoped. Read the raw script. The approval prompt's phase list hides those details.", on: ["owners", "pr"] },
-      { text: "The side branch. OpenAI's Agent Builder gave teams a drag-and-drop canvas. OpenAI announced its deprecation on 3 Jun 2026 and scheduled the shutdown for 30 Nov 2026, so every workflow built there has to move.", on: ["canvas", "ab"], flow: ["e-ab"] },
-      { text: "The migration guide exports Agents SDK code and warns that it \"does not convert your workflow graph\". That's the risk with a hosted canvas. Your source of truth lives in someone else's product.", on: ["ab", "export", "pr"], flow: ["e-exp", "e-move"] },
-      { text: "Harrison Chase (Oct 2025) says complex tasks get \"too complicated to manage in a visual builder\", and code is the best option for lots of branching and parallelism. At fleet scale that settles it. Keep the graph in code and generate the pictures.", on: ["canvas", "export", "pic"] },
+      { text: "The side branch. OpenAI's Agent Builder gave teams a drag-and-drop canvas, deprecated on 3 Jun 2026 with shutdown set for 30 Nov 2026, so every workflow built there has to move.", on: ["canvas", "ab"], flow: ["e-ab"] },
+      { text: "The migration guide exports Agents SDK code and warns that it \"does not convert your workflow graph\". The source of truth lived in someone else's product.", on: ["ab", "export", "pr"], flow: ["e-exp", "e-move"] },
+      { text: "Harrison Chase (Oct 2025) says complex tasks get \"too complicated to manage in a visual builder\", and code is the best option for lots of branching and parallelism. At fleet scale, keep the graph in code and generate the pictures.", on: ["canvas", "export", "pic"] },
       { text: "Nobody reviews a run of hundreds of agents box by box. Claude Code's /workflows view shows each phase with its agent count, and you drill into a phase only when it looks wrong. Review the file carefully once, then watch runs by phase.", on: ["runs", "pic"] },
     ],
-    say30: "At a few hundred teams, a workflow has to be a file. Teams describe the job, the agent writes the script, and the script goes into .claude/workflows/ through a normal pull request. CODEOWNERS brings in the owning team and the platform team, and branch protection makes their approval required. Each PR carries a Mermaid picture generated from the script, so the diagram can't drift. Shared workflows ship as versioned plugins. Every run saves its script, so you can check that what ran is what was reviewed. Hosted canvases are a platform risk: OpenAI's Agent Builder shuts down on 30 Nov 2026, and its export drops the graph.",
+    say30: "At a few hundred teams, a workflow has to be a file. Teams describe the job, the agent writes the script, and the script goes into .claude/workflows/ through a pull request. CODEOWNERS brings in the owning team and the platform team, and branch protection makes their approval required. Each PR carries a Mermaid picture generated from the script. Shared workflows ship as versioned plugins, rolled out to a few repos first. Every run saves its script, and runs that don't match the reviewed copy get flagged. Hosted canvases are a platform risk: OpenAI's Agent Builder shuts down on 30 Nov 2026, and its export drops the graph.",
     gotchas: [
       "The approval prompt shows phases. Exit conditions, caps and permissions live in the script, so review the raw script in the PR.",
       "A workflow saved to `~/.claude/workflows/` is visible only to its author. When a project and a personal workflow share a name the project one runs, but a personal one under a new name runs unreviewed.",
       "Leaving a canvas is lossy. Agent Builder's export gives you code without the workflow graph, so keep the source of truth in a format you own and version.",
-    ],
-    atScale: [
-      "Hundreds of workflows means hundreds of reviews. Make the platform team a co-owner of `.claude/workflows/` in CODEOWNERS, so a few people see every new loop.",
-      "A shared plugin has a big blast radius. Version it, roll a change out to a few repos first, and keep the previous version installable.",
-      "Drift between what was reviewed and what ran is invisible without tooling. Diff each run's saved script against the repo copy and flag runs that don't match.",
     ],
     quiz: [
       { q: "Where does a team's workflow live, and how is it reviewed?", a: "As a .js file in .claude/workflows/, merged through a pull request. CODEOWNERS requests review from the owners, branch protection can require their approval, and a Mermaid picture generated from the script goes with the PR." },
@@ -119,29 +114,23 @@ export const CHAPTERS = [
     ],
     steps: [
       { text: "Left: what a loop declares before it runs. Middle: the admission check and the run. Right: how the platform audits the fleet. The rule is short. No owner, check, budget and kill switch means no unattended run." },
-      { text: "Owner means a team with an on-call rotation. Cloud scheduled tasks belong to one person's account and act as that person, so the registry names the team, and someone besides the author has to be able to stop the loop.", on: ["own"], flow: ["e-own"] },
-      { text: "Check means something the loop can't argue with or edit: tests, a build, a metric from a read-only evaluator. Cherny's advice to \"give Claude a way to verify its work\" (2 Jan 2026) holds for a fleet too. A loop with no check is a cron job that writes code.", on: ["chk"], flow: ["e-chk"] },
+      { text: "Owner means a team with an on-call rotation, because per-person ownership doesn't survive reorgs. Cloud scheduled tasks act as one person, so the registry maps every loop to a team, someone besides the author can stop it, and the map is rechecked when teams change.", on: ["own"], flow: ["e-own"] },
+      { text: "Check means something the loop can't argue with or edit: tests, a build, a metric from a read-only evaluator. A loop with no check is a cron job that writes code.", on: ["chk"], flow: ["e-chk"] },
       { text: "Budget means numbers, written down: agents per run, turns, hours, spend per month. The tools have ceilings, 1,000 agents per workflow run and 100 scheduled runs an hour per account. Those are the vendor's backstops. Set your own below them.", on: ["bud"], flow: ["e-bud"] },
       { text: "Kill switch means a named way to stop it, and someone who has used it. One workflow run stops from /workflows. For the org, owners can turn scheduled tasks off, and `disableWorkflows` in managed settings turns workflows off.", on: ["kill", "off"], flow: ["e-kill"] },
-      { text: "Admission is a check, not a meeting. The loop's PR fails if a field is missing, which a lint can catch. People review the check and the budget, because those need judgment.", on: ["adm", "rej"], flow: ["e-no", "e-yes"] },
+      { text: "Admission is a check, not a meeting: the loop's PR fails if a field is missing. Nobody reads thousands of phase lists, so people review the check, the budget and every later change to the loop itself.", on: ["adm", "rej"], flow: ["e-no", "e-yes"] },
       { text: "Enforcement lives in managed settings. Nothing in a user's or project's settings overrides a managed key. Use it to limit which models teams can pick, send telemetry to your collector, and turn off features a team hasn't been approved for.", on: ["pol", "run"], flow: ["e-pol"] },
-      { text: "A scheduled task runs shell commands and every connector it includes, writes too, without asking. Give it a sandbox and tightly scoped credentials (Willison, Sep 2025), and remove connectors it doesn't need.", on: ["run"] },
-      { text: "Outside text can't start a workflow. The `ultracode` keyword works only in a prompt a person types, not in a `-p` prompt, a scheduled task prompt or a relayed PR comment. Text fired into a scheduled task arrives labeled as untrusted data.", on: ["run", "pol"] },
-      { text: "The audit is weekly and boring. Pull cost by team from OpenTelemetry, list loops with no owner or a stale check, and diff each run's saved script against the reviewed copy. Anything unowned or over budget goes back to its team with a date.", on: ["tel", "aud", "run"], flow: ["e-aud", "e-tel"] },
+      { text: "A scheduled task runs shell commands and every connector it includes, writes too, without asking. Give it a sandbox and tightly scoped credentials (Willison, Sep 2025).", on: ["run"] },
+      { text: "Outside text can't start a workflow: the `ultracode` keyword works only in a prompt a person types. Text fired into a scheduled task arrives labeled as untrusted data.", on: ["run", "pol"] },
+      { text: "The audit is weekly and boring, built from repos and telemetry, not a spreadsheet. Pull cost by team, alert on cost per run for each loop, since a spike is usually one loop, list loops with no owner or a stale check, and diff each run's script against the reviewed copy.", on: ["tel", "aud", "run"], flow: ["e-aud", "e-tel"] },
       { text: "Test the off switch, and time it. The workflow docs note that a stopped run stays listed while its agents' processes are still running, and a run already in progress keeps going after workflows are disabled.", on: ["aud", "off", "run"], flow: ["e-test", "e-stop"] },
       { text: "Loops that tune themselves need a gate. Cherny's team asks Claude to tune its routines daily (13 Aug 2026), and pstack's /reflect waits for explicit approval before applying an edit. A change to a loop's prompt or check is a change to the loop. Its owner reviews it.", on: ["own", "chk", "aud"] },
     ],
-    say30: "Before the platform runs a loop unattended, the loop declares four things: an owning team, a check it can't edit, a budget in agents, hours and spend, and a kill switch someone has used. A missing field fails admission, usually as a lint on the PR. Managed settings enforce the rest, since users can't override them: allowed models, telemetry, which features are on. Scheduled tasks run shell and connectors without asking, so they get a sandbox and scoped keys. Each week the platform pulls cost by team, flags loops that are unowned or over budget, and checks that what ran matches what was reviewed. Someone tests the off switch.",
+    say30: "Before the platform runs a loop unattended, the loop declares four things: an owning team, a check it can't edit, a budget in agents, hours and spend, and a kill switch someone has used. A missing field fails admission as a lint on the PR. Managed settings, which users can't override, enforce models, telemetry and features. Scheduled tasks run shell and connectors without asking, so they get a sandbox and scoped keys. Each week the platform audits from repos and telemetry, alerts on cost per run, flags loops that are unowned or over budget, and checks that what ran matches what was reviewed. Someone tests the off switch.",
     gotchas: [
       "Turning a feature off doesn't stop what's running. With `disableWorkflows` set, a run already in progress keeps going, so stop live runs separately.",
       "A loop's own prompt can't approve anything. The docs say a fired scheduled-task prompt isn't live user input and can't act as consent for actions during the run.",
       "Vendor caps are backstops. 1,000 agents per run stops a runaway script. Nobody should plan to hit it.",
-    ],
-    atScale: [
-      "Per-person ownership doesn't survive reorgs. Map every loop to a team in the registry and recheck the map when teams change.",
-      "Hundreds of manifests drift. Build the audit from the repos and telemetry, not from a spreadsheet people promise to update.",
-      "Approval fatigue: nobody reads thousands of phase lists. Put the check inside the run, and keep human review for changes to the loop itself.",
-      "A cost spike is usually one loop. Alert on cost per run for each loop, not only on the monthly total.",
     ],
     quiz: [
       { q: "What four things must a loop declare before it runs unattended?", a: "An owning team, a check it can't edit, a budget (agents, turns, hours, spend) and a kill switch with a named person who has used it." },
