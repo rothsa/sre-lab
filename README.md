@@ -19,7 +19,7 @@ Step-through diagrams rendered from chapter specs in `<topic>/parts/*.js` by the
 |---|---|
 | [Kubernetes, Drawn](k8s/) | 18 chapters: control loop, kubectl apply, scheduling, Services, DNS, storage, autoscaling, RBAC, upgrades, a troubleshooting map |
 | [Linux, Drawn](linux/) | Page cache, the OOM killer, cgroups, a packet's path, conntrack, TCP queues, the first 60 seconds of performance analysis |
-| [Sane Incident Management](incident-management/) | Severity, roles, the lifecycle, communication, sustainable on-call, blameless reviews, action items, readiness, learning from incidents at scale |
+| [Incident Management at Scale](incident-management/) | The incident program as a system: severity contract, routing and ownership, concurrent incidents, comms and legal clocks, fleet on-call health, learning, follow-through, readiness, metrics |
 | [Taming Cardinality](cardinality/) | How labels multiply series and cost, finding the culprit, dropping, aggregating and governing |
 | [Terraform, Five Years On](terraform/) | moved/import/removed blocks, checks and tests, OpenTofu, ephemeral values, splitting state |
 | [Infrastructure as Code, Drawn](iac/) | Remote state and locking, modules, environments, plan/apply in CI with policy checks, drift, testing |
