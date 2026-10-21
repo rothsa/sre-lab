@@ -60,7 +60,10 @@ mark { background: var(--mark); color: var(--bone); border-radius: 2px; padding:
 .monsters { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 14px; margin-top: 14px; }
 .monster { background: linear-gradient(180deg, #1b1622 0%, var(--panel) 100%); border: 1px solid var(--rule); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
 .monster h3 { font-family: var(--font-display); font-weight: 900; font-size: 19px; line-height: 1.2; margin: 0; color: var(--bone); }
-.monster .count { font-family: var(--font-type); color: var(--blood); font-size: 13.5px; }
+.monster .count { font-family: var(--font-display); font-weight: 900; color: var(--blood); font-size: 28px; line-height: 1; }
+.monster .count small { font-family: var(--font-type); font-weight: 400; font-size: 13px; margin-left: 6px; }
+.monster details summary { cursor: pointer; font-family: var(--font-type); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--moss); }
+.monster details ul { margin-top: 8px; }
 .monster .lore { font-style: italic; color: var(--muted); margin: 0; font-size: 14.5px; }
 .monster h4 { font-family: var(--font-type); font-weight: 400; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--moss); margin: 6px 0 0; }
 .monster ul { margin: 0; padding-left: 18px; display: grid; gap: 7px; font-size: 14.5px; }
@@ -87,7 +90,7 @@ footer p { margin: 0 0 8px; }
   <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · case files<span class="updated"> · updated <time datetime="2026-10-20">20 Oct 2026</time></span></div>
   <h1>The Incident <span>Files</span></h1>
   <p class="sub">Real outages. Real breaches. Told by the companies that lived through them.</p>
-  <p class="lede">Common failures repeat: expired certificates, config pushes that go everywhere at once, retry storms, databases running out of IDs, keys left where someone could find them. This page starts with those patterns and how companies warded them off, then lets you describe a failure mode and pull the matching case files, leading with what caused each one and what fixed it. It's meant for the time around incidents, not the middle of one: readiness and design reviews, on-call training, and postmortems that point to known patterns and preventions. Mid-incident, the job is capturing data from your own system, because every system is its own thing.</p>
+  <p class="lede">Common failures repeat. Start with the patterns below: how often each one shows up and how companies warded it off. Open one to see its case files, or search for a failure further down. This is for the time around incidents (readiness and design reviews, on-call training, postmortems); mid-incident, the job is capturing data from your own system.</p>
 
   <h2>The monsters that keep coming back</h2>
   <p class="sub">Recurring patterns across these files, and how the companies involved warded them off afterwards.</p>
@@ -266,13 +269,16 @@ function showMonster(p) {
 
 function renderMonsters() {
   const cite = (id) => { const d = byId.get(id); return `<a href="${esc(d.url)}" target="_blank" rel="noopener" title="${esc(d.title)}">${esc(d.company)} ${esc(d.date.slice(0, 4))}</a>`; };
-  $("monsters").innerHTML = patterns.map((p) => `
+  // Most-sighted first; the warding detail stays folded so the whole grid reads at a glance.
+  const byCount = [...patterns].sort((a, b) => b.members.length - a.members.length);
+  $("monsters").innerHTML = byCount.map((p) => `
     <section class="monster" aria-labelledby="m-${p.id}">
-      <div class="count">${p.members.length} sightings</div>
+      <div class="count">${p.members.length}<small>sightings</small></div>
       <h3 id="m-${p.id}">${esc(p.name)}</h3>
       <p class="lore">${esc(p.lore)}</p>
-      <h4>Ward it off</h4>
-      <ul>${p.ward.map((w) => `<li>${esc(w.text)}<span class="seen">Seen at ${w.ids.map(cite).join(", ")}</span></li>`).join("")}</ul>
+      <details><summary>Ward it off (${p.ward.length})</summary>
+        <ul>${p.ward.map((w) => `<li>${esc(w.text)}<span class="seen">Seen at ${w.ids.map(cite).join(", ")}</span></li>`).join("")}</ul>
+      </details>
       <button class="btn" type="button" data-p="${p.id}">Open all ${p.members.length} files</button>
     </section>`).join("");
 }
