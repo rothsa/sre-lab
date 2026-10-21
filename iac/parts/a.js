@@ -344,7 +344,7 @@ inputs = {
     question: "Hundreds of teams change infrastructure every day. What makes every change go through the same gate, who owns the rules, and how do you know it works?",
     view: [940, 470],
     groups: [
-      { id: "g-runner", label: "One apply platform: Atlantis, HCP Terraform, Spacelift", x: 160, y: 150, w: 770, h: 235 },
+      { id: "g-runner", label: "One apply platform: Atlantis, HCP Terraform", x: 160, y: 150, w: 770, h: 235 },
     ],
     nodes: [
       { id: "dev", label: "Engineer", sub: "no prod creds", kind: "actor", x: 10, y: 40, w: 120, h: 50 },
