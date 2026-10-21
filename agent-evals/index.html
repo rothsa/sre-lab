@@ -7,7 +7,7 @@
 <meta name="description" content="Three simulated agent runs on the same synthetic incident: judge them by their tool calls, not by how convincing the final explanation sounds.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
 <style>
-/* Layout: pick a synthetic incident, compare three simulated runs (explanation, trace, checks); then how it's checked. */
+/* Layout: pick a synthetic incident, compare three simulated runs (explanation, trace, checks); then how it's checked, its limits, and the autonomy policy an org builds on it. */
 :root {
   --bg: #f4f6f8; --panel: #ffffff; --fg: #141c24; --muted: #5b6875; --rule: #d7dee5;
   --accent: #1f5fbf; --ok: #15803d; --warn: #a16207; --bad: #c2410c; --soft: #e8eef6;
@@ -100,6 +100,7 @@ pre.code code { font-size: inherit; }
 table { border-collapse: collapse; font-size: 14px; width: 100%; max-width: 860px; }
 th, td { text-align: left; vertical-align: top; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--rule); }
 th { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+#policy ~ .tbl-wrap td:first-child { white-space: nowrap; }
 .limits { background: var(--panel); border: 1px solid var(--rule); border-left: 3px solid var(--warn); border-radius: 10px; padding: 12px 16px 12px 34px; max-width: 72ch; }
 .sources li { font-size: 14px; margin: 4px 0; }
 .load-error { border-left: 3px solid var(--bad); padding-left: 10px; }
@@ -140,8 +141,8 @@ footer a, .prose a, .sources a { color: var(--accent); }
 
   <div class="prose">
     <h2 id="how">How it's checked</h2>
-    <p>Each tool the agent can use (<code>get_metrics</code>, <code>search_logs</code>, <code>list_deploys</code> and the one tool that changes something, <code>rollback</code>) records an OpenTelemetry span when it runs: the tool name, its arguments, a summary of the result, ok or error, and how long it took. The span names and the <code>gen_ai.*</code> attributes follow the OpenTelemetry GenAI conventions for tool spans.</p>
-    <p><b>Span-based evaluation</b> means the checks read that trace instead of (or as well as) the final answer. <a href="https://pydantic.dev/docs/ai/evals/evals/">Pydantic Evals</a> runs every case (incident × run) as a task, captures the spans each task produced into a span tree, and hands it to the evaluators. A built-in <code>HasMatchingSpan</code> asks "is there a span like this?"; custom evaluators can walk the whole tree in order.</p>
+    <p>Each tool the agent can use (<code>get_metrics</code>, <code>search_logs</code>, <code>list_deploys</code> and <code>rollback</code>, the one that changes something) records an OpenTelemetry span: the tool name, its arguments, a result summary, ok or error, and how long it took. Span names and <code>gen_ai.*</code> attributes follow the OpenTelemetry GenAI conventions for tool spans.</p>
+    <p><b>Span-based evaluation</b> means the checks read that trace rather than the final answer alone. <a href="https://pydantic.dev/docs/ai/evals/evals/">Pydantic Evals</a> runs each case (incident × run) as a task, captures its spans into a tree, and hands the tree to the evaluators. The built-in <code>HasMatchingSpan</code> asks "is there a span like this?"; custom evaluators walk the tree in order.</p>
 
     <h3>The checks</h3>
     <div class="tbl-wrap"><table>
@@ -190,32 +191,47 @@ class RetryBudget(Evaluator):
 
     <h3>Honest limits</h3>
     <ul class="limits">
-      <li><b>The checks only see instrumented tools.</b> A call that doesn't record a span, or a span without its arguments, is invisible. In the OpenTelemetry conventions, tool arguments and results are opt-in attributes because they can be sensitive, so a real trace may not contain the service name these checks rely on.</li>
-      <li><b>Passing sample cases doesn't establish real-world reliability.</b> Nine scripted cases show what the checks catch; they say nothing about how often a real agent goes wrong on incidents nobody wrote down.</li>
-      <li><b>Detecting excessive calls after the run doesn't prevent them.</b> The retry loop below already spent its calls (and in one case 40 seconds of timeouts) before any evaluator looked. Enforce call budgets, rate limits and approval for changes like rollbacks at runtime, in the tool layer.</li>
-      <li><b>Eval harnesses have bugs too.</b> An October 2026 audit of one agent benchmark found a reward-function defect that changed the environment state before post-run scoring. Another study found that tests which reproduce a bug can still accept an incorrect patch. Audit the oracle before trusting a score. ProgramBench now scores only its expected tests and drops tests a submission wrote itself (12 October 2026).</li>
-      <li><b>A model swap can change the API, not just the answers.</b> Gemini 4 Argon (GA 13 October 2026) ignores <code>temperature</code>, <code>top_p</code> and <code>top_k</code>, so an eval that fixed those settings no longer tests what it says. Pin model IDs and rerun the evals on every swap.</li>
-      <li><b>A judge can believe the agent.</b> An October 2026 paper on agent verification notes that a judge may accept unsupported claims, "including an agent's own reports of success"; its verifier checks the environment state and the execution trace instead. These checks read spans for the same reason, not the agent's summary.</li>
-      <li><b>Reports drop what a reviewer needs.</b> In CTXGAP (October 2026), readers of an agent's reports recovered 52.0% of task-state facts, against 92.7% for readers of the full execution context. Check the trace when it matters.</li>
-      <li><b>A judge's "first mistake" is often not the cause.</b> Four frontier judges labelling failed agent runs agreed on the exact step in only 21 of 57 cases, and flagged mistakes in successful runs; restarting from a measured point helped where restarting at the judge's label did not (October 2026).</li>
-      <li><b>The grader can be gamed too.</b> When Anthropic trained an auditing agent with reinforcement learning (15 October 2026), rewards that scored each investigation on its own were reward-hacked: "the auditor learns to manufacture alarming findings". Having a judge compare two investigations of the same target held up better, and adding benign targets with nothing planted kept false positives down.</li>
-      <li><b>A guard model can be talked out of it.</b> Datadog Security Labs (15 October 2026) put counterfeit "policy" text ahead of attack content, and Jev, a classifier LangChain uses to gate risky tool calls, mostly stopped flagging it; plain injection did not work. Keep untrusted text away from a judge's instructions, and back model guards with hard limits in the tool layer.</li>
-      <li><b>A grader that reads only the summary fails good runs.</b> Google Cloud's plugin team (16 October 2026) found a judge reading only final replies failed 3 of 11 prompts that the tool-call logs showed had passed: "The grader penalized the agent for doing the right thing simply because it didn't brag about it in the summary." A flattened event list also hid parallel tool calls, so keep the turn structure.</li>
-      <li><b>Judges drift.</b> Netflix (14 October 2026) sends a weekly sample of passed and gated outputs to human raters, re-tunes the judge's rubric when it falls behind them, and has a human approve every change: "An LLM judge must never operate alone."</li>
-      <li><b>Read the transcripts, not just the score.</b> Preference Model's audit of Terminal Bench 4 (19 October 2026) found that 44 of 65 tasks could be passed by cheating. In one, a model exploited a gap in the grader: "It got full marks, and its final methodology report never mentioned the teleporting."</li>
-      <li><b>Score the artifact, not the steps.</b> NVIDIA and Siemens (14 October 2026) gate a chip-design agent's final files on coverage, validity and integrity checks, and "The reward is zero if any gate fails."</li>
-      <li><b>Measure recall, not just precision.</b> Steve Yegge's own evals (October 2026) found two models about equal on specific tasks, but on open-ended tasks one "correctly spots and acts on important issues more often".</li>
-      <li><b>Benchmarks lose their human baseline.</b> Ofir Press, a SWE-bench author, wrote (13 October 2026) that SWE-bench "has gotten pretty saturated at the frontier" and that the next benchmarks target tasks that would take a team of engineers years.</li>
-      <li><b>Isolate each task.</b> An agent can pass an eval "by tampering with tests or overwriting the file that records its score". Docker's Harbor integration (October 2026, on the nightly release) runs every task in a microVM with its own kernel, and lets a task download dependencies during setup, then restricts internet access while the agent works.</li>
-      <li><b>Synthetic data.</b> The incidents, services, results and timings are made up, and the agents are deterministic Python functions, not models. The output checks use simple keyword matching that suits this fixed data and would be too weak for free-form answers.</li>
+      <li><b>The checks only see instrumented tools.</b> A call that records no span, or a span without its arguments, is invisible. OpenTelemetry makes tool arguments and results opt-in attributes because they can be sensitive, so a real trace may lack the service name these checks rely on.</li>
+      <li><b>Eval harnesses have bugs too.</b> An October 2026 audit of one benchmark found a reward-function defect that changed the environment state before scoring, and a study found that tests which reproduce a bug can still accept a wrong patch. ProgramBench now scores only its expected tests and drops tests a submission wrote itself (12 October 2026). Audit the oracle before trusting a score.</li>
+      <li><b>A judge can believe the agent.</b> An October 2026 paper notes that a judge may accept unsupported claims, "including an agent's own reports of success"; its verifier checks the environment state and the trace instead, as these checks do.</li>
+      <li><b>Reports drop what a reviewer needs.</b> In CTXGAP (October 2026), readers of an agent's reports recovered 52.0% of task-state facts, against 92.7% with the full execution context.</li>
+      <li><b>A judge's "first mistake" is often not the cause.</b> Four frontier judges labelling failed agent runs agreed on the exact step in only 21 of 57 cases; restarting from a measured point helped where restarting at the judge's label did not (October 2026).</li>
+      <li><b>The grader can be gamed.</b> When Anthropic trained an auditing agent with reinforcement learning (15 October 2026), scoring each investigation on its own got reward-hacked: "the auditor learns to manufacture alarming findings". Comparing two investigations of the same target held up better.</li>
+      <li><b>A guard model can be talked out of it.</b> Datadog Security Labs (15 October 2026) put counterfeit "policy" text ahead of attack content, and Jev, a classifier LangChain uses to gate risky tool calls, mostly stopped flagging it. Keep untrusted text away from a judge's instructions.</li>
+      <li><b>A grader that reads only the summary fails good runs.</b> Google Cloud's plugin team (16 October 2026) found a judge reading only final replies failed 3 of 11 prompts that the tool-call logs showed had passed, and a flattened event list hid parallel tool calls.</li>
+      <li><b>Read the transcripts, not just the score.</b> Preference Model's audit of Terminal Bench 4 (19 October 2026) found 44 of 65 tasks could be passed by cheating. One model got full marks, and "its final methodology report never mentioned the teleporting."</li>
+      <li><b>Score the artifact, not the steps.</b> NVIDIA and Siemens (14 October 2026) gate a chip-design agent's final files on coverage, validity and integrity: "The reward is zero if any gate fails."</li>
+      <li><b>Measure recall, not just precision.</b> Steve Yegge's evals (October 2026) found two models about equal on specific tasks, but on open-ended tasks one "correctly spots and acts on important issues more often".</li>
+      <li><b>Isolate each task.</b> An agent can pass an eval "by tampering with tests or overwriting the file that records its score". Docker's Harbor integration (October 2026, nightly release) runs each task in its own microVM and restricts internet access while the agent works.</li>
+      <li><b>Synthetic data.</b> The incidents, services, results and timings are made up, and the agents are deterministic Python functions, not models. The output checks use keyword matching that suits this fixed data and would be too weak for free-form answers.</li>
+    </ul>
+
+    <h3 id="policy">From eval to autonomy policy</h3>
+    <p>Nine scripted cases show what these checks catch, not how often a real agent goes wrong. To let incident agents near production, an org runs a gate every night under one rule: agents gather evidence read-only, and people decide and act. What follows is my recommendation.</p>
+    <ul>
+      <li><b>A nightly suite on real incidents.</b> Replay a rolling set of recent closed incidents, with telemetry frozen at page time, and score each run on its trace. Add every incident the agent got wrong. Anthropic's eval guide: "20-50 simple tasks drawn from real failures is a great start", rerun on each agent change and model upgrade. Pin model IDs: Gemini 4 Argon (GA 13 October 2026) ignores <code>temperature</code>, <code>top_p</code> and <code>top_k</code>.</li>
+      <li><b>Promotion criteria for each autonomy level.</b> Require pass^k, all k tries passing, not pass@k. Microsoft's SRE Agent starts new agents in Review mode, where a person approves each proposed action, and suggests keeping production incidents there.</li>
+    </ul>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th scope="col">Level</th><th scope="col">The agent</th><th scope="col">Moves up when</th></tr></thead>
+      <tbody>
+        <tr><td>0 · Shadow</td><td>Runs on the nightly replay only</td><td>Every check passes on all k tries for 30 nights</td></tr>
+        <tr><td>1 · Read-only</td><td>Posts evidence and a likely cause, with trace links, to live incidents</td><td>Responders confirm its cause on most incidents for a month</td></tr>
+        <tr><td>2 · Proposes</td><td>Drafts the next step, such as a rollback; a person decides and runs it</td><td>Top level. A regression, model swap or new tool drops it a level.</td></tr>
+      </tbody>
+    </table></div>
+    <ul>
+      <li><b>Tool budgets in the tool layer.</b> An evaluator reads the trace after the calls are spent: the retry loop above once burned 40 seconds of timeouts first. Enforce call budgets, retry caps and timeouts in the tool gateway, with read-only credentials. In production, rollback is not the agent's tool: a person runs it with their own access (OWASP LLM06).</li>
+      <li><b>Grade the graders.</b> Netflix (14 October 2026) sends a weekly sample of passed and gated outputs to human raters and re-tunes the judge when it falls behind them: "An LLM judge must never operate alone."</li>
     </ul>
 
     <h3>Sources</h3>
     <ul class="sources">
+      <li><a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">Anthropic: Demystifying evals for AI agents (9 January 2026)</a></li>
+      <li><a href="https://sre.azure.com/docs/concepts/run-modes">Azure SRE Agent docs: run modes (Review and Autonomous)</a></li>
       <li><a href="https://preferencemodel.com/blog/terminal-bench-4-is-saturated/">Preference Model: Terminal Bench 4 is saturated (19 October 2026)</a></li>
       <li><a href="https://developer.nvidia.com/blog/optimizing-agent-reliability-and-tool-calling-efficiency-for-chip-design-using-nvidia-nemo-gym/">NVIDIA: Optimizing agent reliability and tool calling efficiency for chip design with NeMo Gym (14 October 2026)</a></li>
       <li><a href="https://x.com/Steve_Yegge/status/2106205282926051596">Steve Yegge on X: his evals on precision and recall (3 October 2026)</a></li>
-      <li><a href="https://ofir.io/The-Era-of-Human-level-AI-is-Over/">Ofir Press: The era of human-level AI is over, in some sub-domains (13 October 2026)</a></li>
       <li><a href="https://securitylabs.datadoghq.com/articles/jev-as-a-judge-how-counterfeit-policy-steers-jev/">Datadog Security Labs: Jev as a judge, how counterfeit policy steers Jev (15 October 2026)</a></li>
       <li><a href="https://cloud.google.com/blog/topics/developers-practitioners/four-eval-engineering-lessons/">Google Cloud: Four evaluation engineering lessons (16 October 2026)</a></li>
       <li><a href="https://netflixtechblog.com/the-lifecycle-of-llm-as-a-judge-building-aligning-and-monitoring-at-scale-c95bd8283508">Netflix TechBlog: The lifecycle of LLM-as-a-Judge (14 October 2026)</a></li>

@@ -173,7 +173,7 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
   <h2 class="section-head">Tools</h2>
   <div class="tools">
     <a class="tool" href="slo/"><strong>SLO Burn Simulator</strong><span>See how fast an error budget drains, which burn-rate alerts fire and when, matching Prometheus rules, and how to run SLOs across thousands of services.</span><em class="upd">updated <time datetime="2026-10-20">20 Oct 2026</time></em></a>
-    <a class="tool" href="status/"><strong>Down or Me</strong><span>Uptime checks with an AI classifier that decides whether a failure is real, and alerts only when both of its confidence thresholds are met.</span><em class="upd">updated <time datetime="2026-10-16">16 Oct 2026</time></em></a>
+    <a class="tool" href="status/"><strong>Down or Me</strong><span>Uptime checks with an AI classifier that decides whether a failure is real, and alerts only when both of its confidence thresholds are met.</span><em class="upd">updated <time datetime="2026-10-20">20 Oct 2026</time></em></a>
     <a class="tool" href="incidents/"><strong>The Incident Files</strong><span>318 real postmortems, searchable by failure mode, plus the nine failure patterns that keep coming back and how companies warded them off.</span><em class="upd">updated <time datetime="2026-10-19">19 Oct 2026</time></em></a>
     <a class="tool" href="agent-evals/"><strong>Did the Agent Do It Right?</strong><span>Three simulated agent runs on the same incident: one checks the evidence, one confidently blames the wrong service, one gets stuck retrying. Pydantic Evals judges each by its tool-call trace, not its explanation.</span><em class="upd">updated <time datetime="2026-10-20">20 Oct 2026</time></em></a>
   </div>
@@ -202,6 +202,7 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
     <h2 id="changelog-h">Changelog</h2>
     <p>What each daily research pass changed, newest first. Every change is checked against a primary source.</p>
     <details open><summary><time datetime="2026-10-20">20 Oct 2026</time></summary><ul>
+      <li>Did the Agent Do It Right? adds how an org gates incident agents (a nightly suite on real incidents, autonomy levels, tool budgets outside the model), and Down or Me's AI box becomes alert triage as a fleet policy.</li>
       <li>Explainer titles lose the “Drawn” suffix, Ownership drops “at Scale”, and One Pattern, Three Languages is retired.</li>
       <li>Security for SREs is now Security at Scale: nine new chapters on running security across the whole org, from org-level guardrails and policy as code to federated identity, secret and key programs, supply chain, vulnerability flow with CISA BOD 26-04, fleet detection, agents and program metrics.</li>
       <li>Graphs and Loops, Engineering on an Exponential and the SLO Burn Simulator move up to org scale: loop sprawl, workflows as reviewed artifacts, policy for unattended loops, the operating-model shift, what compounds in an engineering org, and running SLOs across thousands of services.</li>

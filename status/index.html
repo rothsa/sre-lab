@@ -56,23 +56,26 @@ footer a { color: var(--accent); }
 <body>
 <nav class="site-nav" aria-label="Site" style="max-width:920px"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
 <div class="wrap">
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · uptime<span class="updated"> · updated <time datetime="2026-10-16">16 Oct 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · uptime<span class="updated"> · updated <time datetime="2026-10-20">20 Oct 2026</time></span></div>
   <h1>Down or Me</h1>
   <p class="lede">Checks these services every 5 minutes. When something looks wrong, an AI classifier (Jev) decides whether it's a real outage, degraded, planned maintenance, a blip, or a problem on the monitor's side, and how confident it reports being. Verdicts under 80% confidence are marked for a human look.</p>
   <div class="summary" id="summary">Loading…</div>
   <div class="list" id="list"></div>
   <section class="agentic" aria-labelledby="agentic-h">
-    <h2 id="agentic-h">What changes in the agentic era</h2>
+    <h2 id="agentic-h">AI alert triage as a fleet policy</h2>
     <ul>
-      <li><b>A classifier, not a chatbot.</b> The checker sends Jev the latest result, recent history and how many other services are failing, and Jev picks one of five fixed causes and says how confident it is. TypeSafe, which makes Jev, describes it as returning typed decisions with calibrated probabilities, in early access. It can't run commands or write free text, so a wrong answer can only mislabel a row or send or skip one email.</li>
-      <li><b>It alerts when both confidence thresholds are met.</b> An email goes out only when Jev reports at least 80% confidence in the cause and at least an 80% probability that the owner should hear about it, the cause is a real outage or degradation, and no email has gone out for this problem yet. A verdict under 80% confidence also shows on the board as &ldquo;needs a human look&rdquo;. That trades a few late or missed emails for fewer false ones, the same precision-versus-recall choice as any alert threshold.</li>
-      <li><b>Caps keep the AI optional.</b> Jev is asked only when a check looks unusual, at most every 30 minutes while a problem lasts, and under a daily cap (<code>JEV_DAILY_CAP</code>, default 200). Past the cap, failures still show on the board without a verdict: the monitor never needs the model to see an outage.</li>
-      <li><b>What a human still decides.</b> Status-page incident titles from other companies go into Jev's input, and that is untrusted text; the fixed answer set limits what injected text could do, but it could still nudge a label. Confidence is the model's own estimate, so a person still decides what to do about an outage and whether 80% is the right line, by checking past verdicts against what actually happened.</li>
+      <li><b>Here, one line at 80%.</b> Jev sees the latest result, recent history and how many other services fail, and picks one of five fixed causes with a confidence. TypeSafe, its maker, says it returns typed decisions with calibrated probabilities (early access). An email goes out once per problem, for a real outage or degradation, when Jev is at least 80% sure of the cause and that the owner should hear. A daily cap (<code>JEV_DAILY_CAP</code>, default 200) keeps it optional: failures show without it.</li>
+      <li><b>Across thousands of alerts, set the line per class.</b> One global threshold is a guess. My advice: set it per cause and service tier, from measured precision, and keep customer-facing pages out of auto-triage until those numbers hold. Meta's root-cause tool withheld low-confidence answers, <q>sacrificing reach in favor of precision</q>.</li>
+      <li><b>Measure both directions on labeled samples.</b> Precision is the share of alerts that were significant; recall, the share of significant events that alerted. Each week, responders label a random sample of triaged alerts per cause and team, and every suppressed alert is matched against later incidents: each match is a missed page. Check stated confidence against the labeled hit rate; LLMs stating it <q>tend to be overconfident</q>.</li>
+      <li><b>Who owns its mistakes.</b> The team running the classifier owns its precision and recall like any pager rule, with a target and a review of every missed page. Service owners can opt an alert class out. Other companies' status-page titles are untrusted input; the fixed answer set limits what injected text can do, but it could still nudge a label. A person decides what to do about an outage.</li>
     </ul>
     <h3>Sources</h3>
     <ul class="sources">
       <li><a href="https://typesafe.ai/">TypeSafe: Jev</a></li>
-      <li><a href="https://genai.owasp.org/llm-top-10/">OWASP Top 10 for LLM Applications 2025 (LLM01 Prompt Injection)</a></li>
+      <li><a href="https://sre.google/workbook/alerting-on-slos/">Google SRE Workbook: Alerting on SLOs</a></li>
+      <li><a href="https://engineering.fb.com/2024/06/24/data-infrastructure/leveraging-ai-for-efficient-incident-response/">Meta: AI for incident response (2024)</a></li>
+      <li><a href="https://arxiv.org/abs/2306.13063">Xiong et al.: LLM confidence (2023)</a></li>
+      <li><a href="https://genai.owasp.org/llm-top-10/">OWASP LLM01: Prompt Injection</a></li>
     </ul>
   </section>
   <footer>Part of <a href="../">SRE Lab</a> by Sally Roth · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a></footer>
