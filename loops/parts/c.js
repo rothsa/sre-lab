@@ -124,7 +124,7 @@ export const CHAPTERS = [
       { text: "Outside text can't start a workflow: the `ultracode` keyword works only in a prompt a person types. Text fired into a scheduled task arrives labeled as untrusted data.", on: ["run", "pol"] },
       { text: "The audit is weekly and boring, built from repos and telemetry, not a spreadsheet. Pull cost by team, alert on cost per run for each loop, since a spike is usually one loop, list loops with no owner or a stale check, and diff each run's script against the reviewed copy.", on: ["tel", "aud", "run"], flow: ["e-aud", "e-tel"] },
       { text: "Test the off switch, and time it. The workflow docs note that a stopped run stays listed while its agents' processes are still running, and a run already in progress keeps going after workflows are disabled.", on: ["aud", "off", "run"], flow: ["e-test", "e-stop"] },
-      { text: "Loops that tune themselves need a gate. Cherny's team asks Claude to tune its routines daily (13 Aug 2026), and pstack's /reflect waits for explicit approval before applying an edit. A change to a loop's prompt or check is a change to the loop. Its owner reviews it.", on: ["own", "chk", "aud"] },
+      { text: "Loops that tune themselves need a gate. Cherny's team asks Claude to tune its routines daily (13 Aug 2026). A 20 Oct 2026 paper gates each change on two numbers: how well the verifier agrees with a trusted one, and how cheaply the change rolls back. Prompt, tool and skill edits pass; weight updates need a person.", on: ["own", "chk", "aud"] },
     ],
     say30: "Before the platform runs a loop unattended, the loop declares four things: an owning team, a check it can't edit, a budget in agents, hours and spend, and a kill switch someone has used. A missing field fails admission as a lint on the PR. Managed settings, which users can't override, enforce models, telemetry and features. Scheduled tasks run shell and connectors without asking, so they get a sandbox and scoped keys. Each week the platform audits from repos and telemetry, alerts on cost per run, flags loops that are unowned or over budget, and checks that what ran matches what was reviewed. Someone tests the off switch.",
     gotchas: [
@@ -144,6 +144,7 @@ export const CHAPTERS = [
     codeNote: "The manifest is a sketch for this page. The settings keys come from Claude Code's monitoring docs; values in OTEL_RESOURCE_ATTRIBUTES can't contain spaces.",
     incidents: [],
     sources: [
+      { title: "Recoverability and Verifier Strength: preconditions for unattended agent self-improvement (arXiv 2610.27465, 20 Oct 2026)", url: "https://arxiv.org/abs/2610.27465" },
       { title: "Claude Code docs: Settings files and precedence (managed settings, fetched 2026-10-20)", url: "https://code.claude.com/docs/en/settings" },
       { title: "Claude Code docs: Orchestrate subagents at scale with dynamic workflows (fetched 2026-10-20)", url: "https://code.claude.com/docs/en/workflows" },
       { title: "Claude Code docs: Automate work with scheduled tasks, formerly routines (research preview, fetched 2026-10-20)", url: "https://code.claude.com/docs/en/routines" },

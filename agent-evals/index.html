@@ -120,7 +120,7 @@ footer a, .prose a, .sources a { color: var(--accent); }
 <body>
 <nav class="site-nav" aria-label="Site" style="max-width:1180px"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
 <main class="wrap">
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · agent evals<span class="updated"> · updated <time datetime="2026-10-20">20 Oct 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · agent evals<span class="updated"> · updated <time datetime="2026-10-21">21 Oct 2026</time></span></div>
   <h1>Did the Agent Do It Right?</h1>
   <p class="lede">An AI agent can write a confident, plausible incident explanation and still be wrong: it looked at the wrong service, or it hammered the same failing call until something worked. So judge an agent by what it actually did, its tool calls recorded as a trace, not by how good its final explanation sounds. Pick an incident and compare three runs.</p>
   <p class="sim-badge" role="note"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v4M8 11.6v.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Simulated runs, synthetic data: scripted agents, made-up incidents, no LLM</p>
@@ -200,6 +200,7 @@ class RetryBudget(Evaluator):
       <li><b>A guard model can be talked out of it.</b> Datadog Security Labs (15 October 2026) put counterfeit "policy" text ahead of attack content, and Jev, a classifier LangChain uses to gate risky tool calls, mostly stopped flagging it. Keep untrusted text away from a judge's instructions.</li>
       <li><b>A grader that reads only the summary fails good runs.</b> Google Cloud's plugin team (16 October 2026) found a judge reading only final replies failed 3 of 11 prompts that the tool-call logs showed had passed, and a flattened event list hid parallel tool calls.</li>
       <li><b>Read the transcripts, not just the score.</b> Preference Model's audit of Terminal Bench 4 (19 October 2026) found 44 of 65 tasks could be passed by cheating. One model got full marks, and "its final methodology report never mentioned the teleporting."</li>
+      <li><b>A win can be luck, and a verifier can be broken.</b> Kiro (20 October 2026) nearly shipped a harness fix whose gain was luck on one host; now "models can propose changes, but we use deterministic code to accept or reject them." A paper the same day found an LLM judge that gave the same score whatever it was shown in 9 of 37 settings, with no error. Test the verifier before it approves anything.</li>
       <li><b>Score the artifact, not the steps.</b> NVIDIA and Siemens (14 October 2026) gate a chip-design agent's final files on coverage, validity and integrity: "The reward is zero if any gate fails."</li>
       <li><b>Measure recall, not just precision.</b> Steve Yegge's evals (October 2026) found two models about equal on specific tasks, but on open-ended tasks one "correctly spots and acts on important issues more often".</li>
       <li><b>Isolate each task.</b> An agent can pass an eval "by tampering with tests or overwriting the file that records its score". Docker's Harbor integration (October 2026, nightly release) runs each task in its own microVM and restricts internet access while the agent works.</li>
@@ -227,9 +228,11 @@ class RetryBudget(Evaluator):
 
     <h3>Sources</h3>
     <ul class="sources">
-      <li><a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">Anthropic: Demystifying evals for AI agents (9 January 2026)</a></li>
+      <li><a href="https://www.anthropic.com/research/demystifying-evals-for-ai-agents">Anthropic: Demystifying evals for AI agents (9 January 2026)</a></li>
       <li><a href="https://sre.azure.com/docs/concepts/run-modes">Azure SRE Agent docs: run modes (Review and Autonomous)</a></li>
       <li><a href="https://preferencemodel.com/blog/terminal-bench-4-is-saturated/">Preference Model: Terminal Bench 4 is saturated (19 October 2026)</a></li>
+      <li><a href="https://kiro.dev/blog/how-kiro-fixes-itself">Kiro: How Kiro fixes itself, and how we keep the fixes honest (20 October 2026)</a></li>
+      <li><a href="https://arxiv.org/abs/2610.27465">Recoverability and Verifier Strength (arXiv 2610.27465, 20 October 2026)</a></li>
       <li><a href="https://developer.nvidia.com/blog/optimizing-agent-reliability-and-tool-calling-efficiency-for-chip-design-using-nvidia-nemo-gym/">NVIDIA: Optimizing agent reliability and tool calling efficiency for chip design with NeMo Gym (14 October 2026)</a></li>
       <li><a href="https://x.com/Steve_Yegge/status/2106205282926051596">Steve Yegge on X: his evals on precision and recall (3 October 2026)</a></li>
       <li><a href="https://securitylabs.datadoghq.com/articles/jev-as-a-judge-how-counterfeit-policy-steers-jev/">Datadog Security Labs: Jev as a judge, how counterfeit policy steers Jev (15 October 2026)</a></li>

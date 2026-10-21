@@ -127,7 +127,7 @@ export const CHAPTERS = [
       { title: "Claude Code docs: Keep Claude working toward a goal (/goal)", url: "https://code.claude.com/docs/en/goal" },
       { title: "Claude Code docs: Run Claude Code programmatically (claude -p, permission modes)", url: "https://code.claude.com/docs/en/headless" },
       { title: "Claude Code docs: Automate work with scheduled tasks, formerly routines (research preview)", url: "https://code.claude.com/docs/en/routines" },
-      { title: "Anthropic: Effective harnesses for long-running agents (2025-11-26)", url: "https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents" },
+      { title: "Anthropic: Effective harnesses for long-running agents (2025-11-26)", url: "https://www.anthropic.com/research/effective-harnesses-for-long-running-agents" },
       { title: "Lauren Tan's pstack: poteto-mode playbooks (autonomous-run, hillclimb, autopilot-full)", url: "https://github.com/cursor/plugins/tree/main/pstack/skills/poteto-mode/playbooks" },
       { title: "Boris Cherny on X: /loop, /schedule, skills + loops (2026-03-30)", url: "https://x.com/bcherny/status/2038454341884154269" },
       { title: "Boris Cherny on X: loops automate types of busywork (2026-07-15)", url: "https://x.com/bcherny/status/2077460395279692197" },
@@ -269,7 +269,7 @@ export const CHAPTERS = [
     codeNote: "Both are short sketches. The JavaScript follows the saved-script shape in the Claude Code workflows docs, which you would normally have Claude write for you; the Python follows LangGraph's loop example, with `call_model` and `call_grader` standing in for your own LLM calls.",
     incidents: [],
     sources: [
-      { title: "Anthropic: Building effective agents (2024-12-19, revised since)", url: "https://www.anthropic.com/engineering/building-effective-agents" },
+      { title: "Anthropic: Building effective agents (2024-12-19, revised since)", url: "https://www.anthropic.com/research/building-effective-agents" },
       { title: "Dex Horthy: 12-Factor Agents README (repo created 2025-03-30)", url: "https://github.com/humanlayer/12-factor-agents/blob/main/README.md" },
       { title: "Andrej Karpathy: 2025 LLM Year in Review (2025-12-19)", url: "https://karpathy.bearblog.dev/year-in-review-2025/" },
       { title: "Claude Code docs: Orchestrate subagents at scale with dynamic workflows", url: "https://code.claude.com/docs/en/workflows" },

@@ -346,6 +346,7 @@ export const CHAPTERS = [
       "AI SRE agents now start from the alert: Datadog's Bits Investigation agent auto-investigates only when a monitor enters alert state (not warn or no data) and can end inconclusive, and Google's SRE paper describes an AI Operator as first responder to production alerts. Routing still decides who is accountable: the page reaches a human owner, and it still counts against that team's pager budget, with the agent's findings arriving as evidence for that person (see Agentic Engineering).",
       "The products recommend, people act: New Relic's docs say Autopilot recommends actions but does not take them, and Google's autonomy levels require a human to approve each plan at L2. Keep agent identities read-only on Alertmanager too, because a silence is a write that can hide the next page.",
       "Alert on the model dependency like any third party. A Claude API 529 `overloaded_error` is retryable, but a spend-cap 429 has no `retry-after` and keeps failing until access resumes, so it should reach an owner instead of burning retries; alert on the agent's own success rate and on `gen_ai.client.operation.duration` split by `error.type`, rather than waiting for the provider's status page.",
+      "An agent monitor works better as a spec than a loop. Ben Congdon (19 Oct 2026): letting the agent write \"a spec of how to monitor\" that a deterministic system runs gives \"significantly cleaner signals with dramatically lower token usage\". Review those specs like any other alert rule."
     ],
     quiz: [
       { q: "A team has averaged five pages per shift over the last 21 days. What happens next?", a: "They are over budget, so the set response starts: look at which alerts page and whether anyone acted, delete or demote the noise, put reliability bugs ahead of features, and maybe loan them an experienced SRE with a quarterly goal like under 2 pages a shift." },
@@ -354,6 +355,7 @@ export const CHAPTERS = [
     ],
     incidents: ["datadog-2016-pagerduty-notifications-skipped", "pagerduty-2017-notification-delays"],
     sources: [
+      { title: "Ben Congdon: Agentic Monitoring (19 Oct 2026)", url: "https://benjamincongdon.me/blog/2026/10/19/Agentic-Monitoring/" },
       { title: "Google SRE book: Being on-call", url: "https://sre.google/sre-book/being-on-call/" },
       { title: "Google SRE workbook: On-call", url: "https://sre.google/workbook/on-call/" },
       { title: "Google SRE workbook: Example error budget policy", url: "https://sre.google/workbook/error-budget-policy/" },

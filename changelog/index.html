@@ -104,11 +104,19 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
 <body>
 <div class="wrap">
   <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-10-20">20 Oct 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-10-21">21 Oct 2026</time></span></div>
   <h1 id="changelog-h">Changelog</h1>
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
     <p>What each daily research pass changed, newest first. Every change is checked against a primary source. The lab landing page shows the latest three.</p>
-    <details open><summary><time datetime="2026-10-20">20 Oct 2026</time></summary><ul>
+    <details open><summary><time datetime="2026-10-21">21 Oct 2026</time></summary><ul>
+      <li>One Agent to Hundreds: a subagent can talk its supervisor into more work, agents act outside their granted scope in about one run in five, and a harness upgrade can load an MCP server your allowlist left out. New lines on per-user credentials and memory in a managed agent, Huntley's zoned message boards, Sridharan on testing guidelines for agents, Horthy on doing less in parallel and Ball on the end of mandatory review.</li>
+      <li>Agentic Engineering: a shared MCP server that sent one client's replies to another, and GitHub's package firewall for agent installs.</li>
+      <li>Did the Agent Do It Right?: a harness win can be luck, and a judge can approve anything without reporting an error.</li>
+      <li>Graphs and Loops: gate self-tuning loops on how good the verifier is and how cheaply a change rolls back.</li>
+      <li>Delivery: <code>--ephemeral</code> de-registers a runner after one job but wipes nothing; the autoscaler has to destroy the machine.</li>
+      <li class="minor">Smaller: agents shrinking attack surface through config sweeps (Security), agent monitors as specs a deterministic runner executes (Observability), Anthropic engineering links moved to /research/, a moved Uber talk link.</li>
+    </ul></details>
+    <details><summary><time datetime="2026-10-20">20 Oct 2026</time></summary><ul>
       <li>Observability: the "What breaks at scale" box is gone from all eight chapters, and four more are rewritten for the fleet: Prometheus topology (shards, HA pairs, remote write, target coverage), trace propagation as a fleet standard with a completeness number, an org sampling policy with cost and fidelity per team, and log schema, label and retention-tier standards with a bill per team. Every chapter is shorter. The Incident Files: each pattern's wards are now org-wide controls with a "retired when" fleet metric.</li>
       <li>One Agent to Hundreds keeps its five-stage ladder for one engineer and adds an org layer on top: one platform for every team, managed settings and an identity per agent, then team budgets and quota splits, pooled API and GitHub limits, an audit trail, and merge rate next to change failure rate.</li>
       <li>Did the Agent Do It Right? adds how an org gates incident agents (a nightly suite on real incidents, autonomy levels, tool budgets outside the model), and Down or Me's AI box becomes alert triage as a fleet policy.</li>

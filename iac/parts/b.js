@@ -274,7 +274,7 @@ export const CHAPTERS = [
       { title: "cloud-nuke CLI usage", url: "https://github.com/gruntwork-io/cloud-nuke/blob/master/docs/cli-usage.md" },
       { title: "aws-nuke: warning and safeguards", url: "https://aws-nuke.ekristen.dev/warning/" },
       { title: "AWS IaC MCP server (awslabs)", url: "https://awslabs.github.io/mcp/servers/aws-iac-mcp-server" },
-      { title: "Anthropic: building effective agents", url: "https://www.anthropic.com/engineering/building-effective-agents" },
+      { title: "Anthropic: building effective agents", url: "https://www.anthropic.com/research/building-effective-agents" },
     ],
   },
   {

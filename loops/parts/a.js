@@ -168,7 +168,7 @@ export const CHAPTERS = [
       { title: "Andrej Karpathy on X: programming an organization (27 Feb 2026)", url: "https://x.com/karpathy/status/2027521323275325622" },
       { title: "Andrej Karpathy: Sequoia Ascent 2026 summary and AI-cleaned transcript (30 Apr 2026)", url: "https://karpathy.bearblog.dev/sequoia-ascent-2026/" },
       { title: "Claude Code team on X: Getting started with loops (6 Jul 2026)", url: "https://x.com/ClaudeDevs/status/2074208949205881033" },
-      { title: "Anthropic: Building effective agents (19 Dec 2024)", url: "https://www.anthropic.com/engineering/building-effective-agents" },
+      { title: "Anthropic: Building effective agents (19 Dec 2024)", url: "https://www.anthropic.com/research/building-effective-agents" },
       { title: "Claude Code docs: Keep Claude working toward a goal (/goal)", url: "https://code.claude.com/docs/en/goal" },
       { title: "Claude Code docs: Orchestrate subagents at scale with dynamic workflows", url: "https://code.claude.com/docs/en/workflows" },
       { title: "Claude Platform docs: Managed Agents workflow runs (beta)", url: "https://platform.claude.com/docs/en/managed-agents/workflow-runs" },

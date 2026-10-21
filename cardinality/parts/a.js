@@ -159,7 +159,7 @@ export const CHAPTERS = [
       { title: "Prometheus: Remote write tuning", url: "https://prometheus.io/docs/practices/remote_write/" },
       { title: "Grafana Mimir runbooks", url: "https://grafana.com/docs/mimir/latest/manage/mimir-runbooks/" },
       { title: "OWASP Top 10 for LLM Applications 2025", url: "https://genai.owasp.org/llm-top-10/" },
-      { title: "Anthropic: Building effective agents", url: "https://www.anthropic.com/engineering/building-effective-agents" },
+      { title: "Anthropic: Building effective agents", url: "https://www.anthropic.com/research/building-effective-agents" },
     ],
   },
   {
