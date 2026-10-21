@@ -34,7 +34,7 @@ export const CHAPTERS = [
       { id: "e-a1", from: "authn", to: "authz" },
       { id: "e-a2", from: "authz", to: "mut" },
       { id: "e-a3", from: "mut", to: "val" },
-      { id: "e-policy", from: "policy", to: "val", label: "every cluster", via: [[622, 128]] },
+      { id: "e-policy", from: "policy", to: "val", label: "every cluster", via: [[67, 128], [622, 128]] },
       { id: "e-persist", from: "val", to: "etcd", label: "persist", via: [[825, 77]] },
       { id: "e-hub-etcd", from: "hub", to: "etcd", label: "read/write", bidir: true },
       { id: "e-dep", from: "depc", to: "hub", label: "makes ReplicaSet", bidir: true, labelPos: 0.3 },
