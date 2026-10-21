@@ -116,10 +116,9 @@ for (const ch of CHAPTERS) {
   const used = new Set(ch.steps.flatMap((s) => [...(s.on || []), ...(s.flow || [])]));
   for (const n of ch.nodes) if (n.kind !== "note" && !used.has(n.id)) warn(c, `node ${n.id} is never highlighted`);
   if ((ch.gotchas || []).length < 2) err(c, "needs at least 2 gotchas");
-  if ((ch.atScale || []).length < 3) err(c, "needs at least 3 atScale items (what breaks at 1000+ scale)");
+  if (ch.atScale) err(c, "atScale is retired; fold it into the steps");
   if ((ch.agentic || []).length < 2) err(c, "needs at least 2 agentic items (what changes in the agentic era)");
   if ((ch.agentic || []).length > 4) warn(c, "more than 4 agentic items");
-  if ((ch.atScale || []).length > 6) warn(c, "more than 6 atScale items");
   if ((ch.quiz || []).length !== 3) err(c, "needs exactly 3 quiz questions");
   if (!(ch.sources || []).length) err(c, "needs at least one source");
   for (const s of ch.sources || []) if (!/^https:\/\/(docs\.kernel\.org|www\.kernel\.org|man7\.org|www\.brendangregg\.com|netflixtechblog\.com|kubernetes\.io|bind9\.readthedocs\.io|docs\.openssl\.org)\//.test(s.url)) warn(c, `non-official source ${s.url}`);

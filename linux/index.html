@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Linux</title>
-<meta name="description" content="How a Linux node really handles memory and networking, in step-through diagrams: page cache, the OOM killer, cgroups, a packet's path, conntrack, TCP queues, and the first 60 seconds of performance analysis.">
+<meta name="description" content="How a Linux node really handles memory and networking, in step-through diagrams: page cache, the OOM killer, cgroups, a packet's path, conntrack, TCP queues, and finding the few bad hosts in a fleet.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
 <link rel="stylesheet" href="../drawn/drawn.css">
 <link rel="stylesheet" href="../site-nav.css">
@@ -17,9 +17,9 @@
     <details id="tocBox" open><summary>Chapters</summary><ol id="toc"></ol></details>
   </nav>
   <main>
-    <div class="kicker"><a href="../">SRE Lab</a> · explainers<span class="updated"> · updated <time datetime="2026-10-17">17 Oct 2026</time></span></div>
+    <div class="kicker"><a href="../">SRE Lab</a> · explainers<span class="updated"> · updated <time datetime="2026-10-20">20 Oct 2026</time></span></div>
     <h1>Linux</h1>
-    <p class="lede">What a Linux node actually does with memory and network packets, one mechanism at a time. Step through each diagram with the buttons or your arrow keys, then read the short summary, the gotchas and the questions to think through. Where a real outage shows the idea, there's a link to its postmortem.</p>
+    <p class="lede">What Linux does with memory and packets across thousands of hosts, with one host as the worked example. Step through each diagram with the buttons or arrow keys, then read the summary, gotchas and questions. Real outages link to their postmortems.</p>
     <p class="lede">Everything here is checked against the Linux kernel documentation and man pages; each chapter links to the pages it's based on. For how Kubernetes builds on these pieces, see <a href="../k8s/">Kubernetes</a>.</p>
     <div id="chapters"></div>
     <footer>
