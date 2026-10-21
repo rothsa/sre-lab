@@ -26,8 +26,7 @@ Step-through diagrams rendered from chapter specs in `<topic>/parts/*.js` by the
 | [Delivery](delivery/) | CI, build once and promote, GitOps with Argo CD, canaries, feature flags, schema migrations, supply-chain signing, merge queues |
 | [Observability](observability/) | OpenTelemetry and the Collector, Prometheus scraping and PromQL, tracing and sampling, Loki, alerting |
 | [Security at Scale](security/) | Org guardrails and policy as code, federated identity, secrets and supply chain programs, vulnerability flow, fleet detection, agents, program metrics |
-| [One Pattern, Three Languages](patterns/) | Everyday SRE tasks in Python, Go and Ruby, side by side |
-| [Ownership at Scale](ownership/) | How large companies decide and keep track of who owns code and services (single page) |
+| [Ownership](ownership/) | How large companies decide and keep track of who owns code and services (single page) |
 
 ### AI engineering
 
