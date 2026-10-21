@@ -90,9 +90,9 @@ footer a { color: var(--accent); }
 
 <div class="wrap">
   <header>
-    <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · error budgets<span class="updated"> · updated <time datetime="2026-10-17">17 Oct 2026</time></span></div>
+    <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · error budgets<span class="updated"> · updated <time datetime="2026-10-20">20 Oct 2026</time></span></div>
     <h1>SLO Burn Simulator</h1>
-    <p class="lede">Pick an SLO and how fast you're burning error budget. See how long the budget lasts, which standard multi-window burn-rate alerts would fire and when, and get Prometheus alert rules to match.</p>
+    <p class="lede">Pick an SLO and a burn rate. See how long the budget lasts, which multi-window burn-rate alerts fire and when, and the Prometheus rules to match. Then see what it takes to run SLOs across thousands of services.</p>
   </header>
 
   <div class="grid">
@@ -145,8 +145,7 @@ footer a { color: var(--accent); }
 
       <div class="panel">
         <h2>Which alerts fire, and when</h2>
-        <p class="explain">Multi-window, multi-burn-rate alerts, the pattern from Google's SRE Workbook. Each alert needs both a long window (so it's sure) and a short window (so it clears quickly once you've fixed things) above its threshold.</p>
-        <p class="explain">Simulated for this incident: zero errors before it, the chosen burn for its full length, then zero errors, with constant traffic. An alert fires when both window ratios exceed the threshold (strict <code>&gt;</code>, same as the rules below), so a burn exactly at the threshold never fires. Real alerts also wait for the rule evaluation interval and scrape timing, which can shift firing by a minute or so.</p>
+        <p class="explain">The SRE Workbook's multi-window pattern: an alert fires only when its long and short windows are both over the threshold (strict <code>&gt;</code>). Simulated with no errors before or after the incident and constant traffic. Real alerts also wait for rule evaluation and scrapes.</p>
         <div class="tablebox"><table>
           <thead><tr><th>Alert</th><th>Threshold</th><th>Windows</th><th>During this incident</th><th>Budget used when it fires</th></tr></thead>
           <tbody id="alerts"></tbody>
@@ -155,24 +154,27 @@ footer a { color: var(--accent); }
 
       <div class="panel">
         <div class="row"><h2>Prometheus alert rules</h2><button type="button" class="copy" id="copy">Copy</button></div>
-        <p class="explain">Assumes an <code>http_requests_total</code> counter with <code>code</code> and <code>service</code> labels. Recording rules compute each window once; the four conditions above become one page alert and one ticket alert, as in the SRE Workbook, so a big outage pages once. Swap in your own SLI.</p>
+        <p class="explain">Assumes an <code>http_requests_total</code> counter with <code>code</code> and <code>service</code> labels. One page alert and one ticket alert, as in the Workbook, so a big outage pages once.</p>
         <pre id="rules"></pre>
       </div>
     </section>
   </div>
 
-  <section class="panel agentic" aria-labelledby="agentic-h">
-    <h2 id="agentic-h">What changes in the agentic era</h2>
+  <section class="panel agentic" aria-labelledby="scale-h">
+    <h2 id="scale-h">Running SLOs across thousands of services</h2>
     <ul>
-      <li><b>More change, same budget.</b> DORA's 2025 research found AI adoption now goes with higher delivery throughput but still with lower delivery stability, which it ties to more change without strong controls such as automated testing and fast feedback. An error budget measures that instability in user terms, which makes it the natural limit on how fast agents ship.</li>
-      <li><b>Write agents into the budget policy.</b> The SRE Workbook's example policy says that past the budget, &ldquo;we will halt all changes and releases other than P0 issues or security fixes.&rdquo; An agent opening PRs, bumping config or rolling out a deploy is change, so the freeze has to stop its pipeline too. A freeze that only people honor isn't a freeze.</li>
-      <li><b>Burn rate as a brake.</b> Google's SRE team describes checking live risk before an agent acts, including error budget status, active incidents and ongoing deployments, backed by agent-specific rate limits and circuit breakers. The fast-burn alerts above make a good trigger: the signal that pages a human can also pause agent rollouts, and a human decides when they resume.</li>
-      <li><b>What people still own.</b> An agent can compute burn rates and draft rules like the ones this page generates, but choosing the SLI, the target and what counts as a bad event is a product decision. The new failure mode is an agent that &ldquo;fixes&rdquo; a noisy alert by raising a threshold or excluding an error class, so real errors quietly stop spending budget. Review SLO and alert changes like code.</li>
+      <li><b>Tier first.</b> Give each service a tier and a default target per tier, so teams start from a number instead of a debate. Home Depot's SRE team proposed levels like this to product managers, with 99.9% &ldquo;adequate for the majority of nonselling systems.&rdquo;</li>
+      <li><b>Generate the rules.</b> The rules above cover one service. For thousands, keep each SLO as a short spec and generate the recording and alert rules from a template. Sloth does this for Prometheus, reads OpenSLO, and aims for one uniform way to create SLOs across services and teams.</li>
+      <li><b>Count coverage.</b> Track the share of services in each tier that have an SLO with a working alert. Once Home Depot automated collection, it went from about 50 services reporting SLOs to 800, with about 50 more registering each month.</li>
+      <li><b>Audit the policy.</b> The Workbook's example policy halts changes other than P0 and security fixes while a service is out of budget, and requires a postmortem when one incident burns more than 20% of the budget in four weeks. Measure how often breaches actually led to both.</li>
+      <li><b>Freeze the org, agents included.</b> When a shared platform runs out of budget, freeze every team that changes it; under the Workbook's policy, disputes go to the CTO. Agents that open PRs or roll out deploys are change too. Google's SRE team describes agents checking error budget status before they act, with agent-specific rate limits and circuit breakers.</li>
+      <li><b>People own the SLO.</b> An agent can draft rules like these, but picking the SLI and the target is a product decision. Watch for an agent that &ldquo;fixes&rdquo; a noisy alert by raising a threshold or excluding an error class, and review SLO changes like code.</li>
     </ul>
     <h3>Sources</h3>
     <ul class="sources">
+      <li><a href="https://sre.google/workbook/slo-engineering-case-studies/">Google SRE Workbook: SLO Engineering Case Studies (Home Depot)</a></li>
       <li><a href="https://sre.google/workbook/error-budget-policy/">Google SRE Workbook: Example Error Budget Policy</a></li>
-      <li><a href="https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report">Google Cloud: Announcing the 2025 DORA report</a></li>
+      <li><a href="https://github.com/slok/sloth">Sloth: Prometheus SLO generator</a></li>
       <li><a href="https://sre.google/resources/practices-and-processes/ai-engineering-reliable-operations/">Google SRE: AI in SRE, engineering reliable operations</a></li>
     </ul>
   </section>

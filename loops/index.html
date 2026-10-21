@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Graphs and Loops, Drawn</title>
-<meta name="description" content="What it means to stop prompting agents and build loops and graphs that prompt them instead: where the viral quote comes from, what loops and graphs are, whether you draw them or describe them, and how to get your agent to build them for you.">
+<meta name="description" content="Running agent loops and graphs across hundreds of teams: loop sprawl and what it costs, what a loop and a graph are, how teams review workflows as code, and what every unattended loop must declare before the platform runs it.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
 <link rel="stylesheet" href="../drawn/drawn.css">
 <link rel="stylesheet" href="../site-nav.css">
@@ -17,10 +17,10 @@
     <details id="tocBox" open><summary>Chapters</summary><ol id="toc"></ol></details>
   </nav>
   <main>
-    <div class="kicker"><a href="../">SRE Lab</a> · explainers<span class="updated"> · updated <time datetime="2026-10-17">17 Oct 2026</time></span></div>
+    <div class="kicker"><a href="../">SRE Lab</a> · explainers<span class="updated"> · updated <time datetime="2026-10-20">20 Oct 2026</time></span></div>
     <h1>Graphs and Loops, Drawn</h1>
-    <p class="lede">"I'm not prompting my agents anymore, I'm building graphs and loops so they can build the agents for me." In August 2026 that line went viral, first credited to an unnamed Anthropic engineer and then to Boris Cherny, while Andrej Karpathy's name was attached to similar posts about graphs. Neither of them said it, but both said something close, and the idea is real: instead of typing each prompt, you write the loop or the small program that does the prompting, and the agent writes most of that for you.</p>
-    <p class="lede">This explainer answers the practical questions. What is a loop, and what is a graph? Do you draw them or describe them? How do you get your agent to build them? Step through each diagram with the buttons or your arrow keys, then read the short summary, the gotchas and the questions to think through. Every quote is dated and linked to the person or vendor who said it.</p>
+    <p class="lede">"I don't prompt Claude anymore. I have loops that are running." Boris Cherny said that on Acquired (aired June 2026). By August a bigger version, about graphs and loops building the agents, had gone viral, some of it with Karpathy's name on it. Neither man said that version. The idea underneath is real, though, and an org that adopts it ends up running hundreds of loops nobody prompts by hand.</p>
+    <p class="lede">This explainer is about running those loops as a fleet: what a loop and a graph are, how teams register and review them, what every loop must declare before the platform runs it, and how you count, price and retire them. Step through each diagram with the buttons or your arrow keys. Every quote is dated and linked to the person or vendor who said it.</p>
     <div id="chapters"></div>
     <footer>
       <p>Diagrams and wording by Sally Roth. Sources are linked in each chapter. Companion explainers: <a href="../fleet/">One Agent to Hundreds</a>, <a href="../agentic/">Agentic Engineering, Drawn</a> and <a href="../next-agent/">Engineering for the Next Agent, Drawn</a>.</p>
