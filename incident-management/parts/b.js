@@ -1,4 +1,4 @@
-// Chapters 5-7: communication at scale, on-call health as a fleet metric, learning across incidents.
+// Chapters 5-7: communication, on-call health as a fleet metric, learning across incidents.
 // Spec format: see ../../k8s/README.md. Sources fetched and checked 2026-10-20.
 const SRE_ONCALL = { title: "SRE book: Being On-Call", url: "https://sre.google/sre-book/being-on-call/" };
 const WB_ONCALL = { title: "SRE Workbook: On-Call", url: "https://sre.google/workbook/on-call/" };
@@ -9,7 +9,7 @@ export const CHAPTERS = [
   {
     id: "communication",
     n: 5,
-    title: "Communication at scale: audiences, tiers and legal clocks",
+    title: "Communication: audiences, tiers and legal clocks",
     question: "A major incident hits customers in two regions, and one of them is a bank. Who hears what, from where, and which clocks started when you found out?",
     view: [920, 330],
     nodes: [
@@ -38,27 +38,21 @@ export const CHAPTERS = [
     ],
     steps: [
       { text: "One set of facts, many audiences, and a few clocks you don't control. Press Next." },
-      { text: "Every audience gets text from one comms lead working from the IC's facts. When five people write updates, customers, support and executives hear five versions.", on: ["facts", "comms"], flow: ["e-facts"] },
+      { text: "Every audience gets text from one comms lead working from the IC's facts, and tooling posts each approved update everywhere at once. Five writers, or one update pasted by hand into five tools, drift within the hour.", on: ["facts", "comms"], flow: ["e-facts"] },
       { text: "Write templates ahead of time, per audience and per stage. PagerDuty's guideline is a fully templated first post within 5 minutes of the incident call, scope within 5 more, then at least every 20 minutes for two hours.", on: ["tmpl", "comms"], flow: ["e-tmpl"] },
-      { text: "An internal status page keeps the whole company informed, so 500 people don't join the incident channel to find out what's going on.", on: ["comms", "internal"], flow: ["e-int"] },
-      { text: "Tier the customer side. incident.io supports public sub-pages per region or product, and private pages for each customer. A one-region problem goes on that region's page and to the customers it hits, not on a global banner that floods support.", on: ["comms", "public", "customer", "cust"], flow: ["e-pub", "e-cus", "e-see1", "e-see2"] },
-      { text: "Executives get a short brief on a fixed template: customer impact, expected time to recovery if you have one, and what you need from them. That keeps them off the bridge.", on: ["comms", "exec"], flow: ["e-exec"] },
-      { text: "Some incidents start legal clocks. Under NIS2, the early warning is due within 24 hours of becoming aware of a significant incident, the notification within 72, and a final report a month after that. GDPR gives 72 hours for a personal data breach.", on: ["comms", "legal", "clocks"], flow: ["e-legal", "e-clock"] },
-      { text: "DORA, in force since 17 January 2025, wants a first report within 4 hours of classifying a major ICT incident and no later than 24 hours after becoming aware. US public companies file an SEC 8-K four business days after deciding an incident is material.", on: ["legal", "clocks"], flow: ["e-clock"] },
-      { text: "The clocks start at awareness or classification, not at the postmortem. So the incident process flags possibly reportable early and hands that question to legal and security. Engineers don't decide materiality.", on: ["comms", "legal"], flow: ["e-legal"] },
+      { text: "An internal status page keeps the whole company informed, so 500 people don't join the incident channel. When thousands of tickets land at once, support has a ready statement, a ticket tag linked to the incident, and an in-product banner.", on: ["comms", "internal"], flow: ["e-int"] },
+      { text: "Tier the customer side. incident.io supports public sub-pages per region or product, and private pages per customer. A one-region problem goes on that region's page and to the customers it hits. PagerDuty contacts premium support customers individually, through a liaison or their account team.", on: ["comms", "public", "customer", "cust"], flow: ["e-pub", "e-cus", "e-see1", "e-see2"] },
+      { text: "Executives get a short brief on a fixed template: customer impact, expected recovery time, and what you need from them. That keeps them off the bridge.", on: ["comms", "exec"], flow: ["e-exec"] },
+      { text: "Some incidents start legal clocks. Under NIS2, the early warning is due within 24 hours of becoming aware of a significant incident and the notification within 72. GDPR gives 72 hours for a personal data breach.", on: ["comms", "legal", "clocks"], flow: ["e-legal", "e-clock"] },
+      { text: "DORA wants a first report within 4 hours of classifying a major ICT incident and no later than 24 hours after becoming aware. US public companies file an SEC 8-K four business days after deciding an incident is material.", on: ["legal", "clocks"], flow: ["e-clock"] },
+      { text: "The clocks start at awareness or classification, not at the postmortem. So the process flags possibly reportable early, and legal keeps a one-page matrix of incident types, regions and deadlines, linked from the incident template. Engineers don't decide materiality.", on: ["comms", "legal"], flow: ["e-legal"] },
       { text: "Host the comms path away from production. In November 2020 AWS couldn't update its status page at first because the posting tool depended on Cognito, which the outage had hit.", on: ["comms", "public", "internal"] },
     ],
-    say30: "At scale I separate audiences and give them one source: a comms lead working from the IC's facts, with templates written ahead for each audience and stage. Staff use an internal status page instead of the incident channel. Customers get tiered pages, per region or product, and private pages for affected customers, so a partial outage doesn't look global. Executives get a short brief. And some incidents start legal clocks: NIS2's 24 and 72 hours, DORA's 4 hours from classification, the SEC's four business days after a materiality decision. So the process flags possibly reportable early and hands it to legal. The status tooling must not depend on production.",
+    say30: "I separate audiences and give them one source: a comms lead working from the IC's facts, templates written ahead, and tooling that posts each approved update everywhere. Staff use an internal status page, and support gets a ready statement and a ticket tag. Customers get tiered pages by region or product, private pages if affected, and big accounts hear from their account team. Executives get a short brief. Some incidents start legal clocks: NIS2's 24 and 72 hours, DORA's 4 hours from classification, the SEC's four business days after a materiality decision. So we flag possibly reportable early, legal keeps the deadline matrix, and the status tooling doesn't depend on production.",
     gotchas: [
       "The regulatory clock usually starts at awareness, not at root cause. A team that waits for the postmortem to involve legal has already missed the early deadlines.",
       "A status page or posting tool that shares a dependency with production goes down with it. Check what your comms path needs, including sign-in.",
       "Updates with no content cause notification fatigue. PagerDuty warns against posting for minor or short-lived issues; agree the criteria in advance.",
-    ],
-    atScale: [
-      "Copying one update into chat, email, three status pages and support tools by hand drifts within an hour. Fix: tooling that posts one approved update to every audience.",
-      "Thousands of support tickets arrive at once. Fix: a ready statement for support, a ticket tag linked to the incident, and an in-product banner.",
-      "Large customers expect direct contact. PagerDuty contacts premium support customers individually, through a customer liaison or their account team.",
-      "Different regulators, different clocks. Fix: a one-page matrix kept by legal that maps incident types and regions to deadlines, linked from the incident template.",
     ],
     agentic: [
       "AI can draft updates from the channel into the templates, but the comms lead approves every post. A draft that puts an unconfirmed theory or the wrong region on a public page is hard to take back.",
@@ -79,7 +73,6 @@ export const CHAPTERS = [
       IIO_STATUS,
       { title: "NIS2 Directive (EU) 2022/2555, Article 23", url: "https://www.springlex.eu/en/packages/nis2/nis2-directive/article-23/" },
       { title: "Commission Delegated Regulation (EU) 2025/301, Article 5 (DORA incident reporting time limits)", url: "https://www.springlex.eu/en/packages/dora/rts-ir-regulation/article-5/" },
-      { title: "EIOPA: Digital Operational Resilience Act (DORA)", url: "https://www.eiopa.europa.eu/digital-operational-resilience-act-dora_en" },
       { title: "SEC: Cybersecurity risk management and incident disclosure rules (July 2023)", url: "https://www.sec.gov/newsroom/press-releases/2023-139" },
       { title: "GDPR Article 33", url: "https://gdpr-info.eu/art-33-gdpr/" },
       { title: "AWS: Summary of the Amazon Kinesis event in us-east-1 (Nov 2020)", url: "https://aws.amazon.com/message/11201/" },
@@ -118,20 +111,15 @@ export const CHAPTERS = [
       { text: "Every page from every rotation goes into one log with the person paged. Count incidents, not notifications. The Workbook counts one underlying problem once, however many alerts it fired.", on: ["rot", "log"], flow: ["e-log"] },
       { text: "The SRE book's budget is 2 incidents per 12-hour shift, since each takes about 6 hours with the follow-up. The Workbook tracks a 21-day trailing average and alerts managers at an agreed threshold. Run that for every rotation and sort worst first.", on: ["log", "fleet"], flow: ["e-fleet"] },
       { text: "Time of day matters as much as count. incident.io splits pages into working, late and overnight, in the paged person's time zone. Overnight pages per person is the burnout number to watch.", on: ["log", "night"], flow: ["e-night"] },
-      { text: "Over budget, the first fix belongs to the owning team: fix the cause of repeat pages, demote noisy alerts to tickets, aim for one alert per incident, as the SRE book says.", on: ["fleet", "budget", "alerts"], flow: ["e-check", "e-fix"] },
-      { text: "Averages hide the bad rotations. A monthly review looks at the worst ten, not the mean. Merge rotations that are too small, and move to follow-the-sun where you have two sites. The Workbook wants at least 8 people for one site, 5 per site for two, and shifts of 12 hours or less.", on: ["night", "review", "rebal"], flow: ["e-rev", "e-rebal"] },
+      { text: "Over budget, the first fix belongs to the owning team: fix the cause of repeat pages, demote noisy alerts to tickets, aim for one alert per incident, as the SRE book says. When one upstream failure pages dozens of teams, group those alerts by dependency during the incident.", on: ["fleet", "budget", "alerts"], flow: ["e-check", "e-fix"] },
+      { text: "Averages hide the bad rotations, so a monthly review looks at the worst ten, with each rotation's reachability check next to its load. Merge rotations that are too small and use follow-the-sun where you have two sites. The Workbook wants at least 8 people for one site, 5 per site for two, and shifts of 12 hours or less.", on: ["night", "review", "rebal"], flow: ["e-rev", "e-rebal"] },
       { text: "If load stays high, escalate. The SRE book sets quarterly goals, loans an experienced SRE to the team, and in extreme cases gives the pager back to the developers.", on: ["review", "back"], flow: ["e-back"] },
       { text: "Write it down as policy. Google caps on-call at 25% of an SRE's time and pays out-of-hours on-call in time off or cash, capped as a share of salary.", on: ["rot", "review"] },
     ],
-    say30: "I measure on-call across the whole fleet, not per team by anecdote. Every page goes into one log, counted as incidents rather than notifications, and I look at pages per 12-hour shift against Google's two-incident budget, plus overnight pages per person in their own time zone. A monthly review looks at the worst rotations, not the average. Over budget, the owning team fixes or demotes the alerts first. Then we rebalance: merge tiny rotations, follow-the-sun where there are two sites, shifts no longer than 12 hours. If it stays high we loan SREs or hand the pager back. Caps and compensation are written policy.",
+    say30: "I measure on-call across the whole fleet, not by anecdote. Every page goes into one log, counted as incidents, and I compare pages per 12-hour shift against Google's two-incident budget, plus overnight pages per person in their own time zone. A monthly review looks at the worst rotations, with reachability next to load. Over budget, the owning team fixes or demotes alerts first, and alerts from one upstream failure get grouped. Then we rebalance: merge tiny rotations, follow-the-sun across two sites, 12-hour shifts at most. If it stays high we loan SREs or hand the pager back. Caps and pay are written policy.",
     gotchas: [
       "Ten alerts for one outage is one incident and a deduplication problem. Counting notifications makes a noisy team look overloaded and a quiet broken one look fine.",
       "A fleet average of one page per shift can hide five rotations paged every night. Always look at the distribution and the worst rotations.",
-    ],
-    atScale: [
-      "Rotations fail without anyone noticing: people unreachable, a phone number missing. Fix: a readiness check per rotation, like incident.io's reachability view, reviewed alongside load.",
-      "Small teams can't staff a rotation. The SRE book wants at least 8 people for one site. Fix: shared rotations across related teams or a platform rotation.",
-      "One upstream failure pages dozens of teams. Fix: group alerts by dependency and suppress duplicates during a declared incident, toward the SRE book's 1:1 alert-to-incident ratio.",
     ],
     agentic: [
       "An agent that investigates every page doesn't reduce pages. The budget only moves when the alert review fixes or deletes the alert; an agent summary on a useless page adds cost and reading time.",
@@ -183,22 +171,18 @@ export const CHAPTERS = [
     steps: [
       { text: "Review depth by rule, one shared corpus, and themes that turn into programs. Press Next." },
       { text: "Set the triggers before incidents happen. The SRE book lists user-visible impact over a threshold, any data loss, on-call intervention like a rollback, long resolution and monitoring failures. AWS reviews any event of significance, even when customers saw nothing.", on: ["inc", "tier"], flow: ["e-tier"] },
-      { text: "A few incidents get a deep review. The Howie guide picks an investigator who wasn't in the response and has no authority over the people interviewed. They build the timeline from evidence and ask how, not why, because people did what made sense to them at the time.", on: ["tier", "deep"], flow: ["e-deep"] },
+      { text: "A few incidents get a deep review. The Howie guide picks an investigator who wasn't in the response and has no authority over the people interviewed. Skilled investigators run out first, so train a pool from outside the responding teams and give them time to finish.", on: ["tier", "deep"], flow: ["e-deep"] },
       { text: "Most get a light review: one owner, the standard template. Repeats link to the parent incident instead of starting over. Each month, sample a few light reviews against a short rubric so the light tier stays honest.", on: ["tier", "light", "link"], flow: ["e-light", "e-link"] },
-      { text: "Everything lands in one corpus with the same fields. Google's template carries metadata for automated trend analysis, and a company-wide working group maintains the template and tooling.", on: ["deep", "light", "link", "corpus"], flow: ["e-c1", "e-c2", "e-c3"] },
+      { text: "Everything lands in one corpus. One template has required fields, like trigger, detection, blast radius and services, plus free text for the story. Google's template carries metadata for trend analysis, kept by a company-wide working group.", on: ["deep", "light", "link", "corpus"], flow: ["e-c1", "e-c2", "e-c3"] },
       { text: "Read the corpus as data. In a sample of thousands of Google postmortems from 2010 to 2017, binary pushes (37%) and config pushes (31%) were the top triggers. That points the money at rollout safety for every team, not at one service.", on: ["corpus", "theme"], flow: ["e-theme"] },
       { text: "Themes fund programs. Cloudflare's November and December 2025 outages both came from a config change pushed instantly to hundreds of cities. It answered with one program, Code Orange, prioritized above all other work.", on: ["theme", "program"], flow: ["e-fund"] },
       { text: "Then make sure people read them. Google sends a postmortem of the month to the whole company and runs reading clubs on reviews that are often years old. The Howie guide's point is that a report nobody reads teaches nobody.", on: ["corpus", "group"], flow: ["e-read"] },
     ],
-    say30: "Nobody deep-reviews thousands of incidents, so depth is set by written triggers: user-visible impact over a threshold, data loss, rollbacks, long resolution, plus significant near misses. A few get a deep, blameless review by an investigator who wasn't involved and asks how things made sense at the time. Most get a light template, sampled monthly so they stay honest, and repeats link to a parent. Everything goes into one corpus with the same fields, which we read as data each quarter. Google found binary and config pushes caused most outages; that's a theme that funds a program like Cloudflare's Code Orange. And we make sure people actually read the reviews.",
+    say30: "Nobody deep-reviews thousands of incidents, so depth is set by written triggers: user-visible impact over a threshold, data loss, rollbacks, long resolution, plus significant near misses. A few get a deep, blameless review from a trained investigator outside the response. Most get a light template, sampled monthly so they stay honest, and repeats link to a parent. Everything goes into one corpus with required fields, which we read as data each quarter. Google found binary and config pushes caused most outages; that's a theme that funds a program like Cloudflare's Code Orange. And we make sure people actually read the reviews.",
     gotchas: [
       "Coverage is easy to game. An empty template counts as a postmortem. Count a review only after it's been read and signed off, and sample the light tier.",
-      "Five Whys tends to give one neat chain and drift toward who. Allspaw argues the root cause is just where you stopped looking; ask how and you get several contributing factors.",
-    ],
-    atScale: [
-      "Skilled investigators are the bottleneck. Train a pool of facilitators from outside the responding teams and give them time to finish.",
-      "Blame creeps back on high-visibility incidents, often from leadership. Fix: reviewers check high-profile write-ups for blameful language before they publish.",
-      "Teams use different templates and the corpus can't be queried. Fix: one template with required fields (trigger, detection, blast radius, services) and free text for the story.",
+      "Five Whys gives one neat chain and drifts toward who. Allspaw argues the root cause is just where you stopped looking; ask how and you get several contributing factors.",
+      "Blame creeps back on high-visibility incidents, often from leadership. Have a reviewer check high-profile write-ups for blameful language before they publish.",
     ],
     agentic: [
       "AI drafts are cheap, so coverage can reach 100% with documents nobody wrote. incident.io calls its draft a starting point and suggests leaving reflective sections to people. Count a review only after an owner has edited it.",

@@ -19,14 +19,17 @@ Step-through diagrams rendered from chapter specs in `<topic>/parts/*.js` by the
 |---|---|
 | [Kubernetes](k8s/) | 18 chapters: control loop, kubectl apply, scheduling, Services, DNS, storage, autoscaling, RBAC, upgrades, a troubleshooting map |
 | [Linux](linux/) | Page cache, the OOM killer, cgroups, a packet's path, conntrack, TCP queues, the first 60 seconds of performance analysis |
-| [Incident Management at Scale](incident-management/) | The incident program as a system: severity contract, routing and ownership, concurrent incidents, comms and legal clocks, fleet on-call health, learning, follow-through, readiness, metrics |
+| [Incident Management](incident-management/) | The incident program as a system: severity contract, routing and ownership, concurrent incidents, comms and legal clocks, fleet on-call health, learning, follow-through, readiness, metrics |
 | [Taming Cardinality](cardinality/) | How labels multiply series and cost, finding the culprit, dropping, aggregating and governing |
 | [Terraform, Five Years On](terraform/) | moved/import/removed blocks, checks and tests, OpenTofu, ephemeral values, splitting state |
 | [Infrastructure as Code](iac/) | Remote state and locking, modules, environments, plan/apply in CI with policy checks, drift, testing |
-| [Delivery](delivery/) | CI, build once and promote, GitOps with Argo CD, canaries, feature flags, schema migrations, supply-chain signing, merge queues |
+| [Delivery](delivery/) | CI as a shared service, build once and promote, GitOps with Argo CD, canaries, feature flags, schema migrations, supply-chain signing, merge queues |
 | [Observability](observability/) | OpenTelemetry and the Collector, Prometheus scraping and PromQL, tracing and sampling, Loki, alerting |
 | [Security at Scale](security/) | Org guardrails and policy as code, federated identity, secrets and supply chain programs, vulnerability flow, fleet detection, agents, program metrics |
 | [Ownership](ownership/) | How large companies decide and keep track of who owns code and services (single page) |
+| [Security](security/) | Org guardrails and policy as code, federated identity, secrets and supply chain programs, vulnerability flow, fleet detection, agents, program metrics |
+| [One Pattern, Three Languages](patterns/) | Everyday SRE tasks in Python, Go and Ruby, side by side |
+| [Ownership at Scale](ownership/) | How large companies decide and keep track of who owns code and services (single page) |
 
 ### AI engineering
 
