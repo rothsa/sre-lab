@@ -13,7 +13,7 @@ A reliability-first lab, live at **lab.sallyroth.dev**: small, working SRE tools
 
 ## Explainers
 
-Step-through diagrams rendered from chapter specs in `<topic>/parts/*.js` by the shared engine in `drawn/`. Each chapter has a short summary, gotchas, what breaks at scale, questions to think through, and links to the primary sources it is based on. `<topic>/check.mjs` checks each one (spec integrity, layout, source links); the spec format is in [`k8s/README.md`](k8s/README.md).
+Step-through diagrams rendered from chapter specs in `<topic>/parts/*.js` by the shared engine in `drawn/`. Each chapter leads with the system across many teams, then a short summary, gotchas, questions to think through, and links to the primary sources it is based on. `<topic>/check.mjs` checks each one (spec integrity, layout, source links); the spec format is in [`k8s/README.md`](k8s/README.md).
 
 | Page | Covers |
 |---|---|
@@ -25,11 +25,8 @@ Step-through diagrams rendered from chapter specs in `<topic>/parts/*.js` by the
 | [Infrastructure as Code](iac/) | Remote state and locking, modules, environments, plan/apply in CI with policy checks, drift, testing |
 | [Delivery](delivery/) | CI as a shared service, build once and promote, GitOps with Argo CD, canaries, feature flags, schema migrations, supply-chain signing, merge queues |
 | [Observability](observability/) | OpenTelemetry and the Collector, Prometheus scraping and PromQL, tracing and sampling, Loki, alerting |
-| [Security at Scale](security/) | Org guardrails and policy as code, federated identity, secrets and supply chain programs, vulnerability flow, fleet detection, agents, program metrics |
-| [Ownership](ownership/) | How large companies decide and keep track of who owns code and services (single page) |
 | [Security](security/) | Org guardrails and policy as code, federated identity, secrets and supply chain programs, vulnerability flow, fleet detection, agents, program metrics |
-| [One Pattern, Three Languages](patterns/) | Everyday SRE tasks in Python, Go and Ruby, side by side |
-| [Ownership at Scale](ownership/) | How large companies decide and keep track of who owns code and services (single page) |
+| [Ownership](ownership/) | How large companies decide and keep track of who owns code and services (single page) |
 
 ### AI engineering
 

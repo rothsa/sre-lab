@@ -10,8 +10,7 @@ Chapter spec format: see `../k8s/README.md`. In addition, a chapter may have:
 - `codeNote`: one or two sentences shown under the code.
 
 Pages accept `?only=<chapter id>` to render a single chapter.
-- `atScale`: 3-6 short items, each a concrete thing that breaks at 1000+ nodes, services, series, teams or
-  requests per second, and what people do about it (shown as "What breaks at scale").
+- `atScale`: retired (Oct 2026). Scale is the main event of each chapter, so it lives in the question, steps and `say30`; checkers error if the field is present.
 - `compare`: up to 3 entries `{ lang, idiom, good: [], bad: [] }`, shown under the code as "How the languages
   differ": the structure each language reaches for, and its strengths and weaknesses for this task.
 - `agentic`: 2-4 short items shown as "What changes in the agentic era": what agents now change about this
