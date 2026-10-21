@@ -25,7 +25,7 @@ Step-through diagrams rendered from chapter specs in `<topic>/parts/*.js` by the
 | [Infrastructure as Code, Drawn](iac/) | Remote state and locking, modules, environments, plan/apply in CI with policy checks, drift, testing |
 | [Delivery, Drawn](delivery/) | CI, build once and promote, GitOps with Argo CD, canaries, feature flags, schema migrations, supply-chain signing, merge queues |
 | [Observability, Drawn](observability/) | OpenTelemetry and the Collector, Prometheus scraping and PromQL, tracing and sampling, Loki, alerting |
-| [Security for SREs, Drawn](security/) | AWS policy evaluation, federation, TLS 1.3 and mTLS, secret rotation, segmentation, least privilege, audit |
+| [Security at Scale, Drawn](security/) | Org guardrails and policy as code, federated identity, secrets and supply chain programs, vulnerability flow, fleet detection, agents, program metrics |
 | [One Pattern, Three Languages](patterns/) | Everyday SRE tasks in Python, Go and Ruby, side by side |
 | [Ownership at Scale](ownership/) | How large companies decide and keep track of who owns code and services (single page) |
 
