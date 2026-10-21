@@ -152,7 +152,7 @@ export const CHAPTERS = [
     agentic: [
       "An agent is just another API client of the loop. If it 'fixes' a Pod by deleting or editing it, the ReplicaSet controller restores the template, so check that a proposed fix changes the owner's spec, ideally through a reviewed Git change.",
       "Controllers reconcile any stored state, including a wrong one an agent wrote: a `replicas: 0` patch is applied as faithfully as a human's. Give agents their own identity so the audit log shows who changed desired state, and put writes behind the same review as people's.",
-      "Built-in controllers have brakes, such as the node controller's eviction rate limit. An agent acting in a loop has none unless you add them; Google's SRE guidance for agents asks for rate limits, circuit breakers and interruptible actions (see Agentic Engineering, Drawn).",
+      "Built-in controllers have brakes, such as the node controller's eviction rate limit. An agent acting in a loop has none unless you add them; Google's SRE guidance for agents asks for rate limits, circuit breakers and interruptible actions (see Agentic Engineering).",
     ],
     quiz: [
       { q: "What do a controller's watch, compare and act steps actually do?", a: "Watch: an informer lists then watches objects through the API server and keeps a cache. Compare: the controller checks desired state (spec) against actual state. Act: it asks the API server to create, update or delete objects to close the gap." },

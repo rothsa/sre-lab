@@ -85,7 +85,7 @@ export const CHAPTERS = [
     agentic: [
       "An agent drafts this skeleton in seconds in any of the three languages, so the review moves from syntax to the contract: does `--dry-run` really default to on, does Go's `main` stay a few lines around `run()`, does only the result reach stdout. A script that quietly defaults to apply, or catches `SystemExit` with a bare `except:`, survives a quick skim and fails on the first fleet run.",
       "Asking an agent for a script gets you a script. Whether this should be a one-liner, an Ansible module, a Terraform resource or a service is still the first decision, and it belongs before the prompt, not after the diff.",
-      "The contract also makes the tool safe for an agent to call: JSON on stdout and meaningful exit codes are what a tool-using agent reads, and dry-run by default limits what a misread instruction can do. Claude Code's security docs note an approved Bash command can write anywhere your user account can, so try new scripts in a sandbox or container first (see Agentic Engineering, Drawn, on permissions).",
+      "The contract also makes the tool safe for an agent to call: JSON on stdout and meaningful exit codes are what a tool-using agent reads, and dry-run by default limits what a misread instruction can do. Claude Code's security docs note an approved Bash command can write anywhere your user account can, so try new scripts in a sandbox or container first (see Agentic Engineering, on permissions).",
     ],
     code: [
       { lang: "python", label: "Python · argparse + logging (stdlib)", src: `import argparse
@@ -674,7 +674,7 @@ issues(github, "rails/rails").lazy.reject { |i| i.key?("pull_request") }.first(5
     ],
     agentic: [
       "Dry-run by default matters more once an agent can run the script. Google's SRE team describes routing agent changes through a gateway that enforces dry-runs, and EC2's `DryRun` gives you that check per call; review that the `DryRunOperation` branch matches the error code, because code that treats every exception as failure, or swallows them all, breaks the check silently.",
-      "The default credential chain picks up whatever profile the shell has, so an agent running this script inherits your session. Give it a distinct read-only role, assumed with STS as the multi-account pattern already does, and keep `--apply` with a human; Google's guidance is least-privilege agent identities, never a developer's standing credentials (see Agentic Engineering, Drawn).",
+      "The default credential chain picks up whatever profile the shell has, so an agent running this script inherits your session. Give it a distinct read-only role, assumed with STS as the multi-account pattern already does, and keep `--apply` with a human; Google's guidance is least-privilege agent identities, never a developer's standing credentials (see Agentic Engineering).",
       "Check each generated call against the SDK reference, since paginator names and boto3's `max_attempts` versus `total_max_attempts` are easy to get plausibly wrong, and test against stubs as the Ruby version here did. Before that, ask whether AWS Config's `ec2-volume-inuse-check` already answers the question with no code.",
     ],
     code: [

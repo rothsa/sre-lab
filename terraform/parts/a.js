@@ -83,7 +83,7 @@ git diff .terraform.lock.hcl` },
     agentic: [
       "Models trained months ago can suggest provider versions that are stale or never shipped, and a confident `version` constraint reads fine in review. The Terraform MCP server's `get_latest_provider_version` tool lets an agent ask the registry instead of recalling, but a human still checks what `terraform init` actually resolved in `.terraform.lock.hcl`.",
       "An agent bumping providers is a faster lock-file bot: it should run `terraform providers lock` with the CI `-platform` list and open one PR per root module. The reviewer still reads the provider CHANGELOG between the two versions, because lock hashes prove the download is authentic, not that the upgrade is safe.",
-      "A checksum mismatch is the supply-chain check working, so an agent must not \"fix\" it by deleting `.terraform.lock.hcl` or running `init -upgrade`. Make that a stop-and-ask-a-human event in the agent's rules (see Agentic Engineering, Drawn).",
+      "A checksum mismatch is the supply-chain check working, so an agent must not \"fix\" it by deleting `.terraform.lock.hcl` or running `init -upgrade`. Make that a stop-and-ask-a-human event in the agent's rules (see Agentic Engineering).",
     ],
     quiz: [
       { q: "What is the difference between `required_providers` and `.terraform.lock.hcl`?", a: "`required_providers` declares the allowed source and version range. The lock file records the exact version `init` chose plus checksums, so future runs reuse it until someone runs `init -upgrade`." },

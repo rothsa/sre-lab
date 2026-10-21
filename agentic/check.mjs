@@ -1,4 +1,4 @@
-// Integrity checks for Agentic Engineering, Drawn chapter specs.
+// Integrity checks for Agentic Engineering chapter specs.
 //   node check.mjs            check every chapter
 //   node check.mjs apply dns  check only these chapter ids
 // Exits non-zero on errors; warnings don't fail.

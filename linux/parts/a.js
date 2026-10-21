@@ -244,7 +244,7 @@ export const CHAPTERS = [
     ],
     agentic: [
       "Gathering OOM evidence is a good agent task: read `journalctl -k` for the task dump and the `oom-kill:` line, `/proc/pressure/memory`, and `/proc/PID/oom_score`, then say who died and why. The human checks the `constraint=` field and the timeline, and owns any change to `oom_score_adj` or `vm.panic_on_oom`, because both decide which workload dies next.",
-      "Kernel and app logs are untrusted input: the task dump prints process names the workloads chose, and log lines can carry text aimed at the model (OWASP LLM01:2025 Prompt Injection). An agent that reads them must not hold a token that can kill processes or write sysctls; enforce read-only with the identity, not the prompt (see Agentic Engineering, Drawn).",
+      "Kernel and app logs are untrusted input: the task dump prints process names the workloads chose, and log lines can carry text aimed at the model (OWASP LLM01:2025 Prompt Injection). An agent that reads them must not hold a token that can kill processes or write sysctls; enforce read-only with the identity, not the prompt (see Agentic Engineering).",
       "An agent's empty answer is not evidence of absence. With `kernel.dmesg_restrict` set to 1, `dmesg` needs `CAP_SYSLOG`, so an unprivileged agent may see an error or nothing; fall back to `oom_kill` in each cgroup's `memory.events`, which the agent can read without that capability.",
     ],
     quiz: [
@@ -306,7 +306,7 @@ export const CHAPTERS = [
       { id: "e-kub", from: "kubelet", to: "fmax", label: "writes limit", via: [[590, 415]], labelAt: [430, 415] },
     ],
     steps: [
-      { text: "cgroup v2 puts every process in one tree of control groups, and the memory controller enforces limits per group. Press Next to follow a container's memory from the tree, through its files, to an OOM kill. Kubernetes, Drawn covers the Pod side in its requests-and-limits chapter (`../k8s/#resources`)." },
+      { text: "cgroup v2 puts every process in one tree of control groups, and the memory controller enforces limits per group. Press Next to follow a container's memory from the tree, through its files, to an OOM kill. Kubernetes covers the Pod side in its requests-and-limits chapter (`../k8s/#resources`)." },
       { text: "All cgroups live under `/sys/fs/cgroup`. On a Kubernetes node with the systemd driver, Pods sit under `kubepods.slice`, each Pod has a cgroup, and each container has one below that. Node services sit elsewhere, such as `system.slice`. Limits apply to a cgroup and everything below it.", on: ["root", "kubepods", "other", "podcg", "ctr"], flow: ["e-r1", "e-r2", "e-r3", "e-r4"] },
       { text: "`memory.current` is the memory charged to this cgroup and its children. That includes anonymous memory, the page cache, kernel objects such as dentries and inodes, and TCP socket buffers. A page is charged to the cgroup that first used it, until it is freed.", on: ["ctr", "fcur"], flow: ["e-charge"] },
       { text: "`memory.max` is the hard limit; the default is `max`, meaning none. When usage hits it, the kernel reclaims inside the cgroup first: clean page cache goes, anonymous pages go to swap if allowed. So page cache alone rarely triggers a kill.", on: ["fcur", "fmax"] },

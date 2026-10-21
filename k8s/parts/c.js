@@ -448,7 +448,7 @@ export const CHAPTERS = [
     ],
     agentic: [
       "This map is what diagnostic agents automate: K8sGPT runs analyzers over Pods, Services, events and more, and the EKS MCP Server (preview) has read-only tools such as `get_k8s_events` and `get_pod_logs` with `previous`. Confirm the context first, since an agent using your kubeconfig acts on whatever cluster it points to.",
-      "Mid-incident, agents gather evidence read-only and humans decide and act (see Agentic Engineering, Drawn). Google's Cloud Assist investigations (Preview) never use their token to mutate data, and the GKE docs warn answers can be plausible but wrong, so check each finding against its linked source data (or the commands an agent ran) before acting on it.",
+      "Mid-incident, agents gather evidence read-only and humans decide and act (see Agentic Engineering). Google's Cloud Assist investigations (Preview) never use their token to mutate data, and the GKE docs warn answers can be plausible but wrong, so check each finding against its linked source data (or the commands an agent ran) before acting on it.",
       "Logs and events can hold names, tokens and customer data, and anything an agent reads goes to its model backend. Prefer an approved or local model (K8sGPT recommends local for critical production) and remember its `--anonymize` skips logs and events.",
     ],
     quiz: [

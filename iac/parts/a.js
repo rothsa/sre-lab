@@ -210,7 +210,7 @@ terraform {
     ],
     agentic: [
       "Agents now write the upgrade, not just the version bump: across hundreds of consumer repos they add `moved` blocks, rename inputs and fix the failing plan. The consumer's plan is still what a human reads, and the new failure is a plan made empty by the wrong means, such as an added `ignore_changes` or a loosened pin, so auto-merge on an empty plan should also require that only the `version` line changed.",
-      "Module READMEs, variable descriptions and the private registry are now context agents read when choosing a module, and the Terraform MCP server (GA since June 2026) serves registry and private-module data to them. The module owner keeps those descriptions accurate and the catalogue curated, because a vague description now produces misused inputs in many repos at once (see Agentic Engineering, Drawn on context engineering).",
+      "Module READMEs, variable descriptions and the private registry are now context agents read when choosing a module, and the Terraform MCP server (GA since June 2026) serves registry and private-module data to them. The module owner keeps those descriptions accurate and the catalogue curated, because a vague description now produces misused inputs in many repos at once (see Agentic Engineering on context engineering).",
       "DORA linked AI adoption to larger batches and lower stability in 2024, and in 2025 stability still suffered as change volume rose. An agent jumping a consumer three majors in one PR is the ZenML upgrade pattern at machine speed; the module owner still sets the deprecation window and the one-major-at-a-time rule, and bots and agents follow it.",
     ],
     quiz: [

@@ -1,6 +1,6 @@
-# Linux, Drawn
+# Linux
 
-How a Linux node handles memory and networking, in step-through diagrams, at [lab.sallyroth.dev/linux](https://lab.sallyroth.dev/linux/). Same engine as [Kubernetes, Drawn](../k8s/).
+How a Linux node handles memory and networking, in step-through diagrams, at [lab.sallyroth.dev/linux](https://lab.sallyroth.dev/linux/). Same engine as [Kubernetes](../k8s/).
 
 Static page: `index.html` renders chapter specs into inline SVG. No build step, no runtime dependencies.
 

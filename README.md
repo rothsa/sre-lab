@@ -17,15 +17,15 @@ Step-through diagrams rendered from chapter specs in `<topic>/parts/*.js` by the
 
 | Page | Covers |
 |---|---|
-| [Kubernetes, Drawn](k8s/) | 18 chapters: control loop, kubectl apply, scheduling, Services, DNS, storage, autoscaling, RBAC, upgrades, a troubleshooting map |
-| [Linux, Drawn](linux/) | Page cache, the OOM killer, cgroups, a packet's path, conntrack, TCP queues, the first 60 seconds of performance analysis |
+| [Kubernetes](k8s/) | 18 chapters: control loop, kubectl apply, scheduling, Services, DNS, storage, autoscaling, RBAC, upgrades, a troubleshooting map |
+| [Linux](linux/) | Page cache, the OOM killer, cgroups, a packet's path, conntrack, TCP queues, the first 60 seconds of performance analysis |
 | [Incident Management at Scale](incident-management/) | The incident program as a system: severity contract, routing and ownership, concurrent incidents, comms and legal clocks, fleet on-call health, learning, follow-through, readiness, metrics |
 | [Taming Cardinality](cardinality/) | How labels multiply series and cost, finding the culprit, dropping, aggregating and governing |
 | [Terraform, Five Years On](terraform/) | moved/import/removed blocks, checks and tests, OpenTofu, ephemeral values, splitting state |
-| [Infrastructure as Code, Drawn](iac/) | Remote state and locking, modules, environments, plan/apply in CI with policy checks, drift, testing |
-| [Delivery, Drawn](delivery/) | CI, build once and promote, GitOps with Argo CD, canaries, feature flags, schema migrations, supply-chain signing, merge queues |
-| [Observability, Drawn](observability/) | OpenTelemetry and the Collector, Prometheus scraping and PromQL, tracing and sampling, Loki, alerting |
-| [Security at Scale, Drawn](security/) | Org guardrails and policy as code, federated identity, secrets and supply chain programs, vulnerability flow, fleet detection, agents, program metrics |
+| [Infrastructure as Code](iac/) | Remote state and locking, modules, environments, plan/apply in CI with policy checks, drift, testing |
+| [Delivery](delivery/) | CI, build once and promote, GitOps with Argo CD, canaries, feature flags, schema migrations, supply-chain signing, merge queues |
+| [Observability](observability/) | OpenTelemetry and the Collector, Prometheus scraping and PromQL, tracing and sampling, Loki, alerting |
+| [Security at Scale](security/) | Org guardrails and policy as code, federated identity, secrets and supply chain programs, vulnerability flow, fleet detection, agents, program metrics |
 | [One Pattern, Three Languages](patterns/) | Everyday SRE tasks in Python, Go and Ruby, side by side |
 | [Ownership at Scale](ownership/) | How large companies decide and keep track of who owns code and services (single page) |
 
@@ -33,10 +33,10 @@ Step-through diagrams rendered from chapter specs in `<topic>/parts/*.js` by the
 
 | Page | Covers |
 |---|---|
-| [Agentic Engineering, Drawn](agentic/) | Harnesses, verification, review, sandboxes and scoped credentials for running many coding agents |
-| [Engineering for the Next Agent, Drawn](next-agent/) | Building for future models: evals, safe model upgrades, durable interfaces |
-| [Engineering on an Exponential, Drawn](exponential/) | Planning horizons and the invariants that hold while model capability moves fast |
-| [Graphs and Loops, Drawn](loops/) | Writing the loops and graphs that drive agents, with checks and stop conditions |
+| [Agentic Engineering](agentic/) | Harnesses, verification, review, sandboxes and scoped credentials for running many coding agents |
+| [Engineering for the Next Agent](next-agent/) | Building for future models: evals, safe model upgrades, durable interfaces |
+| [Engineering on an Exponential](exponential/) | Planning horizons and the invariants that hold while model capability moves fast |
+| [Graphs and Loops](loops/) | Writing the loops and graphs that drive agents, with checks and stop conditions |
 | [One Agent to Hundreds](fleet/) | A five-stage ladder for scaling coding agents (single page, no diagram engine) |
 
 The full dated changelog of research passes is at [`changelog/`](changelog/index.html). The landing page ([`index.html`](index.html)) shows only the latest three entries: add each new entry at the top of both, and drop the oldest from the landing page. The landing page groups tiles as Start here, Tools, Reliability explainers, and AI engineering. `scripts/stamp-updated.py` restamps each page's "updated" date from git history.

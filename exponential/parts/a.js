@@ -82,7 +82,7 @@ export const CHAPTERS = [
       { title: "Epoch AI: Can AI scaling continue through 2030? (2024-08-20)", url: "https://epoch.ai/blog/can-ai-scaling-continue-through-2030" },
       { title: "European Commission: AI Act regulatory framework and timeline", url: "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai" },
       { title: "MCP: Versioning and feature lifecycle", url: "https://modelcontextprotocol.io/specification/versioning" },
-      { title: "Engineering for the Next Agent, Drawn (gateways, pinned IDs, evals)", url: "https://lab.sallyroth.dev/next-agent/" },
+      { title: "Engineering for the Next Agent (gateways, pinned IDs, evals)", url: "https://lab.sallyroth.dev/next-agent/" },
     ],
   },
   {
@@ -163,7 +163,7 @@ export const CHAPTERS = [
       { title: "Epoch AI: Can AI scaling continue through 2030? (2024-08-20)", url: "https://epoch.ai/blog/can-ai-scaling-continue-through-2030" },
       { title: "Anthropic: Model deprecations", url: "https://platform.claude.com/docs/en/about-claude/model-deprecations" },
       { title: "Anthropic: Claude 3.7 Sonnet and Claude Code (2025-02-24)", url: "https://www.anthropic.com/news/claude-3-7-sonnet" },
-      { title: "Engineering for the Next Agent, Drawn: forecasting chapter (full timeline)", url: "https://lab.sallyroth.dev/next-agent/#forecast" },
+      { title: "Engineering for the Next Agent: forecasting chapter (full timeline)", url: "https://lab.sallyroth.dev/next-agent/#forecast" },
     ],
   },
   {
@@ -295,7 +295,7 @@ export const CHAPTERS = [
     codeNote: "A planning template, not a schedule. The inner rows are revisited every release; the last row is revisited when the world changes (regulation, cost structure, organization), not when a model ships.",
     incidents: ["neon-2025-agentic-load-scaling-incidents"],
     sources: [
-      { title: "Engineering for the Next Agent, Drawn (model upgrades, scaffolding, evals)", url: "https://lab.sallyroth.dev/next-agent/" },
+      { title: "Engineering for the Next Agent (model upgrades, scaffolding, evals)", url: "https://lab.sallyroth.dev/next-agent/" },
       { title: "Anthropic: Demystifying evals for AI agents (2026-01-09)", url: "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" },
       { title: "Anthropic: How AI is transforming work at Anthropic (2025-12-02)", url: "https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic" },
       { title: "Neon: May-June recap (2025-07-16)", url: "https://neon.com/blog/may-june-recap" },

@@ -1,4 +1,4 @@
-# Kubernetes, Drawn
+# Kubernetes
 
 How Kubernetes works, in 18 step-through diagrams, at [lab.sallyroth.dev/k8s](https://lab.sallyroth.dev/k8s/).
 
