@@ -772,7 +772,7 @@ const STAGES = [
     bottleneck: "<b>What limits you:</b> limits every team shares. API quota, GitHub's limits, CI, review capacity and spend are pooled across the org, so one team's swarm can starve the rest. Leadership also needs one number that says whether the fleet helps.",
     add: [
       ["A budget per team, with the per-run caps from Hundreds under it. On Claude for Teams and Enterprise, spend past each seat's allowance can be capped for the organization, a group or one member.", "ccCosts"],
-      ["Limit the pricey tiers centrally. OpenAI's organization settings \"can restrict service tiers for all projects\" (21 Oct 2026).", "oaiTiers"],
+      ["Set service tiers centrally. OpenAI's organization settings \"can restrict service tiers for all projects\" (21 Oct 2026).", "oaiTiers"],
       ["Quota split by team. Claude API limits are set per organization; give each team a workspace with lower spend and rate limits, which the docs say \"protects other Workspaces from potential overuse\". Organization-wide limits still apply, even if workspace limits add up to more.", "apiLimits"],
       ["Quota sized for concurrency, not headcount. Claude Code's docs suggest 200k-300k tokens a minute per user for 1-5 users but 10k-15k for 500+, because fewer people use it at once in big orgs.", "ccCosts"],
       ["An audit trail you can query. Claude Code can export an OpenTelemetry event for every tool permission decision, saying whether config, a hook or a person made it, and join it to the tool's result by tool_use_id. Amp links every commit to its agent thread (see Hundreds).", "ccMonitoring"],
