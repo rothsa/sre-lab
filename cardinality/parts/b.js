@@ -138,7 +138,7 @@ export const CHAPTERS = [
     ],
     agentic: [
       "LLM latency is a histogram problem too. The OpenTelemetry GenAI metrics (all Development status, so names may change) advise 14 explicit boundaries for `gen_ai.client.inference.duration` (the same set as `gen_ai.client.operation.duration`, which covers non-inference operations such as tool calls), which is 17 classic series per label set; multiply by provider, model and operation before turning it on everywhere.",
-      "Token usage comes in two shapes: counters `gen_ai.client.inference.usage.input_tokens` and `.output_tokens`, which the spec calls a proxy for cost, and histograms `gen_ai.client.inference.operation.*`, which it says are for percentiles and not for total usage or cost. Same lesson as this chapter: pick the instrument by the question.",
+      "Token usage comes in two shapes: counters `gen_ai.client.inference.usage.input_tokens` and `.output_tokens`, which the spec calls a proxy for cost, and histograms `gen_ai.client.inference.operation.*`, which it says are for percentiles and not for total usage or cost. Since 21 Oct 2026 a zero count, such as a cache read of 0, no longer creates a counter point. Same lesson as this chapter: pick the instrument by the question.",
       "An agent can propose bucket boundaries or a native histogram schema; a human checks them against the SLO threshold. If no bucket edge sits at the SLO latency, `histogram_quantile` interpolates and the good-request count is an estimate, whoever chose the buckets.",
     ],
     quiz: [
@@ -156,6 +156,7 @@ export const CHAPTERS = [
       { title: "OpenTelemetry GenAI semconv: metrics", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-metrics.md" },
       { title: "OpenTelemetry GenAI semconv: client inference (gen_ai.client.inference.duration)", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/client-inference.md" },
       { title: "OpenTelemetry GenAI semconv: token metrics", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-token-metrics.md" },
+      { title: "OpenTelemetry GenAI semconv PR #602: record only positive inference usage (merged 21 Oct 2026)", url: "https://github.com/open-telemetry/semantic-conventions-genai/pull/602" },
     ],
   },
   {

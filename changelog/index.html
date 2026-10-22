@@ -104,11 +104,18 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
 <body>
 <div class="wrap">
   <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-10-21">21 Oct 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-10-22">22 Oct 2026</time></span></div>
   <h1 id="changelog-h">Changelog</h1>
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
     <p>What each daily research pass changed, newest first. Every change is checked against a primary source. The lab landing page shows the latest three.</p>
-    <details open><summary><time datetime="2026-10-21">21 Oct 2026</time></summary><ul>
+    <details open><summary><time datetime="2026-10-22">22 Oct 2026</time></summary><ul>
+      <li>One Agent to Hundreds: a shared gateway's logs can hold every team's tokens, as LiteLLM's poisoned release showed, and an agent approving merges through a person's account hides who decided. Also new: a Claude API version that rejects sampling settings, tagging requests by end user so one ban doesn't stop every team, limiting which OpenAI service tiers projects use, and counting what the guardrails stopped.</li>
+      <li>Security: gateway logs are a credential store, so strip tokens before anything is logged.</li>
+      <li>Did the Agent Do It Right?: hide the agent's own success report from the judge, and pin the API version as well as the model.</li>
+      <li>Agentic Engineering: pin the model gateway's version, and trend Claude Code's new safety event.</li>
+      <li class="minor">Smaller: Uber's 2026 uReview numbers (Agentic), pstack 0.15.30 statecharts and Amp's self-hosted orbs (One Agent to Hundreds), zero token counts no longer create OpenTelemetry points (Cardinality).</li>
+    </ul></details>
+    <details><summary><time datetime="2026-10-21">21 Oct 2026</time></summary><ul>
       <li>One Agent to Hundreds: a subagent can talk its supervisor into more work, agents act outside their granted scope in about one run in five, and a harness upgrade can load an MCP server your allowlist left out. New lines on per-user credentials and memory in a managed agent, Huntley's zoned message boards, Sridharan on testing guidelines for agents, Horthy on doing less in parallel and Ball on the end of mandatory review.</li>
       <li>Agentic Engineering: a shared MCP server that sent one client's replies to another, and GitHub's package firewall for agent installs.</li>
       <li>Did the Agent Do It Right?: a harness win can be luck, and a judge can approve anything without reporting an error.</li>

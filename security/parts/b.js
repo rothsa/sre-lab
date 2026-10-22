@@ -127,6 +127,7 @@ export const CHAPTERS = [
     incidents: ["circleci-2022-session-cookie-theft-secrets-exfil", "cloudflare-2025-salesloft-drift-salesforce-breach", "circleci-2013-mongohq-database-breach"],
     sources: [
       { title: "Wiz: anatomy of a real AI-driven cloud attack (19 Oct 2026)", url: "https://www.wiz.io/blog/anatomy-of-ai-driven-cloud-attacks" },
+      { title: "LiteLLM: Security incident, 21 October 2026", url: "https://docs.litellm.ai/blog/security-incident-oct-21-2026" },
       { title: "Managing GuardDuty accounts with AWS Organizations", url: "https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_organizations.html" },
       { title: "SEC adopts rules on cybersecurity incident disclosure (2023-139)", url: "https://www.sec.gov/newsroom/press-releases/2023-139" },
       { title: "GDPR Article 33", url: "https://gdpr-info.eu/art-33-gdpr/" },
@@ -163,11 +164,11 @@ export const CHAPTERS = [
       { id: "e-inv", from: "policy", to: "inv" },
     ],
     steps: [
-      { text: "An agent with its own identity, reading untrusted input and calling tools through a gateway. The limits that matter sit outside the model. Press Next." },
+      { text: "An agent with its own identity, reading untrusted input and calling tools through a gateway. Press Next." },
       { text: "Every agent gets its own workload identity, tied to the person or service that launched it. A shared agent account makes attribution and per-agent policy impossible. OWASP's NHI Top 10 lists NHI reuse and human use of NHIs as risks.", on: ["human", "agent"], flow: ["e-launch"] },
       { text: "Agents read untrusted text all day: issues, web pages, logs. Assume any of it can steer the agent.", on: ["input", "agent"], flow: ["e-input"] },
       { text: "Meta's Agents Rule of Two (October 2025): in one session an agent should have at most two of untrusted input, access to sensitive systems or data, and the ability to change state or communicate out. All three needs a person to approve.", on: ["input", "data", "act", "approve"], flow: ["e-approve"] },
-      { text: "Tools go through a gateway you run, with one central allowlist of MCP servers and tools. Scopes start minimal, with step-up for privileged tools. The MCP spec forbids token passthrough, so each hop authenticates as itself, and the gateway logs every call.", on: ["agent", "gw", "data", "act"], flow: ["e-tools", "e-read", "e-act"] },
+      { text: "Tools go through a gateway you run, with one central allowlist of MCP servers and tools. Scopes start minimal, with step-up for privileged tools. The MCP spec forbids token passthrough, so each hop authenticates as itself. The gateway logs every call, so strip tokens before anything reaches its logs or traces.", on: ["agent", "gw", "data", "act"], flow: ["e-tools", "e-read", "e-act"] },
       { text: "Enforce outside the model. An SCP, a role or an egress rule applies whatever the prompt said. Put agent roles in their own OU or permission set, with a boundary the agent can't edit.", on: ["data", "act", "policy"], flow: ["e-data-pol", "e-act-pol"] },
       { text: "Inventory NHIs like any fleet: owner, scope, last use, expiry. OWASP's NHI Top 10 puts improper offboarding first and also names long-lived secrets and overprivileged NHIs. Count each one across the fleet, because agents get deployed and forgotten faster than services.", on: ["policy", "inv"], flow: ["e-inv"] },
       { text: "Save human approval for the actions where all three legs meet, and show the approver the context. Watch approval rates. Someone clicking yes on every prompt isn't a control.", on: ["approve", "act"] },
@@ -178,6 +179,7 @@ export const CHAPTERS = [
       "A system prompt that says read-only enforces nothing. Give the role read-only permissions.",
       "MCP clients follow URLs from servers during OAuth discovery. The spec says to block private ranges and metadata addresses like `169.254.169.254`, ideally with an egress proxy.",
       "Local MCP servers run with the client's privileges, so a one-click install is code execution.",
+      "Gateway logs are a credential store. LiteLLM (21 Oct 2026) found Claude Code can put a user's GitHub CLI token in a response body; an attacker took such tokens from the logs of an internal gateway open to the internet and used an org owner's token to get past branch protection and publish a poisoned release.",
     ],
     agentic: [
       "Expect agent counts to grow faster than headcount. Budget inventory and review capacity per agent, not per team.",
