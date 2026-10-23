@@ -104,11 +104,19 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
 <body>
 <div class="wrap">
   <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-10-22">22 Oct 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-10-23">23 Oct 2026</time></span></div>
   <h1 id="changelog-h">Changelog</h1>
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
     <p>What each daily research pass changed, newest first. Every change is checked against a primary source. The lab landing page shows the latest three.</p>
-    <details open><summary><time datetime="2026-10-22">22 Oct 2026</time></summary><ul>
+    <details open><summary><time datetime="2026-10-23">23 Oct 2026</time></summary><ul>
+      <li>One Agent to Hundreds: an agent's own compaction notes can carry it off task, as a UK AISI eval showed, and a monitor can miss compaction entirely. The org track adds OpenAI's approval rule for model gateways from 20 Nov, GitHub's Copilot defaults for anything left unset, stale instruction files that agents follow over the code, one Google Cloud project per team, usage counts for in-house skills and MCP servers, and Imprint's small-change review lane.</li>
+      <li>Agentic Engineering: Claude Code and Codex fix sandbox holes every week, so set a fleet minimum version and rerun escape tests on each upgrade.</li>
+      <li>Security: a summary the agent writes for itself is input, and a forged approval can survive compaction.</li>
+      <li>Did the Agent Do It Right?: a proof checked by a proof kernel is the strongest verifier, and the theorem is what you review.</li>
+      <li>Engineering for the Next Agent: Agent Skills joined AGENTS.md and MCP in the Agentic AI Foundation.</li>
+      <li class="minor">Smaller: three minors behind gets critical fixes until end of life (Kubernetes), a non-empty cluster guard on the inhibit rule and one page alert instead of "exactly once" (Observability, SLO Burn Simulator), terraform validate runs provider plugins offline (IaC), memory.reclaim takes anon as well as cache (Linux), GitHub's ownership numbers (Ownership), attempt budgets count failed calls (Did the Agent Do It Right?), Claude Sonnet 5.5's ARC harness gap, Codex 0.164.0 daemon logs, fast mode on Google Cloud, Thorsten Ball's one-thread incident and Anthropic's guide on folding subagents back in (One Agent to Hundreds), a moved Anthropic link (Agentic).</li>
+    </ul></details>
+    <details><summary><time datetime="2026-10-22">22 Oct 2026</time></summary><ul>
       <li>One Agent to Hundreds: a shared gateway's logs can hold every team's tokens, as LiteLLM's poisoned release showed, and an agent approving merges through a person's account hides who decided. Also new: a Claude API version that rejects sampling settings, tagging requests by end user so one ban doesn't stop every team, limiting which OpenAI service tiers projects use, and counting what the guardrails stopped.</li>
       <li>Security: gateway logs are a credential store, so strip tokens before anything is logged.</li>
       <li>Did the Agent Do It Right?: hide the agent's own success report from the judge, and pin the API version as well as the model.</li>

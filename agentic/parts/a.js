@@ -264,7 +264,7 @@ export const CHAPTERS = [
       { title: "InfoQ: Spotify's Honk rewrite (QCon London, 2026-03-18)", url: "https://www.infoq.com/news/2026/03/spotify-honk-rewrite" },
       { title: "Bun: Rewriting Bun in Rust (2026-07-08)", url: "https://bun.com/blog/bun-in-rust" },
       { title: "Anthropic: Building a C compiler with parallel Claudes (2026-02-05)", url: "https://www.anthropic.com/research/building-c-compiler" },
-      { title: "Anthropic: Effective harnesses for long-running agents (2025-11-26)", url: "https://anthropic.com/engineering/effective-harnesses-for-long-running-agents" },
+      { title: "Anthropic: Effective harnesses for long-running agents (2025-11-26)", url: "https://www.anthropic.com/research/effective-harnesses-for-long-running-agents" },
       { title: "Ramp: Why we built our background agent (2026-01-12)", url: "https://builders.ramp.com/post/why-we-built-our-background-agent" },
       { title: "Meta: Mutation-guided LLM-based test generation (ACH, 2025-01-22)", url: "https://arxiv.org/html/2501.12862v1" },
       { title: "Claude Code: Best practices", url: "https://code.claude.com/docs/en/best-practices" },

@@ -90,7 +90,7 @@ footer a { color: var(--accent); }
 
 <div class="wrap">
   <header>
-    <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · error budgets<span class="updated"> · updated <time datetime="2026-10-20">20 Oct 2026</time></span></div>
+    <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · error budgets<span class="updated"> · updated <time datetime="2026-10-23">23 Oct 2026</time></span></div>
     <h1>SLO Burn Simulator</h1>
     <p class="lede">Pick an SLO and a burn rate. See how long the budget lasts, which multi-window burn-rate alerts fire and when, and the Prometheus rules to match. Then see what it takes to run SLOs across thousands of services.</p>
   </header>
@@ -154,7 +154,7 @@ footer a { color: var(--accent); }
 
       <div class="panel">
         <div class="row"><h2>Prometheus alert rules</h2><button type="button" class="copy" id="copy">Copy</button></div>
-        <p class="explain">Assumes an <code>http_requests_total</code> counter with <code>code</code> and <code>service</code> labels. One page alert and one ticket alert, as in the Workbook, so a big outage pages once.</p>
+        <p class="explain">Assumes an <code>http_requests_total</code> counter with <code>code</code> and <code>service</code> labels. One page alert and one ticket alert, as in the Workbook, so a big outage fires one page alert.</p>
         <pre id="rules"></pre>
       </div>
     </section>

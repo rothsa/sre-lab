@@ -179,7 +179,8 @@ export const CHAPTERS = [
       "A system prompt that says read-only enforces nothing. Give the role read-only permissions.",
       "MCP clients follow URLs from servers during OAuth discovery. The spec says to block private ranges and metadata addresses like `169.254.169.254`, ideally with an egress proxy.",
       "Local MCP servers run with the client's privileges, so a one-click install is code execution.",
-      "Gateway logs are a credential store. LiteLLM (21 Oct 2026) found Claude Code can put a user's GitHub CLI token in a response body; an attacker took such tokens from the logs of an internal gateway open to the internet and used an org owner's token to get past branch protection and publish a poisoned release.",
+      "Gateway logs are a credential store. LiteLLM (21 Oct 2026) found Claude Code can put a user's GitHub CLI token in a response body; an attacker took such tokens from an internet-facing gateway's logs and used an org owner's token to publish a poisoned release past branch protection.",
+      "An agent's summary of its own work is input too. In a 21 Oct 2026 preprint, a forged approval planted in a tool result \"launders into the agent's memory 87-100% of the time\" in harnesses that flatten the chat into one string before compacting, and never in harnesses that keep messages typed by role. In a UK AISI eval, a model's own compaction notes carried an out-of-scope attack forward (Anthropic, 23 Oct 2026). Ask how your harness keeps provenance through compaction.",
     ],
     agentic: [
       "Expect agent counts to grow faster than headcount. Budget inventory and review capacity per agent, not per team.",

@@ -275,7 +275,7 @@ export const CHAPTERS = [
     id: "alerting",
     n: 8,
     title: "Paging as an org control loop",
-    question: "Hundreds of teams page their own on-call. How does one alert reach the right person exactly once, which fleet numbers tell you paging is healthy, and what happens to a team that goes over budget?",
+    question: "Hundreds of teams page their own on-call. How does one alert reach the right person as one page, which fleet numbers tell you paging is healthy, and what happens to a team that goes over budget?",
     view: [960, 480],
     groups: [
       { id: "g-prom", label: "Prometheus HA pair", x: 10, y: 30, w: 160, h: 240 },
@@ -331,10 +331,10 @@ export const CHAPTERS = [
     ],
     code: [
       { lang: "yaml", label: "Fast-burn page (99.9% SLO)", src: "- alert: CheckoutErrorBudgetBurn\n  expr: |\n    (sum(rate(http_requests_total{job=\"checkout\",code=~\"5..\"}[1h]))\n      / sum(rate(http_requests_total{job=\"checkout\"}[1h]))) > (14.4 * 0.001)\n    and\n    (sum(rate(http_requests_total{job=\"checkout\",code=~\"5..\"}[5m]))\n      / sum(rate(http_requests_total{job=\"checkout\"}[5m]))) > (14.4 * 0.001)\n  labels:\n    severity: page\n    team: payments" },
-      { lang: "yaml", label: "Alertmanager: route and inhibit", src: "route:\n  receiver: default-triage   # owned, reviewed weekly\n  group_by: [alertname, cluster]\n  routes:\n    - matchers: ['team=\"payments\"', 'severity=\"page\"']\n      receiver: payments-pager\n    - matchers: ['severity=\"ticket\"']\n      receiver: ticket-queue\ninhibit_rules:\n  - source_matchers: ['alertname=\"ClusterDown\"']\n    target_matchers: ['severity=\"page\"', 'alertname!=\"ClusterDown\"']\n    equal: [cluster]" },
+      { lang: "yaml", label: "Alertmanager: route and inhibit", src: "route:\n  receiver: default-triage   # owned, reviewed weekly\n  group_by: [alertname, cluster]\n  routes:\n    - matchers: ['team=\"payments\"', 'severity=\"page\"']\n      receiver: payments-pager\n    - matchers: ['severity=\"ticket\"']\n      receiver: ticket-queue\ninhibit_rules:\n  - source_matchers: ['alertname=\"ClusterDown\"', 'cluster!=\"\"']\n    target_matchers: ['severity=\"page\"', 'alertname!=\"ClusterDown\"', 'cluster!=\"\"']\n    equal: [cluster]" },
       { lang: "yaml", label: "promtool test rules", src: "rule_files: [slo-rules.yml]\nevaluation_interval: 1m\ntests:\n  - interval: 1m\n    input_series:\n      - series: 'http_requests_total{job=\"checkout\",code=\"500\"}'\n        values: '0+20x120'\n      - series: 'http_requests_total{job=\"checkout\",code=\"200\"}'\n        values: '0+980x120'\n    alert_rule_test:\n      - eval_time: 65m\n        alertname: CheckoutErrorBudgetBurn\n        exp_alerts:\n          - exp_labels: {severity: page, team: payments}" },
     ],
-    codeNote: "The test feeds a 2% error rate (20x burn) and expects a page. A CI check that every rule carries `team` and `severity` belongs next to it. The `alertname!=` matcher keeps `ClusterDown` from matching both sides of its own inhibit rule. Try different burn rates in the lab's SLO Burn Simulator.",
+    codeNote: "The test feeds a 2% error rate (20x burn) and expects a page. A CI check that every rule carries `team`, `severity` and `cluster` belongs next to it. The `alertname!=` matcher keeps `ClusterDown` from matching both sides of its own inhibit rule, and `equal` counts a label missing on both sides as a match, so both sides require a non-empty `cluster`. Try different burn rates in the lab's SLO Burn Simulator.",
     say30: "One alert reaches one person through routing on `team` and `severity` labels, grouping, inhibition, and HA Alertmanagers that share a notification log. Pages fire on multiwindow SLO burn rates. At org scale I treat paging as a control loop with a budget. Google's number is at most two incidents per 12-hour shift. I track three fleet numbers per team: pages per shift on a 21-day trailing average, the share of pages someone acted on, and alerts with no owner. A team over budget gets a set response: a loaned SRE, a quarterly goal, bug fixes ahead of features, and in rare cases the developers take the pager. I don't let teams raise SLO thresholds to get under budget.",
     gotchas: [
       "A load balancer between Prometheus and Alertmanager breaks HA. Each Prometheus must send every alert to every Alertmanager.",
