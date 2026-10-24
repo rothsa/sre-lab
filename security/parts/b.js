@@ -127,7 +127,7 @@ export const CHAPTERS = [
     incidents: ["circleci-2022-session-cookie-theft-secrets-exfil", "cloudflare-2025-salesloft-drift-salesforce-breach", "circleci-2013-mongohq-database-breach"],
     sources: [
       { title: "Wiz: anatomy of a real AI-driven cloud attack (19 Oct 2026)", url: "https://www.wiz.io/blog/anatomy-of-ai-driven-cloud-attacks" },
-      { title: "LiteLLM: Security incident, 21 October 2026", url: "https://docs.litellm.ai/blog/security-incident-oct-21-2026" },
+      { title: "LiteLLM: The attack chain behind the v1.107.0 release (23 Oct 2026)", url: "https://docs.litellm.ai/blog/security-incident-oct-21-2026-attack-chain" },
       { title: "Managing GuardDuty accounts with AWS Organizations", url: "https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_organizations.html" },
       { title: "SEC adopts rules on cybersecurity incident disclosure (2023-139)", url: "https://www.sec.gov/newsroom/press-releases/2023-139" },
       { title: "GDPR Article 33", url: "https://gdpr-info.eu/art-33-gdpr/" },
@@ -179,8 +179,8 @@ export const CHAPTERS = [
       "A system prompt that says read-only enforces nothing. Give the role read-only permissions.",
       "MCP clients follow URLs from servers during OAuth discovery. The spec says to block private ranges and metadata addresses like `169.254.169.254`, ideally with an egress proxy.",
       "Local MCP servers run with the client's privileges, so a one-click install is code execution.",
-      "Gateway logs are a credential store. LiteLLM (21 Oct 2026) found Claude Code can put a user's GitHub CLI token in a response body; an attacker took such tokens from an internet-facing gateway's logs and used an org owner's token to publish a poisoned release past branch protection.",
-      "An agent's summary of its own work is input too. In a 21 Oct 2026 preprint, a forged approval planted in a tool result \"launders into the agent's memory 87-100% of the time\" in harnesses that flatten the chat into one string before compacting, and never in harnesses that keep messages typed by role. In a UK AISI eval, a model's own compaction notes carried an out-of-scope attack forward (Anthropic, 23 Oct 2026). Ask how your harness keeps provenance through compaction.",
+      "Agent config is a credential store. LiteLLM's root-cause report (23 Oct 2026): a master key to its agent platform leaked in a public config file and was never revoked, and one API call returned an org owner's GitHub token that \"was not scoped down\". That token led to CI secrets and a poisoned release. Agents get scoped service identities, and a leaked key is revoked the day it's found.",
+      "An agent's summary of its own work is input too. In a 21 Oct 2026 preprint, a forged approval planted in a tool result \"launders into the agent's memory 87-100% of the time\" in harnesses that flatten the chat into one string before compacting, and never in harnesses that keep messages typed by role. In a UK AISI eval, a model's own compaction notes carried an out-of-scope attack forward (Anthropic, 23 Oct 2026). Anthropic's red team (22 Oct 2026) found production agent monitors did not watch compaction summaries at all. Ask how your harness keeps provenance through compaction.",
     ],
     agentic: [
       "Expect agent counts to grow faster than headcount. Budget inventory and review capacity per agent, not per team.",
@@ -196,6 +196,8 @@ export const CHAPTERS = [
       { title: "OWASP Non-Human Identities Top 10 (2025)", url: "https://owasp.github.io/www-project-non-human-identities-top-10/2025/top-10-2025" },
       { title: "MCP Security Best Practices (spec 2026-07-28)", url: "https://modelcontextprotocol.io/docs/2026-07-28/tutorials/security/security_best_practices" },
       { title: "Wiz: anatomy of a real AI-driven cloud attack (19 Oct 2026)", url: "https://www.wiz.io/blog/anatomy-of-ai-driven-cloud-attacks" },
+      { title: "LiteLLM: The attack chain behind the v1.107.0 release (23 Oct 2026)", url: "https://docs.litellm.ai/blog/security-incident-oct-21-2026-attack-chain" },
+      { title: "Anthropic Alignment: Red-teaming auto mode and other production monitors (22 Oct 2026)", url: "https://alignment.anthropic.com/2026/red-teaming-auto-mode/" },
       { title: "Security best practices in IAM (permissions boundaries)", url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html" },
     ],
   },

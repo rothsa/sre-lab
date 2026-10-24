@@ -69,7 +69,7 @@ export const CHAPTERS = [
       { title: "AWS Control Tower: about controls", url: "https://docs.aws.amazon.com/controltower/latest/controlreference/controls.html" },
       { title: "Overview of Azure Policy", url: "https://learn.microsoft.com/en-us/azure/governance/policy/overview" },
       { title: "Azure Policy exemption structure", url: "https://learn.microsoft.com/en-us/azure/governance/policy/concepts/exemption-structure" },
-      { title: "Google Cloud: organization policy overview", url: "https://docs.cloud.google.com/resource-manager/docs/organization-policy/overview" },
+      { title: "Google Cloud: organization policy overview", url: "https://docs.cloud.google.com/organization-policy/overview" },
     ],
   },
   {
@@ -154,7 +154,7 @@ export const CHAPTERS = [
       { title: "Security best practices in IAM (permissions guardrails)", url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html" },
       { title: "AWS account root user: centrally manage root access", url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_root-user.html" },
       { title: "Building a data perimeter on AWS", url: "https://docs.aws.amazon.com/whitepapers/latest/building-a-data-perimeter-on-aws/building-a-data-perimeter-on-aws.html" },
-      { title: "Google Cloud: organization policy overview", url: "https://docs.cloud.google.com/resource-manager/docs/organization-policy/overview" },
+      { title: "Google Cloud: organization policy overview", url: "https://docs.cloud.google.com/organization-policy/overview" },
       { title: "Overview of Azure Policy", url: "https://learn.microsoft.com/en-us/azure/governance/policy/overview" },
       { title: "AWS Control Tower: about controls", url: "https://docs.aws.amazon.com/controltower/latest/controlreference/controls.html" },
     ],

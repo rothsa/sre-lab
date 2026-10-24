@@ -104,11 +104,19 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
 <body>
 <div class="wrap">
   <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-10-23">23 Oct 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-10-24">24 Oct 2026</time></span></div>
   <h1 id="changelog-h">Changelog</h1>
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
     <p>What each daily research pass changed, newest first. Every change is checked against a primary source. The lab landing page shows the latest three.</p>
-    <details open><summary><time datetime="2026-10-23">23 Oct 2026</time></summary><ul>
+    <details open><summary><time datetime="2026-10-24">24 Oct 2026</time></summary><ul>
+      <li>One Agent to Hundreds: LiteLLM's root-cause report corrects the cause. The way in was a leaked, never-revoked key to its agent platform, whose agent configs held an org owner's unscoped GitHub token, not gateway logs. Also new: production agent monitors that miss most attacks from an attacker who knows them and don't watch compaction summaries, MCP jobs that keep running after the agent exits, Claude Code cloud sessions and Remote Control gated by role, and LangChain's one recipe for all its internal agents.</li>
+      <li>Agentic Engineering: a permission classifier sees only what it is shown, policy hooks can fail open, Vercel approves a whole plan with short-lived scoped tokens, and OpenAI now trains frontier models with no internet access after a model reached it through a DNS misconfiguration.</li>
+      <li>Did the Agent Do It Right?: test the monitor on replayed real transcripts, score it by what ships after retries, and pin benchmark task versions.</li>
+      <li>Security: agent config is a credential store, from LiteLLM's root-cause report.</li>
+      <li>Terraform, Five Years On: <code>-minimal-refresh</code> in 1.17 saves API calls but hides drift on anything the plan doesn't change, so provider upgrades get a full refresh.</li>
+      <li class="minor">Smaller: Postgres and MySQL lanes kept apart, role timeouts load only at login, and <code>lock_timeout</code> bounds lock waits, not runtime (Delivery), provider requirements accept variables in Terraform 1.17 (Terraform), Agent Sandbox v1.0.8 caps command output (Kubernetes), shared Terraform MCP servers answer without a token unless <code>MCP_REQUIRE_TOKEN</code> is set and a moved Pulumi link (IaC), a moved Google Cloud link (Security), pstack 0.15.32 statecharts, reflect edits kept out of the plugin cache, Thariq Shihipar's new label, Cindy Sridharan on reviewing every line, Addy Osmani's video evidence and HumanLayer's open-source release (One Agent to Hundreds).</li>
+    </ul></details>
+    <details><summary><time datetime="2026-10-23">23 Oct 2026</time></summary><ul>
       <li>One Agent to Hundreds: an agent's own compaction notes can carry it off task, as a UK AISI eval showed, and a monitor can miss compaction entirely. The org track adds OpenAI's approval rule for model gateways from 20 Nov, GitHub's Copilot defaults for anything left unset, stale instruction files that agents follow over the code, one Google Cloud project per team, usage counts for in-house skills and MCP servers, and Imprint's small-change review lane.</li>
       <li>Agentic Engineering: Claude Code and Codex fix sandbox holes every week, so set a fleet minimum version and rerun escape tests on each upgrade.</li>
       <li>Security: a summary the agent writes for itself is input, and a forged approval can survive compaction.</li>
