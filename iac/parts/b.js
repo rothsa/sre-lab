@@ -335,7 +335,7 @@ export const CHAPTERS = [
     ],
     agentic: [
       "Across 300 teams, agents raise the number of IaC PRs and review becomes the bottleneck. DORA 2025 calls AI an amplifier: throughput now rises with adoption while stability still falls, so orgs with small states, paved modules and CODEOWNERS routing gain and the rest ship more instability; track change failure rate for agent-authored changes separately.",
-      "Give each agent its own identity and set source identity on its `AssumeRole` to the agent run and the human who asked (set by the launcher, not the agent), so the Git, CI and CloudTrail chain answers which agent acted for whom. Vendor tools follow the same rule: Pulumi Neo says it \"never has more access than you do, only less\", and shared Terraform MCP deployments use each member's own Terraform token. A shared server still answers registry calls with no token unless you set `MCP_REQUIRE_TOKEN`, which \"Defaults to off\" (1.4.0, 23 Oct 2026).",
+      "Give each agent its own identity and set source identity on its `AssumeRole` to the agent run and the human who asked (set by the launcher, not the agent), so the Git, CI and CloudTrail chain answers which agent acted for whom. Vendor tools follow the same rule: Pulumi Neo says it \"never has more access than you do, only less\", and shared Terraform MCP deployments use each member's own Terraform token. A shared server still answers registry calls with no token unless you set `MCP_REQUIRE_TOKEN`, which \"Defaults to off\" (1.4.0, 23 Oct 2026). Run 1.4.1 or later: earlier versions wrote tool argument values to logs.",
       "Agents are good at drafting the ClickOps import: `import` blocks and generated config per owner batch. Choosing the owner, and what is live versus safe to delete, stays human; an agent that imports a whole resource group creates mixed ownership, with managed and unmanaged resources in one group, the mix that let Azure's cleanup automation delete production compute.",
       "Status as of October 2026: the Terraform MCP server is GA (June 2026) and can create, update and delete HCP Terraform workspaces, variables and runs (tools that need explicit approval stay off unless `ENABLE_TF_OPERATIONS` is set); Pulumi Neo's docs give no GA or preview label; the AWS IaC MCP server only validates, checks compliance and troubleshoots. Choose tools by whether they keep agents on the PR path, and scope any write-capable token, as HashiCorp advises for `TFE_TOKEN`.",
     ],
@@ -366,7 +366,7 @@ export const CHAPTERS = [
       { title: "Terraform MCP server overview", url: "https://developer.hashicorp.com/terraform/mcp-server" },
       { title: "Terraform MCP server: deploy", url: "https://developer.hashicorp.com/terraform/mcp-server/deploy" },
       { title: "Terraform MCP server: reference", url: "https://developer.hashicorp.com/terraform/mcp-server/reference" },
-      { title: "Terraform MCP server CHANGELOG (1.4.0, 23 Oct 2026)", url: "https://github.com/hashicorp/terraform-mcp-server/blob/main/CHANGELOG.md" },
+      { title: "Terraform MCP server CHANGELOG (1.4.0 and 1.4.1, 23 Oct 2026)", url: "https://github.com/hashicorp/terraform-mcp-server/blob/main/CHANGELOG.md" },
       { title: "AWS IaC MCP server (awslabs)", url: "https://awslabs.github.io/mcp/servers/aws-iac-mcp-server" },
     ],
   },

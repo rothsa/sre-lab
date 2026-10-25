@@ -211,7 +211,7 @@ export const CHAPTERS = [
     sources: [
       { title: "Anthropic: Model deprecations", url: "https://platform.claude.com/docs/en/about-claude/model-deprecations" },
       { title: "Anthropic: Model IDs and versions", url: "https://platform.claude.com/docs/en/about-claude/models/model-ids-and-versions" },
-      { title: "Anthropic: Commitments on model deprecation and preservation (2025-11-04)", url: "https://www.anthropic.com/research/deprecation-commitments" },
+      { title: "Anthropic: Commitments on model deprecation and preservation (2025-11-04)", url: "https://www.anthropic.com/news/deprecation-commitments" },
       { title: "Claude docs: Opus 5.5 migration guide", url: "https://platform.claude.com/docs/en/models/opus-5-5/migration-guide" },
       { title: "OpenAI: Deprecations", url: "https://developers.openai.com/api/docs/deprecations" },
       { title: "OpenAI: GPT-5.4 model page (snapshots)", url: "https://developers.openai.com/api/docs/models/gpt-5.4" },

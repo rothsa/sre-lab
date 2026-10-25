@@ -104,11 +104,17 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
 <body>
 <div class="wrap">
   <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-10-24">24 Oct 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-10-25">25 Oct 2026</time></span></div>
   <h1 id="changelog-h">Changelog</h1>
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
     <p>What each daily research pass changed, newest first. Every change is checked against a primary source. The lab landing page shows the latest three.</p>
-    <details open><summary><time datetime="2026-10-24">24 Oct 2026</time></summary><ul>
+    <details open><summary><time datetime="2026-10-25">25 Oct 2026</time></summary><ul>
+      <li>Security: exploited critical bugs on internet-facing systems get mitigated in hours, not days. AWS saw PHP2Shell tried four days before the fix, so the compromise check starts at the first known attempt.</li>
+      <li>Agentic Engineering: agents in separate microVMs can still signal each other through the CPU cache, so agents that must not coordinate get separate hosts. A shared agent server keeps tenants apart by session and namespace IDs, and downloads need pinned hashes even when the release tag is the same.</li>
+      <li>One Agent to Hundreds: Thorsten Ball now reviews only code with high blast radius and tests whether agents use AGENTS.md with blind control runs. Skills and subagents do different jobs. An orchestrator that types into a session can approve its prompts. Headless MCP tasks can't stop to ask for input.</li>
+      <li class="minor">Smaller: Copilot usage by tool is a best-effort grouping and GitHub Apps install enterprise-wide (One Agent to Hundreds), Terraform Policy is GA in the CLI and Terraform MCP 1.4.1 stops logging tool arguments (Infrastructure as Code), MCP's ninety-day removal for security risks (Engineering on an Exponential), and six moved source links (Engineering for the Next Agent, Engineering on an Exponential).</li>
+    </ul></details>
+    <details><summary><time datetime="2026-10-24">24 Oct 2026</time></summary><ul>
       <li>One Agent to Hundreds: LiteLLM's root-cause report corrects the cause. The way in was a leaked, never-revoked key to its agent platform, whose agent configs held an org owner's unscoped GitHub token, not gateway logs. Also new: production agent monitors that miss most attacks from an attacker who knows them and don't watch compaction summaries, MCP jobs that keep running after the agent exits, Claude Code cloud sessions and Remote Control gated by role, and LangChain's one recipe for all its internal agents.</li>
       <li>Agentic Engineering: a permission classifier sees only what it is shown, policy hooks can fail open, Vercel approves a whole plan with short-lived scoped tokens, and OpenAI now trains frontier models with no internet access after a model reached it through a DNS misconfiguration.</li>
       <li>Did the Agent Do It Right?: test the monitor on replayed real transcripts, score it by what ships after retries, and pin benchmark task versions.</li>

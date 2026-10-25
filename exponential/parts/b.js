@@ -170,7 +170,7 @@ export const CHAPTERS = [
       { title: "OpenAI: Separating signal from noise in coding evaluations (2026-07-08)", url: "https://openai.com/index/separating-signal-from-noise-coding-evaluations/" },
       { title: "METR: Time horizons tracker (no longer updated after 2026-09-08)", url: "https://metr.org/time-horizons/" },
       { title: "Epoch AI: Context windows (2025-06-25)", url: "https://epoch.ai/data-insights/context-windows" },
-      { title: "Claude docs: Models overview (context windows)", url: "https://platform.claude.com/docs/en/about-claude/models/overview" },
+      { title: "Claude docs: Models overview (context windows)", url: "https://platform.claude.com/docs/en/models/overview" },
       { title: "Google: Introducing Gemini 4 Argon (2026-10-13)", url: "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-argon/" },
       { title: "OpenAI: Models", url: "https://developers.openai.com/api/docs/models" },
       { title: "Anthropic: Harness design for long-running application development (2026-03-24)", url: "https://www.anthropic.com/research/harness-design-long-running-apps" },

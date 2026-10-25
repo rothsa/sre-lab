@@ -155,7 +155,7 @@ export const CHAPTERS = [
       { title: "Vercel AI SDK: Providers and models", url: "https://ai-sdk.dev/docs/foundations/providers-and-models" },
       { title: "LiteLLM docs", url: "https://docs.litellm.ai/docs/" },
       { title: "OpenAI: Structured outputs guide", url: "https://developers.openai.com/api/docs/guides/structured-outputs" },
-      { title: "Anthropic: Structured outputs on the Claude Developer Platform (2025-11-14, GA 2026-02-04)", url: "https://claude.com/blog/structured-outputs-on-the-claude-developer-platform" },
+      { title: "Anthropic: Structured outputs on the Claude Developer Platform (2025-11-14, GA 2026-02-04)", url: "https://claude.com/resources/articles/structured-outputs-on-the-claude-developer-platform" },
       { title: "Claude docs: Structured outputs", url: "https://platform.claude.com/docs/en/build-with-claude/structured-outputs" },
       { title: "AGENTS.md", url: "https://agents.md/" },
       { title: "Agent Skills open standard", url: "https://agentskills.io/" },
