@@ -104,11 +104,19 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
 <body>
 <div class="wrap">
   <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-10-25">25 Oct 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-10-26">26 Oct 2026</time></span></div>
   <h1 id="changelog-h">Changelog</h1>
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
     <p>What each daily research pass changed, newest first. Every change is checked against a primary source. The lab landing page shows the latest three.</p>
-    <details open><summary><time datetime="2026-10-25">25 Oct 2026</time></summary><ul>
+    <details open><summary><time datetime="2026-10-26">26 Oct 2026</time></summary><ul>
+      <li>One Agent to Hundreds: the Claude Code team caps agent review at three cycles after one PR looped more than fifty times overnight, then re-reviews only the diff and scores the reviewer against past incidents. Each skill takes attention from the ones before it. Gemini now stores requests by default for new paid projects, so set storage per provider at the gateway.</li>
+      <li>Agentic Engineering: Claude Code's Edit tool had the check-then-follow-symlink bug too, fixed in 2.1.251. Code in the Bash sandbox could make the unsandboxed Edit tool write outside the workspace.</li>
+      <li>Security: the poisoned LiteLLM release ran at every Python start, imported or not, so hit hosts get rebuilt, not cleaned.</li>
+      <li>Down or Me: a 0.8 cause score is not an 80% chance of being right, and the model version is pinned with its thresholds.</li>
+      <li>Graphs and Loops: a required code-owner review passes with either listed team, so needing both takes a required-reviewers rule per team.</li>
+      <li class="minor">Smaller: OTel SDK patches may change behavior for security fixes (Observability), verifiers trust what tools print (Did the Agent Do It Right?), retired Gemini IDs get rerouted (Engineering for the Next Agent), ITBench-AA top score and Claude Code compaction wording (Agentic Engineering), Cursor's thousands of subagents (One Agent to Hundreds), moved links on four pages.</li>
+    </ul></details>
+    <details><summary><time datetime="2026-10-25">25 Oct 2026</time></summary><ul>
       <li>Security: exploited critical bugs on internet-facing systems get mitigated in hours, not days. AWS saw PHP2Shell tried four days before the fix, so the compromise check starts at the first known attempt.</li>
       <li>Agentic Engineering: agents in separate microVMs can still signal each other through the CPU cache, so agents that must not coordinate get separate hosts. A shared agent server keeps tenants apart by session and namespace IDs, and downloads need pinned hashes even when the release tag is the same.</li>
       <li>One Agent to Hundreds: Thorsten Ball now reviews only code with high blast radius and tests whether agents use AGENTS.md with blind control runs. Skills and subagents do different jobs. An orchestrator that types into a session can approve its prompts. Headless MCP tasks can't stop to ask for input.</li>

@@ -50,14 +50,14 @@ export const CHAPTERS = [
       { text: "Harrison Chase (Oct 2025) says complex tasks get \"too complicated to manage in a visual builder\", and code is the best option for lots of branching and parallelism. At fleet scale, keep the graph in code and generate the pictures.", on: ["canvas", "export", "pic"] },
       { text: "Nobody reviews a run of hundreds of agents box by box. Claude Code's /workflows view shows each phase with its agent count, and you drill into a phase only when it looks wrong. Review the file carefully once, then watch runs by phase.", on: ["runs", "pic"] },
     ],
-    say30: "At a few hundred teams, a workflow has to be a file. Teams describe the job, the agent writes the script, and the script goes into .claude/workflows/ through a pull request. CODEOWNERS brings in the owning team and the platform team, and branch protection makes their approval required. Each PR carries a Mermaid picture generated from the script. Shared workflows ship as versioned plugins, rolled out to a few repos first. Every run saves its script, and runs that don't match the reviewed copy get flagged. Hosted canvases are a platform risk: OpenAI's Agent Builder shuts down on 30 Nov 2026, and its export drops the graph.",
+    say30: "At a few hundred teams, a workflow has to be a file. Teams describe the job, the agent writes the script, and the script goes into .claude/workflows/ through a pull request. CODEOWNERS requests both the owning team and the platform team, but a required code-owner review passes with either one. To need both, add a required-reviewers rule per team. Each PR carries a Mermaid picture generated from the script. Shared workflows ship as versioned plugins, rolled out to a few repos first. Every run saves its script, and runs that don't match the reviewed copy get flagged. Hosted canvases are a platform risk: OpenAI's Agent Builder shuts down on 30 Nov 2026, and its export drops the graph.",
     gotchas: [
       "The approval prompt shows phases. Exit conditions, caps and permissions live in the script, so review the raw script in the PR.",
       "A workflow saved to `~/.claude/workflows/` is visible only to its author. When a project and a personal workflow share a name the project one runs, but a personal one under a new name runs unreviewed.",
       "Leaving a canvas is lossy. Agent Builder's export gives you code without the workflow graph, so keep the source of truth in a format you own and version.",
     ],
     quiz: [
-      { q: "Where does a team's workflow live, and how is it reviewed?", a: "As a .js file in .claude/workflows/, merged through a pull request. CODEOWNERS requests review from the owners, branch protection can require their approval, and a Mermaid picture generated from the script goes with the PR." },
+      { q: "Where does a team's workflow live, and how is it reviewed?", a: "As a .js file in .claude/workflows/, merged through a pull request. CODEOWNERS requests review from the owners, but one owner's approval meets a code-owner requirement. A ruleset's required-reviewers rule makes each team approve. A Mermaid picture generated from the script goes with the PR." },
       { q: "Why generate the picture from the script instead of drawing it?", a: "A separate drawing drifts from what runs, and across hundreds of workflows nobody notices. A picture generated on each change always matches the code." },
       { q: "What's the risk of building workflows on a hosted canvas?", a: "The product can change or close. Agent Builder is deprecated with shutdown set for 30 Nov 2026, and its export gives Agents SDK code without the workflow graph." },
     ],
@@ -70,6 +70,7 @@ export const CHAPTERS = [
     sources: [
       { title: "Claude Code docs: Orchestrate subagents at scale with dynamic workflows (fetched 2026-10-20)", url: "https://code.claude.com/docs/en/workflows" },
       { title: "GitHub docs: About code owners (fetched 2026-10-20)", url: "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners" },
+      { title: "GitHub docs: Available rules for rulesets (Required reviewers, GA 2026-02-17)", url: "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#required-reviewers" },
       { title: "LangGraph docs: Use the graph API (Visualize your graph)", url: "https://docs.langchain.com/oss/python/langgraph/use-graph-api" },
       { title: "GitHub Blog: Include diagrams in your Markdown files with Mermaid (2022-02-14, updated 2024-07-23)", url: "https://github.blog/developer-skills/github/include-diagrams-markdown-files-mermaid/" },
       { title: "OpenAI docs: Deprecations (Agent Builder, announced 2026-06-03, fetched 2026-10-20)", url: "https://developers.openai.com/api/docs/deprecations" },

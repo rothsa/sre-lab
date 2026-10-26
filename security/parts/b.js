@@ -181,7 +181,7 @@ export const CHAPTERS = [
       "A system prompt that says read-only enforces nothing. Give the role read-only permissions.",
       "MCP clients follow URLs from servers during OAuth discovery. The spec says to block private ranges and metadata addresses like `169.254.169.254`, ideally with an egress proxy.",
       "Local MCP servers run with the client's privileges, so a one-click install is code execution.",
-      "Agent config is a credential store. LiteLLM's root-cause report (23 Oct 2026): a master key to its agent platform leaked in a public config file and was never revoked, and one API call returned an org owner's GitHub token that \"was not scoped down\". That token led to CI secrets and a poisoned release. Agents get scoped service identities, and a leaked key is revoked the day it's found.",
+      "Agent config is a credential store. LiteLLM's root-cause report (23 Oct 2026): a master key to its agent platform leaked in a public config file and was never revoked, and one API call returned an org owner's GitHub token that \"was not scoped down\". That token led to CI secrets and a poisoned release, which ran from a `.pth` file and `sitecustomize.py` whenever Python started, imported or not. Agents get scoped service identities, a leaked key is revoked the day it's found, and hit hosts are rebuilt from verified artifacts: Microsoft says removing the package \"is not sufficient recovery.\"",
       "An agent's summary of its own work is input too. In a 21 Oct 2026 preprint, a forged approval planted in a tool result \"launders into the agent's memory 87-100% of the time\" in harnesses that flatten the chat into one string before compacting, and never in harnesses that keep messages typed by role. In a UK AISI eval, a model's own compaction notes carried an out-of-scope attack forward (Anthropic, 23 Oct 2026). Anthropic's red team (22 Oct 2026) found production agent monitors did not watch compaction summaries at all. Ask how your harness keeps provenance through compaction.",
     ],
     agentic: [
@@ -199,6 +199,7 @@ export const CHAPTERS = [
       { title: "MCP Security Best Practices (spec 2026-07-28)", url: "https://modelcontextprotocol.io/docs/2026-07-28/tutorials/security/security_best_practices" },
       { title: "Wiz: anatomy of a real AI-driven cloud attack (19 Oct 2026)", url: "https://www.wiz.io/blog/anatomy-of-ai-driven-cloud-attacks" },
       { title: "LiteLLM: The attack chain behind the v1.107.0 release (23 Oct 2026)", url: "https://docs.litellm.ai/blog/security-incident-oct-21-2026-attack-chain" },
+      { title: "Microsoft Security blog: Inside the LiteLLM 1.107.0 supply chain compromise (23 Oct 2026)", url: "https://www.microsoft.com/en-us/security/blog/2026/10/23/inside-the-litellm-1-107-0-supply-chain-compromise-credential-theft-through-python-startup-hooks/" },
       { title: "Anthropic Alignment: Red-teaming auto mode and other production monitors (22 Oct 2026)", url: "https://alignment.anthropic.com/2026/red-teaming-auto-mode/" },
       { title: "Security best practices in IAM (permissions boundaries)", url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html" },
     ],

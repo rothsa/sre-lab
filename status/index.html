@@ -56,7 +56,7 @@ footer a { color: var(--accent); }
 <body>
 <nav class="site-nav" aria-label="Site" style="max-width:920px"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
 <div class="wrap">
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · uptime<span class="updated"> · updated <time datetime="2026-10-20">20 Oct 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · uptime<span class="updated"> · updated <time datetime="2026-10-26">26 Oct 2026</time></span></div>
   <h1>Down or Me</h1>
   <p class="lede">Checks these services every 5 minutes. When something looks wrong, an AI classifier (Jev) decides whether it's a real outage, degraded, planned maintenance, a blip, or a problem on the monitor's side, and how confident it reports being. Verdicts under 80% confidence are marked for a human look.</p>
   <div class="summary" id="summary">Loading…</div>
@@ -64,14 +64,16 @@ footer a { color: var(--accent); }
   <section class="agentic" aria-labelledby="agentic-h">
     <h2 id="agentic-h">AI alert triage as a fleet policy</h2>
     <ul>
-      <li><b>Here, one line at 80%.</b> Jev sees the latest result, recent history and how many other services fail, and picks one of five fixed causes with a confidence. TypeSafe, its maker, says it returns typed decisions with calibrated probabilities (early access). An email goes out once per problem, for a real outage or degradation, when Jev is at least 80% sure of the cause and that the owner should hear. A daily cap (<code>JEV_DAILY_CAP</code>, default 200) keeps it optional: failures show without it.</li>
-      <li><b>Across thousands of alerts, set the line per class.</b> One global threshold is a guess. My advice: set it per cause and service tier, from measured precision, and keep customer-facing pages out of auto-triage until those numbers hold. Meta's root-cause tool withheld low-confidence answers, <q>sacrificing reach in favor of precision</q>.</li>
+      <li><b>Here, one line at 80%.</b> Jev sees the latest result, recent history and how many other services fail, and picks one of five fixed causes with a confidence. TypeSafe, its maker, says it returns typed decisions with calibrated probabilities (early access). An email goes out once per problem, for a real outage or degradation, when Jev's cause score and its notify probability both reach 0.8. With five causes, a 0.8 cause score means the top one got 84%, not an 80% chance of being right. A daily cap (<code>JEV_DAILY_CAP</code>, default 200) keeps it optional: failures show without it.</li>
+      <li><b>Across thousands of alerts, set the line per class.</b> One global threshold is a guess. My advice: set it per cause and service tier, from measured precision, and keep customer-facing pages out of auto-triage until those numbers hold. Pin the model version with its thresholds. An alias like <code>jev-latest</code> moves when a new release ships, so log the model ID with each verdict and replay labeled alerts before you upgrade. Meta's root-cause tool withheld low-confidence answers, <q>sacrificing reach in favor of precision</q>.</li>
       <li><b>Measure both directions on labeled samples.</b> Precision is the share of alerts that were significant; recall, the share of significant events that alerted. Each week, responders label a random sample of triaged alerts per cause and team, and every suppressed alert is matched against later incidents: each match is a missed page. Check stated confidence against the labeled hit rate; LLMs stating it <q>tend to be overconfident</q>.</li>
       <li><b>Who owns its mistakes.</b> The team running the classifier owns its precision and recall like any pager rule, with a target and a review of every missed page. Service owners can opt an alert class out. Other companies' status-page titles are untrusted input; the fixed answer set limits what injected text can do, but it could still nudge a label. A person decides what to do about an outage.</li>
     </ul>
     <h3>Sources</h3>
     <ul class="sources">
       <li><a href="https://typesafe.ai/">TypeSafe: Jev</a></li>
+      <li><a href="https://docs.typesafe.ai/models">TypeSafe docs: Models (aliases and versions)</a></li>
+      <li><a href="https://docs.typesafe.ai/confidence">TypeSafe docs: Confidence</a></li>
       <li><a href="https://sre.google/workbook/alerting-on-slos/">Google SRE Workbook: Alerting on SLOs</a></li>
       <li><a href="https://engineering.fb.com/2024/06/24/data-infrastructure/leveraging-ai-for-efficient-incident-response/">Meta: AI for incident response (2024)</a></li>
       <li><a href="https://arxiv.org/abs/2306.13063">Xiong et al.: LLM confidence (2023)</a></li>

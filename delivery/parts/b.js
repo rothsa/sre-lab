@@ -80,7 +80,7 @@ export const CHAPTERS = [
       { title: "flagd architecture: in-process and RPC evaluation", url: "https://flagd.dev/architecture/" },
       { title: "LaunchDarkly: client-side and server-side SDKs", url: "https://launchdarkly.com/docs/sdk/concepts/client-side-server-side" },
       { title: "LaunchDarkly: Relay Proxy", url: "https://launchdarkly.com/docs/sdk/relay-proxy" },
-      { title: "LaunchDarkly: Flag statuses", url: "https://launchdarkly.com/docs/home/observability/flag-status" },
+      { title: "LaunchDarkly: Flag statuses", url: "https://launchdarkly.com/docs/home/flags/flag-status" },
       { title: "OWASP LLM06:2025 Excessive Agency", url: "https://genai.owasp.org/llmrisk/llm062025-excessive-agency/" },
     ],
   },

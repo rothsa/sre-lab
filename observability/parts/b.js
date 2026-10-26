@@ -63,6 +63,7 @@ export const CHAPTERS = [
       "Baggage goes to every downstream hop, including third parties if you let it. Never put credentials or PII in it.",
       "Attribute values have no length limit by default, so a request body in an attribute bloats memory and export. Set `OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT` in the platform default.",
       "OpenTelemetry is deprecating the Span Event API (`Span.AddEvent`, `Span.RecordException`). New code should write events as logs tied to the current span.",
+      "Since 22 Oct 2026, a stable OTel SDK or contrib release may change behavior or config defaults in a patch to fix a security issue. Public APIs stay compatible, but your telemetry may not. Read the release notes and canary each SDK bump against the completeness numbers before the fleet gets it.",
     ],
     agentic: [
       "An agent run is a trace: the GenAI conventions (Development status) define an `invoke_agent` span with model-call spans and `execute_tool {gen_ai.tool.name}` spans under it, so a slow answer gets a waterfall like any request. What you verify is the same as for HTTP: that context survives the framework's async steps and thread handoffs, or tool spans turn up as separate root traces.",
@@ -92,6 +93,7 @@ export const CHAPTERS = [
       { title: "OpenTelemetry GenAI spans", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md" },
       { title: "OpenTelemetry semantic conventions for MCP", url: "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/mcp.md" },
       { title: "OpenTelemetry: Deprecating span events", url: "https://opentelemetry.io/blog/2026/deprecating-span-events/" },
+      { title: "OpenTelemetry blog: Strengthening OpenTelemetry security while preserving API stability (2026-10-22)", url: "https://opentelemetry.io/blog/2026/security-versioning-policy/" },
     ],
   },
   {

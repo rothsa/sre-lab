@@ -228,7 +228,7 @@ export const CHAPTERS = [
     ],
     incidents: [],
     sources: [
-      { title: "Canva Engineering: Yes, you can use AI in our interviews (Simon Newton, 2025-06-11, fetched 2026-10-20)", url: "https://canva.dev/blog/engineering/yes-you-can-use-ai-in-our-interviews" },
+      { title: "Canva Engineering: Yes, you can use AI in our interviews (Simon Newton, 2025-06-11, fetched 2026-10-20)", url: "https://www.canva.dev/blog/engineering/yes-you-can-use-ai-in-our-interviews" },
       { title: "Anthropic: How employment is changing at Anthropic (2026-10-16, fetched 2026-10-20)", url: "https://www.anthropic.com/research/employment-at-anthropic" },
       { title: "Anthropic: How AI is transforming work at Anthropic (2025-12-02)", url: "https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic" },
       { title: "Hamel Husain: A field guide to rapidly improving AI products (2025-03-24)", url: "https://hamel.dev/blog/posts/field-guide/" },
