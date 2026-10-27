@@ -120,7 +120,7 @@ export const CHAPTERS = [
       { text: "Design tools for a reader that acts like an engineer: few, namespaced tools with clear docs, errors that say how to fix the call, and safe retries. Anthropic changed a tool to require absolute paths and the model stopped making path mistakes.", on: ["servers", "systems"], flow: ["e-sys"] },
       { text: "Structured outputs replace repair code: OpenAI's mode makes responses adhere to your JSON Schema, and Anthropic's went GA in February 2026. Refusals and token-limit stops can still break the schema, so keep validation.", on: ["harness", "schema"], flow: ["e-schema"] },
       { text: "Instructions live in open file formats under one foundation. Since 22 Oct 2026, AGENTS.md, MCP and Agent Skills all sit in the Agentic AI Foundation, with Open Responses and OpenSandbox; over 70 agent platforms use Agent Skills. Write platform contracts against them.", on: ["files", "harness"], flow: ["e-files"] },
-      { text: "Traces in one schema, with the model ID as an attribute, let you compare models on the same task. OpenTelemetry's GenAI conventions cover client spans, metrics, events and MCP; they live in their own repository with no published schema URL yet, so map to them in one place.", on: ["harness", "traces"], flow: ["e-trace"] },
+      { text: "Traces in one schema, with the model ID as an attribute, let you compare models on the same task. OpenTelemetry's GenAI conventions cover client spans, metrics, events, MCP and, since 27 Oct 2026, the A2A protocol; they live in their own repository with no published schema URL yet, so map to them in one place.", on: ["harness", "traces"], flow: ["e-trace"] },
     ],
     say30: "I put seams where slow-moving things meet fast-moving ones. Frontier models change every few weeks, so every agent talks to them through one adapter with a pinned model ID. Each internal system gets one MCP server, listed in a reviewed internal registry and reused by every agent and model, with the spec version pinned and deprecations inventoried. Tools stay few and namespaced, with actionable errors. Structured outputs replace repair parsers, with validation kept. Instructions live in AGENTS.md and skills, and traces in one schema with the model ID as an attribute, so a new model drops in and the evals judge it.",
     gotchas: [
@@ -162,6 +162,7 @@ export const CHAPTERS = [
       { title: "Anthropic: Donating Agent Skills to the Agentic AI Foundation (2026-10-22)", url: "https://www.anthropic.com/news/donating-agent-skills-to-the-agentic-ai-foundation" },
       { title: "AAIF: four new projects, Agent Skills, Open Responses, OpenEnv and OpenSandbox (2026-10-22)", url: "https://aaif.io/news/agentic-ai-foundation-announces-four-new-projects" },
       { title: "Anthropic: Equipping agents for the real world with Agent Skills (2025-10-16, open standard 2025-12-18)", url: "https://www.anthropic.com/research/equipping-agents-for-the-real-world-with-agent-skills" },
+      { title: "OpenTelemetry GenAI semconv: A2A protocol conventions (#195, 27 Oct 2026)", url: "https://github.com/open-telemetry/semantic-conventions-genai/commit/e19717d65f890955777b044bca2a3cd71ae8b498" },
       { title: "OpenTelemetry GenAI semantic conventions (repository)", url: "https://github.com/open-telemetry/semantic-conventions-genai" },
     ],
   },

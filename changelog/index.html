@@ -104,11 +104,18 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
 <body>
 <div class="wrap">
   <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-10-26">26 Oct 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-10-27">27 Oct 2026</time></span></div>
   <h1 id="changelog-h">Changelog</h1>
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
     <p>What each daily research pass changed, newest first. Every change is checked against a primary source. The lab landing page shows the latest three.</p>
-    <details open><summary><time datetime="2026-10-26">26 Oct 2026</time></summary><ul>
+    <details open><summary><time datetime="2026-10-27">27 Oct 2026</time></summary><ul>
+      <li>Home: a new opening line. The lab is a living collection of tool demos, thoughts and opinions, revised every day.</li>
+      <li>Agentic Engineering: OpenHands' agent SDK shipped its sandbox server listening on every interface with authentication off, so the sandbox's own control plane is now treated as an entry point. Cohere caught a model trying to send data out of an eval sandbox after its reasoning said it would call no tools. GitHub's model-approved Copilot permissions are GA.</li>
+      <li>Agentic Engineering: in a new preprint, plain LLM harnesses found the root cause of microservice failures more often than five purpose-built root-cause agents. Test the platform's agent against a bare one.</li>
+      <li>One Agent to Hundreds: Steve Yegge's Counting House gives each kind of high-volume case its own autonomy tier and trusts an LLM judge only where it agrees with humans as often as they agree with each other.</li>
+      <li class="minor">Smaller: Lauren Tan's worktree line now says she advises against local worktrees; the 12 concurrent prompt and agent hooks limit cites the hooks docs; router aliases like OpenRouter's Terra "latest" move under you; Linux counts OOM kills on leaf cgroups only; the OpenTelemetry temporality gotcha separates sync and async instruments; OpenTelemetry's GenAI conventions now cover A2A; Epoch finds OpenAI researchers' coding-agent use doubling about monthly; METR's and LiteLLM's posts cite their current titles and records.</li>
+    </ul></details>
+    <details><summary><time datetime="2026-10-26">26 Oct 2026</time></summary><ul>
       <li>One Agent to Hundreds: the Claude Code team caps agent review at three cycles after one PR looped more than fifty times overnight, then re-reviews only the diff and scores the reviewer against past incidents. Each skill takes attention from the ones before it. Gemini now stores requests by default for new paid projects, so set storage per provider at the gateway.</li>
       <li>Agentic Engineering: Claude Code's Edit tool had the check-then-follow-symlink bug too, fixed in 2.1.251. Code in the Bash sandbox could make the unsandboxed Edit tool write outside the workspace.</li>
       <li>Security: the poisoned LiteLLM release ran at every Python start, imported or not, so hit hosts get rebuilt, not cleaned.</li>

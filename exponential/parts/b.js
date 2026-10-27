@@ -110,7 +110,7 @@ export const CHAPTERS = [
     ],
     incidents: [],
     sources: [
-      { title: "METR: Towards reconciling slowdown with time horizons (2025-08-12)", url: "https://metr.org/blog/2025-08-12-research-update-towards-reconciling-slowdown-with-time-horizons/" },
+      { title: "METR: Research Update: Algorithmic vs. Holistic Evaluation (13 Aug 2025)", url: "https://metr.org/blog/2025-08-12-research-update-towards-reconciling-slowdown-with-time-horizons/" },
       { title: "Anthropic: Claude Code auto mode (2026-03-25)", url: "https://www.anthropic.com/research/claude-code-auto-mode" },
       { title: "Anthropic: Beyond permission prompts, Claude Code sandboxing (2025-10-20)", url: "https://www.anthropic.com/research/claude-code-sandboxing" },
       { title: "Epoch AI: Can AI scaling continue through 2030? (2024-08-20)", url: "https://epoch.ai/publications/can-ai-scaling-continue-through-2030" },
@@ -232,7 +232,7 @@ export const CHAPTERS = [
       { title: "Anthropic: How employment is changing at Anthropic (2026-10-16, fetched 2026-10-20)", url: "https://www.anthropic.com/research/employment-at-anthropic" },
       { title: "Anthropic: How AI is transforming work at Anthropic (2025-12-02)", url: "https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic" },
       { title: "Hamel Husain: A field guide to rapidly improving AI products (2025-03-24)", url: "https://hamel.dev/blog/posts/field-guide/" },
-      { title: "METR: Towards reconciling slowdown with time horizons (2025-08-12)", url: "https://metr.org/blog/2025-08-12-research-update-towards-reconciling-slowdown-with-time-horizons/" },
+      { title: "METR: Research Update: Algorithmic vs. Holistic Evaluation (13 Aug 2025)", url: "https://metr.org/blog/2025-08-12-research-update-towards-reconciling-slowdown-with-time-horizons/" },
       { title: "Google SRE book: Postmortem culture", url: "https://sre.google/sre-book/postmortem-culture/" },
     ],
   },

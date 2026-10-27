@@ -215,7 +215,7 @@ export const CHAPTERS = [
     gotchas: [
       "Removing an attribute with a View doesn't remove it everywhere: removed attributes can still appear as `filtered_attributes` on exemplars. If it's sensitive, turn exemplars off or use a custom filter.",
       "Overflow keeps totals right but strips attributes, so an error ratio whose numerator filters on one (say `success=false`) misses failures folded into overflow and looks healthier than it is. Page, not ticket, on overflow for any metric behind an SLO, alert or autoscaler.",
-      "Cumulative temporality makes the SDK remember every attribute set it has seen, so memory grows with cardinality. Delta moves that cost out of the process to whoever converts or stores it.",
+      "Instrument kind matters as much as temporality. A synchronous cumulative instrument keeps exporting every attribute set it has seen, up to the cardinality limit. Async callbacks report only what they observed this round, in either temporality. Delta moves the cost to whoever converts or stores it, and still needs limits.",
       "With the default TraceBased filter, exemplars come only from sampled spans (AlwaysOn and AlwaysOff behave differently). With 1% head sampling, most points have none, and the one you need may not be there.",
     ],
     agentic: [
