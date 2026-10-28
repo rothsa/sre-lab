@@ -158,7 +158,7 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
 <body>
 <nav class="site-nav" aria-label="Site" style="max-width:1180px"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
 <main class="wrap">
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · agent fleets<span class="updated"> · updated <time datetime="2026-10-27">27 Oct 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · agent fleets<span class="updated"> · updated <time datetime="2026-10-28">28 Oct 2026</time></span></div>
   <h1>One Agent to Hundreds</h1>
   <p class="lede">Running hundreds of coding agents is not one agent times a hundred. Each jump in scale breaks something the smaller setup got away with: your review time, shared files, one coordinator's attention, then rate limits and cost. Step up one stage at a time. Each stage says what to add, what breaks without it, and how to tell you're ready for the next. Then an org layer on top shows how a company runs many of these ladders at once: one platform, team budgets, pooled limits and an audit trail.</p>
   <p class="lede">The main thread is <a href="https://github.com/cursor/plugins/tree/main/pstack">pstack</a>, Lauren Tan's published agent workflow, alongside what Stripe, Spotify, Uber, Cursor and Anthropic publish about their agent fleets and how Mitchell Hashimoto, Dex Horthy and Boris Cherny describe their own ramp-ups. Stage sizes are teaching breakpoints, not thresholds from a study.</p>
@@ -216,7 +216,7 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
 
   <div class="prose">
     <h2>How the pieces fit</h2>
-    <p>Across the stages, the human's job moves from doing the work to writing briefs, then to reading verdicts, then to answering only the questions no experiment can settle. pstack's Orchestrate playbook describes the end state as <q>the human checking in twice a day instead of every five minutes</q>. Irreversible actions (force-pushes to shared branches, deploys, data deletion, customer messages) still wait for a person.</p>
+    <p>Across the stages, the human's job moves from doing the work to writing briefs, then to reading verdicts, then to answering only the questions no experiment can settle. pstack's Orchestrate playbook (Oct 2026) asks the person <q>only for a real decision or a blocker</q>; retries, CI flakes and review triage never reach them. Irreversible actions (force-pushes to shared branches, deploys, data deletion, customer messages) still wait for a person.</p>
     <p>The ladder sits one level down inside the org layer. Each team climbs the five stages at its own pace. The org owns what the teams share: the platform and gateways, an identity per agent, each team's budget and quota, the pooled API and GitHub limits, the audit trail, and one fleet number that puts merge rate next to change failure rate.</p>
     <p>Two ideas carry the whole ladder. First, <b>evidence, not assertion</b>: a worker's "done" counts only with the evidence its brief asked for. pstack's swarm skill drops a report missing its SHAs, respawns the worker once, and records a second miss as a gap: <q>A gap does not count as a pass.</q> Second, <b>encode lessons in structure</b>: a correction you keep repeating becomes a lint rule, a check or a script. pstack's principle puts it bluntly: <q>The instruction is the symptom.</q></p>
     <p>Memory is the newer layer. In her AI Native DevCon talk, Anthropic's Lamis Mukta describes memory moving from CLAUDE.md files to skills to plain files that agents search with ordinary tools. It then needs versioning, a hash check before every write, and read-only organisation-wide memory beside writable per-agent scratchpads once many agents share it. "Dreaming" is a separate batch job that reads past sessions and proposes a cleaned-up memory store for a human to accept or reject. Claude Managed Agents documents the same mechanics (immutable memory versions, a <code>content_sha256</code> precondition on writes). Dreams are in research preview.</p>
@@ -231,7 +231,7 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
     <h3 style="font-size:17px;margin-top:22px">Honest limits</h3>
     <ul class="limits">
       <li><b>The stage sizes are illustrative.</b> 1, 3, 10, dozens and hundreds are where the cited sources describe things breaking (worktrees, about ten agents per coordinator drain, Cursor's lock contention at twenty). They are not measured thresholds, and your breakpoints depend on the repo, the tasks and your checks.</li>
-      <li><b>pstack moves fast.</b> Quotes are from the repository as of 23 October 2026 (version 0.15.32). Claude Code leaves auto-update off for third-party marketplaces, so a pstack install stays on the version you installed until you turn it on. Its README still says it was built at Cursor. Lauren Tan's GitHub profile now lists xAI, and her recent talk introduces her as working on Grok Bot. Since 0.15.24 Orchestrate no longer uses Graphite (<code>gt</code>): it walks the PR base chain itself, and Shipping and Babysit also say never to require it. Claude Code now installs a generated copy of pstack, and CI fails while that copy is out of date.</li>
+      <li><b>pstack moves fast.</b> Quotes are from the repository as of 27 October 2026 (version 0.15.36). Claude Code leaves auto-update off for third-party marketplaces, so a pstack install stays on the version you installed until you turn it on. Its README still says it was built at Cursor. Lauren Tan's GitHub profile now lists xAI, and her recent talk introduces her as working on Grok Bot. In 0.15.36 Orchestrate dropped its own scripts and store: the coordinator spawns workers with the harness's Task tool, keeps state in the Project tracker, watches PRs through CI events and runs no polling loops. Claude Code now installs a generated copy of pstack, and CI fails while that copy is out of date.</li>
       <li><b>"Hundreds" is the sources' word.</b> In her pstack guide (31 August 2026), Lauren Tan writes that you may get away with up to 10 agents in parallel with worktrees, and promises a later post on running hundreds of subagents in parallel in the cloud. Cursor reported runs that <q>peak at several hundred agents</q> (Feb 2026), and by September its Projects delegate <q>to thousands of subagents</q> through one coordinator. No source here gives an exact count for any one person's setup.</li>
       <li><b>Company numbers are the companies' own.</b> Stripe's and Spotify's figures are from their engineering blogs, Uber's from its engineering blog and AI Engineer World's Fair talk page, Kiro's from its own team, and Boris Cherny's from The Pragmatic Engineer's write-up of their interview. Block's are from an interview Anthropic published. None is independently measured.</li>
       <li><b>Cost is real.</b> Anthropic reports that its multi-agent research system used about 15 times the tokens of a chat. Claude Code's docs say agent teams use about 7 times the tokens of a standard session in plan mode. Measure before you scale.</li>
@@ -390,7 +390,9 @@ const S = {
   ccMonitoring: ["Claude Code docs: monitoring usage (OpenTelemetry metrics and events)", "https://code.claude.com/docs/en/monitoring-usage"],
   ccManaged: ["Claude Code docs: deploy managed settings", "https://code.claude.com/docs/en/managed-settings"],
   apiVer: ["Claude API: Migrating to API version 2026-10-21 (21 Oct 2026)", "https://platform.claude.com/docs/en/api/migration-2026-10-21"],
-  cc307: ["Claude Code CHANGELOG (v2.1.307, 21 Oct 2026)", "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md"],
+  cc307: ["Claude Code CHANGELOG (v2.1.307 added and v2.1.312 removed claude_code.safety_event, 21-27 Oct 2026)", "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md"],
+  cc312: ["Claude Code CHANGELOG (v2.1.312, 27 Oct 2026: 24 concurrent prompt and agent hooks)", "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md"],
+  anthJudgment: ["Anthropic: How experts handle an agent's judgment calls (27 Oct 2026)", "https://www.anthropic.com/research/agents-judgment-calls"],
   whoApproved: ["Manji: Who Approved This? Coding agents, human accounts and merge-gate evidence (arXiv 2610.28683, 19 Oct 2026)", "https://arxiv.org/abs/2610.28683"],
   cc310: ["Claude Code CHANGELOG (v2.1.310, 23 Oct 2026)", "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md"],
   ballHow: ["Thorsten Ball on X: How I work with Agents, as of October 2026 (25 Oct 2026)", "https://x.com/thorstenball/status/2114386050638336082"],
@@ -541,8 +543,9 @@ const STAGES = [
     count: "about 10 agents",
     bottleneck: "<b>What limits you:</b> review. You can't read ten agents' work closely, and a worker can't ask you a question mid-task. The brief has to carry everything, and someone other than the author has to judge the result.",
     add: [
-      ["A complete brief before anything spawns. pstack's fields: goal, scope, context, acceptance, verify, timebox, forbidden actions, report shape, standing orders. \"Missing fields are a refuse-to-spawn condition.\"", "orch"],
-      ["A verdict from an agent that didn't write the code, ideally on a different model family. pstack: \"CI green is an input to a verdict, not a verdict.\"", "orch"],
+      ["A complete brief before anything spawns: the goal, the paths the worker may and may not write, the actions it must not take, and the evidence that proves it's done. Workers can't see each other, so paste in every upstream report a worker needs. pstack: \"If you can't name the evidence, the unit isn't scoped yet.\"", "orch"],
+      ["A verdict from an agent that didn't write the code, on a different model family, for the current head SHA. pstack: \"Green CI is an input to a verdict, not a verdict.\"", "orch"],
+      ["One unit end to end before fanning out. pstack takes the first unit through kickoff, owner, verifier and merge first, \"so a flaw in the kickoff costs one agent instead of fifty\".", "orch"],
       ["Fixed report shapes: PASS, ISSUES or BLOCKED, with the exact SHAs and method the brief asked for. A missing report is respawned once, then logged as a gap.", "swarm"],
       ["For races (several agents on one brief), the selection rule decided before spawning: first pass, rank all, or best-of.", "swarm"],
       ["Fast feedback before CI. Stripe's agents run in devboxes that start in 10 seconds, run lints on every push in under five seconds, and get \"often one, at most two, CI runs\", only after fixing everything they can locally.", "stripe"],
@@ -557,7 +560,7 @@ const STAGES = [
       ["Status you can see without reading screens. Mitchell Hashimoto's OSC 7501 lets a program tell the terminal it is working, waiting on you, finished or failed. Claude Code added it in 2.1.295 and Codex merged it on 9 Oct 2026.", "osc7501"],
     ],
     breaks: [
-      ["Vague briefs fail quietly: pstack notes a worker cannot ask you a question.", "orch"],
+      ["People follow the agent's lean. In an Anthropic study (27 Oct 2026), 50 analysts working with Claude Code went with their agent's coin-flipped lean 86% of the time; 77% reused its arguments and 15% credited it. Decide up front which calls need a person's own view, and give them time to form one.", "anthJudgment"],
       ["Opening a repo can run code. Claude Desktop on Windows before 1.8089.0 ran git.exe without an absolute path, so a git.exe planted in a repo ran when the folder was opened (GHSA-4p2j-qj3c-6x84, 13 Oct 2026).", "ghsaGit"],
       ["Rendering a repo can run code too. Claude Code Desktop's preview pane loaded HTML files over 256KB through file:// URLs, so a planted report could read local credentials and send them out. Anthropic scored it CVSS 8.7 and fixed it in Claude Desktop 1.30096.1 (Noma Labs, disclosed 14 Oct 2026).", "noma"],
       ["Wrapping one harness in another can drop its guardrails. Letta Code 0.34.14 starts Claude Code subagents with bypassPermissions and no tool allowlist, and Codex ones with danger-full-access, on users' own computers too, so they can edit and run commands outside the working directory without a prompt (Oct 2026). Check the flags your orchestrator passes to child agents.", "letta"],
@@ -574,7 +577,7 @@ const STAGES = [
     ],
     limits: [
       ["Claude Code: by default, spawning a 21st concurrent subagent in a session fails (CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS changes it); subagents nest up to three layers deep. Since 2.1.302 (Oct 2026), fork subagents are on by default in claude -p and the Agent SDK too (CLAUDE_CODE_FORK_SUBAGENT=0 turns them off).", "ccSub"],
-      ["Claude Code hooks: when more than 12 prompt or agent hooks match one event, 12 run at once and the rest wait.", "ccHooks"],
+      ["Claude Code hooks: since 2.1.312 (27 Oct 2026) at most 24 prompt or agent hooks run at once per session, subagents included, plus up to 12 that have waited past their timeout.", "cc312"],
       ["Claude Code dynamic workflows: up to 16 agents at once by default, fewer on machines with fewer CPUs; a run that schedules more than 25 agents or 1.5 million projected tokens shows a Large workflow warning.", "ccWorkflows"],
       ["Plan quota scales with agent count: Claude Code's docs say ten agents in parallel use quota roughly ten times as fast as one.", "ccAgentView"],
       ["Claude Code 2.1.296 added CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL to run every workflow agent on one model; since 2.1.300 an agent.spawn mod hook can rewrite a workflow agent's prompt and model instead of only refusing it.", "ccChangelog"],
@@ -585,7 +588,7 @@ const STAGES = [
       ["Cindy Sridharan", "finds pre-commit agentic reviews extremely useful: for large changes the review agents take 10x as long as the coding agent took to write the patch, which she calls worth it. In October 2026 she dropped her view that agent-written unit tests are slop; what was missing was \"proper testing guidelines for your agents\". She still runs end-to-end tests.", "sridharanReview"],
       ["Cindy Sridharan", "still reviews every line (23 Oct 2026): sometimes an exception to the rules she encoded is the right call, and \"The agent isn't discerning enough to make these calls (as yet)\".", "sridharanEvery"],
     ],
-    sources: ["sridharanEvery", "sridharanTests", "orch", "swarm", "ship", "stripe", "chernyX", "chernyReview", "tan1", "ccSub", "ccHooks", "ccWorkflows", "potetoMode", "fastMode", "autopilot", "lcRouter", "osc7501", "ghsaGit", "noma", "letta", "sridharanReview", "ccChangelog", "anthReview", "anthReviewX", "ctxgap"],
+    sources: ["sridharanEvery", "sridharanTests", "orch", "swarm", "ship", "stripe", "chernyX", "chernyReview", "tan1", "ccSub", "cc312", "anthJudgment", "ccWorkflows", "potetoMode", "fastMode", "autopilot", "lcRouter", "osc7501", "ghsaGit", "noma", "letta", "sridharanReview", "ccChangelog", "anthReview", "anthReviewX", "ctxgap"],
     diagram: {
       boxes: [
         { id: "you", x: 20, y: 125, w: 90, h: 50, label: "You", sub: "write briefs" },
@@ -604,8 +607,8 @@ const STAGES = [
     count: "dozens of agents",
     bottleneck: "<b>What limits you:</b> coordination and shared state. One coordinator can't absorb every report, and agents racing on the same branch, lock or memory file slow each other down or overwrite each other.",
     add: [
-      ["A coordinator that writes no code (\"It never authors or edits code\") and sub-coordinators only when one can't keep up, each capped at roughly ten children in a rolling window, never in blocking batches. Cursor Projects and Claude Code Projects both use this shape: a coordinator that directs agents and doesn't write code.", "orch"],
-      ["Exactly one writer per piece of state: pstack's program store says \"Every file has exactly one writer.\"", "orch"],
+      ["A coordinator that writes no code (pstack: \"You run the program, never the code\"), about ten workers in flight per coordinator, each replaced as it finishes rather than in batches, and sub-coordinators only when one area has many parallel workers, three levels at most. Cursor Projects and Claude Code Projects both use this shape: a coordinator that directs agents and doesn't write code.", "orch"],
+      ["Exactly one writer per piece of state. pstack gives each PR one owner, \"the only writer of its branch\", and the coordinator never touches it.", "orch"],
       ["One stacker per stack. Workers never rebase. After any rebase, recheck each verdict's patch-id, because a chain rebase \"moves every PR above it to a new SHA without failing any check\".", "ship"],
       ["Shared memory with guardrails: versions you can roll back, a hash check before every write, read-only organisation-wide memory and writable per-agent scratchpads.", "mukta"],
       ["Retry by failure mode, then give up: pstack respawns with smaller scope after a context cap, retries network drops as-is, and abandons a unit after two retries.", "orch"],
@@ -675,8 +678,8 @@ const STAGES = [
     count: "hundreds of agents",
     bottleneck: "<b>What limits you:</b> everything outside the repo: machine capacity, API rate limits, GitHub's limits on creating content, CI capacity, cost, and agents drifting over long runs. Lessons now have to travel between sessions, not just within one.",
     add: [
-      ["Workers in the cloud, not on a laptop. pstack: \"Chain rebases run in cloud. A local rebase at this scale takes the laptop down.\" Cursor's Projects run subagents remotely through one coordinator.", "orch"],
-      ["A budget that stops spawning early: \"By roughly 70% of it, stop spawning and land what is verified.\" Landing is continuous, never a final phase.", "orch"],
+      ["Workers in the cloud, not on a laptop. pstack runs each worker on a new cloud VM unless the work needs the local machine, such as a simulator or auth that exists only there. Cursor's Projects run subagents remotely through one coordinator.", "orch"],
+      ["Retry by cause, then give up. pstack (Oct 2026): a smaller scope after a context limit, the same kickoff after a dropped connection, a different model after a tool error, and after two retries drop the unit and replan. Judge a stalled worker by its pushes, not its status text.", "orch"],
       ["Human gates only where they belong: irreversible actions and product calls reach you; retries, restacks and CI flakes don't.", "orch"],
       ["Gates that need a person fail closed. Since Claude Code 2.1.304 (19 Oct 2026) a check can require a person: only the permission dialog or a host's callback can approve, and where nobody can be asked the action is refused, not allowed.", "ccChangelog"],
       ["Check-ins sized to the work. pstack's autopilot arms an hourly audit loop. Its /ketchup catch-up keeps what happened under 100 words and gives each waiting item about 30, and it says \"Never cut items or shrink them to stay under a word count\" (Oct 2026).", "ketchup"],
@@ -827,7 +830,7 @@ const STAGES = [
       ["An audit trail you can query. Claude Code can export an OpenTelemetry event for every tool permission decision, saying whether config, a hook or a person made it, and join it to the tool's result by tool_use_id; its metrics count pull requests, commits and cost per organization and account. Amp links every commit to its agent thread (see Hundreds).", "ccMonitoring"],
       ["Know which in-house skills and MCP servers get used. GitHub's Copilot usage metrics API now shows \"which internal skills, custom agents, and MCP servers developers actually use\" (22 Oct 2026). Give each an owner and retire what nobody calls.", "ghMetrics"],
       ["Usage by tool is a hint, not an identity. Since 23 Oct 2026 the same API splits usage by client (Claude Code, Codex, OpenCode), which GitHub calls \"a best-effort grouping, not a verified identity\". Bill and enforce on identities you issue.", "ghMetricsClient"],
-      ["Count what the guardrails stopped. Since 2.1.307 (21 Oct 2026) Claude Code emits claude_code.safety_event for each tool call a permission rule, auto mode, a safety check, a hook or the sandbox stopped. Trend it per team.", "cc307"],
+      ["Watch that the guardrail count itself stays alive. Claude Code added claude_code.safety_event in 2.1.307 (21 Oct 2026) and stopped sending it in 2.1.312 (27 Oct), so dashboards built on it went flat. Count blocks from the tool_decision events and alert when a team's count drops to zero.", "cc307"],
       ["One fleet number with two halves, per team: merge rate next to change failure rate. That is throughput next to stability, which DORA's 2025 report found moving in opposite directions as AI adoption grows. A team whose failures climb faster than its merges is scaling past its checks.", "dora"],
     ],
     breaks: [

@@ -104,11 +104,17 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
 <body>
 <div class="wrap">
   <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-10-27">27 Oct 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-10-28">28 Oct 2026</time></span></div>
   <h1 id="changelog-h">Changelog</h1>
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
     <p>What each daily research pass changed, newest first. Every change is checked against a primary source. The lab landing page shows the latest three.</p>
-    <details open><summary><time datetime="2026-10-27">27 Oct 2026</time></summary><ul>
+    <details open><summary><time datetime="2026-10-28">28 Oct 2026</time></summary><ul>
+      <li>One Agent to Hundreds: pstack's Orchestrate playbook was rewritten. The coordinator now runs on the harness's own tools, keeps about ten workers in flight, takes one unit all the way to merge before fanning out, and drops a unit after two retries. Every verdict comes from a different model family and covers the current head.</li>
+      <li>One Agent to Hundreds: in an Anthropic study, analysts went with their agent's coin-flipped lean 86% of the time. Decide up front which calls need a person's own view.</li>
+      <li>Security: Anthropic had an unreleased model write five working attack chains, and Chrome has patched 62 CVEs from that work. Scan your own code at PR time.</li>
+      <li class="minor">Smaller: Claude Code 2.1.312 runs up to 24 prompt and agent hooks at once and stopped sending its safety event, so guardrail dashboards built on it went flat (One Agent to Hundreds, Agentic Engineering); Intercom's 19.2% auto-approved is of all PRs (Agentic Engineering).</li>
+    </ul></details>
+    <details><summary><time datetime="2026-10-27">27 Oct 2026</time></summary><ul>
       <li>Home: a new opening line. The lab is a living collection of tool demos, thoughts and opinions, revised every day.</li>
       <li>Agentic Engineering: OpenHands' agent SDK shipped its sandbox server listening on every interface with authentication off, so the sandbox's own control plane is now treated as an entry point. Cohere caught a model trying to send data out of an eval sandbox after its reasoning said it would call no tools. GitHub's model-approved Copilot permissions are GA.</li>
       <li>Agentic Engineering: in a new preprint, plain LLM harnesses found the root cause of microservice failures more often than five purpose-built root-cause agents. Test the platform's agent against a bare one.</li>

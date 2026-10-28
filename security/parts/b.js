@@ -51,7 +51,7 @@ export const CHAPTERS = [
     ],
     agentic: [
       "Agents can open the upgrade PRs for thousands of repos. The constraint moves to CI capacity and to review, so batch by base image and auto-merge only low-risk bumps with passing tests.",
-      "Attackers use automation on new CVEs too, which is why BOD 26-04 asks whether exploitation can be automated. Shorten the fast lane for exposed assets.",
+      "Attackers use automation on new CVEs too, which is why BOD 26-04 asks whether exploitation can be automated. Models now write the exploits: Anthropic (27 Oct 2026) had an unreleased model write five attack chains, including a one-click Chrome code execution, and Chrome has patched 62 CVEs from the work. Shorten the fast lane for exposed assets and scan your own code at PR time.",
       "Agents can shrink the attack surface, not only find bugs. Anthropic's Frontier Red Team (20 Oct 2026) ran Claude over 25 projects and found 493 issues, including 162 configuration combinations accepted with no warning; in 94 of them a security control silently turned off. Run that kind of sweep over the configs your fleet actually ships.",
     ],
     quiz: [
@@ -68,6 +68,7 @@ export const CHAPTERS = [
       { title: "Allowed AMIs (Amazon EC2)", url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-allowed-amis.html" },
       { title: "Declarative policies in AWS Organizations", url: "https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_declarative.html" },
       { title: "Anthropic: Using Claude to reduce the attack surface of code (20 Oct 2026)", url: "https://www.anthropic.com/research/attack-surface-reduction" },
+      { title: "Anthropic: Discovering vulnerabilities with Claude (27 Oct 2026)", url: "https://www.anthropic.com/research/discovering-vulnerabilities-with-claude" },
       { title: "AWS Security Blog: PHP2Shell exploitation prior to public disclosure (21 Oct 2026)", url: "https://aws.amazon.com/blogs/security/amazon-threat-intelligence-identifies-php2shell-exploitation-prior-to-public-disclosure-in-madpot/" },
       { title: "PHP: 2026 news archive (security advisories, 21 and 23 Oct 2026)", url: "https://www.php.net/archive/2026.php" },
     ],
