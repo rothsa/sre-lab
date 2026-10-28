@@ -3,3 +3,12 @@ node_modules/
 .dev.vars
 .env
 *.key
+
+# OpenTofu (infra/): local state and plans never committed
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfplan
+*.tfvars
+!*.tfvars.example
+crash.log
