@@ -120,7 +120,7 @@ footer a, .prose a, .sources a { color: var(--accent); }
 <body>
 <nav class="site-nav" aria-label="Site" style="max-width:1180px"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
 <main class="wrap">
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · agent evals<span class="updated"> · updated <time datetime="2026-10-26">26 Oct 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · agent evals<span class="updated"> · updated <time datetime="2026-10-29">29 Oct 2026</time></span></div>
   <h1>Did the Agent Do It Right?</h1>
   <p class="lede">An AI agent can write a confident, plausible incident explanation and still be wrong: it looked at the wrong service, or it hammered the same failing call until something worked. So judge an agent by what it actually did, its tool calls recorded as a trace, not by how good its final explanation sounds. Pick an incident and compare three runs.</p>
   <p class="sim-badge" role="note"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v4M8 11.6v.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Simulated runs, synthetic data: scripted agents, made-up incidents, no LLM</p>
@@ -204,7 +204,7 @@ class RetryBudget(Evaluator):
       <li><b>Score the artifact, not the steps.</b> NVIDIA and Siemens (14 October 2026) gate a chip-design agent's final files on coverage, validity and integrity: "The reward is zero if any gate fails."</li>
       <li><b>A proof is the strongest check, and the theorem is what you review.</b> Anthropic (22 October 2026) had Claude prove no crashes on any input up to 64 MB for 239 entry points across 123 OSS-Fuzz libraries, with the Rocq kernel checking each proof. Left alone, "Claude could make any theorem provable by rewriting the program", and proofs can take "hundreds of millions of tokens".</li>
       <li><b>Measure recall, not just precision.</b> Steve Yegge's evals (October 2026) found two models about equal on specific tasks, but on open-ended tasks one "correctly spots and acts on important issues more often".</li>
-      <li><b>Isolate each task.</b> An agent can pass an eval "by tampering with tests or overwriting the file that records its score". Docker's Harbor integration (October 2026, nightly release) runs each task in its own microVM and restricts internet access while the agent works.</li>
+      <li><b>Isolate each task.</b> An agent can pass an eval "by tampering with tests or overwriting the file that records its score". Docker's Harbor integration (stable since Harbor v0.25.0, 25 October 2026) runs each task in its own microVM and restricts internet access while the agent works.</li>
       <li><b>Synthetic data.</b> The incidents, services, results and timings are made up, and the agents are deterministic Python functions, not models. The output checks use keyword matching that suits this fixed data and would be too weak for free-form answers.</li>
     </ul>
 
@@ -250,6 +250,7 @@ class RetryBudget(Evaluator):
       <li><a href="https://netflixtechblog.com/the-lifecycle-of-llm-as-a-judge-building-aligning-and-monitoring-at-scale-c95bd8283508">Netflix TechBlog: The lifecycle of LLM-as-a-Judge (14 October 2026)</a></li>
       <li><a href="https://alignment.anthropic.com/2026/training-alignment-auditors/">Anthropic Alignment: Training alignment auditors via reinforcement learning (15 October 2026)</a></li>
       <li><a href="https://www.docker.com/blog/harbor-docker-sandboxes-run-safe-reproducible-agent-evals/">Docker: Harbor + Docker Sandboxes, safe and reproducible agent evals (14 October 2026)</a></li>
+      <li><a href="https://github.com/harbor-framework/harbor/releases/tag/v0.25.0">Harbor v0.25.0 release notes (25 October 2026)</a></li>
       <li><a href="https://github.com/facebookresearch/ProgramBench/commit/895f65916bc5ba34a915d36da321fde0301125ad">ProgramBench commit 895f659: drop tests the submission wrote itself (12 Oct 2026)</a></li>
       <li><a href="https://pydantic.dev/docs/ai/evals/evals/">Pydantic Evals: overview (Dataset, Case, evaluate_sync)</a></li>
       <li><a href="https://pydantic.dev/docs/ai/evals/evaluators/span-based/">Pydantic Evals: span-based evaluation (HasMatchingSpan, SpanQuery, SpanTree)</a></li>

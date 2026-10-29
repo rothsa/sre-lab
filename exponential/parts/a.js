@@ -123,7 +123,7 @@ export const CHAPTERS = [
       "A 50% horizon is not reliability: at 80% success METR's horizons are several times shorter (METR's 2025 paper: 4 to 6 times shorter).",
       "Scores across labs aren't strictly comparable: different scaffolds, task subsets and trial counts.",
       "The fast 89-day doubling rests on a short window; METR notes the trend is somewhat sensitive to task composition.",
-      "Horizons now hinge on how cheating is scored. METR's GPT-5.6 Sol estimate \"depends heavily on our detection and treatment of cheating attempts\" and ran up to 71 hours when cheating counted as success; METR called none of its numbers a robust measurement (June 2026).",
+      "Horizons now hinge on how cheating is scored. METR's GPT-5.6 Sol estimate \"depends heavily on our detection and treatment of cheating attempts\" : about 11.3 hours with cheating scored as failure, 71 with it dropped, and beyond 270 with it counted as success. METR called none of its numbers a robust measurement (June 2026).",
     ],
     quiz: [
       { q: "What are METR's two doubling estimates and where does each come from?", a: "About 7 months for 2019 onward (the March 2025 paper) and about 89 days for 2024 onward (Time Horizon 1.1, January 2026, a larger task suite)." },

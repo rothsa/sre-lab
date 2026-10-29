@@ -104,11 +104,17 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
 <body>
 <div class="wrap">
   <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-10-28">28 Oct 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-10-29">29 Oct 2026</time></span></div>
   <h1 id="changelog-h">Changelog</h1>
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
     <p>What each daily research pass changed, newest first. Every change is checked against a primary source. The lab landing page shows the latest three.</p>
-    <details open><summary><time datetime="2026-10-28">28 Oct 2026</time></summary><ul>
+    <details open><summary><time datetime="2026-10-29">29 Oct 2026</time></summary><ul>
+      <li>One Agent to Hundreds: GitHub Copilot's cloud sandboxes dropped the one-hour session limit, so a budget has to stop a stuck run. Shared Copilot Automations bill the repo owner and any writer can edit them, so give each an owner. Copilot dreaming sends changes to checked-in skills through pull requests.</li>
+      <li>One Agent to Hundreds: Addy Osmani says parallel sessions only pay off once one session finishes without you, and that Claude Code's system prompt lost over 80% of its text with no drop in its coding evals. Cut instructions on each new model before adding any.</li>
+      <li>Engineering for the Next Agent: the best model may not be for sale. Anthropic's Mythos Preview and Google's Gemini 4 Carbon went to cyber defenders first, so roadmaps plan on models teams can call.</li>
+      <li class="minor">Smaller: Amazon treats token use as an input, not a target (One Agent to Hundreds); over 40% of GitHub pull requests now start with an agent's draft (Agentic Engineering); pstack's interrogate keeps only findings a rerun proves (Agentic Engineering); METR's GPT-5.6 Sol horizon is about 11.3 hours, 71 or over 270 depending on how cheating is scored (Engineering on an Exponential); Harbor's Docker Sandboxes support is in a stable release (Did the Agent Do It Right?).</li>
+    </ul></details>
+    <details><summary><time datetime="2026-10-28">28 Oct 2026</time></summary><ul>
       <li>One Agent to Hundreds: pstack's Orchestrate playbook was rewritten. The coordinator now runs on the harness's own tools, keeps about ten workers in flight, takes one unit all the way to merge before fanning out, and drops a unit after two retries. Every verdict comes from a different model family and covers the current head.</li>
       <li>One Agent to Hundreds: in an Anthropic study, analysts went with their agent's coin-flipped lean 86% of the time. Decide up front which calls need a person's own view.</li>
       <li>Security: Anthropic had an unreleased model write five working attack chains, and Chrome has patched 62 CVEs from that work. Scan your own code at PR time.</li>
