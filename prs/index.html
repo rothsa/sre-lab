@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Do We Still Need PRs?</title>
+<meta name="description" content="Agents now open more changes than people can read. What a pull request actually does, the case for dropping it, the case for keeping review, and the lane policy an org with hundreds of teams can run instead.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<link rel="stylesheet" href="../drawn/drawn.css">
+<link rel="stylesheet" href="../site-nav.css">
+<style>
+/* Long-read research page on the explainer shell: prose sections and tables. */
+.report p, .report li { max-width: 72ch; }
+.report .chapter p { margin: 0 0 14px; }
+.report .chapter ul { margin: 0 0 14px; padding-left: 20px; }
+.report .chapter li { margin: 0 0 8px; }
+.aid.say h3 { color: var(--accent); }
+.aid.say p { max-width: none; }
+.aid.say p + p { margin-top: 10px; }
+.table-wrap { overflow-x: auto; margin: 6px 0 18px; border: 1px solid var(--rule); border-radius: 10px; background: var(--panel); }
+.table-wrap table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 14.5px; }
+.table-wrap th, .table-wrap td { text-align: left; vertical-align: top; padding: 9px 12px; border-top: 1px solid var(--rule); }
+.table-wrap thead th { border-top: 0; background: var(--soft); font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.meta { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); margin: 0 0 6px; }
+.sources li { font-size: 14.5px; }
+</style>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
+<div class="shell">
+  <nav class="toc" aria-label="Sections">
+    <details id="tocBox" open><summary>Sections</summary><ol>
+      <li><a href="#bottom-line">Bottom line</a></li>
+      <li><a href="#four-jobs">A PR does four jobs, and agents broke one</a></li>
+      <li><a href="#drop">The case for dropping PRs</a></li>
+      <li><a href="#keep">The case for keeping review</a></li>
+      <li><a href="#lanes">Where they meet: lanes set by risk</a></li>
+      <li><a href="#audit">What the auditor asks for</a></li>
+      <li><a href="#org">Running it across hundreds of teams</a></li>
+      <li><a href="#sources">Sources</a></li>
+    </ol></details>
+  </nav>
+  <main class="report">
+    <div class="kicker"><a href="../">SRE Lab</a> · research<span class="updated"> · updated <time datetime="2026-10-29">29 Oct 2026</time></span></div>
+    <h1>Do We Still Need PRs?</h1>
+    <p class="lede">Agents now open more changes than people can read. Some teams have dropped pull requests and push to main. Others say review matters more than ever. This page sorts out what a pull request actually does, what each side gets right, and what an org with hundreds of teams should run instead. Every claim links to its source.</p>
+    <p class="meta">Research write-up · as of 29 October 2026</p>
+
+    <section class="chapter" id="bottom-line">
+      <div class="aid say"><h3>Bottom line: keep the jobs, drop the mandatory read</h3>
+<p>A pull request does four jobs at once. It catches mistakes before they land. It records what changed and why. It is where people learn the code and agree on direction. And it is the approval an auditor looks for. Agents broke the first job. When agents open more changes than people can read, a rule that a person reads every diff turns into stamping.</p>
+<p>The other three jobs still matter, and none of them needs a person on every diff. So I run one lane policy for the whole org. A classifier and CI put each change in a lane by path and risk. Low-risk changes land behind checks and get sampled after. Risky paths need a person to review the intent, and the riskiest need two. An agent's approval never counts as a person's. Every commit links to the request and the agent run that made it. Each lane has a revert rate, and a lane whose rate climbs gets tighter.</p>
+      </div>
+    </section>
+
+    <section class="chapter" id="four-jobs">
+<h2><span class="n">1</span>A PR does four jobs, and agents broke one</h2>
+<p>Review was never only about bugs. In Google's study of its own code review, developers said they expect "education", plus "maintaining norms, tracking history, gatekeeping, and accident prevention. Defect finding is welcomed but not the only focus" (<a href="https://sback.it/publications/icse2018seip.pdf">Sadowski et al., 2018</a>). John Allspaw put it in agent-era terms: "code review is also a <em>coordination</em> process, a <em>sensemaking</em> process, and a <em>governance</em> process" (<a href="https://www.adaptivecapacitylabs.com/2026/08/24/there-is-more-to-code-review-than-automatable-detection/">Adaptive Capacity Labs, 24 Aug 2026</a>).</p>
+<p>The gate is the job under load. At Imprint, "The p50 pull request review took about 33 minutes to complete 2 years ago, but now takes us about 77 minutes" (<a href="https://lethain.com/small-changes/">Will Larson, 17 Oct 2026</a>). DORA's 2025 report found AI adoption helps throughput but "does continue to have a negative relationship with software delivery stability" (<a href="https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report">DORA, Sep 2025</a>). And the human gate was leaky before agents. Intercom looked back at its outages: "those product changes that did cause outages in the past? They were all reviewed and approved by humans" (<a href="https://www.intercom.com/blog/ai-is-approving-our-pull-requests-heres-how-we-made-it-safe">Intercom, 21 Apr 2026</a>).</p>
+<p>So the useful question is where each job goes when a person no longer reads every diff.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Job the PR did</th><th scope="col">What it really needs</th><th scope="col">Where it can live now</th></tr></thead><tbody>
+<tr><td>Catch mistakes before they land</td><td>A check that runs on every change and can't be skipped</td><td>CI that blocks, tests, an independent review agent, a risk classifier that picks who else must look</td></tr>
+<tr><td>Record what changed and why</td><td>A link from each change to its request, its run and its proof</td><td>Signed commits with a trailer pointing at the agent thread; approvals tied to a commit</td></tr>
+<tr><td>Shared understanding and direction</td><td>People agree on the work and learn the code</td><td>Review of the plan or story before agents fan out; reading changes after they land; shared threads</td></tr>
+<tr><td>Approval for audit</td><td>A documented, approved, tested change with a trail</td><td>The lane policy written into your controls, plus a person's approval where those controls say so</td></tr>
+</tbody></table></div>
+    </section>
+
+    <section class="chapter" id="drop">
+<h2><span class="n">2</span>The case for dropping PRs</h2>
+<p>Amp is the clearest example. Thorsten Ball (13 Oct 2026): "No pull requests, no code review. We push to main. Our agents read production logs, watch deploys, grant feature flags, and check their own work end to end" (<a href="https://x.com/thorstenball/status/2110035978685747457">X</a>). Amp's SOC 2 write-up says "Skipping pull requests was a deliberate choice from the first commit." Its controls are restricted push access, verified signatures on main, CI that blocks main, and "Commits link to the Amp threads that produced them" (<a href="https://ampcode.com/notes/thats-not-soc-2-compliant">Will Dollman, Amp, 13 Aug 2026</a>).</p>
+<p>The argument has two parts. First, PRs were never the point of CI: "CI means continuous integration and its original meaning is the <em>opposite</em> of having long-lived branches and PRs" (<a href="https://x.com/thorstenball/status/2111130129355481240">Ball, 16 Oct 2026</a>). Second, proof beats a diff. Amp agents record a video of the feature working, and Ball asks "how differently do you approach a code review if you know there's video proof that it works?" (<a href="https://x.com/thorstenball/status/2110082835684200710">13 Oct 2026</a>). By 21 October he wrote "Mandatory code review as we've known it is over" (<a href="https://x.com/thorstenball/status/2112833031358869589">X</a>).</p>
+<p>Others went the same way. Zed "disabled pull requests on Delta's own repository" and replaced them with the Delta thread (<a href="https://zed.dev/blog/delta-public-beta">Nathan Sobo, 16 Sep 2026</a>). DHH: "there's no future where you're manually reviewing every line of agent code" (<a href="https://x.com/dhh/status/2104542267281146357">28 Sep 2026</a>). Geoffrey Huntley closed pull requests on his open-source project (<a href="https://x.com/GeoffreyHuntley/status/2110491888033972375">14 Oct 2026</a>).</p>
+<p>Two caveats. Amp itself says it is "not going to pretend a 2,000-person company should let everyone push to main." And most of the loudest voices sell an agent or a forge: Amp, Zed, and Entire, whose founder Thomas Dohmke wrote that "The pull request has become an audit log that only the agent reads" (<a href="https://entire.com/blog/the-git-forge-for-agent-human-collaboration">Entire, 26 Oct 2026</a>). Read the practice, and discount the pitch.</p>
+    </section>
+
+    <section class="chapter" id="keep">
+<h2><span class="n">3</span>The case for keeping review</h2>
+<p>The strongest case is about what a reviewer notices that a checker can't. Allspaw: "The agent reviews what is there; engineers with expertise can easily notice what's missing," and when a reviewer is confused, "their confusion <em>is</em> the finding." A test suite passes on what it tests. A person who knows the system sees the error handling that wasn't changed.</p>
+<p>The second case is about who counts. Anthropic's Claude Code team lets automated review clear low-risk changes, "but it can't fill a slot that calls for a human," and "An agent's approval never counts as a person's, either" (<a href="https://claude.dev/blog/solving-code-review-at-anthropic/">claude.dev, 15 Oct 2026</a>). That keeps separation of duties real when an agent writes the code and another agent reviews it. It is the same reason the fleet ladder asks for a verdict from <a href="../fleet/">a different model family</a> than the author.</p>
+<p>The third case is a warning about fake review. Larson describes teams reviewing with local harnesses and pasting the comments back, "meat proxy review", which he calls "a bottleneck-pretending-to-be-a-solution." Keeping a mandatory read that nobody really does is worse than either side's answer. It slows everything and proves nothing.</p>
+    </section>
+
+    <section class="chapter" id="lanes">
+<h2><span class="n">4</span>Where they meet: lanes set by risk</h2>
+<p>The teams with the most agent volume landed on the same design. A change goes into a lane by what it touches, checks decide most lanes, and people move to the two ends of the work: agreeing on it before agents start, and reading what landed.</p>
+<ul>
+<li><b>Anthropic, Claude Code team (15 Oct 2026).</b> "The change sets the tier, not the author. A classifier reads the change and picks its risk tier." Low risk needs no human "once automated review and security checks are green"; ordinary changes need one person; the highest-risk paths need two. "Some paths always need a person, anything owners have listed as sensitive and any CI workflow file." On an agent-written PR "the person directing the agent counts as one of the required reviewers," and "An approval covers one specific commit."</li>
+<li><b>Imprint (Larson, 17 Oct 2026).</b> A <code>small-change</code> lane CI enforces: under 1,000 lines, no p1 or p2 findings from the AI review bot, an author with 10+ merged PRs in that service, shared libraries excluded, and a per-path <code>.small_change</code> file. "About 10% of changes qualify."</li>
+<li><b>Anthropic, source control (13 Oct 2026).</b> "Our team members still review every change request for the system, but they now examine the intent of the change." They also found "A proper merge queue, for example, doesn't make much sense at agent scale," and put the effort into post-merge and pre-deploy testing (<a href="https://www.anthropic.com/engineering/redesigning-source-control">Anthropic</a>).</li>
+<li><b>Intercom (21 Apr 2026).</b> "over 19% are auto-approved with no human reviewer in the loop," with the review agent refusing changes that are too big, and its auditor Schellman checking the process against SOC 2, HIPAA and ISO 27001, among others.</li>
+<li><b>Huntley (29 Oct 2026).</b> His diagram of what he has been building: two people agree on a story, it fans out to a hundred agents in their own sandboxes, and every change goes through one submit queue and a risk classifier. Low risk lands, then gets "review after land" with feedback as a follow-up diff. High risk waits for a person. He calls it "the shape of CI/CD, code review, and ultimately what displaces GitHub itself" (<a href="https://x.com/GeoffreyHuntley/status/2115679404194156590">X</a>). The full write-up isn't out yet.</li>
+</ul>
+<p>Amp fits the same shape at its size. Its review is the agent's own end-to-end checks plus a link from every commit to its thread, and people still look where the risk is: "We do review high-blast-radius code, but we certainly don't review everything agent puts out" (<a href="https://x.com/thorstenball/status/2104901501835505957">Ball, 29 Sep 2026</a>). The no-PR camp and the keep-review camp disagree about the default lane. They agree that the lane, not the author's seniority or the team's habit, should decide who looks.</p>
+    </section>
+
+    <section class="chapter" id="audit">
+<h2><span class="n">5</span>What the auditor asks for</h2>
+<p>"Compliance needs PRs" is the most common reason given for keeping them. For SOC 2 and NIST change control it doesn't hold. Amp's SOC 2 write-up: "SOC 2 doesn't require pull requests." On the list of what it does require, "code review isn't on the list." NIST SP 800-53 asks you to "Review proposed configuration-controlled changes to the system and approve or disapprove such changes" (<a href="https://csf.tools/reference/nist-sp-800-53/r5/cm/cm-3/">CM-3</a>). That is approval of a change with a record. It doesn't say a second person reads the diff.</p>
+<p>What binds you is the set of controls you wrote down, plus any framework that names code review for the systems in its scope. Larson: Imprint's compliance obligations "today require that an independent human reviews changes in a subset of our repositories," and those obligations "can be changed." Intercom took its auto-approval design to its auditor before relying on it. So the order is: write the lanes into your documented controls, agree them with the auditor, then turn them on. The trail is the commit, its signature, the linked run, the lane it took and who approved it.</p>
+    </section>
+
+    <section class="chapter" id="org">
+<h2><span class="n">6</span>Running it across hundreds of teams</h2>
+<p>At org scale the PR question is a policy question. If every team picks its own answer, you get a few teams pushing to main with weak checks and many teams stamping PRs nobody reads. The platform owns one lane policy instead.</p>
+<ul>
+<li><b>One policy, set by path.</b> The lane comes from what a change touches and how risky it is, not from the team. Paths like CI workflows, auth, billing, infrastructure and shared libraries are always in a human lane. Teams can tighten their lanes and can't loosen them. The policy is versioned and reviewed like code. Ownership data says who the person in a human lane is (see <a href="../ownership/">Ownership</a>).</li>
+<li><b>An agent never fills a human slot.</b> Agent review is a check. The person who directed the agent counts as one reviewer, as on the Claude Code team, so a two-person lane needs someone else. Approvals cover one commit, so a later agent push needs a new one.</li>
+<li><b>Every change carries its record.</b> Signed commits, a trailer linking the request and the agent run, and the lane it took. That record is the audit trail, and it is where a person goes to learn why the code looks the way it does.</li>
+<li><b>People move to the ends.</b> Review the plan or story before agents fan out, because a bad plan costs a hundred changes. After changes land, sample the low-risk lane and read it, and send feedback as a follow-up change.</li>
+<li><b>Each lane has numbers.</b> Per team and per lane: share of changes, revert rate, change failure rate, and wait for first review. A lane whose revert rate climbs tightens. A human lane whose wait keeps growing is a sign that more of its paths could move down a lane safely.</li>
+</ul>
+<p>So do we still need PRs? We don't need a rule that a person reads every diff. We do need the gate, the record, the shared understanding and the approval. A large org gets them from a lane policy, a record on every commit, and people who spend their attention where the risk is.</p>
+    </section>
+
+    <section class="chapter" id="sources">
+<h2>Sources</h2>
+<ul class="sources">
+<li><a href="https://sback.it/publications/icse2018seip.pdf">Sadowski et al.: Modern Code Review: A Case Study at Google (ICSE SEIP 2018)</a></li>
+<li><a href="https://www.adaptivecapacitylabs.com/2026/08/24/there-is-more-to-code-review-than-automatable-detection/">John Allspaw: There is more to code review than automatable detection (24 Aug 2026)</a></li>
+<li><a href="https://lethain.com/small-changes/">Will Larson: small changes at Imprint (17 Oct 2026)</a></li>
+<li><a href="https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report">Google Cloud: Announcing the 2025 DORA report (Sep 2025)</a></li>
+<li><a href="https://www.intercom.com/blog/ai-is-approving-our-pull-requests-heres-how-we-made-it-safe">Intercom: AI is approving our pull requests. Here's how we made it safe (21 Apr 2026)</a></li>
+<li><a href="https://x.com/thorstenball/status/2110035978685747457">Thorsten Ball: No pull requests, no code review (X, 13 Oct 2026)</a></li>
+<li><a href="https://x.com/thorstenball/status/2110082835684200710">Thorsten Ball: video proof that it works (X, 13 Oct 2026)</a></li>
+<li><a href="https://x.com/thorstenball/status/2104901501835505957">Thorsten Ball: Amp's monorepo, reviewing high-blast-radius code (X, 29 Sep 2026)</a></li>
+<li><a href="https://x.com/thorstenball/status/2111130129355481240">Thorsten Ball: Why are you still using pull requests? (X, 16 Oct 2026)</a></li>
+<li><a href="https://x.com/thorstenball/status/2112833031358869589">Thorsten Ball: Mandatory code review as we've known it is over (X, 21 Oct 2026)</a></li>
+<li><a href="https://ampcode.com/notes/thats-not-soc-2-compliant">Will Dollman, Amp: That's not SOC 2 compliant (13 Aug 2026)</a></li>
+<li><a href="https://zed.dev/blog/delta-public-beta">Nathan Sobo, Zed: Delta public beta (16 Sep 2026)</a></li>
+<li><a href="https://x.com/dhh/status/2104542267281146357">DHH on reviewing agent code (X, 28 Sep 2026)</a></li>
+<li><a href="https://x.com/GeoffreyHuntley/status/2110491888033972375">Geoffrey Huntley: closing pull requests (X, 14 Oct 2026)</a></li>
+<li><a href="https://x.com/GeoffreyHuntley/status/2115679404194156590">Geoffrey Huntley: submit queue and risk classifier diagram (X, 29 Oct 2026)</a></li>
+<li><a href="https://entire.com/blog/the-git-forge-for-agent-human-collaboration">Thomas Dohmke, Entire: The git forge for agent-human collaboration (26 Oct 2026)</a></li>
+<li><a href="https://claude.dev/blog/solving-code-review-at-anthropic/">Claude Code team: How the Claude Code team does code review (claude.dev, 15 Oct 2026)</a></li>
+<li><a href="https://www.anthropic.com/engineering/redesigning-source-control">Anthropic: Redesigning source control (13 Oct 2026)</a></li>
+<li><a href="https://csf.tools/reference/nist-sp-800-53/r5/cm/cm-3/">NIST SP 800-53 Rev. 5: CM-3 Configuration Change Control</a></li>
+</ul>
+    </section>
+    <footer>
+      <p>Research and wording by Sally Roth, from public sources only. Practices here change every few weeks; dates are given for each.</p>
+      <p>Part of <a href="../">SRE Lab</a> · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab/tree/main/prs">source</a></p>
+    </footer>
+  </main>
+</div>
+<script>
+// Keep the section list out of the way on phones.
+if (matchMedia("(max-width: 999px)").matches) document.getElementById("tocBox").open = false;
+</script>
+</body>
+</html>

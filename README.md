@@ -32,6 +32,7 @@ Step-through diagrams rendered from chapter specs in `<topic>/parts/*.js` by the
 
 | Page | Covers |
 |---|---|
+| [Do We Still Need PRs?](prs/) | Pull requests in the agentic era: what a PR does, the push-to-main case (Amp), the keep-review case, risk lanes, compliance, org policy (single page) |
 | [Agentic Engineering](agentic/) | Harnesses, verification, review, sandboxes and scoped credentials for running many coding agents |
 | [Engineering for the Next Agent](next-agent/) | Building for future models: evals, safe model upgrades, durable interfaces |
 | [Engineering on an Exponential](exponential/) | Planning horizons and the invariants that hold while model capability moves fast |
@@ -81,7 +82,7 @@ functions/              Pages Functions: /api/status, /private/api/status
 worker/                 Cloudflare Worker: cron checks, Jev triage, migrations, offline tests
 drawn/                  shared diagram engine and styles for the explainers
 <topic>/                one explainer each: index.html, parts/*.js, check.mjs
-fleet/, ownership/      single-page explainers
+fleet/, ownership/, prs/  single-page explainers
 scripts/                maintenance (stamp-updated.py)
 ```
 
