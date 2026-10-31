@@ -1,0 +1,31 @@
+version: 2
+updates:
+  # incidents/ build step (package-lock.json)
+  - package-ecosystem: npm
+    directory: /incidents
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      npm-minor-patch:
+        update-types: [minor, patch]
+
+  # agent-evals/build/requirements.txt (pinned, build-time only)
+  - package-ecosystem: pip
+    directory: /agent-evals/build
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      pip-minor-patch:
+        update-types: [minor, patch]
+
+  # Actions used in .github/workflows
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      actions-minor-patch:
+        update-types: [minor, patch]
