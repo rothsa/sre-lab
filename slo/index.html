@@ -90,7 +90,7 @@ footer a { color: var(--accent); }
 
 <div class="wrap">
   <header>
-    <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · error budgets<span class="updated"> · updated <time datetime="2026-10-23">23 Oct 2026</time></span></div>
+    <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · error budgets<span class="updated"> · updated <time datetime="2026-10-31">31 Oct 2026</time></span></div>
     <h1>SLO Burn Simulator</h1>
     <p class="lede">Pick an SLO and a burn rate. See how long the budget lasts, which multi-window burn-rate alerts fire and when, and the Prometheus rules to match. Then see what it takes to run SLOs across thousands of services.</p>
   </header>
@@ -154,7 +154,7 @@ footer a { color: var(--accent); }
 
       <div class="panel">
         <div class="row"><h2>Prometheus alert rules</h2><button type="button" class="copy" id="copy">Copy</button></div>
-        <p class="explain">Assumes an <code>http_requests_total</code> counter with <code>code</code> and <code>service</code> labels. One page alert and one ticket alert, as in the Workbook, so a big outage fires one page alert.</p>
+        <p class="explain">Assumes an <code>http_requests_total</code> counter with <code>code</code> and <code>service</code> labels, and a 5xx series that exists at zero before the first error. Without it the ratio returns nothing, not 0, and these alerts stay quiet. One page alert and one ticket alert, as in the Workbook, so a big outage fires one page alert.</p>
         <pre id="rules"></pre>
       </div>
     </section>
@@ -165,7 +165,7 @@ footer a { color: var(--accent); }
     <ul>
       <li><b>Tier first.</b> Give each service a tier and a default target per tier, so teams start from a number instead of a debate. Home Depot's SRE team proposed levels like this to product managers, with 99.9% &ldquo;adequate for the majority of nonselling systems.&rdquo;</li>
       <li><b>Generate the rules.</b> The rules above cover one service. For thousands, keep each SLO as a short spec and generate the recording and alert rules from a template. Sloth does this for Prometheus, reads OpenSLO, and aims for one uniform way to create SLOs across services and teams.</li>
-      <li><b>Count coverage.</b> Track the share of services in each tier that have an SLO with a working alert. Once Home Depot automated collection, it went from about 50 services reporting SLOs to 800, with about 50 more registering each month.</li>
+      <li><b>Count coverage.</b> Track the share of services in each tier that have an SLO with a working alert. Once Home Depot automated collection, it went from about 50 services reporting SLOs to 800. A working alert needs data: Prometheus says to export 0 for series you know may exist, so make that part of the instrumentation library, and alert separately when a service's request series goes missing.</li>
       <li><b>Audit the policy.</b> The Workbook's example policy halts changes other than P0 and security fixes while a service is out of budget, and requires a postmortem when one incident burns more than 20% of the budget in four weeks. Measure how often breaches actually led to both.</li>
       <li><b>Freeze the org, agents included.</b> When a shared platform runs out of budget, freeze every team that changes it; under the Workbook's policy, disputes go to the CTO. Agents that open PRs or roll out deploys are change too. Google's SRE team describes agents checking error budget status before they act, with agent-specific rate limits and circuit breakers.</li>
       <li><b>People own the SLO.</b> An agent can draft rules like these, but picking the SLI and the target is a product decision. Watch for an agent that &ldquo;fixes&rdquo; a noisy alert by raising a threshold or excluding an error class, and review SLO changes like code.</li>
@@ -175,6 +175,7 @@ footer a { color: var(--accent); }
       <li><a href="https://sre.google/workbook/slo-engineering-case-studies/">Google SRE Workbook: SLO Engineering Case Studies (Home Depot)</a></li>
       <li><a href="https://sre.google/workbook/error-budget-policy/">Google SRE Workbook: Example Error Budget Policy</a></li>
       <li><a href="https://github.com/slok/sloth">Sloth: Prometheus SLO generator</a></li>
+      <li><a href="https://prometheus.io/docs/practices/instrumentation/#avoid-missing-metrics">Prometheus: Instrumentation, avoid missing metrics</a></li>
       <li><a href="https://sre.google/resources/practices-and-processes/ai-engineering-reliable-operations/">Google SRE: AI in SRE, engineering reliable operations</a></li>
     </ul>
   </section>

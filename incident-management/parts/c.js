@@ -188,7 +188,7 @@ export const CHAPTERS = [
     sources: [
       { title: "Davidovič: Incident Metrics in SRE (Google)", url: "https://sre.google/resources/practices-and-processes/incident-metrics-in-sre/" },
       { title: "InfoQ podcast: Courtney Nash on incident management and the VOID report", url: "https://www.infoq.com/podcasts/incident-management-void-report-courtney-nash/" },
-      { title: "John Allspaw: Moving Past Shallow Incident Data", url: "https://www.adaptivecapacitylabs.com/blog/2018/03/23/moving-past-shallow-incident-data/" },
+      { title: "John Allspaw: Moving Past Shallow Incident Data", url: "https://www.adaptivecapacitylabs.com/2018/03/23/moving-past-shallow-incident-data/" },
       WB_EB,
       { title: "incident.io: Core dashboards", url: "https://docs.incident.io/insights/core-dashboards.md" },
       G_AI,

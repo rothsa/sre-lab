@@ -72,7 +72,7 @@ export const CHAPTERS = [
       { title: "Anthropic: Beyond permission prompts, Claude Code sandboxing (2025-10-20)", url: "https://www.anthropic.com/research/claude-code-sandboxing" },
       { title: "Claude Code: Security", url: "https://code.claude.com/docs/en/security" },
       { title: "OpenAI Codex: Sandboxing", url: "https://learn.chatgpt.com/docs/sandboxing" },
-      { title: "MCP specification 2025-11-25: Tools (human in the loop, untrusted annotations)", url: "https://modelcontextprotocol.io/specification/2025-11-25/server/tools" },
+      { title: "MCP specification 2026-07-28: Tools (human in the loop, untrusted annotations)", url: "https://modelcontextprotocol.io/specification/2026-07-28/server/tools" },
       { title: "Anthropic: Claude 3.7 Sonnet system card (2025-02)", url: "https://assets.anthropic.com/m/785e231869ea8b3b/original/claude-3-7-sonnet-system-card.pdf" },
       { title: "Anthropic: Claude 4 system card (2025-05)", url: "https://www-cdn.anthropic.com/6d8a8055020700718b0c49369f60816ba2a7c285.pdf" },
       { title: "Anthropic: Agentic misalignment (2025-06-20)", url: "https://www.anthropic.com/research/agentic-misalignment" },
