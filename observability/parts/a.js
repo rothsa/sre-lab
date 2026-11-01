@@ -149,7 +149,8 @@ export const CHAPTERS = [
       "Processor order is the order you list them. `memory_limiter` after `batch` can't protect the buffer, and `k8sattributes` after `batch` loses its context.",
       "Tail sampling needs every span of a trace on one Collector. Round-robin in front of tail samplers silently makes partial traces.",
       "OTLP delivery is guaranteed per hop only, and retries after reconnects can create duplicates.",
-      "Telemetry schemas are interfaces. Collector Contrib v0.160.0 lets the hostmetrics process scraper opt in to release-candidate metrics, which rename things (`state` becomes `cpu.mode`). The Collector stays healthy while shared queries break, so test the switch against the fleet's dashboards first.",
+      "Write fleet redaction rules in OTTL. Since Collector Contrib v0.164.0 (Oct 2026) the language and standard functions are stable for traces, metrics and logs and won't break within 1.x. Experimental functions, lambdas and profiles are outside that promise, so keep them out of shared configs.",
+      "Telemetry schemas are interfaces. Collector Contrib v0.160.0 lets the hostmetrics process scraper opt in to release-candidate metrics, which rename things (`state` becomes `cpu.mode`). The Collector stays healthy while shared queries break.",
     ],
     agentic: [
       "Agent and LLM telemetry rides the same SDK-to-Collector path. The GenAI conventions keep `gen_ai.input.messages`, `gen_ai.output.messages` and `gen_ai.tool.call.arguments` Opt-In because they can carry user data; if a team turns capture on, the gateway's `attributes` or `transform` processor is where the platform deletes or hashes them for every team before any exporter ships a copy to a vendor.",
@@ -219,6 +220,7 @@ max by (exporter) (
       { title: "Collector deployment: Agent", url: "https://opentelemetry.io/docs/collector/deploy/agent/" },
       { title: "Collector deployment: Gateway", url: "https://opentelemetry.io/docs/collector/deploy/gateway/" },
       { title: "Collector resiliency", url: "https://opentelemetry.io/docs/collector/resiliency/" },
+      { title: "OpenTelemetry blog: OTTL reaches v1 (27 Oct 2026)", url: "https://opentelemetry.io/blog/2026/ottl-v1/" },
       { title: "OTLP specification", url: "https://opentelemetry.io/docs/specs/otlp/" },
       { title: "Memory limiter processor README", url: "https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/memorylimiterprocessor/README.md" },
       { title: "Recommended processors", url: "https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/README.md" },

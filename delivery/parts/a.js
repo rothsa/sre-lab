@@ -336,7 +336,8 @@ spec:
       schedule: '0 * * * *'
       duration: 1h
       applications: ['checkout-*']
-      clusters: ['prod-eu-1']
+      clusters: ['https://prod-eu-1.example.com']
+      andOperator: true  # app AND cluster; default is OR
       manualSync: true   # humans can still sync`,
       },
       {
@@ -360,11 +361,12 @@ count by (project) (
       "`Synced` only means live matches Git. An app can be Synced and Degraded, for example a new image that crashloops. Gate on health.",
       "Automated sync doesn't prune by default. Deleting a manifest leaves the object running, and turning prune on later can delete more than you expected.",
       "Fields other controllers own (replicas under an HPA, an injected `caBundle`) keep an app OutOfSync forever. Use `ignoreDifferences`, or the drift metric fills with noise.",
+      "A sync window matches `applications` OR `clusters` by default, so a break-glass window for one app on one cluster pauses more than you meant. Set `andOperator: true`. Cluster patterns match the Application's destination name or server URL.",
       "Rendered manifests are cached in plaintext in Redis, so Secrets stay out of Git and come from a secret operator on each cluster. Count Secret objects found in config repos; the target is zero.",
     ],
     agentic: [
       "GitOps suits agents because their only write path is a pull request to the config repo: Argo CD applies it, so the agent needs no cluster credentials. The human reviews the rendered result (`argocd app diff` or the PR's rendered manifests) as well as the values-file line, because one Helm value can change dozens of objects, and through an ApplicationSet, dozens of clusters.",
-      "Mid-incident, an agent can gather evidence read-only from `argocd app get`, sync status, health and recent commits; a human decides whether to open a break-glass window, revert or roll back. An agent given write access that runs `kubectl edit` on a `selfHeal` app is reverted within seconds, and one pointed at the wrong Application or cluster context starts a second incident.",
+      "Mid-incident, an agent can gather evidence read-only from `argocd app get`, sync status, health and recent commits; a human decides whether to open a break-glass window, revert or roll back. An agent with write access that runs `kubectl edit` on a `selfHeal` app is reverted within seconds.",
       "Deletions are the risky agent edit: with prune enabled, removing a manifest from Git deletes the live object. Require human review for PRs that delete files under app paths, and remember that an agent reporting `Synced` has said nothing about `Healthy`.",
       "Read-only is not always passive. `argocd app diff --local --server-side-generate` uploads files for the repo server to render, and advisory GHSA-9v9p-x54c-58gc (7 Oct 2026, critical) showed that a crafted Kustomize ref there could run commands with only Application `get`; blocking egress doesn't stop it. Before an agent runs local diffs, confirm Argo CD is patched (3.3.15, 3.4.10, 3.5.4 or later; the advisory lists no 2.x fix), or render diffs in CI instead.",
     ],
