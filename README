@@ -1,0 +1,5 @@
+SRE Lab: https://lab.sallyroth.dev
+
+This repository mirrors the files that lab.sallyroth.dev serves, plus the
+Pages Functions and Worker code that run it. It is published automatically
+on every deploy.

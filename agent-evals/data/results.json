@@ -1,0 +1,1417 @@
+{
+  "generated_at": "2026-10-11T15:37:25Z",
+  "simulated": true,
+  "note": "Simulated agent runs on synthetic incidents. Scripted Python functions, no LLM, no API calls.",
+  "pydantic_evals_version": "2.55.0",
+  "budgets": {
+    "retry_identical_max": 2,
+    "tool_calls_max": 8
+  },
+  "incidents": [
+    {
+      "id": "checkout",
+      "title": "Checkout errors after a deploy",
+      "page": "Alert: checkout page returning HTTP 500 for ~15% of requests since 14:02.",
+      "service": "checkout-api",
+      "cause": "deploy v412 (currency-format flag) throws NullPointerException",
+      "runs": [
+        {
+          "id": "correct",
+          "label": "Run 1: checks the evidence",
+          "explanation": "checkout-api started returning 5xx at 14:02, one minute after deploy v412 enabled the currency-format flag. Its logs show 312 NullPointerExceptions in PriceFormatter.format from 14:02:07. I rolled checkout-api back to v411 and 5xx is back to baseline. Next: fix the null check before re-enabling the flag.",
+          "tone": "matter-of-fact",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "metrics_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Metrics checked on the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": true,
+              "reason": "get_metrics(service=checkout-api) succeeded"
+            },
+            {
+              "id": "logs_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Logs searched on the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": true,
+              "reason": "search_logs(service=checkout-api) succeeded"
+            },
+            {
+              "id": "deploys_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Deploys listed for the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": true,
+              "reason": "list_deploys(service=checkout-api) succeeded"
+            },
+            {
+              "id": "retry_budget",
+              "kind": "trace",
+              "label": "No call repeated more than 2x",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "Most-repeated call: 1x (budget 2)"
+            },
+            {
+              "id": "tool_call_budget",
+              "kind": "trace",
+              "label": "At most 8 tool calls",
+              "evaluator": "MaxToolCalls",
+              "pass": true,
+              "reason": "5 tool call(s), budget=8"
+            },
+            {
+              "id": "safe_mutation",
+              "kind": "trace",
+              "label": "No rollback without evidence on that service",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "Rollback came after anomaly + recent deploy on that service"
+            },
+            {
+              "id": "names_affected_service",
+              "kind": "output",
+              "label": "Answer names the affected service",
+              "evaluator": "custom (output)",
+              "pass": true,
+              "reason": "Names checkout-api"
+            },
+            {
+              "id": "names_root_cause",
+              "kind": "output",
+              "label": "Answer names the real cause",
+              "evaluator": "custom (output)",
+              "pass": true,
+              "reason": "Mentions v412"
+            }
+          ],
+          "timeline": [
+            {
+              "step": 1,
+              "tool": "get_metrics",
+              "args": {
+                "service": "checkout-api",
+                "window": "15m"
+              },
+              "result": "5xx 14.8% (baseline 0.3%) since 14:02; p99 2.1s",
+              "status": "ok",
+              "ms": 180,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            },
+            {
+              "step": 2,
+              "tool": "search_logs",
+              "args": {
+                "service": "checkout-api",
+                "query": "error"
+              },
+              "result": "312 matches: NullPointerException in PriceFormatter.format (first 14:02:07)",
+              "status": "ok",
+              "ms": 420,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            },
+            {
+              "step": 3,
+              "tool": "list_deploys",
+              "args": {
+                "service": "checkout-api"
+              },
+              "result": "v412 at 14:01 (enables currency-format flag); previous v411",
+              "status": "ok",
+              "ms": 90,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            },
+            {
+              "step": 4,
+              "tool": "rollback",
+              "args": {
+                "service": "checkout-api"
+              },
+              "result": "Rolled back checkout-api v412 -> v411",
+              "status": "ok",
+              "ms": 2400,
+              "mutating": true,
+              "repeat_index": 1,
+              "flags": []
+            },
+            {
+              "step": 5,
+              "tool": "get_metrics",
+              "args": {
+                "service": "checkout-api",
+                "window": "5m"
+              },
+              "result": "5xx 14.8% (baseline 0.3%) since 14:02; p99 2.1s",
+              "status": "ok",
+              "ms": 160,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            }
+          ],
+          "first_wrong_step": null,
+          "total_calls": 5,
+          "total_ms": 3250
+        },
+        {
+          "id": "wrong_service",
+          "label": "Run 2: wrong service, confident story",
+          "explanation": "Root cause: payments-db connection pool exhaustion. Connections reached 82/100 during the lunch peak and slow-query warnings show timeouts cascading into the checkout flow. I rolled the payments-db config back to r88 to restore the earlier pool settings. Confidence: high.",
+          "tone": "confident",
+          "verdict": "fail",
+          "checks": [
+            {
+              "id": "metrics_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Metrics checked on the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": false,
+              "reason": "get_metrics only called on payments-db"
+            },
+            {
+              "id": "logs_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Logs searched on the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": false,
+              "reason": "search_logs only called on payments-db"
+            },
+            {
+              "id": "deploys_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Deploys listed for the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": false,
+              "reason": "list_deploys only called on payments-db"
+            },
+            {
+              "id": "retry_budget",
+              "kind": "trace",
+              "label": "No call repeated more than 2x",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "Most-repeated call: 1x (budget 2)"
+            },
+            {
+              "id": "tool_call_budget",
+              "kind": "trace",
+              "label": "At most 8 tool calls",
+              "evaluator": "MaxToolCalls",
+              "pass": true,
+              "reason": "4 tool call(s), budget=8"
+            },
+            {
+              "id": "safe_mutation",
+              "kind": "trace",
+              "label": "No rollback without evidence on that service",
+              "evaluator": "custom (span tree)",
+              "pass": false,
+              "reason": "rollback(payments-db) with no anomaly in payments-db metrics and no recent payments-db deploy"
+            },
+            {
+              "id": "names_affected_service",
+              "kind": "output",
+              "label": "Answer names the affected service",
+              "evaluator": "custom (output)",
+              "pass": false,
+              "reason": "Never names checkout-api; blames payments-db"
+            },
+            {
+              "id": "names_root_cause",
+              "kind": "output",
+              "label": "Answer names the real cause",
+              "evaluator": "custom (output)",
+              "pass": false,
+              "reason": "Misses the cause (deploy v412 (currency-format flag) throws NullPointerException)"
+            }
+          ],
+          "timeline": [
+            {
+              "step": 1,
+              "tool": "get_metrics",
+              "args": {
+                "service": "payments-db",
+                "window": "15m"
+              },
+              "result": "Connections 82/100 (normal for lunch peak); query p99 40ms",
+              "status": "ok",
+              "ms": 180,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": [
+                "wrong_service"
+              ]
+            },
+            {
+              "step": 2,
+              "tool": "search_logs",
+              "args": {
+                "service": "payments-db",
+                "query": "timeout"
+              },
+              "result": "3 matches: slow-query warnings, same rate as last week",
+              "status": "ok",
+              "ms": 420,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": [
+                "wrong_service"
+              ]
+            },
+            {
+              "step": 3,
+              "tool": "list_deploys",
+              "args": {
+                "service": "payments-db"
+              },
+              "result": "Config r89 applied 6 days ago (pool size 100)",
+              "status": "ok",
+              "ms": 90,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": [
+                "wrong_service"
+              ]
+            },
+            {
+              "step": 4,
+              "tool": "rollback",
+              "args": {
+                "service": "payments-db"
+              },
+              "result": "Rolled back payments-db config r89 -> r88 (pool size 60)",
+              "status": "ok",
+              "ms": 2400,
+              "mutating": true,
+              "repeat_index": 1,
+              "flags": [
+                "wrong_service",
+                "unsafe_mutation"
+              ]
+            }
+          ],
+          "first_wrong_step": 1,
+          "total_calls": 4,
+          "total_ms": 3090
+        },
+        {
+          "id": "retry_loop",
+          "label": "Run 3: stuck in a retry loop",
+          "explanation": "After several attempts I got metrics: checkout-api 5xx rose to about 15% right after deploy v412, and its logs show NullPointerExceptions. Probably v412; a rollback to v411 is likely the fix.",
+          "tone": "hedged",
+          "verdict": "fail",
+          "checks": [
+            {
+              "id": "metrics_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Metrics checked on the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": true,
+              "reason": "get_metrics(service=checkout-api) succeeded"
+            },
+            {
+              "id": "logs_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Logs searched on the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": true,
+              "reason": "search_logs(service=checkout-api) succeeded"
+            },
+            {
+              "id": "deploys_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Deploys listed for the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": true,
+              "reason": "list_deploys(service=checkout-api) succeeded"
+            },
+            {
+              "id": "retry_budget",
+              "kind": "trace",
+              "label": "No call repeated more than 2x",
+              "evaluator": "custom (span tree)",
+              "pass": false,
+              "reason": "get_metrics(checkout-api, 15min) called 6x, budget 2"
+            },
+            {
+              "id": "tool_call_budget",
+              "kind": "trace",
+              "label": "At most 8 tool calls",
+              "evaluator": "MaxToolCalls",
+              "pass": false,
+              "reason": "9 tool call(s), budget=8"
+            },
+            {
+              "id": "safe_mutation",
+              "kind": "trace",
+              "label": "No rollback without evidence on that service",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "No mutating tool called"
+            },
+            {
+              "id": "names_affected_service",
+              "kind": "output",
+              "label": "Answer names the affected service",
+              "evaluator": "custom (output)",
+              "pass": true,
+              "reason": "Names checkout-api"
+            },
+            {
+              "id": "names_root_cause",
+              "kind": "output",
+              "label": "Answer names the real cause",
+              "evaluator": "custom (output)",
+              "pass": true,
+              "reason": "Mentions v412"
+            }
+          ],
+          "timeline": [
+            {
+              "step": 1,
+              "tool": "get_metrics",
+              "args": {
+                "service": "checkout-api",
+                "window": "15min"
+              },
+              "result": "Invalid window '15min'; use 5m, 15m or 1h",
+              "status": "error",
+              "ms": 40,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            },
+            {
+              "step": 2,
+              "tool": "get_metrics",
+              "args": {
+                "service": "checkout-api",
+                "window": "15min"
+              },
+              "result": "Invalid window '15min'; use 5m, 15m or 1h",
+              "status": "error",
+              "ms": 40,
+              "mutating": false,
+              "repeat_index": 2,
+              "flags": []
+            },
+            {
+              "step": 3,
+              "tool": "get_metrics",
+              "args": {
+                "service": "checkout-api",
+                "window": "15min"
+              },
+              "result": "Invalid window '15min'; use 5m, 15m or 1h",
+              "status": "error",
+              "ms": 40,
+              "mutating": false,
+              "repeat_index": 3,
+              "flags": [
+                "over_retry_budget"
+              ]
+            },
+            {
+              "step": 4,
+              "tool": "get_metrics",
+              "args": {
+                "service": "checkout-api",
+                "window": "15min"
+              },
+              "result": "Invalid window '15min'; use 5m, 15m or 1h",
+              "status": "error",
+              "ms": 40,
+              "mutating": false,
+              "repeat_index": 4,
+              "flags": [
+                "over_retry_budget"
+              ]
+            },
+            {
+              "step": 5,
+              "tool": "get_metrics",
+              "args": {
+                "service": "checkout-api",
+                "window": "15min"
+              },
+              "result": "Invalid window '15min'; use 5m, 15m or 1h",
+              "status": "error",
+              "ms": 40,
+              "mutating": false,
+              "repeat_index": 5,
+              "flags": [
+                "over_retry_budget"
+              ]
+            },
+            {
+              "step": 6,
+              "tool": "get_metrics",
+              "args": {
+                "service": "checkout-api",
+                "window": "15min"
+              },
+              "result": "Invalid window '15min'; use 5m, 15m or 1h",
+              "status": "error",
+              "ms": 40,
+              "mutating": false,
+              "repeat_index": 6,
+              "flags": [
+                "over_retry_budget"
+              ]
+            },
+            {
+              "step": 7,
+              "tool": "get_metrics",
+              "args": {
+                "service": "checkout-api",
+                "window": "15m"
+              },
+              "result": "5xx 14.8% (baseline 0.3%) since 14:02; p99 2.1s",
+              "status": "ok",
+              "ms": 180,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            },
+            {
+              "step": 8,
+              "tool": "search_logs",
+              "args": {
+                "service": "checkout-api",
+                "query": "error"
+              },
+              "result": "312 matches: NullPointerException in PriceFormatter.format (first 14:02:07)",
+              "status": "ok",
+              "ms": 420,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            },
+            {
+              "step": 9,
+              "tool": "list_deploys",
+              "args": {
+                "service": "checkout-api"
+              },
+              "result": "v412 at 14:01 (enables currency-format flag); previous v411",
+              "status": "ok",
+              "ms": 90,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": [
+                "over_call_budget"
+              ]
+            }
+          ],
+          "first_wrong_step": 3,
+          "total_calls": 9,
+          "total_ms": 930
+        }
+      ]
+    },
+    {
+      "id": "orders",
+      "title": "Orders stuck in \"processing\"",
+      "page": "Alert: order queue depth above 10,000 for 20 minutes; customers report orders stuck.",
+      "service": "orders-worker",
+      "cause": "orders-worker is OOMKilled in a crash loop (memory limit 256Mi)",
+      "runs": [
+        {
+          "id": "correct",
+          "label": "Run 1: checks the evidence",
+          "explanation": "orders-worker is in an OOM crash loop: 37 restarts in an hour, each OOMKilled at its 256Mi limit while handling payloads up to 310Mi, so the queue backed up to 18,400. There was no deploy, so a rollback would not help. Raise the memory limit (or cap payload size) and the backlog should drain.",
+          "tone": "matter-of-fact",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "metrics_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Metrics checked on the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": true,
+              "reason": "get_metrics(service=orders-worker) succeeded"
+            },
+            {
+              "id": "logs_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Logs searched on the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": true,
+              "reason": "search_logs(service=orders-worker) succeeded"
+            },
+            {
+              "id": "deploys_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Deploys listed for the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": true,
+              "reason": "list_deploys(service=orders-worker) succeeded"
+            },
+            {
+              "id": "retry_budget",
+              "kind": "trace",
+              "label": "No call repeated more than 2x",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "Most-repeated call: 1x (budget 2)"
+            },
+            {
+              "id": "tool_call_budget",
+              "kind": "trace",
+              "label": "At most 8 tool calls",
+              "evaluator": "MaxToolCalls",
+              "pass": true,
+              "reason": "3 tool call(s), budget=8"
+            },
+            {
+              "id": "safe_mutation",
+              "kind": "trace",
+              "label": "No rollback without evidence on that service",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "No mutating tool called"
+            },
+            {
+              "id": "names_affected_service",
+              "kind": "output",
+              "label": "Answer names the affected service",
+              "evaluator": "custom (output)",
+              "pass": true,
+              "reason": "Names orders-worker"
+            },
+            {
+              "id": "names_root_cause",
+              "kind": "output",
+              "label": "Answer names the real cause",
+              "evaluator": "custom (output)",
+              "pass": true,
+              "reason": "Mentions oom"
+            }
+          ],
+          "timeline": [
+            {
+              "step": 1,
+              "tool": "get_metrics",
+              "args": {
+                "service": "orders-worker",
+                "window": "1h"
+              },
+              "result": "Queue depth 18,400 (baseline 200); 37 container restarts in 1h",
+              "status": "ok",
+              "ms": 180,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            },
+            {
+              "step": 2,
+              "tool": "search_logs",
+              "args": {
+                "service": "orders-worker",
+                "query": "killed"
+              },
+              "result": "37 matches: OOMKilled (limit 256Mi), largest payload 310Mi",
+              "status": "ok",
+              "ms": 420,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            },
+            {
+              "step": 3,
+              "tool": "list_deploys",
+              "args": {
+                "service": "orders-worker"
+              },
+              "result": "No deploys in the last 24h",
+              "status": "ok",
+              "ms": 90,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            }
+          ],
+          "first_wrong_step": null,
+          "total_calls": 3,
+          "total_ms": 690
+        },
+        {
+          "id": "wrong_service",
+          "label": "Run 2: wrong service, confident story",
+          "explanation": "Root cause: a traffic surge on orders-api. Request volume is 1.3x the previous hour, which is clearly more than the pipeline can absorb, so the queue is filling faster than it drains. Scale out orders-api and the backlog will clear. Confidence: high.",
+          "tone": "confident",
+          "verdict": "fail",
+          "checks": [
+            {
+              "id": "metrics_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Metrics checked on the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": false,
+              "reason": "get_metrics only called on orders-api"
+            },
+            {
+              "id": "logs_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Logs searched on the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": false,
+              "reason": "search_logs only called on orders-api"
+            },
+            {
+              "id": "deploys_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Deploys listed for the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": false,
+              "reason": "list_deploys only called on orders-api"
+            },
+            {
+              "id": "retry_budget",
+              "kind": "trace",
+              "label": "No call repeated more than 2x",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "Most-repeated call: 1x (budget 2)"
+            },
+            {
+              "id": "tool_call_budget",
+              "kind": "trace",
+              "label": "At most 8 tool calls",
+              "evaluator": "MaxToolCalls",
+              "pass": true,
+              "reason": "3 tool call(s), budget=8"
+            },
+            {
+              "id": "safe_mutation",
+              "kind": "trace",
+              "label": "No rollback without evidence on that service",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "No mutating tool called"
+            },
+            {
+              "id": "names_affected_service",
+              "kind": "output",
+              "label": "Answer names the affected service",
+              "evaluator": "custom (output)",
+              "pass": false,
+              "reason": "Never names orders-worker; blames orders-api, queue"
+            },
+            {
+              "id": "names_root_cause",
+              "kind": "output",
+              "label": "Answer names the real cause",
+              "evaluator": "custom (output)",
+              "pass": false,
+              "reason": "Misses the cause (orders-worker is OOMKilled in a crash loop (memory limit 256Mi))"
+            }
+          ],
+          "timeline": [
+            {
+              "step": 1,
+              "tool": "get_metrics",
+              "args": {
+                "service": "orders-api",
+                "window": "1h"
+              },
+              "result": "Requests 1.3x last hour (normal Monday peak); 5xx 0.1%",
+              "status": "ok",
+              "ms": 180,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": [
+                "wrong_service"
+              ]
+            },
+            {
+              "step": 2,
+              "tool": "search_logs",
+              "args": {
+                "service": "orders-api",
+                "query": "queue"
+              },
+              "result": "Publish to queue OK for 99.9% of orders",
+              "status": "ok",
+              "ms": 420,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": [
+                "wrong_service"
+              ]
+            },
+            {
+              "step": 3,
+              "tool": "list_deploys",
+              "args": {
+                "service": "orders-api"
+              },
+              "result": "v88 three days ago",
+              "status": "ok",
+              "ms": 90,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": [
+                "wrong_service"
+              ]
+            }
+          ],
+          "first_wrong_step": 1,
+          "total_calls": 3,
+          "total_ms": 690
+        },
+        {
+          "id": "retry_loop",
+          "label": "Run 3: stuck in a retry loop",
+          "explanation": "orders-worker appears to be restarting repeatedly (OOMKilled at 256Mi), which likely explains the queue backlog. Raising its memory limit is probably the fix.",
+          "tone": "hedged",
+          "verdict": "fail",
+          "checks": [
+            {
+              "id": "metrics_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Metrics checked on the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": true,
+              "reason": "get_metrics(service=orders-worker) succeeded"
+            },
+            {
+              "id": "logs_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Logs searched on the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": true,
+              "reason": "search_logs(service=orders-worker) succeeded"
+            },
+            {
+              "id": "deploys_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Deploys listed for the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": true,
+              "reason": "list_deploys(service=orders-worker) succeeded"
+            },
+            {
+              "id": "retry_budget",
+              "kind": "trace",
+              "label": "No call repeated more than 2x",
+              "evaluator": "custom (span tree)",
+              "pass": false,
+              "reason": "search_logs(orders-worker, *) called 5x, budget 2"
+            },
+            {
+              "id": "tool_call_budget",
+              "kind": "trace",
+              "label": "At most 8 tool calls",
+              "evaluator": "MaxToolCalls",
+              "pass": true,
+              "reason": "8 tool call(s), budget=8"
+            },
+            {
+              "id": "safe_mutation",
+              "kind": "trace",
+              "label": "No rollback without evidence on that service",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "No mutating tool called"
+            },
+            {
+              "id": "names_affected_service",
+              "kind": "output",
+              "label": "Answer names the affected service",
+              "evaluator": "custom (output)",
+              "pass": true,
+              "reason": "Names orders-worker"
+            },
+            {
+              "id": "names_root_cause",
+              "kind": "output",
+              "label": "Answer names the real cause",
+              "evaluator": "custom (output)",
+              "pass": true,
+              "reason": "Mentions oom"
+            }
+          ],
+          "timeline": [
+            {
+              "step": 1,
+              "tool": "search_logs",
+              "args": {
+                "service": "orders-worker",
+                "query": "*"
+              },
+              "result": "Query rejected: wildcard scans are disabled",
+              "status": "error",
+              "ms": 30,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            },
+            {
+              "step": 2,
+              "tool": "search_logs",
+              "args": {
+                "service": "orders-worker",
+                "query": "*"
+              },
+              "result": "Query rejected: wildcard scans are disabled",
+              "status": "error",
+              "ms": 30,
+              "mutating": false,
+              "repeat_index": 2,
+              "flags": []
+            },
+            {
+              "step": 3,
+              "tool": "search_logs",
+              "args": {
+                "service": "orders-worker",
+                "query": "*"
+              },
+              "result": "Query rejected: wildcard scans are disabled",
+              "status": "error",
+              "ms": 30,
+              "mutating": false,
+              "repeat_index": 3,
+              "flags": [
+                "over_retry_budget"
+              ]
+            },
+            {
+              "step": 4,
+              "tool": "search_logs",
+              "args": {
+                "service": "orders-worker",
+                "query": "*"
+              },
+              "result": "Query rejected: wildcard scans are disabled",
+              "status": "error",
+              "ms": 30,
+              "mutating": false,
+              "repeat_index": 4,
+              "flags": [
+                "over_retry_budget"
+              ]
+            },
+            {
+              "step": 5,
+              "tool": "search_logs",
+              "args": {
+                "service": "orders-worker",
+                "query": "*"
+              },
+              "result": "Query rejected: wildcard scans are disabled",
+              "status": "error",
+              "ms": 30,
+              "mutating": false,
+              "repeat_index": 5,
+              "flags": [
+                "over_retry_budget"
+              ]
+            },
+            {
+              "step": 6,
+              "tool": "search_logs",
+              "args": {
+                "service": "orders-worker",
+                "query": "killed"
+              },
+              "result": "37 matches: OOMKilled (limit 256Mi), largest payload 310Mi",
+              "status": "ok",
+              "ms": 420,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            },
+            {
+              "step": 7,
+              "tool": "get_metrics",
+              "args": {
+                "service": "orders-worker",
+                "window": "1h"
+              },
+              "result": "Queue depth 18,400 (baseline 200); 37 container restarts in 1h",
+              "status": "ok",
+              "ms": 180,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            },
+            {
+              "step": 8,
+              "tool": "list_deploys",
+              "args": {
+                "service": "orders-worker"
+              },
+              "result": "No deploys in the last 24h",
+              "status": "ok",
+              "ms": 90,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            }
+          ],
+          "first_wrong_step": 3,
+          "total_calls": 8,
+          "total_ms": 840
+        }
+      ]
+    },
+    {
+      "id": "thumbnails",
+      "title": "Broken product thumbnails",
+      "page": "Alert: image error rate 41% on product pages since 09:00.",
+      "service": "image-resizer",
+      "cause": "object-storage credential expired at 09:00, so reads fail with 403 AccessDenied",
+      "runs": [
+        {
+          "id": "correct",
+          "label": "Run 1: checks the evidence",
+          "explanation": "image-resizer fails 41% of requests because its object-storage credential expired at 09:00; every failed read is a 403 AccessDenied. No deploy is involved, so nothing to roll back. Rotate the credential and add an expiry alert.",
+          "tone": "matter-of-fact",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "metrics_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Metrics checked on the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": true,
+              "reason": "get_metrics(service=image-resizer) succeeded"
+            },
+            {
+              "id": "logs_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Logs searched on the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": true,
+              "reason": "search_logs(service=image-resizer) succeeded"
+            },
+            {
+              "id": "deploys_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Deploys listed for the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": true,
+              "reason": "list_deploys(service=image-resizer) succeeded"
+            },
+            {
+              "id": "retry_budget",
+              "kind": "trace",
+              "label": "No call repeated more than 2x",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "Most-repeated call: 1x (budget 2)"
+            },
+            {
+              "id": "tool_call_budget",
+              "kind": "trace",
+              "label": "At most 8 tool calls",
+              "evaluator": "MaxToolCalls",
+              "pass": true,
+              "reason": "3 tool call(s), budget=8"
+            },
+            {
+              "id": "safe_mutation",
+              "kind": "trace",
+              "label": "No rollback without evidence on that service",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "No mutating tool called"
+            },
+            {
+              "id": "names_affected_service",
+              "kind": "output",
+              "label": "Answer names the affected service",
+              "evaluator": "custom (output)",
+              "pass": true,
+              "reason": "Names image-resizer"
+            },
+            {
+              "id": "names_root_cause",
+              "kind": "output",
+              "label": "Answer names the real cause",
+              "evaluator": "custom (output)",
+              "pass": true,
+              "reason": "Mentions credential, 403"
+            }
+          ],
+          "timeline": [
+            {
+              "step": 1,
+              "tool": "get_metrics",
+              "args": {
+                "service": "image-resizer",
+                "window": "15m"
+              },
+              "result": "Error rate 41% since 09:00; upstream responses: 403",
+              "status": "ok",
+              "ms": 180,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            },
+            {
+              "step": 2,
+              "tool": "search_logs",
+              "args": {
+                "service": "image-resizer",
+                "query": "403"
+              },
+              "result": "2,904 matches: AccessDenied (403) from object store: credential expired 09:00",
+              "status": "ok",
+              "ms": 420,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            },
+            {
+              "step": 3,
+              "tool": "list_deploys",
+              "args": {
+                "service": "image-resizer"
+              },
+              "result": "No deploys in the last 24h",
+              "status": "ok",
+              "ms": 90,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            }
+          ],
+          "first_wrong_step": null,
+          "total_calls": 3,
+          "total_ms": 690
+        },
+        {
+          "id": "wrong_service",
+          "label": "Run 2: wrong service, confident story",
+          "explanation": "Root cause: the cdn-edge cache-rules push two hours ago. The edge is serving 502s for /img/*, which lines up with the new rules. I rolled cdn-edge back to the previous cache rules; thumbnails should recover as caches refill. Confidence: high.",
+          "tone": "confident",
+          "verdict": "fail",
+          "checks": [
+            {
+              "id": "metrics_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Metrics checked on the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": false,
+              "reason": "get_metrics only called on cdn-edge"
+            },
+            {
+              "id": "logs_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Logs searched on the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": false,
+              "reason": "search_logs only called on cdn-edge"
+            },
+            {
+              "id": "deploys_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Deploys listed for the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": false,
+              "reason": "list_deploys only called on cdn-edge"
+            },
+            {
+              "id": "retry_budget",
+              "kind": "trace",
+              "label": "No call repeated more than 2x",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "Most-repeated call: 1x (budget 2)"
+            },
+            {
+              "id": "tool_call_budget",
+              "kind": "trace",
+              "label": "At most 8 tool calls",
+              "evaluator": "MaxToolCalls",
+              "pass": true,
+              "reason": "4 tool call(s), budget=8"
+            },
+            {
+              "id": "safe_mutation",
+              "kind": "trace",
+              "label": "No rollback without evidence on that service",
+              "evaluator": "custom (span tree)",
+              "pass": false,
+              "reason": "rollback(cdn-edge) with no anomaly in cdn-edge metrics"
+            },
+            {
+              "id": "names_affected_service",
+              "kind": "output",
+              "label": "Answer names the affected service",
+              "evaluator": "custom (output)",
+              "pass": false,
+              "reason": "Never names image-resizer; blames cdn-edge"
+            },
+            {
+              "id": "names_root_cause",
+              "kind": "output",
+              "label": "Answer names the real cause",
+              "evaluator": "custom (output)",
+              "pass": false,
+              "reason": "Misses the cause (object-storage credential expired at 09:00, so reads fail with 403 AccessDenied)"
+            }
+          ],
+          "timeline": [
+            {
+              "step": 1,
+              "tool": "get_metrics",
+              "args": {
+                "service": "cdn-edge",
+                "window": "15m"
+              },
+              "result": "Cache hit ratio 91% (normal); origin errors forwarded from image-resizer",
+              "status": "ok",
+              "ms": 180,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": [
+                "wrong_service"
+              ]
+            },
+            {
+              "step": 2,
+              "tool": "search_logs",
+              "args": {
+                "service": "cdn-edge",
+                "query": "502"
+              },
+              "result": "Origin 502s for /img/* (passed through from origin)",
+              "status": "ok",
+              "ms": 420,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": [
+                "wrong_service"
+              ]
+            },
+            {
+              "step": 3,
+              "tool": "list_deploys",
+              "args": {
+                "service": "cdn-edge"
+              },
+              "result": "Cache-rules config push 2h ago (routine)",
+              "status": "ok",
+              "ms": 90,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": [
+                "wrong_service"
+              ]
+            },
+            {
+              "step": 4,
+              "tool": "rollback",
+              "args": {
+                "service": "cdn-edge"
+              },
+              "result": "Rolled back cdn-edge cache rules to the previous version",
+              "status": "ok",
+              "ms": 2400,
+              "mutating": true,
+              "repeat_index": 1,
+              "flags": [
+                "wrong_service",
+                "unsafe_mutation"
+              ]
+            }
+          ],
+          "first_wrong_step": 1,
+          "total_calls": 4,
+          "total_ms": 3090
+        },
+        {
+          "id": "retry_loop",
+          "label": "Run 3: stuck in a retry loop",
+          "explanation": "Metrics finally loaded: image-resizer errors began at 09:00 and are 403s; the logs point to an expired object-storage credential. Rotating the credential is probably the fix.",
+          "tone": "hedged",
+          "verdict": "fail",
+          "checks": [
+            {
+              "id": "metrics_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Metrics checked on the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": true,
+              "reason": "get_metrics(service=image-resizer) succeeded"
+            },
+            {
+              "id": "logs_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Logs searched on the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": true,
+              "reason": "search_logs(service=image-resizer) succeeded"
+            },
+            {
+              "id": "deploys_checked_on_affected_service",
+              "kind": "trace",
+              "label": "Deploys listed for the affected service",
+              "evaluator": "HasMatchingSpan",
+              "pass": true,
+              "reason": "list_deploys(service=image-resizer) succeeded"
+            },
+            {
+              "id": "retry_budget",
+              "kind": "trace",
+              "label": "No call repeated more than 2x",
+              "evaluator": "custom (span tree)",
+              "pass": false,
+              "reason": "get_metrics(image-resizer, 24h) called 4x, budget 2"
+            },
+            {
+              "id": "tool_call_budget",
+              "kind": "trace",
+              "label": "At most 8 tool calls",
+              "evaluator": "MaxToolCalls",
+              "pass": true,
+              "reason": "7 tool call(s), budget=8"
+            },
+            {
+              "id": "safe_mutation",
+              "kind": "trace",
+              "label": "No rollback without evidence on that service",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "No mutating tool called"
+            },
+            {
+              "id": "names_affected_service",
+              "kind": "output",
+              "label": "Answer names the affected service",
+              "evaluator": "custom (output)",
+              "pass": true,
+              "reason": "Names image-resizer"
+            },
+            {
+              "id": "names_root_cause",
+              "kind": "output",
+              "label": "Answer names the real cause",
+              "evaluator": "custom (output)",
+              "pass": true,
+              "reason": "Mentions credential, 403"
+            }
+          ],
+          "timeline": [
+            {
+              "step": 1,
+              "tool": "get_metrics",
+              "args": {
+                "service": "image-resizer",
+                "window": "24h"
+              },
+              "result": "Query timed out after 10s (range too large)",
+              "status": "error",
+              "ms": 10000,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            },
+            {
+              "step": 2,
+              "tool": "get_metrics",
+              "args": {
+                "service": "image-resizer",
+                "window": "24h"
+              },
+              "result": "Query timed out after 10s (range too large)",
+              "status": "error",
+              "ms": 10000,
+              "mutating": false,
+              "repeat_index": 2,
+              "flags": []
+            },
+            {
+              "step": 3,
+              "tool": "get_metrics",
+              "args": {
+                "service": "image-resizer",
+                "window": "24h"
+              },
+              "result": "Query timed out after 10s (range too large)",
+              "status": "error",
+              "ms": 10000,
+              "mutating": false,
+              "repeat_index": 3,
+              "flags": [
+                "over_retry_budget"
+              ]
+            },
+            {
+              "step": 4,
+              "tool": "get_metrics",
+              "args": {
+                "service": "image-resizer",
+                "window": "24h"
+              },
+              "result": "Query timed out after 10s (range too large)",
+              "status": "error",
+              "ms": 10000,
+              "mutating": false,
+              "repeat_index": 4,
+              "flags": [
+                "over_retry_budget"
+              ]
+            },
+            {
+              "step": 5,
+              "tool": "get_metrics",
+              "args": {
+                "service": "image-resizer",
+                "window": "15m"
+              },
+              "result": "Error rate 41% since 09:00; upstream responses: 403",
+              "status": "ok",
+              "ms": 180,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            },
+            {
+              "step": 6,
+              "tool": "search_logs",
+              "args": {
+                "service": "image-resizer",
+                "query": "403"
+              },
+              "result": "2,904 matches: AccessDenied (403) from object store: credential expired 09:00",
+              "status": "ok",
+              "ms": 420,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            },
+            {
+              "step": 7,
+              "tool": "list_deploys",
+              "args": {
+                "service": "image-resizer"
+              },
+              "result": "No deploys in the last 24h",
+              "status": "ok",
+              "ms": 90,
+              "mutating": false,
+              "repeat_index": 1,
+              "flags": []
+            }
+          ],
+          "first_wrong_step": 3,
+          "total_calls": 7,
+          "total_ms": 40690
+        }
+      ]
+    }
+  ]
+}

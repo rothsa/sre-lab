@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kubernetes</title>
+<meta name="description" content="How Kubernetes works, in 18 step-through diagrams: the control loop, kubectl apply, scheduling, Services, DNS, storage, autoscaling, the fleet upgrade program and platform health signals.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<link rel="stylesheet" href="../drawn/drawn.css">
+<link rel="stylesheet" href="../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
+<div class="shell">
+  <nav class="toc" aria-label="Chapters">
+    <details id="tocBox" open><summary>Chapters</summary><ol id="toc"></ol></details>
+  </nav>
+  <main>
+    <div class="kicker"><a href="../">SRE Lab</a> · explainers<span class="updated"> · updated <time datetime="2026-10-24">24 Oct 2026</time></span></div>
+    <h1>Kubernetes</h1>
+    <p class="lede">How Kubernetes works across many clusters and teams, with one cluster as the worked example. Step through each diagram with the buttons or arrow keys, then read the summary, gotchas and questions. Real outages link to their postmortems.</p>
+    <p class="lede">Everything here is checked against the official Kubernetes documentation; each chapter links to the pages it's based on. For what the kernel does underneath, see <a href="../linux/">Linux</a>.</p>
+    <div id="chapters"></div>
+    <footer>
+      <p>Diagrams and wording by Sally Roth. Based on the Kubernetes documentation at <a href="https://kubernetes.io/docs/">kubernetes.io</a>; real-world examples come from <a href="../incidents/">The Incident Files</a>.</p>
+      <p>Part of <a href="../">SRE Lab</a> · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab/tree/main/k8s">source</a></p>
+    </footer>
+  </main>
+</div>
+<script type="module">
+import { mountExplainer } from "../drawn/engine.js";
+import { CHAPTERS } from "./diagrams.js";
+await mountExplainer(CHAPTERS, { key: "k8s" });
+</script>
+</body>
+</html>

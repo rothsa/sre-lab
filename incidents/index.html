@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Incident Files</title>
+<meta name="description" content="Real public postmortems, searchable by symptom, and the recurring failure patterns that keep coming back, with the controls that retire them.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@800;900&display=swap">
+<style>
+/* Layout: a case-file header, a grid of recurring failure patterns ("monsters") with how
+   to ward each off, then the search box with results, then what's missing.
+   The theme is deliberately dark: these are horror stories. */
+:root {
+  --bg: #0b0a0e; --bg2: #121017; --panel: #17141d; --fg: #ece6dc; --muted: #a59d93; --rule: #2c2633;
+  --blood: #e5484d; --ember: #ff8a3d; --bone: #f3ead8; --ghost: #9d8cff; --moss: #8fd18b; --mark: #5a2a14;
+  --font-display: "Archivo", "Segoe UI", system-ui, sans-serif;
+  --font-type: "Special Elite", "Courier New", monospace;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  background: radial-gradient(ellipse at 50% -10%, #2a1418 0%, transparent 55%), radial-gradient(ellipse at 100% 100%, #1a1230 0%, transparent 50%), var(--bg);
+  background-attachment: fixed; }
+a { color: var(--ember); }
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 16px; padding-block: 36px 64px; }
+.kicker { font-family: var(--font-type); font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: var(--blood); }
+h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(38px, 7vw, 68px); line-height: .95; margin: 8px 0 14px; letter-spacing: -.01em; color: var(--bone); text-shadow: 0 0 24px rgba(229, 72, 77, .25); }
+h1 span { color: var(--blood); }
+@media (prefers-reduced-motion: no-preference) {
+  h1 span { animation: flicker 7s infinite; }
+  @keyframes flicker { 0%, 92%, 100% { opacity: 1; } 93% { opacity: .35; } 94% { opacity: 1; } 96% { opacity: .55; } 97% { opacity: 1; } }
+}
+h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(24px, 4vw, 32px); margin: 48px 0 6px; color: var(--bone); }
+.sub { font-family: var(--font-type); color: var(--muted); margin: 0 0 18px; }
+.lede { color: var(--fg); max-width: 72ch; margin: 0 0 12px; font-size: 17px; }
+.lede.small { color: var(--muted); font-size: 14.5px; }
+.search { display: flex; gap: 8px; margin-top: 20px; }
+.search input { flex: 1; min-width: 0; font: inherit; font-size: 18px; padding: 13px 15px; border: 1px solid var(--rule); border-radius: 6px; background: var(--bg2); color: var(--fg); }
+.search input::placeholder { color: #6f675f; }
+.search input:focus-visible { outline: 2px solid var(--blood); outline-offset: 1px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 6px; }
+.chips button, .btn { font: inherit; font-size: 13.5px; padding: 4px 11px; border-radius: 999px; border: 1px solid var(--rule); background: var(--panel); color: var(--fg); cursor: pointer; }
+.chips button:hover, .chips button:focus-visible, .btn:hover, .btn:focus-visible { border-color: var(--blood); color: var(--bone); outline: none; }
+.status { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); min-height: 1.5em; margin: 8px 0 12px; }
+.resultsHead { font-family: var(--font-type); color: var(--muted); margin: 6px 0 10px; }
+.results { display: grid; gap: 12px; }
+.case { position: relative; background: var(--panel); border: 1px solid var(--rule); border-left: 3px solid var(--blood); border-radius: 6px; padding: 14px 16px 12px; }
+.case .meta { font-family: var(--font-type); font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.case .meta .no { color: var(--blood); }
+.case .title { font-family: var(--font-display); font-weight: 800; font-size: 18px; line-height: 1.25; margin: 4px 0 8px; color: var(--bone); }
+.case p { margin: 0 0 6px; font-size: 15px; }
+.case .kv b { font-family: var(--font-type); font-weight: 400; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--ember); margin-right: 8px; }
+.case details { margin: 4px 0 8px; font-size: 14.5px; }
+.case summary { cursor: pointer; color: var(--muted); font-size: 13.5px; font-family: var(--font-type); }
+.case details p { margin-top: 8px; color: var(--fg); }
+.case a.orig { font-size: 13.5px; }
+mark { background: var(--mark); color: var(--bone); border-radius: 2px; padding: 0 2px; }
+.monsters { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 14px; margin-top: 14px; }
+.monster { background: linear-gradient(180deg, #1b1622 0%, var(--panel) 100%); border: 1px solid var(--rule); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.monster h3 { font-family: var(--font-display); font-weight: 900; font-size: 19px; line-height: 1.2; margin: 0; color: var(--bone); }
+.monster .count { font-family: var(--font-display); font-weight: 900; color: var(--blood); font-size: 28px; line-height: 1; }
+.monster .count small { font-family: var(--font-type); font-weight: 400; font-size: 13px; margin-left: 6px; }
+.monster details summary { cursor: pointer; font-family: var(--font-type); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--moss); }
+.monster details ul { margin-top: 8px; }
+.monster .lore { font-style: italic; color: var(--muted); margin: 0; font-size: 14.5px; }
+.monster h4 { font-family: var(--font-type); font-weight: 400; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--moss); margin: 6px 0 0; }
+.monster ul { margin: 0; padding-left: 18px; display: grid; gap: 7px; font-size: 14.5px; }
+.monster .retired { display: block; font-size: 13.5px; color: var(--fg); margin-top: 3px; }
+.monster .retired b { font-family: var(--font-type); font-weight: 400; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--moss); margin-right: 6px; }
+.monster .seen { display: block; font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.monster .seen a { color: var(--muted); }
+.monster .seen a:hover { color: var(--ember); }
+.monster .btn { align-self: flex-start; margin-top: auto; }
+.why { color: var(--fg); max-width: 75ch; }
+.method { color: var(--muted); font-size: 14px; max-width: 80ch; }
+.monster.agentic { margin-top: 14px; }
+.monster.agentic ul { max-width: 80ch; gap: 10px; font-size: 15px; }
+.monster.agentic h3.src { font-family: var(--font-type); font-weight: 400; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--moss); margin: 6px 0 0; }
+.monster.agentic ul.sources { gap: 4px; font-size: 13.5px; }
+.monster.agentic b { color: var(--bone); }
+footer { margin-top: 40px; border-top: 1px solid var(--rule); padding-top: 16px; color: var(--muted); font-size: 14px; }
+footer p { margin: 0 0 8px; }
+</style>
+<link rel="stylesheet" href="../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+<nav class="site-nav" aria-label="Site" style="max-width:1040px"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
+<div class="wrap">
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · case files<span class="updated"> · updated <time datetime="2026-10-20">20 Oct 2026</time></span></div>
+  <h1>The Incident <span>Files</span></h1>
+  <p class="sub">Real outages. Real breaches. Told by the companies that lived through them.</p>
+  <p class="lede">Common failures repeat. Start with the patterns below: how often each one shows up and which org-wide controls retire it. Open one to see its case files, or search for a failure further down. This is for the time around incidents (readiness and design reviews, on-call training, postmortems); mid-incident, the job is capturing data from your own system.</p>
+
+  <h2>The monsters that keep coming back</h2>
+  <p class="sub">Recurring patterns, org-wide controls that retire them, and the fleet number to watch.</p>
+  <div class="monsters" id="monsters"></div>
+
+  <h2>Search the files</h2>
+  <form class="search" id="form" role="search">
+    <input id="q" type="search" autocomplete="off" value="DNS broke everything" placeholder="Describe a failure" aria-label="Describe a failure">
+  </form>
+  <div class="chips" id="chips"></div>
+  <div class="status" id="status" aria-live="polite">Opening the files…</div>
+  <div class="resultsHead" id="resultsHead"></div>
+  <div class="results" id="results"></div>
+
+  <h2>What's missing</h2>
+  <p class="why">Public postmortems lean toward availability incidents a company is comfortable telling: a clever root cause, a fast fix, lessons learned. Security incidents, often the costliest, are published less often, later, and with less detail, because lawyers, regulators and disclosure rules shape what gets said. This collection includes a set of credential leaks and supply-chain compromises, but like anything built from public writing, it underrepresents the failures companies would rather not discuss.</p>
+
+  <section aria-labelledby="agentic-h">
+    <h2 id="agentic-h">What changes in the agentic era</h2>
+    <p class="sub">AI now searches, summarizes and drafts incident write-ups. The evidence is still the original.</p>
+    <div class="monster agentic">
+      <ul>
+        <li><b>Search finds, the source proves.</b> The search on this page (embeddings plus keyword ranking) matches a symptom to similar cases when you don't know the right words; it doesn't read or reason about them. Treat its results, and any AI summary of a postmortem, as a pointer: timings, contributing factors and caveats are exactly what summaries flatten, so read the company's own write-up before you cite it.</li>
+        <li><b>AI postmortems are drafts.</b> incident.io, FireHydrant and Rootly now draft retrospectives from the timeline, chat and call transcripts. incident.io calls the result &ldquo;a starting point, not a finished document&rdquo;, and FireHydrant says drafts should be validated by your team. What's left for people is the valuable part: checking the timeline against evidence, keeping several contributing factors instead of one tidy root cause, and owning the action items.</li>
+        <li><b>Agents learn from incidents too.</b> Google's SRE team evaluates its incident agents nightly against a rolling set of recent real incidents, and PagerDuty's SRE agent recalls similar past incidents for a service. Patterns like the ones above are useful input, but a past incident is a hypothesis for yours, not a diagnosis. Mid-incident, an agent gathers evidence from your own system read-only, and a human decides and acts.</li>
+      </ul>
+      <h3 class="src">Sources</h3>
+      <ul class="sources">
+        <li><a href="https://docs.incident.io/post-incident/postmortem-ai">incident.io: AI-native post-mortems</a></li>
+        <li><a href="https://docs.firehydrant.com/docs/ai-drafted-retrospectives">FireHydrant: AI-drafted retrospectives</a></li>
+        <li><a href="https://docs.rootly.com/retrospectives/retrospectives">Rootly: Retrospectives</a></li>
+        <li><a href="https://sre.google/resources/practices-and-processes/ai-engineering-reliable-operations/">Google SRE: AI in SRE, engineering reliable operations</a></li>
+        <li><a href="https://docs.pagerduty.com/ai-automation/advance/sre-agent">PagerDuty: Paige (SRE Agent)</a></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p class="method"><b>How it works.</b> Each case file holds facts and a summary written for this page from the company's own postmortem; follow the links to read the originals. Cases were found through <a href="https://github.com/danluu/post-mortems">danluu/post-mortems</a>. Search combines a small embedding model (<a href="https://huggingface.co/Xenova/all-MiniLM-L6-v2">all-MiniLM-L6-v2</a> via <a href="https://huggingface.co/docs/transformers.js">Transformers.js</a>, which matches by meaning) with BM25 keyword ranking, merged with reciprocal rank fusion. It runs entirely in your browser after a one-time 23&nbsp;MB download; nothing you type leaves your device. Monster groupings were proposed by the same model and confirmed by hand. Each control sums up what the cited companies changed or planned; the case files say which. The &ldquo;Retired when&rdquo; metrics are this page's suggestion, not the companies'.</p>
+    <p>Part of <a href="../">SRE Lab</a> by Sally Roth · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab/tree/main/incidents">source</a></p>
+  </footer>
+</div>
+
+<script type="module">
+import { pipeline, env } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1";
+env.allowLocalModels = false;
+
+const MODEL = "Xenova/all-MiniLM-L6-v2";
+const TOP = 6;
+const EXAMPLES = ["DNS broke everything", "API key leaked", "certificate expired", "retries made it worse", "someone deleted production", "integer overflow", "heatwave cooked the servers", "BGP"];
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const year = (d) => (d.date === "unknown" ? "date not stated" : d.date);
+
+// ---------- data ----------
+let docs = [], byId = new Map(), vectors = null, dim = 0, patterns = [];
+// Keep in sync with docText() in build.mjs.
+const docText = (d) => `${d.title}. ${d.trigger} ${d.impact} ${d.summary}`;
+
+async function loadData() {
+  const [incidents, index, bin, pats] = await Promise.all([
+    fetch("data/incidents.json").then((r) => r.json()),
+    fetch("data/index.json").then((r) => r.json()),
+    fetch("data/embeddings.bin").then((r) => r.arrayBuffer()),
+    fetch("data/patterns.json").then((r) => r.json()),
+  ]);
+  byId = new Map(incidents.map((d) => [d.id, d]));
+  docs = index.ids.map((id) => byId.get(id));
+  dim = index.dim;
+  vectors = new Float32Array(bin);
+  patterns = pats;
+}
+
+// ---------- BM25 keyword ranking ----------
+const STOP = new Set("a an and are as at be but by for from had has have in into is it its of on or that the their then there these this to was were when which while with after before during got went".split(" "));
+// Keep identifiers like us-east-1, max_connections and 502 intact.
+const tokenize = (s) => s.toLowerCase().split(/[^a-z0-9_\-./]+/).map((t) => t.replace(/^[\-./]+|[\-./]+$/g, "")).filter((t) => t && !STOP.has(t)).map((t) => (t.length > 3 && t.endsWith("s") && !t.endsWith("ss") ? t.slice(0, -1) : t));
+let bm = null;
+function buildBM25() {
+  const k1 = 1.2, b = 0.75;
+  const tfs = docs.map((d) => {
+    const tf = new Map();
+    for (const t of tokenize(`${d.company} ${d.category.join(" ")} ${docText(d)} ${d.detection} ${d.fix}`)) tf.set(t, (tf.get(t) || 0) + 1);
+    return tf;
+  });
+  const lens = tfs.map((tf) => [...tf.values()].reduce((a, c) => a + c, 0));
+  const avg = lens.reduce((a, c) => a + c, 0) / lens.length;
+  const df = new Map();
+  for (const tf of tfs) for (const t of tf.keys()) df.set(t, (df.get(t) || 0) + 1);
+  const N = docs.length;
+  const idf = (t) => Math.log(1 + (N - (df.get(t) || 0) + 0.5) / ((df.get(t) || 0) + 0.5));
+  bm = (query) => {
+    const terms = [...new Set(tokenize(query))];
+    return tfs.map((tf, i) => {
+      let s = 0;
+      for (const t of terms) {
+        const f = tf.get(t);
+        if (f) s += idf(t) * (f * (k1 + 1)) / (f + k1 * (1 - b + b * lens[i] / avg));
+      }
+      return s;
+    });
+  };
+}
+
+// ---------- embedding model ----------
+let extractor = null;
+async function loadModel() {
+  extractor = await pipeline("feature-extraction", MODEL, { dtype: "q8" });
+}
+async function semanticScores(q) {
+  const qv = (await extractor(q, { pooling: "mean", normalize: true })).data;
+  const scores = new Float32Array(docs.length);
+  for (let i = 0; i < docs.length; i++) {
+    let s = 0;
+    const o = i * dim;
+    for (let j = 0; j < dim; j++) s += qv[j] * vectors[o + j];
+    scores[i] = s;
+  }
+  return scores;
+}
+
+// ---------- ranking ----------
+const ranked = (scores) => [...scores].map((s, i) => [i, s]).filter(([, s]) => s > 0).sort((a, b) => b[1] - a[1]);
+// Reciprocal rank fusion: merge two rankings without comparing their incompatible scores.
+const rrf = (a, b, k = 60) => {
+  const sc = new Map();
+  // Keyword ranking counts half: it catches exact terms, but one shared word ("key") shouldn't outvote meaning.
+  [[a, 1], [b, 0.5]].forEach(([list, w]) => list.forEach(([i], r) => sc.set(i, (sc.get(i) || 0) + w / (k + r + 1))));
+  return [...sc].sort((x, y) => y[1] - x[1]);
+};
+
+// ---------- rendering ----------
+function highlight(text, query) {
+  const terms = [...new Set(tokenize(query || ""))].filter((t) => t.length > 1).map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  if (!terms.length) return esc(text);
+  return esc(text).replace(new RegExp(`\\b(${terms.join("|")})`, "gi"), "<mark>$1</mark>");
+}
+function caseFile(d, n, query) {
+  return `<article class="case">
+    <div class="meta"><span><span class="no">No. ${String(n).padStart(3, "0")}</span> · ${esc(d.company)}</span><span>${esc(year(d))}</span></div>
+    <div class="title">${highlight(d.title, query)}</div>
+    <p class="kv"><b>Cause</b>${highlight(d.trigger, query)}</p>
+    <p class="kv"><b>Fixed by</b>${highlight(d.fix, query)}</p>
+    <details><summary>What happened</summary><p>${highlight(d.summary, query)}</p><p class="kv"><b>Spotted by</b>${highlight(d.detection, query)}</p></details>
+    <a class="orig" href="${esc(d.url)}" target="_blank" rel="noopener">Read the original postmortem →</a>
+  </article>`;
+}
+const caseNo = (d) => docs.indexOf(d) + 1;
+
+let seq = 0;
+async function search(query) {
+  const my = ++seq;
+  query = query.trim();
+  if (!query) { $("results").innerHTML = ""; $("resultsHead").textContent = ""; return; }
+  const kw = ranked(bm(query));
+  let rows = kw;
+  if (extractor) {
+    const sem = ranked(await semanticScores(query));
+    if (my !== seq) return;
+    rows = rrf(sem, kw);
+  }
+  const top = rows.slice(0, TOP).map(([i]) => docs[i]);
+  $("resultsHead").textContent = top.length ? `${top.length} case files matching “${query}”` : "";
+  $("results").innerHTML = top.length ? top.map((d) => caseFile(d, caseNo(d), query)).join("") : `<p class="status">Nothing matches those words yet. The meaning-based search is still loading; try again in a moment.</p>`;
+}
+
+function showMonster(p) {
+  seq++;
+  $("q").value = "";
+  const ds = p.members.map((id) => byId.get(id));
+  $("resultsHead").textContent = `${ds.length} sightings of ${p.name}`;
+  $("results").innerHTML = ds.map((d) => caseFile(d, caseNo(d), "")).join("");
+  $("resultsHead").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function renderMonsters() {
+  const cite = (id) => { const d = byId.get(id); return `<a href="${esc(d.url)}" target="_blank" rel="noopener" title="${esc(d.title)}">${esc(d.company)} ${esc(d.date.slice(0, 4))}</a>`; };
+  // Most-sighted first; the warding detail stays folded so the whole grid reads at a glance.
+  const byCount = [...patterns].sort((a, b) => b.members.length - a.members.length);
+  $("monsters").innerHTML = byCount.map((p) => `
+    <section class="monster" aria-labelledby="m-${p.id}">
+      <div class="count">${p.members.length}<small>sightings</small></div>
+      <h3 id="m-${p.id}">${esc(p.name)}</h3>
+      <p class="lore">${esc(p.lore)}</p>
+      <details><summary>Ward it off (${p.ward.length})</summary>
+        <ul>${p.ward.map((w) => `<li>${esc(w.text)}${w.retired ? `<span class="retired"><b>Retired when</b> ${esc(w.retired)}</span>` : ""}<span class="seen">Seen at ${w.ids.map(cite).join(", ")}</span></li>`).join("")}</ul>
+      </details>
+      <button class="btn" type="button" data-p="${p.id}">Open all ${p.members.length} files</button>
+    </section>`).join("");
+}
+
+// ---------- wire up ----------
+$("chips").innerHTML = EXAMPLES.map((q) => `<button type="button" data-q="${esc(q)}">${esc(q)}</button>`).join("");
+$("chips").addEventListener("click", (e) => { const b = e.target.closest("button[data-q]"); if (b) { $("q").value = b.dataset.q; search(b.dataset.q); } });
+$("monsters").addEventListener("click", (e) => { const b = e.target.closest("button[data-p]"); if (b) showMonster(patterns.find((p) => p.id === b.dataset.p)); });
+$("form").addEventListener("submit", (e) => { e.preventDefault(); search($("q").value); });
+let timer;
+$("q").addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(() => search($("q").value), 250); });
+
+try {
+  await loadData();
+  buildBM25();
+  renderMonsters();
+  $("status").textContent = `${docs.length} case files open. Loading the meaning-based search (23 MB, once)…`;
+  search($("q").value);
+} catch (e) {
+  $("status").textContent = "Couldn't open the case files.";
+  throw e;
+}
+loadModel().then(() => {
+  $("status").textContent = `${docs.length} case files. Search by meaning and by keyword, all in your browser.`;
+  search($("q").value);
+}).catch((e) => {
+  $("status").textContent = `${docs.length} case files. Meaning-based search couldn't load in this browser, so results are keyword-only.`;
+  console.error(e);
+});
+</script>
+</body>
+</html>

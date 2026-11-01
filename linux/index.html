@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Linux</title>
+<meta name="description" content="How a Linux node really handles memory and networking, in step-through diagrams: page cache, the OOM killer, cgroups, a packet's path, conntrack, TCP queues, and finding the few bad hosts in a fleet.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<link rel="stylesheet" href="../drawn/drawn.css">
+<link rel="stylesheet" href="../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
+<div class="shell">
+  <nav class="toc" aria-label="Chapters">
+    <details id="tocBox" open><summary>Chapters</summary><ol id="toc"></ol></details>
+  </nav>
+  <main>
+    <div class="kicker"><a href="../">SRE Lab</a> · explainers<span class="updated"> · updated <time datetime="2026-10-27">27 Oct 2026</time></span></div>
+    <h1>Linux</h1>
+    <p class="lede">What Linux does with memory and packets across thousands of hosts, with one host as the worked example. Step through each diagram with the buttons or arrow keys, then read the summary, gotchas and questions. Real outages link to their postmortems.</p>
+    <p class="lede">Everything here is checked against the Linux kernel documentation and man pages; each chapter links to the pages it's based on. For how Kubernetes builds on these pieces, see <a href="../k8s/">Kubernetes</a>.</p>
+    <div id="chapters"></div>
+    <footer>
+      <p>Diagrams and wording by Sally Roth. Based on the <a href="https://docs.kernel.org/">Linux kernel documentation</a> and <a href="https://man7.org/linux/man-pages/">man pages</a>; real-world examples come from <a href="../incidents/">The Incident Files</a>.</p>
+      <p>Part of <a href="../">SRE Lab</a> · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab/tree/main/linux">source</a></p>
+    </footer>
+  </main>
+</div>
+<script type="module">
+import { mountExplainer } from "../drawn/engine.js";
+import { CHAPTERS } from "./diagrams.js";
+await mountExplainer(CHAPTERS, { key: "linux" });
+</script>
+</body>
+</html>

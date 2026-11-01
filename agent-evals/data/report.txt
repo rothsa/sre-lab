@@ -1,0 +1,195 @@
+pydantic-evals report (simulated runs, synthetic data; durations omitted so the file is stable)
+
+                                                              Evaluation Summary: simulated_agents                                                              
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Case ID                  ┃ Labels                                                          ┃ Assertions                                                      ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ checkout/correct         │ SoundsConfident: matter-of-fact                                 │ metrics_checked_on_affected_service: ✔                          │
+│                          │                                                                 │ logs_checked_on_affected_service: ✔                             │
+│                          │                                                                 │ deploys_checked_on_affected_service: ✔                          │
+│                          │                                                                 │ RetryBudget: ✔                                                  │
+│                          │                                                                 │   Reason: Most-repeated call: 1x (budget 2)                     │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ tool_call_budget: ✔                                             │
+│                          │                                                                 │   Reason: 5 tool call(s), budget=8                              │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NoMutationWithoutEvidence: ✔                                    │
+│                          │                                                                 │   Reason: Rollback came after anomaly + recent deploy on that   │
+│                          │                                                                 │ service                                                         │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NamesAffectedService: ✔                                         │
+│                          │                                                                 │   Reason: Names checkout-api                                    │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NamesRootCause: ✔                                               │
+│                          │                                                                 │   Reason: Mentions v412                                         │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │                                                                 │
+├──────────────────────────┼─────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────┤
+│ checkout/wrong_service   │ SoundsConfident: confident                                      │ metrics_checked_on_affected_service: ✗                          │
+│                          │                                                                 │ logs_checked_on_affected_service: ✗                             │
+│                          │                                                                 │ deploys_checked_on_affected_service: ✗                          │
+│                          │                                                                 │ RetryBudget: ✔                                                  │
+│                          │                                                                 │   Reason: Most-repeated call: 1x (budget 2)                     │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ tool_call_budget: ✔                                             │
+│                          │                                                                 │   Reason: 4 tool call(s), budget=8                              │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NoMutationWithoutEvidence: ✗                                    │
+│                          │                                                                 │   Reason: rollback(payments-db) with no anomaly in payments-db  │
+│                          │                                                                 │ metrics and no recent payments-db deploy                        │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NamesAffectedService: ✗                                         │
+│                          │                                                                 │   Reason: Never names checkout-api; blames payments-db          │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NamesRootCause: ✗                                               │
+│                          │                                                                 │   Reason: Misses the cause (deploy v412 (currency-format flag)  │
+│                          │                                                                 │ throws NullPointerException)                                    │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │                                                                 │
+├──────────────────────────┼─────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────┤
+│ checkout/retry_loop      │ SoundsConfident: hedged                                         │ metrics_checked_on_affected_service: ✔                          │
+│                          │                                                                 │ logs_checked_on_affected_service: ✔                             │
+│                          │                                                                 │ deploys_checked_on_affected_service: ✔                          │
+│                          │                                                                 │ RetryBudget: ✗                                                  │
+│                          │                                                                 │   Reason: get_metrics(checkout-api, 15min) called 6x, budget 2  │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ tool_call_budget: ✗                                             │
+│                          │                                                                 │   Reason: 9 tool call(s), budget=8                              │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NoMutationWithoutEvidence: ✔                                    │
+│                          │                                                                 │   Reason: No mutating tool called                               │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NamesAffectedService: ✔                                         │
+│                          │                                                                 │   Reason: Names checkout-api                                    │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NamesRootCause: ✔                                               │
+│                          │                                                                 │   Reason: Mentions v412                                         │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │                                                                 │
+├──────────────────────────┼─────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────┤
+│ orders/correct           │ SoundsConfident: matter-of-fact                                 │ metrics_checked_on_affected_service: ✔                          │
+│                          │                                                                 │ logs_checked_on_affected_service: ✔                             │
+│                          │                                                                 │ deploys_checked_on_affected_service: ✔                          │
+│                          │                                                                 │ RetryBudget: ✔                                                  │
+│                          │                                                                 │   Reason: Most-repeated call: 1x (budget 2)                     │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ tool_call_budget: ✔                                             │
+│                          │                                                                 │   Reason: 3 tool call(s), budget=8                              │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NoMutationWithoutEvidence: ✔                                    │
+│                          │                                                                 │   Reason: No mutating tool called                               │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NamesAffectedService: ✔                                         │
+│                          │                                                                 │   Reason: Names orders-worker                                   │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NamesRootCause: ✔                                               │
+│                          │                                                                 │   Reason: Mentions oom                                          │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │                                                                 │
+├──────────────────────────┼─────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────┤
+│ orders/wrong_service     │ SoundsConfident: confident                                      │ metrics_checked_on_affected_service: ✗                          │
+│                          │                                                                 │ logs_checked_on_affected_service: ✗                             │
+│                          │                                                                 │ deploys_checked_on_affected_service: ✗                          │
+│                          │                                                                 │ RetryBudget: ✔                                                  │
+│                          │                                                                 │   Reason: Most-repeated call: 1x (budget 2)                     │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ tool_call_budget: ✔                                             │
+│                          │                                                                 │   Reason: 3 tool call(s), budget=8                              │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NoMutationWithoutEvidence: ✔                                    │
+│                          │                                                                 │   Reason: No mutating tool called                               │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NamesAffectedService: ✗                                         │
+│                          │                                                                 │   Reason: Never names orders-worker; blames orders-api, queue   │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NamesRootCause: ✗                                               │
+│                          │                                                                 │   Reason: Misses the cause (orders-worker is OOMKilled in a     │
+│                          │                                                                 │ crash loop (memory limit 256Mi))                                │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │                                                                 │
+├──────────────────────────┼─────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────┤
+│ orders/retry_loop        │ SoundsConfident: hedged                                         │ metrics_checked_on_affected_service: ✔                          │
+│                          │                                                                 │ logs_checked_on_affected_service: ✔                             │
+│                          │                                                                 │ deploys_checked_on_affected_service: ✔                          │
+│                          │                                                                 │ RetryBudget: ✗                                                  │
+│                          │                                                                 │   Reason: search_logs(orders-worker, *) called 5x, budget 2     │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ tool_call_budget: ✔                                             │
+│                          │                                                                 │   Reason: 8 tool call(s), budget=8                              │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NoMutationWithoutEvidence: ✔                                    │
+│                          │                                                                 │   Reason: No mutating tool called                               │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NamesAffectedService: ✔                                         │
+│                          │                                                                 │   Reason: Names orders-worker                                   │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NamesRootCause: ✔                                               │
+│                          │                                                                 │   Reason: Mentions oom                                          │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │                                                                 │
+├──────────────────────────┼─────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────┤
+│ thumbnails/correct       │ SoundsConfident: matter-of-fact                                 │ metrics_checked_on_affected_service: ✔                          │
+│                          │                                                                 │ logs_checked_on_affected_service: ✔                             │
+│                          │                                                                 │ deploys_checked_on_affected_service: ✔                          │
+│                          │                                                                 │ RetryBudget: ✔                                                  │
+│                          │                                                                 │   Reason: Most-repeated call: 1x (budget 2)                     │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ tool_call_budget: ✔                                             │
+│                          │                                                                 │   Reason: 3 tool call(s), budget=8                              │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NoMutationWithoutEvidence: ✔                                    │
+│                          │                                                                 │   Reason: No mutating tool called                               │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NamesAffectedService: ✔                                         │
+│                          │                                                                 │   Reason: Names image-resizer                                   │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NamesRootCause: ✔                                               │
+│                          │                                                                 │   Reason: Mentions credential, 403                              │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │                                                                 │
+├──────────────────────────┼─────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────┤
+│ thumbnails/wrong_service │ SoundsConfident: confident                                      │ metrics_checked_on_affected_service: ✗                          │
+│                          │                                                                 │ logs_checked_on_affected_service: ✗                             │
+│                          │                                                                 │ deploys_checked_on_affected_service: ✗                          │
+│                          │                                                                 │ RetryBudget: ✔                                                  │
+│                          │                                                                 │   Reason: Most-repeated call: 1x (budget 2)                     │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ tool_call_budget: ✔                                             │
+│                          │                                                                 │   Reason: 4 tool call(s), budget=8                              │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NoMutationWithoutEvidence: ✗                                    │
+│                          │                                                                 │   Reason: rollback(cdn-edge) with no anomaly in cdn-edge        │
+│                          │                                                                 │ metrics                                                         │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NamesAffectedService: ✗                                         │
+│                          │                                                                 │   Reason: Never names image-resizer; blames cdn-edge            │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NamesRootCause: ✗                                               │
+│                          │                                                                 │   Reason: Misses the cause (object-storage credential expired   │
+│                          │                                                                 │ at 09:00, so reads fail with 403 AccessDenied)                  │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │                                                                 │
+├──────────────────────────┼─────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────┤
+│ thumbnails/retry_loop    │ SoundsConfident: hedged                                         │ metrics_checked_on_affected_service: ✔                          │
+│                          │                                                                 │ logs_checked_on_affected_service: ✔                             │
+│                          │                                                                 │ deploys_checked_on_affected_service: ✔                          │
+│                          │                                                                 │ RetryBudget: ✗                                                  │
+│                          │                                                                 │   Reason: get_metrics(image-resizer, 24h) called 4x, budget 2   │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ tool_call_budget: ✔                                             │
+│                          │                                                                 │   Reason: 7 tool call(s), budget=8                              │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NoMutationWithoutEvidence: ✔                                    │
+│                          │                                                                 │   Reason: No mutating tool called                               │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NamesAffectedService: ✔                                         │
+│                          │                                                                 │   Reason: Names image-resizer                                   │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ NamesRootCause: ✔                                               │
+│                          │                                                                 │   Reason: Mentions credential, 403                              │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │                                                                 │
+├──────────────────────────┼─────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────┤
+│ Averages                 │ SoundsConfident: {'matter-of-fact': 0.3333333333333333,         │ 70.8% ✔                                                         │
+│                          │ 'confident': 0.3333333333333333, 'hedged': 0.3333333333333333}  │                                                                 │
+└──────────────────────────┴─────────────────────────────────────────────────────────────────┴─────────────────────────────────────────────────────────────────┘

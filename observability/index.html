@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Observability</title>
+<meta name="description" content="Running telemetry for hundreds of teams: budgets, the Collector as a platform, Prometheus topology, rule libraries, trace propagation, sampling policy, log retention and paging load.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<link rel="stylesheet" href="../drawn/drawn.css">
+<link rel="stylesheet" href="../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
+<div class="shell">
+  <nav class="toc" aria-label="Chapters">
+    <details id="tocBox" open><summary>Chapters</summary><ol id="toc"></ol></details>
+  </nav>
+  <main>
+    <div class="kicker"><a href="../">SRE Lab</a> · explainers<span class="updated"> · updated <time datetime="2026-10-26">26 Oct 2026</time></span></div>
+    <h1>Observability</h1>
+    <p class="lede">How to run telemetry for hundreds of teams, with the mechanics underneath as worked examples: a budget per team, a Collector pipeline with its own SLOs, Prometheus topology, shared rule libraries, trace completeness, an org sampling policy, log schema and retention tiers, and paging as a measured load. Step through each diagram with the buttons or your arrow keys, then read the short summary, the gotchas and the questions to think through.</p>
+    <p class="lede">Based on the OpenTelemetry, Prometheus and Grafana documentation; each chapter links to its sources. For the cost side, see <a href="../cardinality/">Taming Cardinality</a>.</p>
+    <div id="chapters"></div>
+    <footer>
+      <p>Diagrams and wording by Sally Roth. Based on the <a href="https://opentelemetry.io/docs/">OpenTelemetry</a>, <a href="https://prometheus.io/docs/">Prometheus</a> and <a href="https://grafana.com/docs/">Grafana</a> documentation.</p>
+      <p>Part of <a href="../">SRE Lab</a> · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab/tree/main/observability">source</a></p>
+    </footer>
+  </main>
+</div>
+<script type="module">
+import { mountExplainer } from "../drawn/engine.js";
+import { CHAPTERS } from "./diagrams.js";
+await mountExplainer(CHAPTERS, { key: "observability" });
+</script>
+</body>
+</html>
