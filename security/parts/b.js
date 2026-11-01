@@ -35,10 +35,10 @@ export const CHAPTERS = [
     steps: [
       { text: "Findings come in from scanners, get sorted by what attackers actually use, and leave as fixes the fleet really runs. Press Next." },
       { text: "Scanners cover images, hosts and dependencies, and find far more than anyone can fix. Group findings by root cause first. One base image fix can close thousands of them.", on: ["feeds", "prio"], flow: ["e-feeds"] },
-      { text: "Add exploit data. CISA's KEV catalog lists 1,754 CVEs with reliable evidence of exploitation in the wild. FIRST's EPSS gives every CVE a daily probability of exploitation in the next 30 days.", on: ["intel", "prio"], flow: ["e-intel"] },
+      { text: "Add exploit data. CISA's KEV catalog lists 1,766 CVEs (30 Oct 2026) with reliable evidence of exploitation in the wild. FIRST's EPSS gives every CVE a daily probability of exploitation in the next 30 days.", on: ["intel", "prio"], flow: ["e-intel"] },
       { text: "Add context only you have. Is the asset reachable from the internet, what data does it hold, who owns it? Ownership is usually the bottleneck, so report findings on assets with no owner as their own number.", on: ["ctx", "prio"], flow: ["e-ctx"] },
       { text: "CISA's BOD 26-04 (June 2026) replaced the two-week deadline BOD 22-01 set for most KEV entries. Deadlines now come from four questions. Is the asset public? Is the CVE in KEV? Can exploitation be automated? Does it give partial or total control?", on: ["prio", "intel", "ctx"] },
-      { text: "The worst cases get days or hours. BOD 26-04's forensic triage lane fixes within three days and checks for compromise. AWS saw PHP2Shell tried four days before the 21 October 2026 fix, and says to \"measure patch and mitigation timelines in hours\" for critical internet-facing bugs. Investigate from the first known attempt.", on: ["prio", "fast", "triage", "fleet"], flow: ["e-fast", "e-triage", "e-fast-fleet"] },
+      { text: "Worst cases get days or hours. BOD 26-04's forensic triage lane fixes within three days and checks for compromise. In October 2026, 29 of 36 new KEV entries got three days. AWS saw PHP2Shell tried four days before its 21 Oct fix and says to \"measure patch and mitigation timelines in hours\". Investigate from the first attempt.", on: ["prio", "fast", "triage", "fleet"], flow: ["e-fast", "e-triage", "e-fast-fleet"] },
       { text: "The rest goes on a clock with a due date per class, tracked per team. Some fixes can wait for the next major upgrade, which BOD 26-04 calls fix on system upgrade.", on: ["prio", "sched", "fleet"], flow: ["e-sched", "e-sched-fleet"] },
       { text: "Most fixes should be a rebuild. Patch the golden base image once, and every service picks it up on its next build. AWS Allowed AMIs stops launches from unapproved or too-old images. One declarative policy sets it across accounts and Regions, with an audit mode to start.", on: ["prio", "rebuild", "base", "fleet"], flow: ["e-rebuild", "e-base", "e-base-fleet"] },
       { text: "A fix counts when the fleet runs it, so check for the fix, not the version. Alpine upgraded GitLab in October 2026 and stayed open to CVE-2026-97229: the fix was a Ruby patch GitLab ships only in its own packages. Track time to the last vulnerable instance gone, and the long tail of services nobody deploys anymore.", on: ["fleet", "base"] },
@@ -46,7 +46,8 @@ export const CHAPTERS = [
     say30: "I run vulnerability management as a queue with deadlines. Findings get grouped by root cause and joined with exploit data, CISA's KEV and EPSS, and with our own context: exposure, data and owner. Unowned findings are their own number. Exploited bugs on exposed assets get fixed in days, critical internet-facing ones mitigated in hours, and the compromise check starts at the first known attempt. Everything else gets a due date by class and an owner. Most fixes are rebuilds from patched golden images, so one fix reaches thousands of services. The metric is time until the last vulnerable instance is gone.",
     gotchas: [
       "CVSS measures how bad a bug is. It says nothing about whether anyone exploits it, so sort by exploitation and exposure first.",
-      "Image-age limits can break launches. AWS warns that very tight AMI age conditions fail when providers don't publish new images often enough.",
+      "Very tight AMI age limits fail launches when providers publish images rarely.",
+      "Distro trackers score their packages, not your install channel. Canonical scored LXD's CVE-2026-112816 a CVSS 10 (30 Oct 2026), but Ubuntu's CVE page says priority Medium and lxd \"Not in release\", because LXD ships as a snap. Inventory by channel too: snaps, containers, vendored binaries.",
       "Services that never redeploy never get the new base image. Rebuild on a schedule even when the code hasn't changed.",
     ],
     agentic: [
@@ -66,6 +67,9 @@ export const CHAPTERS = [
       { title: "CISA: BOD 26-04 Prioritizing Security Updates Based on Risk", url: "https://www.cisa.gov/news-events/directives/bod-26-04-prioritizing-security-updates-based-risk" },
       { title: "CISA: BOD 22-01 (superseded)", url: "https://www.cisa.gov/news-events/directives/bod-22-01-reducing-significant-risk-known-exploited-vulnerabilities" },
       { title: "FIRST: Exploit Prediction Scoring System (EPSS)", url: "https://www.first.org/epss/" },
+      { title: "CISA: KEV catalog JSON feed (catalog 2026.10.30)", url: "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json" },
+      { title: "Ubuntu: CVE-2026-112816 (LXD)", url: "https://ubuntu.com/security/CVE-2026-112816" },
+      { title: "Canonical: Critical vulnerability found in LXD and MicroCloud (28 Oct 2026)", url: "https://discourse.ubuntu.com/t/security-advisory-critical-vulnerability-found-in-canonical-lxd-and-microcloud/90557" },
       { title: "Allowed AMIs (Amazon EC2)", url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-allowed-amis.html" },
       { title: "Declarative policies in AWS Organizations", url: "https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_declarative.html" },
       { title: "Anthropic: Using Claude to reduce the attack surface of code (20 Oct 2026)", url: "https://www.anthropic.com/research/attack-surface-reduction" },
@@ -183,9 +187,10 @@ export const CHAPTERS = [
     gotchas: [
       "A system prompt that says read-only enforces nothing. Give the role read-only permissions.",
       "MCP clients follow URLs from servers during OAuth discovery. The spec says to block private ranges and metadata addresses like `169.254.169.254`, ideally with an egress proxy.",
+      "DNS is egress too. When you limit an E2B sandbox to named domains, E2B \"also opens 8.8.8.8 so that names resolve\" (26 Oct 2026 changelog; now configurable). Check what resolver every sandbox type can reach.",
       "Local MCP servers run with the client's privileges, so a one-click install is code execution.",
       "Agent config is a credential store. LiteLLM's root-cause report (23 Oct 2026): a master key to its agent platform leaked in a public config file and was never revoked, and one API call returned an org owner's GitHub token that \"was not scoped down\". That token led to CI secrets and a poisoned release, which ran from a `.pth` file and `sitecustomize.py` whenever Python started, imported or not. Agents get scoped service identities, a leaked key is revoked the day it's found, and hit hosts are rebuilt from verified artifacts: Microsoft says removing the package \"is not sufficient recovery.\"",
-      "An agent's summary of its own work is input too. In a 21 Oct 2026 preprint, a forged approval planted in a tool result \"launders into the agent's memory 87-100% of the time\" in harnesses that flatten the chat into one string before compacting, and never in harnesses that keep messages typed by role. In a UK AISI eval, a model's own compaction notes carried an out-of-scope attack forward (Anthropic, 23 Oct 2026). Anthropic's red team (22 Oct 2026) found production agent monitors did not watch compaction summaries at all. Ask how your harness keeps provenance through compaction.",
+      "An agent's summary of its own work is input too. In a 21 Oct 2026 preprint, a forged approval planted in a tool result \"launders into the agent's memory 87-100% of the time\" in harnesses that flatten the chat into one string before compacting, and never in harnesses that keep messages typed by role. In a UK AISI eval, a model's own compaction notes carried an out-of-scope attack forward (Anthropic, 23 Oct 2026). Anthropic's red team (22 Oct 2026) found production agent monitors did not watch compaction summaries at all.",
     ],
     agentic: [
       "Expect agent counts to grow faster than headcount. Budget inventory and review capacity per agent, not per team.",
@@ -200,6 +205,7 @@ export const CHAPTERS = [
       { title: "Meta: Agents Rule of Two (2025-10-31)", url: "https://ai.meta.com/blog/practical-ai-agent-security/" },
       { title: "OWASP Non-Human Identities Top 10 (2025)", url: "https://owasp.github.io/www-project-non-human-identities-top-10/2025/top-10-2025" },
       { title: "MCP Security Best Practices (spec 2026-07-28)", url: "https://modelcontextprotocol.io/docs/2026-07-28/tutorials/security/security_best_practices" },
+      { title: "E2B changelog: DNS server allowlists (26 Oct 2026)", url: "https://docs.e2b.dev/changelog#october-26-2026" },
       { title: "Wiz: anatomy of a real AI-driven cloud attack (19 Oct 2026)", url: "https://www.wiz.io/blog/anatomy-of-ai-driven-cloud-attacks" },
       { title: "LiteLLM: The attack chain behind the v1.107.0 release (23 Oct 2026)", url: "https://docs.litellm.ai/blog/security-incident-oct-21-2026-attack-chain" },
       { title: "Microsoft Security blog: Inside the LiteLLM 1.107.0 supply chain compromise (23 Oct 2026)", url: "https://www.microsoft.com/en-us/security/blog/2026/10/23/inside-the-litellm-1-107-0-supply-chain-compromise-credential-theft-through-python-startup-hooks/" },

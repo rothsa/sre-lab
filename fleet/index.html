@@ -430,6 +430,8 @@ const S = {
   ballJoy: ["Thorsten Ball: Joy & Curiosity #104 (1 Nov 2026)", "https://registerspill.thorstenball.com/p/joy-and-curiosity-104"],
   wizBlack: ["Wiz: Black October for AI developer platforms (30 Oct 2026)", "https://www.wiz.io/blog/black-october-for-ai-developer-platforms"],
   ghCloud: ["GitHub changelog: Work from anywhere with a new connected Copilot cloud experience (28 Oct 2026)", "https://github.blog/changelog/2026-10-28-work-from-anywhere-with-a-new-connected-copilot-cloud-experience"],
+  ghAutoDocs: ["GitHub Docs: About automations (Controlling costs with AI credits limits)", "https://docs.github.com/en/copilot/concepts/agent-capabilities/agent-powered-workflows-and-operations/about-automations"],
+  wolffEffort: ["Adam Wolff on X: ultrathink is back in the CC CLI (29 Oct 2026)", "https://x.com/dmwlff/status/2115614417689944066"],
   ghAuto: ["GitHub changelog: Build shared workflows for your team with Copilot Automations (28 Oct 2026)", "https://github.blog/changelog/2026-10-28-build-shared-workflows-for-your-team-with-copilot-automations"],
   ghIntel: ["GitHub changelog: GitHub Intelligence puts your code context and history to work (28 Oct 2026)", "https://github.blog/changelog/2026-10-28-github-intelligence-puts-your-code-context-and-history-to-work"],
   amazonSde: ["Amazon: How we think about the software engineer role with AI (Oct 2026)", "https://www.aboutamazon.com/news/company-news/amazon-software-engineer-role-guideline-ai"],
@@ -568,6 +570,7 @@ const STAGES = [
       ["Review has to converge. The same team (26 Oct 2026) saw one PR cycle \"more than fifty times overnight\" between agent author and agent reviewer. Now the reviewer asks for a rethink after three cycles, re-reviews only the diff, and is scored daily against every incident-causing PR.", "anthReviewX"],
       ["A model for each role. Searching and log reading go to a small model, edits stay on the main model, and the hardest planning moves up a tier. Anthropic's cost guide warns that a subagent that inherits the main model \"inherits its price too\" (Sep 2026); Uber defaults subagents to a weaker, cheaper model and keeps the strong one for planning and evaluation (Aug 2026).", "claudeDevCost"],
       ["Effort per spawn. pstack (Oct 2026): \"Match the model to the job.\" Pick each spawn's reasoning level, use fast mode \"only when the job is urgent, meaning CI or trunk is red or a person is blocked\", and keep verification on the swarm model.", "potetoMode"],
+      ["Start low, raise one turn. Claude Code's Adam Wolff (29 Oct 2026): \"I mostly run Opus 5.5 on medium.\" Typing ultrathink lifts the rest of that turn to xhigh (Claude Code 2.1.311).", "wolffEffort"],
       ["Fast mode is now a plain API option. On 15 Oct 2026 fast mode for Claude Opus 5.5 left research preview: no access request or beta header, premium pricing, and the gain is output tokens per second, not time to first token. Opus 5 fast mode stays in research preview. Opus 4.8 fast mode is deprecated, and from 30 Nov 2026 its fast requests return an error instead of falling back. Since 22 Oct it also runs on Claude Models on Google Cloud (Anthropic managed).", "fastMode"],
       ["One full verification per head, not per change. pstack: \"A full swarm runs once, at the code-ready head.\" A rebase or minor fix \"gets a single verifier at the new head.\"", "autopilot"],
       ["Route models in the harness, which knows the task. LangChain moved model choice into its Open SWE harness; in its own test, median cost per task fell 64% and merged PRs did not measurably change (29.2% vs 27.3%, p = 0.49).", "lcRouter"],
@@ -603,7 +606,7 @@ const STAGES = [
       ["Cindy Sridharan", "finds pre-commit agentic reviews extremely useful: for large changes the review agents take 10x as long as the coding agent took to write the patch, which she calls worth it. In October 2026 she dropped her view that agent-written unit tests are slop; what was missing was \"proper testing guidelines for your agents\". She still runs end-to-end tests.", "sridharanReview"],
       ["Cindy Sridharan", "still reviews every line (23 Oct 2026): sometimes an exception to the rules she encoded is the right call, and \"The agent isn't discerning enough to make these calls (as yet)\".", "sridharanEvery"],
     ],
-    sources: ["ballJoy", "sridharanEvery", "sridharanTests", "orch", "swarm", "ship", "stripe", "chernyX", "chernyReview", "tan1", "ccSub", "cc312", "anthJudgment", "ccWorkflows", "potetoMode", "fastMode", "autopilot", "lcRouter", "osc7501", "ghsaGit", "noma", "letta", "sridharanReview", "ccChangelog", "anthReview", "anthReviewX", "ctxgap"],
+    sources: ["ballJoy", "sridharanEvery", "sridharanTests", "orch", "swarm", "ship", "stripe", "chernyX", "chernyReview", "tan1", "ccSub", "cc312", "anthJudgment", "ccWorkflows", "potetoMode", "wolffEffort", "fastMode", "autopilot", "lcRouter", "osc7501", "ghsaGit", "noma", "letta", "sridharanReview", "ccChangelog", "anthReview", "anthReviewX", "ctxgap"],
     diagram: {
       boxes: [
         { id: "you", x: 20, y: 125, w: 90, h: 50, label: "You", sub: "write briefs" },
@@ -859,7 +862,7 @@ const STAGES = [
       ["Limits are pooled across agents. GitHub caps content creation at 80 requests a minute and 500 an hour, and an App installation's hourly budget stays the same however many agents use its tokens.", "ghRest"],
       ["Claude Code competes with production. For organizations with custom rate limits, Claude Code traffic counts toward the org's overall API limits; a workspace rate limit caps its share.", "ccCosts"],
       ["A spend cap stops every team at once. Past the org's monthly cap, every API request returns a 429 with no retry-after until the first of the next month, unless the limit is raised.", "apiLimits"],
-      ["Shared automations spend the repo owner's money. Copilot Automations (rolling out 28 Oct 2026) bill AI credits \"to the organization or user that owns the repository\", and \"anyone with write access can edit\" a shared one. Give each an owner and review changes like code.", "ghAuto"],
+      ["Shared automations spend the repo owner's money. Copilot Automations (28 Oct 2026) bill AI credits \"to the organization or user that owns the repository\", and anyone with write access can edit a shared one. Daily, weekly and monthly caps only block new runs; only a per-run cap stops one in progress. Give each an owner and a per-run cap.", "ghAutoDocs"],
       ["Throughput rises faster than stability. DORA's 2025 report found AI adoption positively related to delivery throughput, but it \"does continue to have a negative relationship with software delivery stability\".", "dora"],
       ["Audit has gaps by default. Claude Code exports events only when a logs exporter is configured, and leaves tool arguments out unless OTEL_LOG_TOOL_DETAILS=1.", "ccMonitoring"],
     ],
@@ -878,7 +881,7 @@ const STAGES = [
       ["Imprint", "(Will Larson) saw median review time go from about 33 to 77 minutes in two years, so CI now marks a change small-change only if it is under 1,000 lines, has no p1 or p2 AI-review findings, comes from an author with 10+ merges in that service and touches no path the repo excludes; about 10% qualify. He calls teams reviewing with local harnesses and answering harness comments with harnesses \"a bottleneck-pretending-to-be-a-solution\" (Oct 2026).", "larsonSmall"],
       ["Steve Yegge", "(The Counting House, 27 Oct 2026) gives each type of high-volume case its own autonomy tier, \"off, shadow, assist, contain, and transact\", and moves it up only on a gold set of 200 to 1,000 cases humans already handled. An LLM judge counts only where \"it agrees with your humans about as often as your humans agree with each other.\"", "yeggeCounting"],
     ],
-    sources: ["ccGateway", "costApi", "amazonSde", "ghAuto", "larsonSmall", "yeggeCounting", "gcProjects", "ghMetrics", "ghMetricsClient", "ccCosts", "apiLimits", "oaiTiers", "ccMonitoring", "cc307", "ampSoc2", "dora", "ghRest"],
+    sources: ["ccGateway", "costApi", "amazonSde", "ghAuto", "ghAutoDocs", "larsonSmall", "yeggeCounting", "gcProjects", "ghMetrics", "ghMetricsClient", "ccCosts", "apiLimits", "oaiTiers", "ccMonitoring", "cc307", "ampSoc2", "dora", "ghRest"],
     diagram: {
       boxes: [
         { id: "teams", x: 15, y: 30, w: 105, h: 46, label: "Teams", sub: "budget each", new: true },

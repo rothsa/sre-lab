@@ -201,7 +201,8 @@ export const CHAPTERS = [
     ],
     say30: "Every person signs in through one IdP with phishing-resistant MFA and gets temporary credentials. Access follows IdP groups, so a group delete gets the care of a prod change. Prod access defaults to read-only, and writes go through just-in-time grants that expire. Workloads federate the same way: CI and clusters sign OIDC tokens that the clouds swap for short-lived credentials. I run it as a program with one number, long-lived keys left, going to zero, including root credentials. Break-glass is pre-built, doesn't depend on the IdP, alerts on every use and gets tested, because the IdP is now the thing everything depends on.",
     gotchas: [
-      "Federation config fails for everyone at once. AWS lists an expired SAML signing certificate as its own emergency failure mode, and Entra reads only the first 100 signing keys from an external issuer.",
+      "Federation config fails for everyone at once. AWS lists an expired SAML signing certificate as its own emergency failure mode.",
+      "In mutual TLS only the leaf certificate proves its sender holds the key. LXD checked every certificate in the client's chain against its trust store, so a trusted client's public cert sent as an intermediate logged an attacker in as that client (Canonical, 28 Oct 2026).",
       "A trust that checks only issuer and audience lets any workload from that issuer in. Pin the subject per repo and per cluster.",
       "MFA at sign-in doesn't protect a stolen session cookie, as CircleCI found in 2022. Passkeys don't stop device code phishing either, \"because the victim signs in on the real Microsoft page\" (Carlos Perez, Oct 2026). Block device code flow outside documented exceptions, keep prod sessions short and ask for step-up on writes.",
     ],
@@ -224,6 +225,7 @@ export const CHAPTERS = [
       { title: "Google Cloud: Workload Identity Federation", url: "https://docs.cloud.google.com/iam/docs/workload-identity-federation" },
       { title: "Google Cloud: restricting service account usage", url: "https://docs.cloud.google.com/resource-manager/docs/organization-policy/restricting-service-accounts" },
       { title: "Microsoft Entra workload identity federation", url: "https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation" },
+      { title: "Canonical: Critical vulnerability found in LXD and MicroCloud (28 Oct 2026)", url: "https://discourse.ubuntu.com/t/security-advisory-critical-vulnerability-found-in-canonical-lxd-and-microcloud/90557" },
     ],
   },
   {
