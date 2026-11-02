@@ -104,11 +104,17 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
 <body>
 <div class="wrap">
   <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-11-01">1 Nov 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-11-02">2 Nov 2026</time></span></div>
   <h1 id="changelog-h">Changelog</h1>
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
     <p>What each daily research pass changed, newest first. Every change is checked against a primary source. The lab landing page shows the latest three.</p>
-    <details open><summary><time datetime="2026-11-01">1 Nov 2026</time></summary><ul>
+    <details open><summary><time datetime="2026-11-02">2 Nov 2026</time></summary><ul>
+      <li>Security: CVSS scores one bug, not the chain. Ivanti's Connect Secure chain includes CVEs scored 4.3 and 8.8, and the 13 Oct fixes didn't close two of them, so keep an edge-device incident open until the advisory stops changing.</li>
+      <li>Security: agent builders and MCP servers are code execution on the network. Langflow had unauthenticated remote code execution through MCP tool enumeration, so keep them in the asset inventory and behind auth.</li>
+      <li>Delivery: Meta generates tests overnight for the previous day's risky diffs and has engineers review results in aggregate. It caught 74 serious privacy bugs before they landed in the first half of 2026.</li>
+      <li class="minor">Smaller: Lauren Tan turned every bug into a lint rule while landing about 1,150 PRs in 4 days, and Google retires Jules on 31 Dec, so keep agent config in your own repos (One Agent to Hundreds).; LiteLLM now pilots an LTS line for teams that pin one gateway version (Agentic Engineering).</li>
+    </ul></details>
+    <details><summary><time datetime="2026-11-01">1 Nov 2026</time></summary><ul>
       <li>One Agent to Hundreds: at least nine AI developer platforms reported breaches in October, and attackers went after the AI keys stored in environment variables. A stolen key's own policy set the bill, so give each platform its own key, one region and a spend alarm.</li>
       <li>Agentic Engineering: ChatGPT's HTML preview escaped its sandbox through a library that trusted any message, then ran script from a domain its CSP allowed. Opening a shared link was enough. Treat rendered agent output as untrusted code.</li>
       <li>Infrastructure as Code: the agent kill switch has two halves. A trust policy edit only stops new sessions; an SCP deny or IAM's Revoke active sessions stops the credentials agents already hold.</li>
