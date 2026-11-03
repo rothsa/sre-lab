@@ -338,6 +338,7 @@ export const CHAPTERS = [
     gotchas: [
       "An attestation tells you where and how something was built. GitHub's own docs say it doesn't guarantee the artifact is secure.",
       "A tag can be moved to a different commit. Pin to the full SHA, and check it comes from the action's own repo and not a fork.",
+      "From 2 December 2026 GitHub blocks `pull_request_target` by default in all public repos, \"unless an applicable Actions event policy explicitly allows them\". Brownouts on 9 and 16 November show which workflows break. Decide the allow list once at org level, not per repo.",
       "Vendor scripts on signed-in pages run with the user's session. In October 2026 a compromised performance-monitoring script on Polymarket \"used their active session to sell positions and move funds\". Pin or self-host them, sandbox them, and set a strict CSP.",
     ],
     agentic: [
@@ -365,6 +366,7 @@ steps:
     ],
     incidents: ["eslint-2018-npm-account-takeover", "homebrew-2018-jenkins-github-token-leak", "bintray-2017-jcenter-impersonation-malware", "luarocks-2026-rockspec-bytecode-rce"],
     sources: [
+      { title: "GitHub Changelog: pull_request_target blocked by default December 2 (2 Nov 2026)", url: "https://github.blog/changelog/2026-11-02-pull_request_target-blocked-by-default-december-2" },
       { title: "GitHub Changelog: package firewall in public preview (20 Oct 2026)", url: "https://github.blog/changelog/2026-10-20-github-package-firewall-in-public-preview/" },
       { title: "Cursor: Claude Code extension security notice (29 Oct 2026)", url: "https://cursor.com/blog/claude-code-extension-security-notice" },
       { title: "Polymarket: postmortem, compromised third-party script (30 Oct 2026)", url: "https://status.polymarket.com/cmvvek1i90eme14ruga1z6tuj" },

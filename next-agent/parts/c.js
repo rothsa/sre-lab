@@ -38,7 +38,7 @@ export const CHAPTERS = [
     steps: [
       { text: "An agent with tools is a security design problem, and a model upgrade does not change that. Everything in this picture is enforced outside the model, so it holds whichever model sits in the middle." },
       { text: "Simon Willison's lethal trifecta (June 2025): private data, untrusted content and a way to send data out. Combine all three and an attacker can steal the data. Meta's Agents Rule of Two (October 2025) makes it policy: one session gets at most two.", on: ["untrusted", "private", "outside", "agent"], flow: ["e-in", "e-data"] },
-      { text: "Untrusted text becomes instructions. Meta calls prompt injection a \"fundamental, unsolved weakness\" in all LLMs. NIST found new red-team attacks raised hijacking success on one model from 11% to 81%, so fixed test lists mislead.", on: ["untrusted", "agent"], flow: ["e-in"] },
+      { text: "Untrusted text becomes instructions. Meta calls prompt injection a \"fundamental, unsolved weakness\" in all LLMs. NIST found new red-team attacks raised hijacking success on one model from 11% to 81%. In its 2026 contest, over 250,000 attempts broke all 13 frontier models at least once. Fixed test lists mislead.", on: ["untrusted", "agent"], flow: ["e-in"] },
       { text: "Every tool call passes a gate the model cannot edit. OWASP's Excessive Agency entry names three causes, too much functionality, permission and autonomy, and the fixes: fewer and narrower tools, least privilege, approval for high-impact actions.", on: ["agent", "policy"], flow: ["e-call"] },
       { text: "The sandbox needs both walls. Without network isolation an agent could send out SSH keys; without filesystem isolation it could escape and reach the network. Anthropic reports sandboxing cut permission prompts by 84% internally, which matters when hundreds of engineers would otherwise approve by reflex.", on: ["agent", "policy", "proxy"] },
       { text: "Traffic leaves only through a proxy with an allowlist that starts empty and grows by review. Tools get the same treatment: run an allowlisted internal MCP registry instead of ad hoc installs; the official MCP Registry is meant as the upstream for private enterprise subregistries.", on: ["policy", "proxy", "outside"], flow: ["e-egress", "e-out"] },
@@ -65,6 +65,7 @@ export const CHAPTERS = [
     codeNote: "Pseudocode, not a product's API. The point is where the check runs: in the harness, keyed on what the session has already touched, not on what the model says it intends.",
     incidents: [],
     sources: [
+      { title: "NIST CAISI: Insights from a large-scale AI agent red-teaming competition (23 Mar 2026)", url: "https://www.nist.gov/blogs/caisi-research-blog/insights-ai-agent-security-large-scale-red-teaming-competition" },
       { title: "Simon Willison: The lethal trifecta for AI agents (2025-06-16)", url: "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" },
       { title: "Meta: Agents Rule of Two (2025-10-31)", url: "https://ai.meta.com/blog/practical-ai-agent-security/" },
       { title: "NIST CAISI: Strengthening AI agent hijacking evaluations (2025-01-17)", url: "https://www.nist.gov/news-events/news/2025/01/technical-blog-strengthening-ai-agent-hijacking-evaluations" },

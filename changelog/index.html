@@ -104,11 +104,17 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
 <body>
 <div class="wrap">
   <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-11-02">2 Nov 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-11-03">3 Nov 2026</time></span></div>
   <h1 id="changelog-h">Changelog</h1>
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
     <p>What each daily research pass changed, newest first. Every change is checked against a primary source. The lab landing page shows the latest three.</p>
-    <details open><summary><time datetime="2026-11-02">2 Nov 2026</time></summary><ul>
+    <details open><summary><time datetime="2026-11-03">3 Nov 2026</time></summary><ul>
+      <li>Security: for the Linux IPv4 TCP remote code execution bug, disabling MPTCP is advice that followed the exploit, not the bug. Red Hat and Canonical both say patch the kernel. Containment exclusions need an owner and an expiry, and a password reset does not revoke a stolen certificate.</li>
+      <li>Agentic Engineering: an approval monitor only sees what the harness shows it. Researchers got past Codex Auto-review 11 ways, including a parent agent's prompts reaching the monitor as user messages. Claude Code hooks can now fail closed with <code>onFailure: "block"</code>.</li>
+      <li>One Agent to Hundreds: prove the tests, not the diff. Lauren Tan now finds adversarial code review mostly a waste of tokens, and Cindy Sridharan has adversarial agents plant bugs that every test suite must catch.</li>
+      <li class="minor">Smaller: GitHub blocks <code>pull_request_target</code> by default in public repos from 2 Dec (Security); Trail of Bits backports kernel CVE fixes with agents (Security); Claude message threads are best-effort, so the gateway keeps the transcript (Choosing the Next Agent); compare the post-relabel sample count with <code>sample_limit</code> (Cardinality); upstream Ruby shipped the GitLab regexp fix on 23 Oct (Security).</li>
+    </ul></details>
+    <details><summary><time datetime="2026-11-02">2 Nov 2026</time></summary><ul>
       <li>Security: CVSS scores one bug, not the chain. Ivanti's Connect Secure chain includes CVEs scored 4.3 and 8.8, and the 13 Oct fixes didn't close two of them, so keep an edge-device incident open until the advisory stops changing.</li>
       <li>Security: agent builders and MCP servers are code execution on the network. Langflow had unauthenticated remote code execution through MCP tool enumeration, so keep them in the asset inventory and behind auth.</li>
       <li>Delivery: Meta generates tests overnight for the previous day's risky diffs and has engineers review results in aggregate. It caught 74 serious privacy bugs before they landed in the first half of 2026.</li>

@@ -295,7 +295,7 @@ export const CHAPTERS = [
       "`relabel_configs` can't drop a metric: it only sees targets. Dropping series needs `metric_relabel_configs`, which runs after the scrape.",
       "Metric relabeling still costs a scrape and a parse. It saves TSDB memory and storage, not the target's work or the network transfer.",
       "`labeldrop` can merge distinct series into duplicates. The docs require series to stay uniquely labelled after the drop; colliding series cause ingestion errors.",
-      "`sample_limit` fails the whole scrape, so the target's useful metrics go dark too. Alert on `prometheus_target_scrapes_exceeded_sample_limit_total` increasing, and compare `scrape_samples_scraped` with the limit, so a limit hit is clearly not an outage.",
+      "`sample_limit` fails the whole scrape, so the target's useful metrics go dark too. Alert on `prometheus_target_scrapes_exceeded_sample_limit_total` increasing. The limit counts samples after metric relabeling, so compare `scrape_samples_post_metric_relabeling` with it. A high `scrape_samples_scraped` only shows what your drop rules removed.",
     ],
     agentic: [
       "An LLM can draft a `metric_relabel_configs` drop or `labeldrop` rule straight from the cardinality report, and a human approves it. Check each regex against every alert, recording rule and dashboard that references the metric: a wrong match silently deletes series an alert needs, and a `labeldrop` can collide series.",
@@ -310,6 +310,7 @@ export const CHAPTERS = [
     incidents: [],
     sources: [
       { title: "Prometheus: Configuration (relabel_config, scrape limits, remote_write)", url: "https://prometheus.io/docs/prometheus/latest/configuration/configuration/" },
+      { title: "Prometheus: Jobs and instances (automatically generated scrape series)", url: "https://prometheus.io/docs/concepts/jobs_instances/" },
       { title: "Robust Perception: Using sample_limit to avoid overload", url: "https://www.robustperception.io/using-sample_limit-to-avoid-overload/" },
       { title: "OpenTelemetry: Semantic conventions for HTTP metrics", url: "https://opentelemetry.io/docs/specs/semconv/http/http-metrics/" },
       { title: "OpenTelemetry Collector: filter processor", url: "https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/filterprocessor/README.md" },

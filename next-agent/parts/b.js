@@ -196,7 +196,7 @@ export const CHAPTERS = [
       "A retired model is a rollback target that no longer exists. Calls to retired Anthropic models fail, and Bedrock may cut access for inactive accounts during its legacy period; a fallback is only real while the old snapshot is served.",
       "The same model can retire on different dates in different places: Claude Sonnet 4.5 retires on Anthropic's API on 30 November 2026 but has a Bedrock end-of-life of 8 April 2027. Track the date for the platform you actually call.",
       "A feature can retire before its model. Fast mode on Claude Opus 4.8 is deprecated and goes away on 30 November 2026; after that, fast requests to it \"will return an error\" and don't fall back to standard speed. Inventory callers by model ID and speed, not model ID alone.",
-      "Deprecated models may be less reliable even before they retire, Anthropic's deprecation page warns, so don't leave production on one until the last day.",
+      "Server-side conversation state changes failover. Claude's message threads (beta, 2 Nov 2026) keep the conversation on the API side, but a thread is \"best-effort\": a 404 `thread_not_found` means send the whole conversation again, and the SDK helper also replays after a fallback model answers. The gateway still keeps every message, because \"Your application stays the source of truth\".",
     ],
     quiz: [
       { q: "Why pin a model snapshot instead of using an alias like `latest`?", a: "An alias can be hot-swapped to a new model by the vendor, changing behavior without a deploy. A pinned snapshot changes only when you move the pin, which makes evals, canaries and rollback meaningful." },
@@ -212,6 +212,7 @@ export const CHAPTERS = [
       { title: "Anthropic: Model deprecations", url: "https://platform.claude.com/docs/en/about-claude/model-deprecations" },
       { title: "Anthropic: Model IDs and versions", url: "https://platform.claude.com/docs/en/about-claude/models/model-ids-and-versions" },
       { title: "Anthropic: Commitments on model deprecation and preservation (2025-11-04)", url: "https://www.anthropic.com/news/deprecation-commitments" },
+      { title: "Claude docs: Message threads (beta)", url: "https://platform.claude.com/docs/en/build-with-claude/message-threads" },
       { title: "Claude docs: Opus 5.5 migration guide", url: "https://platform.claude.com/docs/en/models/opus-5-5/migration-guide" },
       { title: "OpenAI: Deprecations", url: "https://developers.openai.com/api/docs/deprecations" },
       { title: "OpenAI: GPT-5.4 model page (snapshots)", url: "https://developers.openai.com/api/docs/models/gpt-5.4" },

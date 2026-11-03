@@ -41,17 +41,17 @@ export const CHAPTERS = [
       { text: "Worst cases get days or hours. BOD 26-04's forensic triage lane fixes within three days and checks for compromise. In October 2026, 29 of 36 new KEV entries got three days. AWS saw PHP2Shell tried four days before its 21 Oct fix and says to \"measure patch and mitigation timelines in hours\". Investigate from the first attempt.", on: ["prio", "fast", "triage", "fleet"], flow: ["e-fast", "e-triage", "e-fast-fleet"] },
       { text: "The rest goes on a clock with a due date per class, tracked per team. Some fixes can wait for the next major upgrade, which BOD 26-04 calls fix on system upgrade.", on: ["prio", "sched", "fleet"], flow: ["e-sched", "e-sched-fleet"] },
       { text: "Most fixes should be a rebuild. Patch the golden base image once, and every service picks it up on its next build. AWS Allowed AMIs stops launches from unapproved or too-old images. One declarative policy sets it across accounts and Regions, with an audit mode to start.", on: ["prio", "rebuild", "base", "fleet"], flow: ["e-rebuild", "e-base", "e-base-fleet"] },
-      { text: "A fix counts when the fleet runs it, so check for the fix, not the version. Alpine upgraded GitLab in October 2026 and stayed open to CVE-2026-97229: the fix was a Ruby patch GitLab ships only in its own packages. Track time to the last vulnerable instance gone, and the long tail of services nobody deploys anymore.", on: ["fleet", "base"] },
+      { text: "A fix counts when the fleet runs it, so check for the fix, not the version. Alpine upgraded GitLab in October 2026 and stayed open to CVE-2026-97229: the fix was a patch to the Ruby that GitLab bundles, and Alpine used stock Ruby until upstream shipped it on 23 Oct. Track time to the last vulnerable instance gone.", on: ["fleet", "base"] },
     ],
     say30: "I run vulnerability management as a queue with deadlines. Findings get grouped by root cause and joined with exploit data, CISA's KEV and EPSS, and with our own context: exposure, data and owner. Unowned findings are their own number. Exploited bugs on exposed assets get fixed in days, critical internet-facing ones mitigated in hours, and the compromise check starts at the first known attempt. Everything else gets a due date by class and an owner. Most fixes are rebuilds from patched golden images, so one fix reaches thousands of services. The metric is time until the last vulnerable instance is gone.",
     gotchas: [
       "CVSS scores one bug. It says nothing about the chain or whether anyone exploits it. Ivanti's Connect Secure chain (in KEV 30 Oct 2026) includes CVEs Ivanti scored 4.3 and 8.8, and Rapid7 (2 Nov 2026) says the 13 Oct fixes \"do not remediate\" two of them. Sort by exploitation and exposure, and keep an edge-device incident open until the advisory stops changing.",
-      "Very tight AMI age limits fail launches when providers publish images rarely.",
+      "Workaround advice can follow the exploit, not the bug. For the Linux IPv4 TCP RCE CVE-2026-98432 (Nov 2026), many said disable MPTCP because Anthropic's exploit used it. Red Hat says \"Multipath TCP is not a required condition\", and Canonical calls kernel updates \"the only appropriate mitigation\". Track the kernel patch, not the workaround.",
       "Distro trackers score their packages, not your install channel. Canonical scored LXD's CVE-2026-112816 a CVSS 10 (30 Oct 2026), but Ubuntu's CVE page says priority Medium and lxd \"Not in release\", because LXD ships as a snap. Inventory by channel too: snaps, containers, vendored binaries.",
       "Services that never redeploy never get the new base image. Rebuild on a schedule even when the code hasn't changed.",
     ],
     agentic: [
-      "Agents can open the upgrade PRs for thousands of repos. The constraint moves to CI capacity and to review, so batch by base image and auto-merge only low-risk bumps with passing tests.",
+      "Agents can do the backports too. Trail of Bits reports Codex helped land fixes for 149 CVEs in stable Linux kernels by 29 Oct 2026, at about 30 minutes of human attention for a simple one. The constraint moves to CI capacity and to review, so batch by base image and auto-merge only low-risk bumps with passing tests.",
       "Attackers use automation on new CVEs too, which is why BOD 26-04 asks whether exploitation can be automated. Models now write the exploits: Anthropic (27 Oct 2026) had an unreleased model write five attack chains, including a one-click Chrome code execution, and Chrome has patched 62 CVEs from the work. Shorten the fast lane for exposed assets and scan your own code at PR time.",
       "Agents can shrink the attack surface, not only find bugs. Anthropic's Frontier Red Team (20 Oct 2026) ran Claude over 25 projects and found 493 issues, including 162 configuration combinations accepted with no warning; in 94 of them a security control silently turned off. Run that kind of sweep over the configs your fleet actually ships.",
     ],
@@ -62,6 +62,10 @@ export const CHAPTERS = [
     ],
     incidents: ["browserstack-2014-shellshock-aws-key-theft"],
     sources: [
+      { title: "Red Hat: RHSB-2026-016 Linux kernel IPv4 TCP RCE (CVE-2026-98432)", url: "https://access.redhat.com/security/vulnerabilities/RHSB-2026-016" },
+      { title: "Ubuntu: Fixes available in -proposed pocket for CVE-2026-98432 (2 Nov 2026)", url: "https://ubuntu.com/blog/fixes-available-in-proposed-pocket-for-cve-2026-98432" },
+      { title: "Trail of Bits: Backporting security fixes at scale with Codex (2 Nov 2026)", url: "https://blog.trailofbits.com/2026/11/02/backporting-security-fixes-at-scale-with-codex/" },
+      { title: "Ruby: Regexp fixes for GitLab CVEs (23 Oct 2026)", url: "https://www.ruby-lang.org/en/news/2026/10/23/regexp-fixes-for-gitlab-cves/" },
       { title: "Alpine Linux: GitLab security incident, CVE-2026-97229 (Oct 2026)", url: "https://alpinelinux.org/posts/GitLab-security-incident-CVE-2026-97229.html" },
       { title: "CISA: Known Exploited Vulnerabilities catalog", url: "https://www.cisa.gov/known-exploited-vulnerabilities-catalog" },
       { title: "CISA: BOD 26-04 Prioritizing Security Updates Based on Risk", url: "https://www.cisa.gov/news-events/directives/bod-26-04-prioritizing-security-updates-based-risk" },
@@ -123,6 +127,7 @@ export const CHAPTERS = [
     gotchas: [
       "GuardDuty auto-enable for new accounts can miss opt-in Regions if accounts joined the org before opting in. The ALL setting covers them.",
       "Disclosure clocks keep running while you investigate. Know ahead which of your entities NIS2 covers, and bring legal in at the first sign of data access.",
+      "Containment exclusions are attack surface. In an AD CS intrusion Microsoft described (30 Oct 2026), \"One privileged account was excluded from automated response\", and resetting the password or reimaging \"does not revoke an issued certificate\". Give every exclusion an owner and an expiry, and make playbooks revoke certificates and tickets.",
     ],
     agentic: [
       "Agents are good at the first hour: pulling logs across sources and building a timeline. Keep containment actions behind a person and an incident.",
@@ -135,6 +140,7 @@ export const CHAPTERS = [
     ],
     incidents: ["circleci-2022-session-cookie-theft-secrets-exfil", "cloudflare-2025-salesloft-drift-salesforce-breach", "circleci-2013-mongohq-database-breach"],
     sources: [
+      { title: "Microsoft Security: Help desk impersonation and AD CS abuse, ESC1 and ESC8 (30 Oct 2026)", url: "https://www.microsoft.com/en-us/security/blog/2026/10/30/help-desk-impersonation-ad-cs-abuse-investigating-esc1-esc8-intrusion-paths/" },
       { title: "Carlos Perez: Session security, token protection and continuous access evaluation (29 Oct 2026)", url: "https://www.darkoperator.com/blog/2026/10/29/w5qsv4977w92qgoxoethi861dzud1l" },
       { title: "Wiz: anatomy of a real AI-driven cloud attack (19 Oct 2026)", url: "https://www.wiz.io/blog/anatomy-of-ai-driven-cloud-attacks" },
       { title: "LiteLLM: The attack chain behind the v1.107.0 release (23 Oct 2026)", url: "https://docs.litellm.ai/blog/security-incident-oct-21-2026-attack-chain" },
