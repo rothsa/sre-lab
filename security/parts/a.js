@@ -207,8 +207,8 @@ export const CHAPTERS = [
       "MFA at sign-in doesn't protect a stolen session cookie, as CircleCI found in 2022. Passkeys don't stop device code phishing either, \"because the victim signs in on the real Microsoft page\" (Carlos Perez, Oct 2026). Block device code flow outside documented exceptions, keep prod sessions short and ask for step-up on writes.",
     ],
     agentic: [
-      "Agents are workloads. Give each one its own federated identity and short-lived credentials, never a person's key or session.",
-      "Record the human who launched each agent run next to the agent's identity, and set it from the IdP or launcher, never from the agent.",
+      "Agents are workloads: each gets its own federated identity and short-lived credentials, never a person's key, with the human who launched it recorded by the IdP or launcher, never by the agent.",
+      "MCP servers check tokens too. The official Python MCP SDK's bearer auth \"had no way to check that a token was issued for your server\" before 1.30.0 and 2.2.0 (27 Oct 2026), so a token for another service got in. Check the audience on every MCP server the fleet runs.",
     ],
     quiz: [
       { q: "What does an org-wide 'zero long-lived keys' program actually track?", a: "A count of every access key, service account key and app secret with an owner and age, trending to zero. Each remaining key has a removal date, and the replacement is federation with short-lived credentials." },
@@ -226,6 +226,7 @@ export const CHAPTERS = [
       { title: "Google Cloud: restricting service account usage", url: "https://docs.cloud.google.com/resource-manager/docs/organization-policy/restricting-service-accounts" },
       { title: "Microsoft Entra workload identity federation", url: "https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation" },
       { title: "Canonical: Critical vulnerability found in LXD and MicroCloud (28 Oct 2026)", url: "https://discourse.ubuntu.com/t/security-advisory-critical-vulnerability-found-in-canonical-lxd-and-microcloud/90557" },
+      { title: "MCP Python SDK: bearer auth accepts tokens for another resource server, GHSA-w4fh-qvv9-3v23 (27 Oct 2026)", url: "https://osv.dev/vulnerability/GHSA-w4fh-qvv9-3v23" },
     ],
   },
   {
@@ -278,6 +279,7 @@ export const CHAPTERS = [
     agentic: [
       "Anything that enters an agent's context can end up in transcripts and logs. Give agents tools that use a credential instead of the credential itself.",
       "Agents copy secrets into commits and config as readily as people do. Keep push protection on for agent PRs and rotate any secret an agent saw.",
+      "Stolen keys now buy model time. Google's threat intelligence team (2 Nov 2026) says the main way in is \"exposed or stolen cloud identity tokens\", with charges \"reaching $1 million USD before access was revoked\". Alert on model spend per key and project.",
     ],
     quiz: [
       { q: "What fields does a secret inventory need to be useful in an incident?", a: "Type, owner, what it grants access to, every location it's stored or copied, and when it was last rotated. That lets you answer what was exposed and who has to act." },
@@ -286,6 +288,7 @@ export const CHAPTERS = [
     ],
     incidents: ["cloudflare-2025-salesloft-drift-salesforce-breach", "cloudflare-2025-r2-credential-rotation", "heroku-2022-github-oauth-token-theft", "docker-2026-pat-transfer-org-conversion"],
     sources: [
+      { title: "Google Threat Intelligence: LLMjacking, monetizing compromised cloud models (2 Nov 2026)", url: "https://cloud.google.com/blog/topics/threat-intelligence/llmjacking-monetizing-compromised-cloud-models" },
       { title: "Cloudflare: eMudhra intermediate certificate compromise (Oct 2026)", url: "https://blog.cloudflare.com/emudhra-certificate-compromise/" },
       { title: "GitGuardian: State of Secrets Sprawl 2025", url: "https://www.gitguardian.com/state-of-secrets-sprawl-report-2025" },
       { title: "GitHub: About push protection", url: "https://docs.github.com/en/code-security/secret-scanning/introduction/about-push-protection" },

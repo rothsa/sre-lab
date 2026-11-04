@@ -104,11 +104,17 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
 <body>
 <div class="wrap">
   <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-11-03">3 Nov 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-11-04">4 Nov 2026</time></span></div>
   <h1 id="changelog-h">Changelog</h1>
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
     <p>What each daily research pass changed, newest first. Every change is checked against a primary source. The lab landing page shows the latest three.</p>
-    <details open><summary><time datetime="2026-11-03">3 Nov 2026</time></summary><ul>
+    <details open><summary><time datetime="2026-11-04">4 Nov 2026</time></summary><ul>
+      <li>Security: the upgrade can be the hole. A WordPress core bug in KEV since 3 Nov runs attacker code during the upgrade window, so fleet auto-updates should stage files where the web can't reach them. A Xen guest-escape bug was found by two AI teams on their own.</li>
+      <li>Security: MCP servers have to check that a token was issued for them. The official Python SDK couldn't until 1.30.0 and 2.2.0. Stolen cloud keys are also being used to run up model bills, so alert on model spend per key.</li>
+      <li>One Agent to Hundreds: the adversarial review debate. Steve Yegge keeps his agent reviewers: they block about a quarter of changes, the issues are almost all legit, and he bans P3 findings. Kiro rolls every CI result into one readiness check and auto-merges its simplest tier.</li>
+      <li class="minor">Smaller: Gemini 2.5 Pro calls will route to Gemini 3.8 Flash from 1 Dec, so a retired model ID may not even fail (Choosing the Next Agent); Yegge's numbers next to Tan's (Agentic Engineering); KEV count updated to 1,767 (Security).</li>
+    </ul></details>
+    <details><summary><time datetime="2026-11-03">3 Nov 2026</time></summary><ul>
       <li>Security: for the Linux IPv4 TCP remote code execution bug, disabling MPTCP is advice that followed the exploit, not the bug. Red Hat and Canonical both say patch the kernel. Containment exclusions need an owner and an expiry, and a password reset does not revoke a stolen certificate.</li>
       <li>Agentic Engineering: an approval monitor only sees what the harness shows it. Researchers got past Codex Auto-review 11 ways, including a parent agent's prompts reaching the monitor as user messages. Claude Code hooks can now fail closed with <code>onFailure: "block"</code>.</li>
       <li>One Agent to Hundreds: prove the tests, not the diff. Lauren Tan now finds adversarial code review mostly a waste of tokens, and Cindy Sridharan has adversarial agents plant bugs that every test suite must catch.</li>

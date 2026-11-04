@@ -193,7 +193,7 @@ export const CHAPTERS = [
     ],
     say30: "I treat a model retirement as a fleet migration with a vendor-set deadline. Anthropic gives at least 60 days, and OpenAI just set a January 2027 shutdown for GPT-4o and GPT-4.1, so the day a notice lands I inventory every caller by model ID and give each an owner. Model IDs are pinned in one gateway, so moving the pin is a config change. Each workload's candidate runs the eval suite, then a shadow run with no side effects, then a canary against a control, with SLIs and cost split by model ID. Rollback is moving the pin, so we finish well before the old snapshot retires.",
     gotchas: [
-      "A retired model is a rollback target that no longer exists. Calls to retired Anthropic models fail, and Bedrock may cut access for inactive accounts during its legacy period; a fallback is only real while the old snapshot is served.",
+      "A retired model is a rollback target that no longer exists, and a retired ID may not even fail. Calls to retired Anthropic models fail. Google reroutes instead: from 1 December 2026, calls to `gemini-2.5-pro` \"will automatically route to `gemini-3.8-flash`\" at its prices, with breaking API changes. Watch cost and quality per caller, not just errors.",
       "The same model can retire on different dates in different places: Claude Sonnet 4.5 retires on Anthropic's API on 30 November 2026 but has a Bedrock end-of-life of 8 April 2027. Track the date for the platform you actually call.",
       "A feature can retire before its model. Fast mode on Claude Opus 4.8 is deprecated and goes away on 30 November 2026; after that, fast requests to it \"will return an error\" and don't fall back to standard speed. Inventory callers by model ID and speed, not model ID alone.",
       "Server-side conversation state changes failover. Claude's message threads (beta, 2 Nov 2026) keep the conversation on the API side, but a thread is \"best-effort\": a 404 `thread_not_found` means send the whole conversation again, and the SDK helper also replays after a fallback model answers. The gateway still keeps every message, because \"Your application stays the source of truth\".",
@@ -213,6 +213,7 @@ export const CHAPTERS = [
       { title: "Anthropic: Model IDs and versions", url: "https://platform.claude.com/docs/en/about-claude/models/model-ids-and-versions" },
       { title: "Anthropic: Commitments on model deprecation and preservation (2025-11-04)", url: "https://www.anthropic.com/news/deprecation-commitments" },
       { title: "Claude docs: Message threads (beta)", url: "https://platform.claude.com/docs/en/build-with-claude/message-threads" },
+      { title: "Gemini API changelog: 2.5 Pro and Flash reroute on 1 Dec 2026 (2 Nov 2026)", url: "https://ai.google.dev/gemini-api/docs/changelog" },
       { title: "Claude docs: Opus 5.5 migration guide", url: "https://platform.claude.com/docs/en/models/opus-5-5/migration-guide" },
       { title: "OpenAI: Deprecations", url: "https://developers.openai.com/api/docs/deprecations" },
       { title: "OpenAI: GPT-5.4 model page (snapshots)", url: "https://developers.openai.com/api/docs/models/gpt-5.4" },

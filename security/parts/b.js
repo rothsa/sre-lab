@@ -35,7 +35,7 @@ export const CHAPTERS = [
     steps: [
       { text: "Findings come in from scanners, get sorted by what attackers actually use, and leave as fixes the fleet really runs. Press Next." },
       { text: "Scanners cover images, hosts and dependencies, and find far more than anyone can fix. Group findings by root cause first. One base image fix can close thousands of them.", on: ["feeds", "prio"], flow: ["e-feeds"] },
-      { text: "Add exploit data. CISA's KEV catalog lists 1,766 CVEs (30 Oct 2026) with reliable evidence of exploitation in the wild. FIRST's EPSS gives every CVE a daily probability of exploitation in the next 30 days.", on: ["intel", "prio"], flow: ["e-intel"] },
+      { text: "Add exploit data. CISA's KEV catalog lists 1,767 CVEs (3 Nov 2026) with reliable evidence of exploitation in the wild. FIRST's EPSS gives every CVE a daily probability of exploitation in the next 30 days.", on: ["intel", "prio"], flow: ["e-intel"] },
       { text: "Add context only you have. Is the asset reachable from the internet, what data does it hold, who owns it? Ownership is usually the bottleneck, so report findings on assets with no owner as their own number.", on: ["ctx", "prio"], flow: ["e-ctx"] },
       { text: "CISA's BOD 26-04 (June 2026) replaced the two-week deadline BOD 22-01 set for most KEV entries. Deadlines now come from four questions. Is the asset public? Is the CVE in KEV? Can exploitation be automated? Does it give partial or total control?", on: ["prio", "intel", "ctx"] },
       { text: "Worst cases get days or hours. BOD 26-04's forensic triage lane fixes within three days and checks for compromise. In October 2026, 29 of 36 new KEV entries got three days. AWS saw PHP2Shell tried four days before its 21 Oct fix and says to \"measure patch and mitigation timelines in hours\". Investigate from the first attempt.", on: ["prio", "fast", "triage", "fleet"], flow: ["e-fast", "e-triage", "e-fast-fleet"] },
@@ -49,10 +49,11 @@ export const CHAPTERS = [
       "Workaround advice can follow the exploit, not the bug. For the Linux IPv4 TCP RCE CVE-2026-98432 (Nov 2026), many said disable MPTCP because Anthropic's exploit used it. Red Hat says \"Multipath TCP is not a required condition\", and Canonical calls kernel updates \"the only appropriate mitigation\". Track the kernel patch, not the workaround.",
       "Distro trackers score their packages, not your install channel. Canonical scored LXD's CVE-2026-112816 a CVSS 10 (30 Oct 2026), but Ubuntu's CVE page says priority Medium and lxd \"Not in release\", because LXD ships as a snap. Inventory by channel too: snaps, containers, vendored binaries.",
       "Services that never redeploy never get the new base image. Rebuild on a schedule even when the code hasn't changed.",
+      "The upgrade can be the hole. KEV added WordPress core CVE-2026-119977 on 3 Nov 2026 with a three-day deadline: attackers can \"execute code on the server during the upgrade window\" through \"predictable, web-accessible staging paths\". Auto-updates across a fleet should stage files where the web can't reach them.",
     ],
     agentic: [
       "Agents can do the backports too. Trail of Bits reports Codex helped land fixes for 149 CVEs in stable Linux kernels by 29 Oct 2026, at about 30 minutes of human attention for a simple one. The constraint moves to CI capacity and to review, so batch by base image and auto-merge only low-risk bumps with passing tests.",
-      "Attackers use automation on new CVEs too, which is why BOD 26-04 asks whether exploitation can be automated. Models now write the exploits: Anthropic (27 Oct 2026) had an unreleased model write five attack chains, including a one-click Chrome code execution, and Chrome has patched 62 CVEs from the work. Shorten the fast lane for exposed assets and scan your own code at PR time.",
+      "Attackers use automation on new CVEs too, which is why BOD 26-04 asks whether exploitation can be automated. Models now write the exploits: Anthropic (27 Oct 2026) had an unreleased model write five attack chains, and Chrome has patched 62 CVEs from the work. Models also find the same bugs: Xen's XSA-523 (3 Nov 2026), a guest bug with \"no known mitigation\", was found by Anthropic using Claude and then \"independently reported\" by a second AI team. Shorten the fast lane for exposed assets and scan your own code at PR time.",
       "Agents can shrink the attack surface, not only find bugs. Anthropic's Frontier Red Team (20 Oct 2026) ran Claude over 25 projects and found 493 issues, including 162 configuration combinations accepted with no warning; in 94 of them a security control silently turned off. Run that kind of sweep over the configs your fleet actually ships.",
     ],
     quiz: [
@@ -71,7 +72,9 @@ export const CHAPTERS = [
       { title: "CISA: BOD 26-04 Prioritizing Security Updates Based on Risk", url: "https://www.cisa.gov/news-events/directives/bod-26-04-prioritizing-security-updates-based-risk" },
       { title: "CISA: BOD 22-01 (superseded)", url: "https://www.cisa.gov/news-events/directives/bod-22-01-reducing-significant-risk-known-exploited-vulnerabilities" },
       { title: "FIRST: Exploit Prediction Scoring System (EPSS)", url: "https://www.first.org/epss/" },
-      { title: "CISA: KEV catalog JSON feed (catalog 2026.10.30)", url: "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json" },
+      { title: "WordPress 7.1.4 security release (Oct 2026)", url: "https://wordpress.org/news/2026/10/wordpress-7-1-4" },
+      { title: "Xen: XSA-523 grant copy validation, CVE-2026-102703/102704 (3 Nov 2026)", url: "https://xenbits.xen.org/xsa/advisory-523.html" },
+      { title: "CISA: KEV catalog JSON feed (catalog 2026.11.03)", url: "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json" },
       { title: "Rapid7: Additional Ivanti Connect Secure zero-days exploited in the wild (2 Nov 2026)", url: "https://www.rapid7.com/blog/post/etr-additional-ivanti-connect-secure-zero-days-exploited-in-the-wild-cve-2026-111357-cve-2026-118527" },
       { title: "Ubuntu: CVE-2026-112816 (LXD)", url: "https://ubuntu.com/security/CVE-2026-112816" },
       { title: "Canonical: Critical vulnerability found in LXD and MicroCloud (28 Oct 2026)", url: "https://discourse.ubuntu.com/t/security-advisory-critical-vulnerability-found-in-canonical-lxd-and-microcloud/90557" },
