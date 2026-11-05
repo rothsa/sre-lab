@@ -104,11 +104,18 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
 <body>
 <div class="wrap">
   <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-11-04">4 Nov 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-11-05">5 Nov 2026</time></span></div>
   <h1 id="changelog-h">Changelog</h1>
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
     <p>What each daily research pass changed, newest first. Every change is checked against a primary source. The lab landing page shows the latest three.</p>
-    <details open><summary><time datetime="2026-11-04">4 Nov 2026</time></summary><ul>
+    <details open><summary><time datetime="2026-11-05">5 Nov 2026</time></summary><ul>
+      <li>Security: the update path is now a way in. A WordPress bug that runs code during the upgrade window, an APT bug that lets a bad mirror or proxy install a package as root, and cPGuard's hijacked update CDN all landed in the same week. Mirrors, proxies and update credentials need an owner and production controls.</li>
+      <li>Security: models now find kernel bugs in bulk. OpenAI says one pipeline run validated and patched 948 Linux local privilege escalation bugs, so plan for more kernel fixes than your node cadence was built for and treat local access on an unpatched host as root.</li>
+      <li>Agentic Engineering: a classifier now approves routine agent actions by default in Kiro CLI, VS Code and new Claude managed agents. Your allow, ask and deny rules still decide first.</li>
+      <li>One Agent to Hundreds: proof from the running thing. Addy Osmani, Thorsten Ball and Philipp Schmid have agents return videos, real merge requests and DOM checks. Bloomberg found review, test and deploy cost was the bottleneck across 2,333 migration PRs, and it fell where the pipeline verified changes before the PR.</li>
+      <li class="minor">Smaller: KEV count updated to 1,768, and Ubuntu's partial nftables mitigation for the kernel TCP bug (Security); xAI also reroutes retired model IDs (Choosing the Next Agent); Lauren Tan's team ships Grok Bot code without reading it, Overalls launch moved back, and HumanLayer joined Factory (One Agent to Hundreds); Claude Code's docs now say keep CLAUDE.md under 200 lines and audit lines written for older models (Agentic Engineering).</li>
+    </ul></details>
+    <details><summary><time datetime="2026-11-04">4 Nov 2026</time></summary><ul>
       <li>Security: the upgrade can be the hole. A WordPress core bug in KEV since 3 Nov runs attacker code during the upgrade window, so fleet auto-updates should stage files where the web can't reach them. A Xen guest-escape bug was found by two AI teams on their own.</li>
       <li>Security: MCP servers have to check that a token was issued for them. The official Python SDK couldn't until 1.30.0 and 2.2.0. Stolen cloud keys are also being used to run up model bills, so alert on model spend per key.</li>
       <li>One Agent to Hundreds: the adversarial review debate. Steve Yegge keeps his agent reviewers: they block about a quarter of changes, the issues are almost all legit, and he bans P3 findings. Kiro rolls every CI result into one readiness check and auto-merges its simplest tier.</li>
