@@ -379,6 +379,8 @@ export const CHAPTERS = [
     steps: [
       { text: "Skills and policy pass an eval gate, agent PRs are labelled and capped, and results return as data. Press Next to follow one skill change." },
       { text: "Platform before agents. Stripe's minions (1,300+ merged PRs a week) reuse the devboxes, linters and CI built for its engineers. Plan sandboxes as capacity, like CI: vendors report GKE Agent Sandbox's warm pool allocating 300 sandboxes a second per cluster and Modal supporting up to 50,000 concurrent per customer.", on: ["platform", "skills"], flow: ["e-own"] },
+      { text: "Old, fragile environments move off laptops too. Capture the one working setup as code and keep the last good build: Cursor's setup scripts \"must be idempotent\" and a failed build \"doesn't replace the active Build\". Amp's paused orbs \"can resume on another worker node\".", on: ["platform"] },
+      { text: "For on-prem, VPN-only or licensed systems, send execution to their network and keep the agent loop in the cloud. Amp's self-hosted orbs serve teams that \"need access to internal networks\"; Devin Outposts run commands \"on machines you operate\". Simulators, hardware and local-only auth stay local.", on: ["platform", "teams"] },
       { text: "A skill or prompt change is a code change, so it must pass evals. pstack's eval playbook keeps them blind: no hint to candidates that they're tested, a held-back rubric, a judge from another model family, and you read every output.", on: ["skills", "evals"], flow: ["e-gate"] },
       { text: "A model swap is a policy change, and snapshot IDs hard-coded across repos all break on one date. Anthropic gives at least 60 days' notice before retiring a model; pin models centrally, find stragglers in usage exports by key and model, and start the eval run when the notice lands.", on: ["vendor", "evals"], flow: ["e-model"] },
       { text: "Promote what passes into managed config teams can't override (`availableModels` locks the model list). Run the gateway with its own SLO and a pinned version. On 21 Oct 2026 LiteLLM's `latest` image carried credential-stealing malware for over two hours. Since 2 Nov it pilots an LTS line (1.108) for teams that pin.", on: ["evals", "policy", "teams"], flow: ["e-ship", "e-roll"] },
@@ -395,6 +397,7 @@ export const CHAPTERS = [
       "Ask \"of what\" before comparing adoption. Google's paper puts code \"written by ML\" at 28.7% or 70.6% for the same weeks of March 2025, depending on whether pasted characters count in the denominator. In April 2026 Sundar Pichai said 75% of new code at Google is \"AI-generated and approved by engineers\", up from 50% last fall.",
       "Surveys add a view, not a measurement. In a February to April 2026 METR survey, 349 technical workers self-reported a median 1.4-2x change in the value of their work; METR calls surveys \"a flawed but useful complement\".",
       "Throughput hides cost. DORA's 2025 report ties higher AI adoption to more throughput and more instability, and a study that follows agent code after merge, adjusting for file role, found about 1.5x more corrective maintenance.",
+      "Snapshots carry their faults forward. Ona warns secret values \"can remain in prepared files\", Devin keeps \"one active snapshot per platform\", Copilot cloud agent's firewall \"is not compatible with Windows\", and Devin can't use VPNs that need \"interactive MFA sign-in\". Firecracker's 4 Nov 2026 fix (CVE-2026-122192) was for VMs restored from snapshots. Give each base image an owner, a rebuild schedule and a pinned sandbox version. No first-hand report yet covers mainframe or COBOL work run this way.",
     ],
     quiz: [
       { q: "Leadership says agents now produce 70% of PRs, up from 11%. What do you ask first?", a: "Which verb and denominator: opened, authored, coauthored or attributed, of all PRs or merged ones. Uber's numbers went from 11% \"opened\" (March) to over 70% \"attributed\" (August), neither defined. Then ask for reverts by source." },
@@ -408,6 +411,14 @@ export const CHAPTERS = [
     codeNote: "A sketch: `evals/run` and the policy keys stand for your platform. Any skill, playbook or pinned-model change reruns one suite; spend alerts mirror Uber's.",
     incidents: [],
     sources: [
+      { title: "Cursor Docs: cloud agent setup", url: "https://cursor.com/docs/cloud-agent/setup" },
+      { title: "Amp news: self-hosted orbs (22 Oct 2026)", url: "https://ampcode.com/news/self-hosted-orbs" },
+      { title: "Devin Docs: Outposts", url: "https://docs.devin.ai/onboard-devin/outposts" },
+      { title: "Devin Docs: environment and snapshots", url: "https://docs.devin.ai/onboard-devin/environment" },
+      { title: "Devin Docs: VPN configuration", url: "https://docs.devin.ai/onboard-devin/vpn" },
+      { title: "Ona Docs: prebuilds", url: "https://ona.com/docs/ona/projects/prebuilds" },
+      { title: "GitHub Docs: customize the Copilot cloud agent environment", url: "https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/customize-the-agent-environment" },
+      { title: "AWS: Security bulletin 2026-169-AWS, Firecracker (4 Nov 2026)", url: "https://aws.amazon.com/security/security-bulletins/2026-169-aws/" },
       { title: "Stripe: Minions, part 1", url: "https://stripe.dev/blog/minions-stripes-one-shot-end-to-end-coding-agents" },
       { title: "Stripe: Minions, part 2", url: "https://stripe.dev/blog/minions-stripes-one-shot-end-to-end-coding-agents-part-2" },
       { title: "Shopify: Under the River", url: "https://shopify.engineering/under-the-river" },
