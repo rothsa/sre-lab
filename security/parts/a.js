@@ -279,7 +279,7 @@ export const CHAPTERS = [
     agentic: [
       "Anything that enters an agent's context can end up in transcripts and logs. Give agents tools that use a credential instead of the credential itself.",
       "Agents copy secrets into commits and config as readily as people do. Keep push protection on for agent PRs and rotate any secret an agent saw.",
-      "Stolen keys now buy model time. Google's threat intelligence team (2 Nov 2026) says the main way in is \"exposed or stolen cloud identity tokens\", with charges \"reaching $1 million USD before access was revoked\". Alert on model spend per key and project.",
+      "Stolen keys now buy model time. Google's threat intelligence team (2 Nov 2026) says the main way in is \"exposed or stolen cloud identity tokens\", with charges \"reaching $1 million USD before access was revoked\". Vendors now let you pin model keys to your own network: Anthropic's IP allowlist (beta, 5 Nov 2026) refuses requests from other addresses, \"which limits where a leaked API key can be used\", and OpenAI requires one for GPT-6-Cyber. Allowlist your gateway's egress and alert on model spend per key and project.",
     ],
     quiz: [
       { q: "What fields does a secret inventory need to be useful in an incident?", a: "Type, owner, what it grants access to, every location it's stored or copied, and when it was last rotated. That lets you answer what was exposed and who has to act." },
@@ -288,6 +288,8 @@ export const CHAPTERS = [
     ],
     incidents: ["cloudflare-2025-salesloft-drift-salesforce-breach", "cloudflare-2025-r2-credential-rotation", "heroku-2022-github-oauth-token-theft", "docker-2026-pat-transfer-org-conversion"],
     sources: [
+      { title: "Claude Platform release notes: IP allowlisting (5 Nov 2026)", url: "https://platform.claude.com/docs/en/release-notes/overview#ip-allowlisting" },
+      { title: "OpenAI: Daybreak guide, IP allowlisting for GPT-6-Cyber (Nov 2026)", url: "https://developers.openai.com/api/docs/guides/daybreak" },
       { title: "Google Threat Intelligence: LLMjacking, monetizing compromised cloud models (2 Nov 2026)", url: "https://cloud.google.com/blog/topics/threat-intelligence/llmjacking-monetizing-compromised-cloud-models" },
       { title: "Cloudflare: eMudhra intermediate certificate compromise (Oct 2026)", url: "https://blog.cloudflare.com/emudhra-certificate-compromise/" },
       { title: "GitGuardian: State of Secrets Sprawl 2025", url: "https://www.gitguardian.com/state-of-secrets-sprawl-report-2025" },

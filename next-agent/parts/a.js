@@ -193,7 +193,7 @@ export const CHAPTERS = [
       "A 50% time horizon is a task-difficulty measure, not how long an agent can work, and it is far shorter at 80% reliability: METR's 2025 paper puts 80% horizons 4 to 6 times shorter than 50% ones (Claude 3.7 Sonnet: about 50 minutes at 50%).",
       "Modelling choices move the numbers. METR (March 2026): excluding public tasks dropped Claude Opus 4.6 from 11h59m to 7h11m.",
       "Benchmark scores across labs are not strictly comparable: scaffolds, task subsets and trial counts differ.",
-      "The best model may not be one you can buy. Anthropic sells Fable 5.1, but Mythos 5.1 \"is available only through our trusted access programs\" (Sep 2026), and Google gave Gemini 4 Carbon first to \"a subset of cyber defenders\" (28 Oct 2026). Plan roadmaps on models your teams can call.",
+      "The best model may not be one you can buy. Anthropic sells Fable 5.1, but Mythos 5.1 \"is available only through our trusted access programs\" (Sep 2026), Google gave Gemini 4 Carbon first to \"a subset of cyber defenders\" (28 Oct 2026), and OpenAI's GPT-6-Cyber (5 Nov 2026) needs Daybreak Red approval and an IP allowlist. Plan roadmaps on models your teams can call.",
       "Faster developers are not guaranteed: METR's early-2025 study found experienced open-source developers 19% slower with AI; its 2026 follow-up suggests speedups now, but calls the evidence very weak.",
     ],
     quiz: [
@@ -209,6 +209,7 @@ export const CHAPTERS = [
     sources: [
       { title: "Anthropic: Project Glasswing (7 Apr 2026)", url: "https://www.anthropic.com/glasswing" },
       { title: "Anthropic: Claude Fable 5.1 and Mythos 5.1 (Sep 2026)", url: "https://www.anthropic.com/claude-fable-and-mythos-5-1" },
+      { title: "OpenAI: GPT-6-Cyber model page (Daybreak Red access, Nov 2026)", url: "https://developers.openai.com/api/docs/models/gpt-6-cyber" },
       { title: "Google: Introducing Gemini 4 Carbon (28 Oct 2026)", url: "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-carbon/" },
       { title: "METR: Measuring AI ability to complete long tasks (2025-03-19)", url: "https://metr.org/blog/2025-03-19-measuring-ai-ability-to-complete-long-tasks/" },
       { title: "METR et al.: Measuring AI Ability to Complete Long Software Tasks (arXiv 2503.14499)", url: "https://arxiv.org/abs/2503.14499" },

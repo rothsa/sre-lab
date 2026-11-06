@@ -45,7 +45,7 @@ export const CHAPTERS = [
     ],
     say30: "I run vulnerability management as a queue with deadlines. Findings get grouped by root cause and joined with exploit data, CISA's KEV and EPSS, and with our own context: exposure, data and owner. Unowned findings are their own number. Exploited bugs on exposed assets get fixed in days, critical internet-facing ones mitigated in hours, and the compromise check starts at the first known attempt. Everything else gets a due date by class and an owner. Most fixes are rebuilds from patched golden images, so one fix reaches thousands of services. The metric is time until the last vulnerable instance is gone.",
     gotchas: [
-      "CVSS scores one bug. It says nothing about the chain or whether anyone exploits it. Ivanti's Connect Secure chain (in KEV 30 Oct 2026) includes CVEs Ivanti scored 4.3 and 8.8, and Rapid7 (2 Nov 2026) says the 13 Oct fixes \"do not remediate\" two of them. Sort by exploitation and exposure, and keep an edge-device incident open until the advisory stops changing.",
+      "CVSS scores one bug. It says nothing about the chain or whether anyone exploits it. Ivanti's Connect Secure chain (in KEV 30 Oct 2026) includes CVEs Ivanti scored 4.3 and 8.8, and Rapid7 (2 Nov 2026) says the 13 Oct fixes \"do not remediate\" two of them. Barracuda (5 Nov 2026) changed an ESG bug from authenticated to \"No (Administrative UI Access Required)\" after a public exploit. Sort by exploitation and exposure, and keep an edge-device incident open until the advisory stops changing.",
       "Workaround advice can follow the exploit, not the bug. For the Linux IPv4 TCP RCE CVE-2026-98432 (Nov 2026), many said disable MPTCP because Anthropic's exploit used it. Red Hat says \"Multipath TCP is not a required condition\", and Canonical calls kernel updates \"the only appropriate mitigation\". Ubuntu's CVE page (5 Nov) now adds an nftables rule that drops IPv4 TCP packets with IP options, which \"reduces the risk but does not fully prevent exploitation\", and the fixed kernel is still not in -updates. Track the kernel patch, not the workaround.",
       "Distro trackers score their packages, not your install channel. Canonical scored LXD's CVE-2026-112816 a CVSS 10 (30 Oct 2026), but Ubuntu's CVE page says priority Medium and lxd \"Not in release\", because LXD ships as a snap. Inventory by channel too: snaps, containers, vendored binaries.",
       "Services that never redeploy never get the new base image. Rebuild on a schedule even when the code hasn't changed.",
@@ -80,6 +80,7 @@ export const CHAPTERS = [
       { title: "Xen: XSA-523 grant copy validation, CVE-2026-102703/102704 (3 Nov 2026)", url: "https://xenbits.xen.org/xsa/advisory-523.html" },
       { title: "CISA: KEV catalog JSON feed (catalog 2026.11.04)", url: "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json" },
       { title: "Rapid7: Additional Ivanti Connect Secure zero-days exploited in the wild (2 Nov 2026)", url: "https://www.rapid7.com/blog/post/etr-additional-ivanti-connect-secure-zero-days-exploited-in-the-wild-cve-2026-111357-cve-2026-118527" },
+      { title: "Barracuda: Pre-authentication authorization bypass and command injection (updated 5 Nov 2026)", url: "https://trust.barracuda.com/security/pre-authentication-authorization-bypass-command-injection" },
       { title: "Ubuntu: CVE-2026-112816 (LXD)", url: "https://ubuntu.com/security/CVE-2026-112816" },
       { title: "Canonical: Critical vulnerability found in LXD and MicroCloud (28 Oct 2026)", url: "https://discourse.ubuntu.com/t/security-advisory-critical-vulnerability-found-in-canonical-lxd-and-microcloud/90557" },
       { title: "Allowed AMIs (Amazon EC2)", url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-allowed-amis.html" },
@@ -139,6 +140,7 @@ export const CHAPTERS = [
     agentic: [
       "Agents are good at the first hour: pulling logs across sources and building a timeline. Keep containment actions behind a person and an incident.",
       "Agent tool calls need their own logs with the agent's identity, or an investigation can't tell an agent's change from an attacker's.",
+      "Attackers' agents walk from non-production to production in days (since Oct 2026). CERT-In (4 Nov) says an AI-assisted crew \"operates at machine speed\", enters through exposed UAT and staging, moves to production \"using shared credentials, tokens or network paths\", and hit banks again \"after incomplete remediation\". Chainstack's attacker reached production three days after dev. Give non-production its own credentials and paths, and assume persistence after cleanup.",
     ],
     quiz: [
       { q: "Why send audit logs to a separate security account in real time?", a: "Admins and attackers in the source account can delete or alter local logs. A separate account they can't reach keeps the evidence, and real-time delivery leaves no window to tamper." },
@@ -147,6 +149,8 @@ export const CHAPTERS = [
     ],
     incidents: ["circleci-2022-session-cookie-theft-secrets-exfil", "cloudflare-2025-salesloft-drift-salesforce-breach", "circleci-2013-mongohq-database-breach"],
     sources: [
+      { title: "CERT-In: CIAD-2026-0058 AI-driven attacks on BFSI entities (4 Nov 2026)", url: "https://www.cert-in.org.in/s2cMainServlet?pageid=PUBVLNOTES02&VLCODE=CIAD-2026-0058" },
+      { title: "Chainstack: Security incident, November 2026", url: "https://chainstack.com/security-incident-nov-2026/" },
       { title: "Microsoft Security: Help desk impersonation and AD CS abuse, ESC1 and ESC8 (30 Oct 2026)", url: "https://www.microsoft.com/en-us/security/blog/2026/10/30/help-desk-impersonation-ad-cs-abuse-investigating-esc1-esc8-intrusion-paths/" },
       { title: "Carlos Perez: Session security, token protection and continuous access evaluation (29 Oct 2026)", url: "https://www.darkoperator.com/blog/2026/10/29/w5qsv4977w92qgoxoethi861dzud1l" },
       { title: "Wiz: anatomy of a real AI-driven cloud attack (19 Oct 2026)", url: "https://www.wiz.io/blog/anatomy-of-ai-driven-cloud-attacks" },
