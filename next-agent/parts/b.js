@@ -181,7 +181,7 @@ export const CHAPTERS = [
     ],
     steps: [
       { text: "A model retirement is a fleet-wide production change with a deadline you don't control. Treat it like any risky rollout: test offline, compare on real inputs, expose a little traffic, and keep a way back." },
-      { text: "Deadlines are set by the vendor. Anthropic gives at least 60 days' notice; OpenAI at least 6 months for generally available models, but previews can get much shorter notice. On 14 October 2026 OpenAI set 14 January 2027 as the shutdown date for GPT-4o, GPT-4o mini, GPT-4.1 and GPT-4.1 mini.", on: ["notice", "cand"], flow: ["e-notice"] },
+      { text: "Deadlines are set by the vendor. Anthropic gives at least 60 days' notice; OpenAI at least 6 months for generally available models but less for previews: GPT-4o and GPT-4.1 shut down 14 January 2027, and gpt-5.5-cyber-preview (deprecated 5 Nov 2026) on 1 February 2027.", on: ["notice", "cand"], flow: ["e-notice"] },
       { text: "The day a notice lands, find every caller: inventory usage by model ID from Anthropic's console usage export or your gateway logs, and give each caller an owner.", on: ["notice", "pin"] },
       { text: "A new model can change the API too. Anthropic's Opus 5.5 guide lists settings now rejected with an error (prefill, manual thinking budgets) and a new default effort level. Run the full eval suite on the candidate (chapter 5), with a fresh effort sweep, because defaults shift between models.", on: ["cand", "evals"], flow: ["e-run"] },
       { text: "Shadow it: send copies of real inputs to the new model, compare outputs and tool calls, and let nothing it does take effect. Shadow runs need read-only tools or dry-run modes.", on: ["evals", "shadow"], flow: ["e-pass"] },

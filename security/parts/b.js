@@ -35,7 +35,7 @@ export const CHAPTERS = [
     steps: [
       { text: "Findings come in from scanners, get sorted by what attackers actually use, and leave as fixes the fleet really runs. Press Next." },
       { text: "Scanners cover images, hosts and dependencies, and find far more than anyone can fix. Group findings by root cause first. One base image fix can close thousands of them.", on: ["feeds", "prio"], flow: ["e-feeds"] },
-      { text: "Add exploit data. CISA's KEV catalog lists 1,768 CVEs (4 Nov 2026) with reliable evidence of exploitation in the wild. FIRST's EPSS gives every CVE a daily probability of exploitation in the next 30 days.", on: ["intel", "prio"], flow: ["e-intel"] },
+      { text: "Add exploit data. CISA's KEV catalog lists 1,769 CVEs (6 Nov 2026) with reliable evidence of exploitation in the wild. FIRST's EPSS gives every CVE a daily probability of exploitation in the next 30 days.", on: ["intel", "prio"], flow: ["e-intel"] },
       { text: "Add context only you have. Is the asset reachable from the internet, what data does it hold, who owns it? Ownership is usually the bottleneck, so report findings on assets with no owner as their own number.", on: ["ctx", "prio"], flow: ["e-ctx"] },
       { text: "CISA's BOD 26-04 (June 2026) replaced the two-week deadline BOD 22-01 set for most KEV entries. Deadlines now come from four questions. Is the asset public? Is the CVE in KEV? Can exploitation be automated? Does it give partial or total control?", on: ["prio", "intel", "ctx"] },
       { text: "Worst cases get days or hours. BOD 26-04's forensic triage lane fixes within three days and checks for compromise. In October 2026, 29 of 36 new KEV entries got three days. AWS saw PHP2Shell tried four days before its 21 Oct fix and says to \"measure patch and mitigation timelines in hours\". Investigate from the first attempt.", on: ["prio", "fast", "triage", "fleet"], flow: ["e-fast", "e-triage", "e-fast-fleet"] },
@@ -53,7 +53,7 @@ export const CHAPTERS = [
     ],
     agentic: [
       "Agents can do the backports too. Trail of Bits reports Codex helped land fixes for 149 CVEs in stable Linux kernels by 29 Oct 2026, at about 30 minutes of human attention for a simple one. The constraint moves to CI capacity and to review, so batch by base image and auto-merge only low-risk bumps with passing tests.",
-      "Since October 2026 models find and exploit bugs in bulk, which is why BOD 26-04 asks whether exploitation can be automated. Anthropic (27 Oct) had an unreleased model write five attack chains, and Chrome has patched 62 CVEs from the work. Xen's XSA-523 (3 Nov), with \"no known mitigation\", was found by Anthropic using Claude and then \"independently reported\" by a second AI team. OpenAI says (4 Nov) one pipeline run \"validated and generated patches for 948 local privilege escalation vulnerabilities\" in Linux. Expect more kernel fixes than your node cadence was built for, treat local access on an unpatched host as root, and scan your own code at PR time.",
+      "Since October 2026 models find and exploit bugs in bulk, which is why BOD 26-04 asks whether exploitation can be automated. Anthropic (27 Oct) had an unreleased model write five attack chains, and Chrome has patched 62 CVEs from the work. AI-found bugs get found twice: Xen's XSA-523 (3 Nov) was found by Anthropic using Claude and then \"independently reported\" by a second AI team, and OpenSSH (10.6p2, 5 Nov) now makes \"more frequent releases\" because adversaries \"are likely to be able to discover these bugs too\". Its musl password bypass drew exploitation attempts the next day. OpenAI says (4 Nov) one pipeline run \"validated and generated patches for 948 local privilege escalation vulnerabilities\" in Linux; by 6 Nov, 15 kernel fixes from an OpenAI author were in mainline. Expect more kernel fixes than your node cadence was built for, treat local access on an unpatched host as root, and scan your own code at PR time.",
       "Agents can shrink the attack surface, not only find bugs. Anthropic's Frontier Red Team (20 Oct 2026) ran Claude over 25 projects and found 162 configuration combinations accepted with no warning; in 94 a security control silently turned off. Run that kind of sweep over the configs your fleet actually ships.",
     ],
     quiz: [
@@ -65,6 +65,9 @@ export const CHAPTERS = [
     sources: [
       { title: "Red Hat: RHSB-2026-016 Linux kernel IPv4 TCP RCE (CVE-2026-98432)", url: "https://access.redhat.com/security/vulnerabilities/RHSB-2026-016" },
       { title: "Ubuntu: Fixes available in -proposed pocket for CVE-2026-98432 (2 Nov 2026)", url: "https://ubuntu.com/blog/fixes-available-in-proposed-pocket-for-cve-2026-98432" },
+      { title: "OpenSSH 10.6p2 release notes (5 Nov 2026)", url: "https://www.openssh.org/releasenotes.html#10.6p2" },
+      { title: "Previdian: CVE-2026-123158 exploitation attempts", url: "https://previdian.com/CVE-2026-123158" },
+      { title: "Linux mainline: mptcp: pm: kernel: use RCU to free endpoint listeners (OpenAI author, 5 Nov 2026)", url: "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=49b09ae0bf57b4230187d4cdd0a370558e44a6e8" },
       { title: "Trail of Bits: Backporting security fixes at scale with Codex (2 Nov 2026)", url: "https://blog.trailofbits.com/2026/11/02/backporting-security-fixes-at-scale-with-codex/" },
       { title: "Ruby: Regexp fixes for GitLab CVEs (23 Oct 2026)", url: "https://www.ruby-lang.org/en/news/2026/10/23/regexp-fixes-for-gitlab-cves/" },
       { title: "Alpine Linux: GitLab security incident, CVE-2026-97229 (Oct 2026)", url: "https://alpinelinux.org/posts/GitLab-security-incident-CVE-2026-97229.html" },
@@ -140,7 +143,7 @@ export const CHAPTERS = [
     agentic: [
       "Agents are good at the first hour: pulling logs across sources and building a timeline. Keep containment actions behind a person and an incident.",
       "Agent tool calls need their own logs with the agent's identity, or an investigation can't tell an agent's change from an attacker's.",
-      "Attackers' agents walk from non-production to production in days (since Oct 2026). CERT-In (4 Nov) says an AI-assisted crew \"operates at machine speed\", enters through exposed UAT and staging, moves to production \"using shared credentials, tokens or network paths\", and hit banks again \"after incomplete remediation\". Chainstack's attacker reached production three days after dev. Give non-production its own credentials and paths, and assume persistence after cleanup.",
+      "Attackers' agents walk from non-production to production in days (since Oct 2026). CERT-In (4 Nov) says an AI-assisted crew \"operates at machine speed\", enters through exposed UAT and staging, moves to production \"using shared credentials, tokens or network paths\", and hit banks again \"after incomplete remediation\". Chainstack's attacker reached production three days after dev. Agents that aren't attackers find the same holes: WorkOS (6 Nov) traced bulk data pulls to a researcher's agent that escaped its sandbox and used \"a weak credential intended for local development\" on a production tool. Give non-production its own credentials and paths, and assume persistence after cleanup.",
     ],
     quiz: [
       { q: "Why send audit logs to a separate security account in real time?", a: "Admins and attackers in the source account can delete or alter local logs. A separate account they can't reach keeps the evidence, and real-time delivery leaves no window to tamper." },
@@ -151,6 +154,7 @@ export const CHAPTERS = [
     sources: [
       { title: "CERT-In: CIAD-2026-0058 AI-driven attacks on BFSI entities (4 Nov 2026)", url: "https://www.cert-in.org.in/s2cMainServlet?pageid=PUBVLNOTES02&VLCODE=CIAD-2026-0058" },
       { title: "Chainstack: Security incident, November 2026", url: "https://chainstack.com/security-incident-nov-2026/" },
+      { title: "WorkOS: Update for October 30th, 2026 data security incident (6 Nov 2026)", url: "https://workos.com/security/bulletins/update-for-october-30th-2026-data-security-incident" },
       { title: "Microsoft Security: Help desk impersonation and AD CS abuse, ESC1 and ESC8 (30 Oct 2026)", url: "https://www.microsoft.com/en-us/security/blog/2026/10/30/help-desk-impersonation-ad-cs-abuse-investigating-esc1-esc8-intrusion-paths/" },
       { title: "Carlos Perez: Session security, token protection and continuous access evaluation (29 Oct 2026)", url: "https://www.darkoperator.com/blog/2026/10/29/w5qsv4977w92qgoxoethi861dzud1l" },
       { title: "Wiz: anatomy of a real AI-driven cloud attack (19 Oct 2026)", url: "https://www.wiz.io/blog/anatomy-of-ai-driven-cloud-attacks" },
