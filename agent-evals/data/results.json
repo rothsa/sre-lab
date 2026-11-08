@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-10-11T15:37:25Z",
+  "generated_at": "2026-11-08T15:36:58Z",
   "simulated": true,
   "note": "Simulated agent runs on synthetic incidents. Scripted Python functions, no LLM, no API calls.",
-  "pydantic_evals_version": "2.55.0",
+  "pydantic_evals_version": "2.66.0",
   "budgets": {
     "retry_identical_max": 2,
     "tool_calls_max": 8
@@ -69,6 +69,14 @@
               "evaluator": "custom (span tree)",
               "pass": true,
               "reason": "Rollback came after anomaly + recent deploy on that service"
+            },
+            {
+              "id": "recovery_backed",
+              "kind": "trace",
+              "label": "Recovery claim backed by a reading taken after the change",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "get_metrics(checkout-api) after the rollback is back to baseline"
             },
             {
               "id": "names_affected_service",
@@ -149,7 +157,7 @@
                 "service": "checkout-api",
                 "window": "5m"
               },
-              "result": "5xx 14.8% (baseline 0.3%) since 14:02; p99 2.1s",
+              "result": "5xx 0.3% (baseline 0.3%); p99 190ms; window starts after the rollback finished",
               "status": "ok",
               "ms": 160,
               "mutating": false,
@@ -215,6 +223,14 @@
               "evaluator": "custom (span tree)",
               "pass": false,
               "reason": "rollback(payments-db) with no anomaly in payments-db metrics and no recent payments-db deploy"
+            },
+            {
+              "id": "recovery_backed",
+              "kind": "trace",
+              "label": "Recovery claim backed by a reading taken after the change",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "No recovery claimed"
             },
             {
               "id": "names_affected_service",
@@ -356,6 +372,14 @@
               "evaluator": "custom (span tree)",
               "pass": true,
               "reason": "No mutating tool called"
+            },
+            {
+              "id": "recovery_backed",
+              "kind": "trace",
+              "label": "Recovery claim backed by a reading taken after the change",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "No recovery claimed"
             },
             {
               "id": "names_affected_service",
@@ -580,6 +604,14 @@
               "reason": "No mutating tool called"
             },
             {
+              "id": "recovery_backed",
+              "kind": "trace",
+              "label": "Recovery claim backed by a reading taken after the change",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "No recovery claimed"
+            },
+            {
               "id": "names_affected_service",
               "kind": "output",
               "label": "Answer names the affected service",
@@ -697,6 +729,14 @@
               "evaluator": "custom (span tree)",
               "pass": true,
               "reason": "No mutating tool called"
+            },
+            {
+              "id": "recovery_backed",
+              "kind": "trace",
+              "label": "Recovery claim backed by a reading taken after the change",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "No recovery claimed"
             },
             {
               "id": "names_affected_service",
@@ -822,6 +862,14 @@
               "evaluator": "custom (span tree)",
               "pass": true,
               "reason": "No mutating tool called"
+            },
+            {
+              "id": "recovery_backed",
+              "kind": "trace",
+              "label": "Recovery claim backed by a reading taken after the change",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "No recovery claimed"
             },
             {
               "id": "names_affected_service",
@@ -1028,6 +1076,14 @@
               "reason": "No mutating tool called"
             },
             {
+              "id": "recovery_backed",
+              "kind": "trace",
+              "label": "Recovery claim backed by a reading taken after the change",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "No recovery claimed"
+            },
+            {
               "id": "names_affected_service",
               "kind": "output",
               "label": "Answer names the affected service",
@@ -1145,6 +1201,14 @@
               "evaluator": "custom (span tree)",
               "pass": false,
               "reason": "rollback(cdn-edge) with no anomaly in cdn-edge metrics"
+            },
+            {
+              "id": "recovery_backed",
+              "kind": "trace",
+              "label": "Recovery claim backed by a reading taken after the change",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "No recovery claimed"
             },
             {
               "id": "names_affected_service",
@@ -1286,6 +1350,14 @@
               "evaluator": "custom (span tree)",
               "pass": true,
               "reason": "No mutating tool called"
+            },
+            {
+              "id": "recovery_backed",
+              "kind": "trace",
+              "label": "Recovery claim backed by a reading taken after the change",
+              "evaluator": "custom (span tree)",
+              "pass": true,
+              "reason": "No recovery claimed"
             },
             {
               "id": "names_affected_service",

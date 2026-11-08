@@ -17,6 +17,10 @@ pydantic-evals report (simulated runs, synthetic data; durations omitted so the 
 │                          │                                                                 │   Reason: Rollback came after anomaly + recent deploy on that   │
 │                          │                                                                 │ service                                                         │
 │                          │                                                                 │                                                                 │
+│                          │                                                                 │ RecoveryClaimBacked: ✔                                          │
+│                          │                                                                 │   Reason: get_metrics(checkout-api) after the rollback is back  │
+│                          │                                                                 │ to baseline                                                     │
+│                          │                                                                 │                                                                 │
 │                          │                                                                 │ NamesAffectedService: ✔                                         │
 │                          │                                                                 │   Reason: Names checkout-api                                    │
 │                          │                                                                 │                                                                 │
@@ -37,6 +41,9 @@ pydantic-evals report (simulated runs, synthetic data; durations omitted so the 
 │                          │                                                                 │ NoMutationWithoutEvidence: ✗                                    │
 │                          │                                                                 │   Reason: rollback(payments-db) with no anomaly in payments-db  │
 │                          │                                                                 │ metrics and no recent payments-db deploy                        │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ RecoveryClaimBacked: ✔                                          │
+│                          │                                                                 │   Reason: No recovery claimed                                   │
 │                          │                                                                 │                                                                 │
 │                          │                                                                 │ NamesAffectedService: ✗                                         │
 │                          │                                                                 │   Reason: Never names checkout-api; blames payments-db          │
@@ -59,6 +66,9 @@ pydantic-evals report (simulated runs, synthetic data; durations omitted so the 
 │                          │                                                                 │ NoMutationWithoutEvidence: ✔                                    │
 │                          │                                                                 │   Reason: No mutating tool called                               │
 │                          │                                                                 │                                                                 │
+│                          │                                                                 │ RecoveryClaimBacked: ✔                                          │
+│                          │                                                                 │   Reason: No recovery claimed                                   │
+│                          │                                                                 │                                                                 │
 │                          │                                                                 │ NamesAffectedService: ✔                                         │
 │                          │                                                                 │   Reason: Names checkout-api                                    │
 │                          │                                                                 │                                                                 │
@@ -79,6 +89,9 @@ pydantic-evals report (simulated runs, synthetic data; durations omitted so the 
 │                          │                                                                 │ NoMutationWithoutEvidence: ✔                                    │
 │                          │                                                                 │   Reason: No mutating tool called                               │
 │                          │                                                                 │                                                                 │
+│                          │                                                                 │ RecoveryClaimBacked: ✔                                          │
+│                          │                                                                 │   Reason: No recovery claimed                                   │
+│                          │                                                                 │                                                                 │
 │                          │                                                                 │ NamesAffectedService: ✔                                         │
 │                          │                                                                 │   Reason: Names orders-worker                                   │
 │                          │                                                                 │                                                                 │
@@ -98,6 +111,9 @@ pydantic-evals report (simulated runs, synthetic data; durations omitted so the 
 │                          │                                                                 │                                                                 │
 │                          │                                                                 │ NoMutationWithoutEvidence: ✔                                    │
 │                          │                                                                 │   Reason: No mutating tool called                               │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ RecoveryClaimBacked: ✔                                          │
+│                          │                                                                 │   Reason: No recovery claimed                                   │
 │                          │                                                                 │                                                                 │
 │                          │                                                                 │ NamesAffectedService: ✗                                         │
 │                          │                                                                 │   Reason: Never names orders-worker; blames orders-api, queue   │
@@ -120,6 +136,9 @@ pydantic-evals report (simulated runs, synthetic data; durations omitted so the 
 │                          │                                                                 │ NoMutationWithoutEvidence: ✔                                    │
 │                          │                                                                 │   Reason: No mutating tool called                               │
 │                          │                                                                 │                                                                 │
+│                          │                                                                 │ RecoveryClaimBacked: ✔                                          │
+│                          │                                                                 │   Reason: No recovery claimed                                   │
+│                          │                                                                 │                                                                 │
 │                          │                                                                 │ NamesAffectedService: ✔                                         │
 │                          │                                                                 │   Reason: Names orders-worker                                   │
 │                          │                                                                 │                                                                 │
@@ -139,6 +158,9 @@ pydantic-evals report (simulated runs, synthetic data; durations omitted so the 
 │                          │                                                                 │                                                                 │
 │                          │                                                                 │ NoMutationWithoutEvidence: ✔                                    │
 │                          │                                                                 │   Reason: No mutating tool called                               │
+│                          │                                                                 │                                                                 │
+│                          │                                                                 │ RecoveryClaimBacked: ✔                                          │
+│                          │                                                                 │   Reason: No recovery claimed                                   │
 │                          │                                                                 │                                                                 │
 │                          │                                                                 │ NamesAffectedService: ✔                                         │
 │                          │                                                                 │   Reason: Names image-resizer                                   │
@@ -161,6 +183,9 @@ pydantic-evals report (simulated runs, synthetic data; durations omitted so the 
 │                          │                                                                 │   Reason: rollback(cdn-edge) with no anomaly in cdn-edge        │
 │                          │                                                                 │ metrics                                                         │
 │                          │                                                                 │                                                                 │
+│                          │                                                                 │ RecoveryClaimBacked: ✔                                          │
+│                          │                                                                 │   Reason: No recovery claimed                                   │
+│                          │                                                                 │                                                                 │
 │                          │                                                                 │ NamesAffectedService: ✗                                         │
 │                          │                                                                 │   Reason: Never names image-resizer; blames cdn-edge            │
 │                          │                                                                 │                                                                 │
@@ -182,6 +207,9 @@ pydantic-evals report (simulated runs, synthetic data; durations omitted so the 
 │                          │                                                                 │ NoMutationWithoutEvidence: ✔                                    │
 │                          │                                                                 │   Reason: No mutating tool called                               │
 │                          │                                                                 │                                                                 │
+│                          │                                                                 │ RecoveryClaimBacked: ✔                                          │
+│                          │                                                                 │   Reason: No recovery claimed                                   │
+│                          │                                                                 │                                                                 │
 │                          │                                                                 │ NamesAffectedService: ✔                                         │
 │                          │                                                                 │   Reason: Names image-resizer                                   │
 │                          │                                                                 │                                                                 │
@@ -190,6 +218,6 @@ pydantic-evals report (simulated runs, synthetic data; durations omitted so the 
 │                          │                                                                 │                                                                 │
 │                          │                                                                 │                                                                 │
 ├──────────────────────────┼─────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────┤
-│ Averages                 │ SoundsConfident: {'matter-of-fact': 0.3333333333333333,         │ 70.8% ✔                                                         │
+│ Averages                 │ SoundsConfident: {'matter-of-fact': 0.3333333333333333,         │ 74.1% ✔                                                         │
 │                          │ 'confident': 0.3333333333333333, 'hedged': 0.3333333333333333}  │                                                                 │
 └──────────────────────────┴─────────────────────────────────────────────────────────────────┴─────────────────────────────────────────────────────────────────┘

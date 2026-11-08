@@ -2,6 +2,7 @@
 // for the status board. Jev is called only from here, never from the browser.
 import { connect } from "cloudflare:sockets";
 import { allTargets } from "./targets.js";
+import { heartbeatCheck } from "./heartbeat.js";
 
 const CHECK_TIMEOUT_MS = 10_000;
 const SLOW_FACTOR = 3;          // latency this many times the recent median counts as unusual
@@ -85,6 +86,7 @@ async function checkTarget(t, env) {
   if (t.kind === "statuspage") return statuspageCheck(t);
   if (t.kind === "wow-realm") return wowRealmCheck(t, env);
   if (t.kind === "minecraft") return minecraftCheck(t);
+  if (t.kind === "heartbeat") return heartbeatCheck(t, env);
   return { skipped: true };
 }
 
@@ -125,7 +127,6 @@ async function statuspageCheck(t) {
   }
 }
 
-// Blizzard Game Data API: realm -> connected realm -> status. Skipped without credentials.
 // Minecraft Java "server list ping" over raw TCP: the same request the multiplayer menu sends.
 // Needs no login; returns version and player counts.
 async function minecraftCheck(t) {
@@ -181,6 +182,7 @@ async function minecraftCheck(t) {
   }
 }
 
+// Blizzard Game Data API: realm -> connected realm -> status. Skipped without credentials.
 async function wowRealmCheck(t, env) {
   if (!env.BLIZZARD_CLIENT_ID || !env.BLIZZARD_CLIENT_SECRET) return { skipped: true };
   const tokenRes = await fetch("https://oauth.battle.net/token", {
@@ -241,7 +243,9 @@ async function askJev(env, ctx) {
       recent_checks_newest_first: ctx.history,
       problem_since_utc: ctx.problemSince,
       other_services_failing_right_now: `${Math.max(0, ctx.failingNow - 1)} of ${ctx.totalTargets - 1}`,
-      checked_from: "Cloudflare Workers (not the owner's home network)",
+      checked_from: ctx.target.kind === "heartbeat"
+        ? "The host checks itself and reports every 5 minutes; 'stale' means its reports stopped arriving"
+        : "Cloudflare Workers (not the owner's home network)",
       now_utc: new Date().toISOString(),
     },
     questions: {
