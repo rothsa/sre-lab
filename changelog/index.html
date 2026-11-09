@@ -104,11 +104,16 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
 <body>
 <div class="wrap">
   <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-11-08">8 Nov 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-11-09">9 Nov 2026</time></span></div>
   <h1 id="changelog-h">Changelog</h1>
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
     <p>What each daily research pass changed, newest first. Every change is checked against a primary source. The lab landing page shows the latest three.</p>
-    <details open><summary><time datetime="2026-11-08">8 Nov 2026</time></summary><ul>
+    <details open><summary><time datetime="2026-11-09">9 Nov 2026</time></summary><ul>
+      <li>Security: MFA at the IdP guards only the sign-in path it sits on. SonicWall's SSL-VPN let a password for another login method skip SAML and its MFA (in CISA KEV 6 Nov, due 20 Nov), alongside stolen session cookies and device code phishing. Turn off every sign-in path but the IdP.</li>
+      <li>Did the Agent Do It Right?: optimizers find the holes in graders. Google's skill optimizer found four ways to pass without solving the task, one by reading the answer file off disk (3 Nov), after Anthropic's auditor learned to manufacture findings. Keep answer keys where the agent can't reach them.</li>
+      <li class="minor">Smaller: sshole exploit attempts began the day the OpenSSH fix shipped, per SANS ISC honeypot data (Security); exact quotes for LiteLLM's unscoped token and Gas City's prompt bug, and both of Dan Luu's testing posts cited (One Agent to Hundreds).</li>
+    </ul></details>
+    <details><summary><time datetime="2026-11-08">8 Nov 2026</time></summary><ul>
       <li>One Agent to Hundreds: attention, not compute, now caps how many agents one person runs. Addy Osmani runs four or five background agents and calls the limit an orchestration tax: you scale by needing to watch less, so each agent shows its check results as proof. Dex Horthy now runs three tiers of subagents, matching pstack and the Projects coordinators. Amp lets its agent ship, flip flags and watch rollouts, everything but database writes.</li>
       <li>Security: an attacker's agent can now go from a leaked secret to stolen data in minutes. Microsoft saw an agent move from client secrets found in GitHub to pulling data from Azure Key Vault in five minutes. Rotation and detection measured in days don't keep up.</li>
       <li class="minor">Smaller: kubelet evicts by usage over requests and priority, not QoS class, which only steers the OOM killer (Linux); spanmetrics before tail sampling counts only spans that reach the Collector, so head-sampled services need app metrics (Observability); Terraform's own HCL policies are GA and 1.17.1 fixed them skipping destroy plans (Terraform Five Years On); Canonical's zero-retries way to install the APT fix, and KEV source label (Security); Copilot CLI 1.0.106 narrowed sandbox local network to loopback, and an updated OpenTelemetry link (Agentic Engineering).</li>

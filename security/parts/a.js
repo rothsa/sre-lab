@@ -202,9 +202,9 @@ export const CHAPTERS = [
     say30: "Every person signs in through one IdP with phishing-resistant MFA and gets temporary credentials. Access follows IdP groups, so a group delete gets the care of a prod change. Prod access defaults to read-only, and writes go through just-in-time grants that expire. Workloads federate the same way: CI and clusters sign OIDC tokens that the clouds swap for short-lived credentials. I run it as a program with one number, long-lived keys left, going to zero, including root credentials. Break-glass is pre-built, doesn't depend on the IdP, alerts on every use and gets tested, because the IdP is now the thing everything depends on.",
     gotchas: [
       "Federation config fails for everyone at once. AWS lists an expired SAML signing certificate as its own emergency failure mode.",
-      "In mutual TLS only the leaf certificate proves its sender holds the key. LXD checked every certificate in the client's chain against its trust store, so a trusted client's public cert sent as an intermediate logged an attacker in as that client (Canonical, 28 Oct 2026).",
+      "In mutual TLS only the leaf certificate proves its sender holds the key. LXD trusted any certificate in the client's chain, so a trusted client's public cert sent as an intermediate logged an attacker in as that client (Canonical, 28 Oct 2026).",
       "A trust that checks only issuer and audience lets any workload from that issuer in. Pin the subject per repo and per cluster.",
-      "MFA at sign-in doesn't protect a stolen session cookie, as CircleCI found in 2022. Passkeys don't stop device code phishing either, \"because the victim signs in on the real Microsoft page\" (Carlos Perez, Oct 2026). Block device code flow outside documented exceptions, keep prod sessions short and ask for step-up on writes.",
+      "MFA only guards the sign-in path it sits on. A stolen session cookie skips it, as CircleCI found in 2022. Device code phishing skips passkeys \"because the victim signs in on the real Microsoft page\" (Carlos Perez, Oct 2026). Any other login method left on skips it too: SonicWall's SSL-VPN let a password for an alternate method bypass SAML and its MFA (CISA KEV, 6 Nov 2026). Turn off every sign-in path but the IdP, block device code flow outside documented exceptions, keep prod sessions short and ask for step-up on writes.",
     ],
     agentic: [
       "Agents are workloads: each gets its own federated identity and short-lived credentials, never a person's key, with the human who launched it recorded by the IdP or launcher, never by the agent.",
@@ -227,6 +227,7 @@ export const CHAPTERS = [
       { title: "Microsoft Entra workload identity federation", url: "https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation" },
       { title: "Canonical: Critical vulnerability found in LXD and MicroCloud (28 Oct 2026)", url: "https://discourse.ubuntu.com/t/security-advisory-critical-vulnerability-found-in-canonical-lxd-and-microcloud/90557" },
       { title: "MCP Python SDK: bearer auth accepts tokens for another resource server, GHSA-w4fh-qvv9-3v23 (27 Oct 2026)", url: "https://osv.dev/vulnerability/GHSA-w4fh-qvv9-3v23" },
+      { title: "SonicWall SNWLID-2026-0014: SSL-VPN SAML and MFA bypass, CVE-2026-19868 (in CISA KEV 6 Nov 2026)", url: "https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2026-0014" },
     ],
   },
   {

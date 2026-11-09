@@ -158,7 +158,7 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
 <body>
 <nav class="site-nav" aria-label="Site" style="max-width:1180px"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
 <main class="wrap">
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · agent fleets<span class="updated"> · updated <time datetime="2026-11-08">8 Nov 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · agent fleets<span class="updated"> · updated <time datetime="2026-11-09">9 Nov 2026</time></span></div>
   <h1>One Agent to Hundreds</h1>
   <p class="lede">Running hundreds of coding agents is not one agent times a hundred. Each jump in scale breaks something the smaller setup got away with: your review time, shared files, one coordinator's attention, then rate limits and cost. Step up one stage at a time. Each stage says what to add, what breaks without it, and how to tell you're ready for the next. Then an org layer on top shows how a company runs many of these ladders at once: one platform, team budgets, pooled limits and an audit trail.</p>
   <p class="lede">The main thread is <a href="https://github.com/cursor/plugins/tree/main/pstack">pstack</a>, Lauren Tan's published agent workflow, alongside what Stripe, Spotify, Uber, Cursor and Anthropic publish about their agent fleets and how Mitchell Hashimoto, Dex Horthy and Boris Cherny describe their own ramp-ups. Stage sizes are teaching breakpoints, not thresholds from a study.</p>
@@ -513,7 +513,7 @@ const STAGES = [
     breaks: [
       ["Agents stop when work looks finished. Anthropic's harness post lists \"declare the job done\" as a core failure mode, alongside trying to do too much at once.", "harness"],
       ["A check on the wrong surface (a unit test for a UI bug) passes while the bug stays.", "prove"],
-      ["Agents don't test well on their own. Dan Luu tried 26 prompt variants naming techniques like TDD and property-based testing, and found that naming them changed little: \"agents are really bad at testing\" (Sep 2026). On a newer model (Nov 2026) agents \"seemed to use test and verification techniques more effectively\", but \"TDD once again underperformed\".", "danluuAstra"],
+      ["Agents don't test well on their own. Dan Luu tried 26 prompt variants naming techniques like TDD and property-based testing, and found that naming them changed little: \"agents are really bad at testing\" (Sep 2026). On a newer model (Nov 2026) agents \"seemed to use test and verification techniques more effectively\", but \"TDD once again underperformed\".", ["danluu", "danluuAstra"]],
     ],
     quote: ["Parallelization just gave me more to review and discard.", "Lauren Tan, on scaling before trust", "tanLoops"],
     gate: [
@@ -683,7 +683,7 @@ const STAGES = [
       ["Identical agents make identical choices. In Anthropic's swarm experiments, 18 of 30 agents that started together created a git branch with the exact same name (Aug 2026).", "anthMulti"],
       ["Bad habits spread through shared state. In an October 2026 study, reward hacking passed between coding agents through code and shared memory, and across roles through natural-language plans; agents on small open-weight models even induced it in stronger closed-weight ones.", "rewardHack"],
       ["A swarm with no integrator falls apart. Ryan Lopopolo's message-board swarm peaked at 31 agents in 31 worktrees and collapsed after about 36 hours: the agents were poor at global integration and wouldn't break bad dependency edges (Oct 2026).", "lopopolo"],
-      ["An orchestrator that types into a session can approve its prompts. Gas City 1.5.1 (24 Oct 2026) fixed a bug where a submit or nudge \"could press Enter on a pending tool call\". Drive agents through an API, not keystrokes.", "gasCity"],
+      ["An orchestrator that types into a session can approve its prompts. Gas City 1.5.1 (24 Oct 2026) fixed a bug where it missed a permission dialog and typed a submit or nudge into the prompt, \"where its Enter approved the pending tool call\". Drive agents through an API, not keystrokes.", "gasCity"],
       ["Rules that live in chat don't bind agents. Jesse Vincent's agent merged a PR humans had said to hold, because the hold was in Slack and main had no branch protection (Oct 2026).", "jesse"],
       ["An agent with its user's access can do anything its user can. Microsoft's identity team (Oct 2026): \"An agent should not automatically inherit all the standing access of its user.\" Give each agent its own identity, and contain one that misbehaves in steps: cut permissions, keep reads while blocking writes, restrict network paths, and isolate or stop it only at the highest risk.", "msInsiders"],
     ],
@@ -840,7 +840,7 @@ const STAGES = [
       ["Capable is not authorized. In AuthorizationBench (20 Oct 2026), agents acted outside the scope their user granted in 19.2% of 6,864 runs, and more reasoning effort left the rate nearly unchanged. Put the scope in the agent's identity and tokens.", "authBench"],
       ["A borrowed account hides who decided. At a startup preparing for a SOC 2 audit, 71 of 263 gated merges (27%) \"rested only on an approval that a coding agent had submitted through the technical lead's GitHub account\", and the records showed the lead (Oct 2026).", "whoApproved"],
       ["Upgrades change behavior. Claude Code 2.1.305 (20 Oct 2026) loads a managed MCP server \"your allowlist left out\" on upgrade; keep what must stay off in deniedMcpServers. Claude's new SDK majors (21 Oct 2026) default to API version 2026-10-21, which rejects temperature, top_p and top_k with a 400, and move from MIT to Apache 2.0. Pin both and test each upgrade before the fleet gets it.", "apiVer"],
-      ["Agent config is a credential store. LiteLLM's root-cause report (23 Oct 2026): a master key to its internal agent platform leaked in a public opencode.json in May and was never revoked. On 10 Oct one API call with it returned every managed agent's config, including an org owner's GitHub token that \"was not scoped down\". Stolen CI secrets and a release gate loosened that week did the rest. Railway says the attack on it aimed \"to obtain AI provider API keys to perform distillation attacks\". Its follow-up (30 Oct 2026): \"Automations never authenticate as a person\", and a secret-scanning ticket \"is only closed when revocation is confirmed\". Give agents scoped service identities, revoke a leaked key the day you find it, and keep inference keys in a vault.", "litellm"],
+      ["Agent config is a credential store. LiteLLM's root-cause report (23 Oct 2026): a master key to its internal agent platform leaked in a public opencode.json in May and was never revoked. On 10 Oct one API call with it returned every managed agent's config, including an org owner's GitHub CLI token, and \"GitHub CLI tokens are not scoped\". Stolen CI secrets and a release gate loosened that week did the rest. Railway says the attack on it aimed \"to obtain AI provider API keys to perform distillation attacks\". Its follow-up (30 Oct 2026): \"Automations never authenticate as a person\", and a secret-scanning ticket \"is only closed when revocation is confirmed\". Give agents scoped service identities, revoke a leaked key the day you find it, and keep inference keys in a vault.", "litellm"],
       ["Hosting platforms hold your model keys. Wiz counted at least nine AI developer platforms that disclosed incidents in October 2026, with attackers \"explicitly hunting stored environment variables\" for AI access. One stolen Bedrock key made about 1.7 million calls in 13 hours. The key's policy set the damage: a key that allowed `global.*` cross-region profiles spread the load, so only about 6% of its calls were throttled. Give each platform its own key, one region, and a spend alarm.", "wizBlack"],
       ["One ban can stop every team. Behind a shared gateway, tag each Claude request with a user profile, so a safety enforcement action can \"apply to one end customer instead of your whole organization\" (20 Oct 2026).", "claudeProfiles"],
       ["Your gateway may need the vendor's approval. OpenAI's Usage Policies, effective 20 Nov 2026, require \"services that provide direct access to our models such as model routers or AI gateways to get our review and approval before offering that access\" (21 Oct 2026). Check whether yours counts before that date.", "oaiGateway"],
@@ -961,6 +961,11 @@ function el(tag, attrs = {}, ...kids) {
   return n;
 }
 function srcLink(key) {
+  if (Array.isArray(key)) {
+    const f = document.createDocumentFragment();
+    key.forEach((k, i) => { if (i) f.append(" · "); f.append(srcLink(k)); });
+    return f;
+  }
   const [t, u] = S[key];
   return el("a", { href: u, title: t }, "source");
 }
