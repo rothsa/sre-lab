@@ -104,11 +104,15 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
 <body>
 <div class="wrap">
   <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-11-09">9 Nov 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-11-10">10 Nov 2026</time></span></div>
   <h1 id="changelog-h">Changelog</h1>
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
     <p>What each daily research pass changed, newest first. Every change is checked against a primary source. The lab landing page shows the latest three.</p>
-    <details open><summary><time datetime="2026-11-09">9 Nov 2026</time></summary><ul>
+    <details open><summary><time datetime="2026-11-10">10 Nov 2026</time></summary><ul>
+      <li>Engineering for the Next Agent: the newest frontier model is again split into one you can buy and one you can't. Anthropic launched Claude Fable 5.2 on 9 Nov, and Mythos 5.2 goes only to organizations in its verification programs. Plan roadmaps on models your teams can call.</li>
+      <li class="minor">Smaller: Claude Code 2.1.321 fixed a read-only Bash command that ran outside the sandbox, so the fleet minimum version moves again (Agentic Engineering); KEV count updated to 1,773 (Security).</li>
+    </ul></details>
+    <details><summary><time datetime="2026-11-09">9 Nov 2026</time></summary><ul>
       <li>Security: MFA at the IdP guards only the sign-in path it sits on. SonicWall's SSL-VPN let a password for another login method skip SAML and its MFA (in CISA KEV 6 Nov, due 20 Nov), alongside stolen session cookies and device code phishing. Turn off every sign-in path but the IdP.</li>
       <li>Did the Agent Do It Right?: optimizers find the holes in graders. Google's skill optimizer found four ways to pass without solving the task, one by reading the answer file off disk (3 Nov), after Anthropic's auditor learned to manufacture findings. Keep answer keys where the agent can't reach them.</li>
       <li class="minor">Smaller: sshole exploit attempts began the day the OpenSSH fix shipped, per SANS ISC honeypot data (Security); exact quotes for LiteLLM's unscoped token and Gas City's prompt bug, and both of Dan Luu's testing posts cited (One Agent to Hundreds).</li>
