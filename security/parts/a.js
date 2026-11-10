@@ -204,6 +204,7 @@ export const CHAPTERS = [
       "Federation config fails for everyone at once. AWS lists an expired SAML signing certificate as its own emergency failure mode.",
       "In mutual TLS only the leaf certificate proves its sender holds the key. LXD trusted any certificate in the client's chain, so a trusted client's public cert sent as an intermediate logged an attacker in as that client (Canonical, 28 Oct 2026).",
       "A trust that checks only issuer and audience lets any workload from that issuer in. Pin the subject per repo and per cluster.",
+      "A vendor's cross-account role is standing access until you delete it. In October 2026 an attacker with credentials from Qubole's AWS account assumed customers' integration roles: \"Every AssumeRole request we attributed to the threat actor included an External ID, and every one succeeded\" (Wiz, 9 Nov). Most of those roles \"were not otherwise in use\", and Sentra found them \"still in place long after companies had stopped using Qubole\". Inventory third-party trust policies across the org, delete the unused ones, and add a source IP condition to the rest.",
       "MFA only guards the sign-in path it sits on. A stolen session cookie skips it, as CircleCI found in 2022. Device code phishing skips passkeys \"because the victim signs in on the real Microsoft page\" (Carlos Perez, Oct 2026). Any other login method left on skips it too: SonicWall's SSL-VPN let a password for an alternate method bypass SAML and its MFA (CISA KEV, 6 Nov 2026). Turn off every sign-in path but the IdP, block device code flow outside documented exceptions, keep prod sessions short and ask for step-up on writes.",
     ],
     agentic: [
@@ -227,6 +228,8 @@ export const CHAPTERS = [
       { title: "Microsoft Entra workload identity federation", url: "https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation" },
       { title: "Canonical: Critical vulnerability found in LXD and MicroCloud (28 Oct 2026)", url: "https://discourse.ubuntu.com/t/security-advisory-critical-vulnerability-found-in-canonical-lxd-and-microcloud/90557" },
       { title: "MCP Python SDK: bearer auth accepts tokens for another resource server, GHSA-w4fh-qvv9-3v23 (27 Oct 2026)", url: "https://osv.dev/vulnerability/GHSA-w4fh-qvv9-3v23" },
+      { title: "Wiz: Qubole cross-account access abused in the wild (9 Nov 2026)", url: "https://www.wiz.io/blog/qubole-cross-account-access-abused-in-the-wild" },
+      { title: "Sentra: Inside the Qubole supply chain attack (9 Nov 2026)", url: "https://sentra.io/blog/breaches/inside-the-qubole-supply-chain-attack" },
       { title: "SonicWall SNWLID-2026-0014: SSL-VPN SAML and MFA bypass, CVE-2026-19868 (in CISA KEV 6 Nov 2026)", url: "https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2026-0014" },
     ],
   },
