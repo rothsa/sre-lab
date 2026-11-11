@@ -146,7 +146,7 @@ export const CHAPTERS = [
     ],
     say30: "Apps send OTLP to an agent Collector on the node, then to a gateway. The pipeline is receivers, ordered processors and exporters: `memory_limiter` first, enrichment, redaction, then `batch`. Tail sampling needs trace-ID load balancing. Once every team depends on it, I run it as a tier-0 service. It gets SLOs from its own metrics: sent against accepted, refusals, and enqueue failures. The team that runs it carries the pager. It scales out at about 60 to 70% queue use, and checks the backend first if queues stay full. Config and versions are managed for the whole fleet, with OpAMP or GitOps, so one redaction rule applies everywhere.",
     gotchas: [
-      "Processor order is the order you list them. `memory_limiter` after `batch` can't protect the buffer, and `k8sattributes` after `batch` loses its context.",
+      "Processor order is the order you list them. `memory_limiter` after `batch` can't protect the buffer, and `k8sattributes` after `batch` loses its context. The `batch` processor itself was deprecated on 11 Nov 2026. Batching moves into each exporter's `sending_queue`, on by default from v0.171.0 (planned February 2027), and the processor is removed in v0.177.0 (planned May 2027). Take it out of fleet configs before then.",
       "Tail sampling needs every span of a trace on one Collector. Round-robin in front of tail samplers silently makes partial traces.",
       "OTLP delivery is guaranteed per hop only, and retries after reconnects can create duplicates.",
       "Write fleet redaction rules in OTTL. Since Collector Contrib v0.164.0 (Oct 2026) the language and standard functions are stable for traces, metrics and logs and won't break within 1.x. Experimental functions, lambdas and profiles are outside that promise, so keep them out of shared configs.",
@@ -221,6 +221,7 @@ max by (exporter) (
       { title: "Collector deployment: Gateway", url: "https://opentelemetry.io/docs/collector/deploy/gateway/" },
       { title: "Collector resiliency", url: "https://opentelemetry.io/docs/collector/resiliency/" },
       { title: "OpenTelemetry blog: OTTL reaches v1 (27 Oct 2026)", url: "https://opentelemetry.io/blog/2026/ottl-v1/" },
+      { title: "OpenTelemetry blog: Deprecating the Collector batch processor (11 Nov 2026)", url: "https://opentelemetry.io/blog/2026/collector-batching-migration/" },
       { title: "OTLP specification", url: "https://opentelemetry.io/docs/specs/otlp/" },
       { title: "Memory limiter processor README", url: "https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/memorylimiterprocessor/README.md" },
       { title: "Recommended processors", url: "https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/README.md" },

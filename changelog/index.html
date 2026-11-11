@@ -104,11 +104,19 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
 <body>
 <div class="wrap">
   <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-11-10">10 Nov 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-11-11">11 Nov 2026</time></span></div>
   <h1 id="changelog-h">Changelog</h1>
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
     <p>What each daily research pass changed, newest first. Every change is checked against a primary source. The lab landing page shows the latest three.</p>
-    <details open><summary><time datetime="2026-11-10">10 Nov 2026</time></summary><ul>
+    <details open><summary><time datetime="2026-11-11">11 Nov 2026</time></summary><ul>
+      <li>One Agent to Hundreds: agent policy is moving off the laptop. Vendors now ship one policy an admin writes that every client enforces: Claude Code managed settings, Kiro's Enterprise Management preview (10 Nov), and VS Code 1.146 (11 Nov) deprecating the local harness that skipped managed policies. For each agent tool, find the client that skips the policy.</li>
+      <li>One Agent to Hundreds: small high-trust teams are dropping the pull request. Mitchell Hashimoto's Superlogical pushes to main with machine review before the push and human plus machine review after, as Amp and Geoffrey Huntley do. Its last gate is a 15-minute release countdown anyone can pause.</li>
+      <li>Security: management planes are the target, and the fix can be to switch one off. N-able took its hosted RMM offline until a hotfix after 33 flaws were published with exploit code, and Vates reported a Xen Orchestra login bypass under active exploitation that leaves no log (10 Nov). Keep these consoles off the internet and rehearse running without them.</li>
+      <li>Engineering for the Next Agent: a gated model can go on sale in weeks. Google gave Gemini 4 Carbon to cyber defenders on 28 Oct and sold it to all paying developers on 10 Nov, keeping only the cyber version behind a program. Re-check model access at each release.</li>
+      <li>Observability: the Collector's batch processor is deprecated (11 Nov). Batching moves into each exporter's sending queue, on by default from v0.171.0 (planned February 2027), and the processor goes in v0.177.0 (planned May 2027). Take it out of fleet configs before then.</li>
+      <li class="minor">Smaller: KEV count updated to 1,779, and of some 95,000 CVEs assigned this year 217 reached KEV (Security); Railway's final incident report replaces the preliminary one (One Agent to Hundreds); GenAI metric names corrected, with model-call latency in <code>gen_ai.client.inference.duration</code> and tool calls in <code>gen_ai.execute_tool.duration</code> (Taming Cardinality, Observability); Gemini 4 Argon guide link repointed (Agentic Engineering, Did the Agent Do It Right?).</li>
+    </ul></details>
+    <details><summary><time datetime="2026-11-10">10 Nov 2026</time></summary><ul>
       <li>Engineering for the Next Agent: the newest frontier model is again split into one you can buy and one you can't. Anthropic launched Claude Fable 5.2 on 9 Nov, and Mythos 5.2 goes only to organizations in its verification programs. Plan roadmaps on models your teams can call.</li>
       <li>Engineering for the Next Agent: a cheaper token is not a cheaper task. Fable 5.2 costs 20% less per token than 5.1, but Anthropic's Addy Osmani says a task costs roughly the same and SemiAnalysis measured it 31% dearer, because the model writes far more tests. Budget and compare models per task.</li>
       <li>One Agent to Hundreds: what a thousand agents need. Anthropic ran one lead and 999 helpers for 28.7 hours. One shared machine gave out at about 100 agents, so each got its own VM with no network, and they coordinated only through a SQL database and Git, with a classifier checking every command.</li>

@@ -441,7 +441,7 @@ export const CHAPTERS = [
       { title: "DORA: 2025 report", url: "https://dora.dev/research/2025/dora-report/" },
       { title: "DORA: Managing AI dependency", url: "https://dora.dev/insights/managing-ai-dependency/" },
       { title: "Anthropic: Model deprecations", url: "https://platform.claude.com/docs/en/about-claude/model-deprecations" },
-      { title: "Gemini API: What's new in Gemini 4 Argon (2026-10-13)", url: "https://ai.google.dev/gemini-api/docs/latest-model" },
+      { title: "Gemini API: What's new in Gemini 4 Argon (2026-10-13)", url: "https://ai.google.dev/gemini-api/docs/whats-new-gemini-4-argon" },
       { title: "Meta: Muse Code subscriptions (Contributor mode)", url: "https://dev.meta.ai/docs/muse-code/subscriptions" },
       { title: "Claude Code: Settings", url: "https://code.claude.com/docs/en/settings" },
       { title: "pstack: Eval playbook", url: "https://github.com/cursor/plugins/blob/main/pstack/skills/poteto-mode/playbooks/eval.md" },
