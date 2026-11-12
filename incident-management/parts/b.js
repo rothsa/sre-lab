@@ -116,10 +116,10 @@ export const CHAPTERS = [
       { text: "If load stays high, escalate. The SRE book sets quarterly goals, loans an experienced SRE to the team, and in extreme cases gives the pager back to the developers.", on: ["review", "back"], flow: ["e-back"] },
       { text: "Write it down as policy. Google caps on-call at 25% of an SRE's time and pays out-of-hours on-call in time off or cash, capped as a share of salary.", on: ["rot", "review"] },
     ],
-    say30: "I measure on-call across the whole fleet, not by anecdote. Every page goes into one log, counted as incidents, and I compare pages per 12-hour shift against Google's two-incident budget, plus overnight pages per person in their own time zone. A monthly review looks at the worst rotations, with reachability next to load. Over budget, the owning team fixes or demotes alerts first, and alerts from one upstream failure get grouped. Then we rebalance: merge tiny rotations, follow-the-sun across two sites, 12-hour shifts at most. If it stays high we loan SREs or hand the pager back. Caps and pay are written policy.",
+    say30: "I measure on-call across the fleet, not by anecdote. Every page goes into one log, counted as incidents, and I compare pages per 12-hour shift against a budget (Google's is two incidents), plus overnight pages per person in their own time zone. A monthly review looks at the worst rotations, with reachability next to load. Over budget, the owning team fixes or demotes alerts first, and alerts from one upstream failure get grouped. Then we rebalance: merge tiny rotations, follow-the-sun across two sites, 12-hour shifts at most. If it stays high we loan SREs or hand the pager back. Caps and pay are written policy.",
     gotchas: [
       "Ten alerts for one outage is one incident and a deduplication problem. Counting notifications makes a noisy team look overloaded and a quiet broken one look fine.",
-      "A fleet average of one page per shift can hide five rotations paged every night. Always look at the distribution and the worst rotations.",
+      "A fleet average of one page per shift can hide five rotations paged every night. Look at the distribution and the worst rotations.",
     ],
     agentic: [
       "An agent that investigates every page doesn't reduce pages. The budget only moves when the alert review fixes or deletes the alert; an agent summary on a useless page adds cost and reading time.",
@@ -127,7 +127,7 @@ export const CHAPTERS = [
     ],
     quiz: [
       { q: "Why is Google's ceiling 2 incidents per 12-hour shift?", a: "Each incident takes about 6 hours with root cause, remediation and postmortem, so two fill a shift. More than that and follow-up gets skipped." },
-      { q: "What two numbers would you put on a fleet on-call dashboard first?", a: "Incidents per shift by rotation against the budget, and overnight pages per person in their own time zone, both sorted worst first." },
+      { q: "What two numbers would you put on a fleet on-call dashboard first?", a: "Incidents per shift by rotation against the budget, and overnight pages per person in their own time zone, sorted worst first." },
       { q: "A rotation has been over budget for three months and alert fixes haven't helped. What next?", a: "Escalate: loan experienced SREs, set quarterly goals, and if needed hand the pager back to the developers until load is sustainable." },
     ],
     incidents: ["pagerduty-2017-notification-delays"],
@@ -180,17 +180,17 @@ export const CHAPTERS = [
     ],
     say30: "Nobody deep-reviews thousands of incidents, so depth is set by written triggers: user-visible impact over a threshold, data loss, rollbacks, long resolution, plus significant near misses. A few get a deep, blameless review from a trained investigator outside the response. Most get a light template, sampled monthly so they stay honest, and repeats link to a parent. Everything goes into one corpus with required fields, which we read as data each quarter. Google found binary and config pushes caused most outages; that's a theme that funds a program like Cloudflare's Code Orange. And we make sure people actually read the reviews.",
     gotchas: [
-      "Coverage is easy to game. An empty template counts as a postmortem. Count a review only after it's been read and signed off, and sample the light tier.",
+      "Coverage is easy to game. An empty template counts as a postmortem. Count a review only after it's been read and signed off.",
       "Five Whys gives one neat chain and drifts toward who. Allspaw argues the root cause is just where you stopped looking; ask how and you get several contributing factors.",
-      "Blame creeps back on high-visibility incidents, often from leadership. Have a reviewer check high-profile write-ups for blameful language before they publish.",
+      "Blameless covers the account of what happened; people still own the fixes. Blame creeps back on high-visibility incidents, often from leadership, so a second reviewer reads those write-ups before they publish.",
     ],
     agentic: [
       "AI drafts are cheap, so coverage can reach 100% with documents nobody wrote. incident.io calls its draft a starting point and suggests leaving reflective sections to people. Count a review only after an owner has edited it.",
-      "Corpus mining is a good use of AI, as a source of candidates. Meta's root-cause ranker put the right cause in its top five for 42% of backtested investigations, and Meta warns it can mislead engineers. A person confirms every pattern before it funds anything.",
+      "AI can propose causes and patterns, as candidates only. Meta's root-cause ranker put the right cause in its top five for 42% of backtested investigations, and Meta warns it can mislead engineers. A person confirms every pattern before it funds anything.",
     ],
     quiz: [
       { q: "Define a review coverage metric that empty documents can't inflate.", a: "Denominator: incidents that meet each tier's written criteria. Numerator: those with a review signed off within the tier's deadline. Sample the light tier against a rubric." },
-      { q: "Why should the deep-review investigator not be a responder or their manager?", a: "A responder is biased by their own view of events, and a manager's presence makes people hold back for fear of reprimand." },
+      { q: "Why should the deep-review investigator not be a responder or their manager?", a: "A responder is biased by their own view, and a manager's presence makes people hold back for fear of reprimand." },
       { q: "What did Google's postmortem analysis find, and what would you do with it?", a: "Binary and config pushes were the top outage triggers. Invest in rollout safety for every team: staged rollouts, health checks and fast rollback." },
     ],
     incidents: ["aws-2017-s3-us-east-1-typo", "cloudflare-2025-bot-feature-file-panic"],

@@ -90,7 +90,7 @@ footer a { color: var(--accent); }
 
 <div class="wrap">
   <header>
-    <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · error budgets<span class="updated"> · updated <time datetime="2026-10-31">31 Oct 2026</time></span></div>
+    <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · error budgets<span class="updated"> · updated <time datetime="2026-11-12">12 Nov 2026</time></span></div>
     <h1>SLO Burn Simulator</h1>
     <p class="lede">Pick an SLO and a burn rate. See how long the budget lasts, which multi-window burn-rate alerts fire and when, and the Prometheus rules to match. Then see what it takes to run SLOs across thousands of services.</p>
   </header>
@@ -154,7 +154,7 @@ footer a { color: var(--accent); }
 
       <div class="panel">
         <div class="row"><h2>Prometheus alert rules</h2><button type="button" class="copy" id="copy">Copy</button></div>
-        <p class="explain">Assumes an <code>http_requests_total</code> counter with <code>code</code> and <code>service</code> labels, and a 5xx series that exists at zero before the first error. Without it the ratio returns nothing, not 0, and these alerts stay quiet. One page alert and one ticket alert, as in the Workbook, so a big outage fires one page alert.</p>
+        <p class="explain">Assumes an <code>http_requests_total</code> counter with <code>code</code> and <code>service</code> labels, and a 5xx series that exists at zero before the first error. Without it the ratio returns nothing, not 0, and these alerts stay quiet. One page alert and one ticket alert, as in the Workbook, so a big outage sends one page.</p>
         <pre id="rules"></pre>
       </div>
     </section>
@@ -248,7 +248,7 @@ function update() {
 
   $("windowNote").textContent = days === 30
     ? "Alert thresholds below are the SRE Workbook's values for a 30-day window."
-    : `Alert thresholds below are the SRE Workbook's values for a 30-day window; they are not rescaled for ${days} days, so treat the timings as approximate.`;
+    : `Alert thresholds below are the SRE Workbook's values for a 30-day window. Over ${days} days they fire at the same times, but each uses a slightly larger share of the budget.`;
 
   // Alerts: simulate the finite incident with alertFiring(). t is in hours for display; budget used when
   // it fires counts only error minutes actually spent: burn × min(t, incident) / window.
@@ -351,7 +351,7 @@ function rulesYaml(slo, rows) {
       summary: "{{ $labels.service }} is burning its error budget too fast (${sev})"
       description: "Fires when any of these hold on both windows: ${rs.map((r) => `${r.thr}x over ${r.longLbl}/${r.shortLbl}`).join(", ")}."`;
   };
-  return `# SLO ${(slo * 100).toFixed(2).replace(/\.?0+$/, "")}% — error budget ${err * 100}%
+  return `# SLO ${(slo * 100).toFixed(2).replace(/\.?0+$/, "")}%, error budget ${+(err * 100).toFixed(4)}%
 groups:
 - name: slo-burn-recording
   rules:

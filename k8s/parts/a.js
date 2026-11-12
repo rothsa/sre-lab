@@ -65,7 +65,7 @@ export const CHAPTERS = [
     agentic: [
       "Agents such as kubectl-ai and K8sGPT drive the same hub-and-spoke API: every `get`, `describe` or `logs` they run is an API server request under some identity. What you own is that identity, because an agent bound to a read-only Role cannot do what its RBAC forbids, whatever its prompt says.",
       "The component map is how you catch a fluent but wrong answer. GKE's Gemini Cloud Assist docs (Preview) warn output can be plausible yet incorrect; an agent claiming 'the kubelet failed to schedule the Pod' has mixed up who binds (scheduler) and who runs (kubelet).",
-      "Agent bridges are a new front door. kubectl-ai's `--mcp-server` HTTP endpoint is unauthenticated by default, and its README warns that anyone who can reach the port can run `kubectl` and `bash` with the kubeconfig and host it runs on. OAuth 2.1 (`--mcp-auth-issuer`) is opt-in and newer than the last tagged release, so treat it like API server access, with auth, network scope and audit.",
+      "Agent bridges are a new front door. kubectl-ai's `--mcp-server` HTTP endpoint is unauthenticated by default, and its README warns that anyone who can reach the port can run `kubectl` and `bash`; OAuth is opt-in. Treat any bridge like API server access: auth, network scope and audit.",
     ],
     quiz: [
       { q: "Which component is the only one that should read and write etcd?", a: "kube-apiserver. Every other component, including the scheduler, controllers and kubelets, goes through the API server." },
@@ -223,7 +223,6 @@ export const CHAPTERS = [
     agentic: [
       "Agents are good at turning a `FailedScheduling` event ('0/40 nodes are available: 12 Insufficient cpu...') into plain language. Check the reasoning uses requests, not usage, because an agent reading a CPU dashboard can blame the wrong thing.",
       "The quick agent fixes for Pending Pods are policy changes in disguise: adding a toleration, raising priority or dropping anti-affinity gets the Pod placed but weakens isolation or preempts other teams. Keep PriorityClasses and taints out of an agent's write scope.",
-      "Agent runtimes are now a workload you schedule. kubernetes-sigs/agent-sandbox (SIG Apps, v1.0 with v1beta1 APIs) runs each agent as a singleton Pod, can scale idle ones to zero, and keeps a SandboxWarmPool of pre-started Pods to skip about a second of startup; warm Pods hold requests, so they use capacity the scheduler counts.",
     ],
     quiz: [
       { q: "What are the two phases of a scheduling decision, and what happens if the first leaves no nodes?", a: "Filtering finds feasible nodes; scoring ranks them and the highest wins, with ties broken at random. If filtering leaves none, the Pod stays Pending and the scheduler may try preemption." },
@@ -395,8 +394,7 @@ export const CHAPTERS = [
     ],
     agentic: [
       "Kubernetes still never rolls back by itself. An agent can watch for `ProgressDeadlineExceeded` and propose `kubectl rollout undo`, but undo restores only the Pod template, so a human confirms the cause was the template and not replicas or config.",
-      "DORA 2025 links AI adoption to higher throughput but still lower delivery stability, tied to more change without strong controls. On Kubernetes those controls are readiness probes, `minReadySeconds`, modest `maxSurge` and canaries, and they matter more as agents open more PRs.",
-      "The Kubernetes project's own AI policy requires disclosure and that contributors can explain every AI-assisted change, or the PR is closed. Apply the same bar to agent image bumps: a rubber-stamped template change rolls through every replica unless readiness catches it.",
+      "DORA 2025 links AI adoption to higher throughput but still lower delivery stability, tied to more change without strong controls. On Kubernetes those controls are readiness probes, `minReadySeconds`, modest `maxSurge` and canaries. They matter more as agents open more PRs: a rubber-stamped image bump rolls through every replica unless readiness catches it.",
     ],
     quiz: [
       { q: "With 10 replicas and the default strategy, how many Pods can exist and how many must be available during a rollout?", a: "maxSurge 25% of 10 rounds up to 3, so 13 counted Pods, plus any still terminating. maxUnavailable 25% rounds down to 2, so at least 8 must be available." },
@@ -481,7 +479,6 @@ export const CHAPTERS = [
     agentic: [
       "Agents are useful for the requests-versus-usage comparison across thousands of Pods, as VPA's recommender is. The decision stays human, because right-sizing a Guaranteed Pod into Burstable raises its OOM score and, once usage exceeds requests, puts it ahead of others for eviction, a cost an agent tuning for spend may not weigh.",
       "OOMKilled and Evicted need different fixes. An agent can tell them apart from `lastState.terminated.reason` and node events, but only if it reads both; check that before accepting 'raise the memory limit'.",
-      "In-cluster agents need two kinds of limits: Kubernetes requests and limits for their Pods, and caps on model calls and tokens. A looping agent can burn budget long before it hits an OOM (OWASP LLM10:2025 Unbounded Consumption).",
     ],
     quiz: [
       { q: "What QoS class does a Pod get if each container sets CPU and memory limits but no requests?", a: "Guaranteed. Requests default to the limits, so every container has requests equal to limits for both CPU and memory." },

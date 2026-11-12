@@ -65,7 +65,7 @@ export const CHAPTERS = [
     agentic: [
       "Agents can walk the Service debug path fast: selector, EndpointSlices, `ready` conditions, kube-proxy mode. Ask for the commands they ran and confirm with a real request to the port, since an agent that pings a ClusterIP and calls it down has misread a virtual IP.",
       "Fluent advice still needs the mechanism. An agent suggesting `externalTrafficPolicy: Local` to keep client IPs is right about the IP and silent about nodes without a local endpoint dropping traffic; that trade-off is yours to make.",
-      "Agent servers sit behind Services too: `k8sgpt serve --mcp` has an HTTP mode, and kubectl-ai's MCP HTTP endpoint is unauthenticated by default (its OAuth 2.1 option is opt-in). A ClusterIP is not access control, so add authentication and a NetworkPolicy before anything else can reach them.",
+      "Agent servers sit behind Services too: K8sGPT and kubectl-ai can both serve MCP over HTTP, and kubectl-ai's endpoint is unauthenticated by default. A ClusterIP is not access control, so add authentication and a NetworkPolicy before anything else can reach them.",
     ],
     quiz: [
       { q: "Which component turns a Service into something packets can use, and where does it run?", a: "kube-proxy (or a CNI plugin's replacement for it). It runs on every node, watches Services and EndpointSlices, and programs iptables or nftables rules in that node's kernel." },
@@ -149,7 +149,7 @@ export const CHAPTERS = [
     ],
     agentic: [
       "NetworkPolicy is how you cut the third leg of the lethal trifecta for in-cluster agents: private data plus untrusted input plus outbound access. A default-deny egress policy with named destinations does that, but only if the CNI plugin enforces policy.",
-      "Agent Sandbox gets kernel and network isolation for agent-run code from gVisor or Kata via RuntimeClass; the Sandbox CRD itself does not isolate. Verify the RuntimeClass is set and that the sandbox namespace has default-deny egress that still allows DNS. Bearer-token auth on the in-sandbox daemon, sandboxd, is optional (v1.0.7, Oct 2026): \"If neither flag is set, behavior is unchanged. NetworkPolicy is still the primary boundary.\"",
+      "Agent Sandbox gets kernel and network isolation for agent-run code from gVisor or Kata via RuntimeClass; the Sandbox CRD itself does not isolate. Verify the RuntimeClass is set and that the sandbox namespace has default-deny egress that still allows DNS.",
       "Cross-node connectivity bugs still need the packet path: veth, routes, overlay, conntrack. Agents can run the checks, but node-level debugging via `kubectl debug node/...` or host access is effectively root on the node, so keep it with humans.",
     ],
     quiz: [
@@ -371,10 +371,10 @@ export const CHAPTERS = [
       { text: "The CSI driver's controller asks the backend for a volume of that size and topology. A PV represents it, and the PV controller binds it one-to-one to the PVC, which shows `Bound`.", on: ["csictl", "api", "backend", "pv", "pvc", "pvctl"], flow: ["e-csictl", "e-create", "e-pvctl"] },
       { text: "For drivers that need it, the attach/detach controller creates a VolumeAttachment for this volume and node, and the CSI external-attacher attaches it and marks it `attached`.", on: ["va", "csictl", "backend", "csinode"], flow: ["e-csictl", "e-create", "e-attach"] },
       { text: "The kubelet calls the CSI node plugin. `NodeStageVolume`, if the driver uses it, mounts the device at a node-wide path, and `NodePublishVolume` mounts it into the Pod's directory. Then the containers start.", on: ["kubelet", "api", "csinode", "pod"], flow: ["e-kubelet", "e-stage", "e-mount"] },
-      { text: "On dense nodes, attach slots run out before CPU or memory. Scheduler defaults are 39 EBS volumes, 16 Google PD and 16 Azure Disk. Type-aware limits are 25 EBS on M5, C5, R5, T3 and Z1D, and up to 127 on GCE and 64 on Azure.", on: ["va", "csinode", "pod"] },
+      { text: "On dense nodes, attach slots run out before CPU or memory. The limit depends on cloud and instance type: 25 EBS volumes on M5, C5, R5, T3 and Z1D, 39 on other EC2 types, up to 127 on GCE and 64 on Azure.", on: ["va", "csinode", "pod"] },
       { text: "CSI drivers report their own per-node limit through `NodeGetInfo`, and the scheduler honors it. The fleet metric is `storage_count_attachable_volumes_in_use` per node against that limit, plus failed attaches in `storage_operation_duration_seconds` by `status`.", on: ["csinode", "sched", "va"] },
-      { text: "With `MutableCSINodeAllocatableCount`, the kubelet refreshes that count every `nodeAllocatableUpdatePeriodSeconds` (10 or more). An attach that fails with `ResourceExhausted` marks the Pod Failed, so its controller recreates it instead of it hanging in `ContainerCreating`.", on: ["kubelet", "csinode", "pod"] },
-      { text: "Zonal disks pin StatefulSet Pods to a zone, so give the node autoscaler one node group per zone with `--balance-similar-node-groups`. Cluster Autoscaler counts CSI limits only with `--enable-csi-node-aware-scheduling=true`.", on: ["pod", "pv", "backend"] },
+      { text: "If the CSIDriver sets `nodeAllocatableUpdatePeriodSeconds` (10 or more; stable since v1.36), the kubelet refreshes that count on that period. An attach that fails with `ResourceExhausted` marks the Pod Failed, so its controller recreates it instead of it hanging in `ContainerCreating`.", on: ["kubelet", "csinode", "pod"] },
+      { text: "Zonal disks pin StatefulSet Pods to a zone, so give the node autoscaler one node group per zone with `--balance-similar-node-groups`.", on: ["pod", "pv", "backend"] },
       { text: "Deleting the PVC triggers the reclaim policy. `Delete` removes the PV and the disk; `Retain` keeps both, `Released`, until an admin cleans up.", on: ["pvc", "pv", "backend"] },
       { text: "StatefulSets give each replica its own PVC from `volumeClaimTemplates`. `db-0` keeps its claim when rescheduled, and the PVCs survive scale-down and deletion by default.", on: ["pod", "pvc", "pv"] },
     ],
@@ -382,12 +382,12 @@ export const CHAPTERS = [
     gotchas: [
       "`ReadWriteOnce` means one node, not one Pod. Two Pods on the same node can both write. Use `ReadWriteOncePod` for single-Pod access.",
       "Deleting or scaling down a StatefulSet leaves its PVCs behind by default. That's for data safety, but it also means scaling back up reuses old data.",
-      "Without `--enable-csi-node-aware-scheduling`, don't set the CSIDriver's `preventPodSchedulingIfMissing: true`, or Cluster Autoscaler may fail to scale up for Pending Pods with CSI volumes.",
+      "Cluster Autoscaler counts CSI attach limits only with `--enable-csi-node-aware-scheduling=true`. Until then, leave the CSIDriver's `preventPodSchedulingIfMissing` at `false`, or it may fail to scale up for Pending Pods with CSI volumes.",
     ],
     agentic: [
       "Storage is where an agent mistake is permanent: with `reclaimPolicy: Delete`, deleting a PVC deletes the disk. Keep `delete` on PVCs, PVs and StatefulSets out of agent RBAC; OWASP LLM06:2025 names excessive permissions and asks for human approval of high-impact actions.",
       "Agents can diagnose a Pending PVC quickly from events: binding mode, zone, attach limits, `ResourceExhausted`. Check the node's CSI allocatable count and the disk's zone before accepting 'add a node' as the fix.",
-      "Agent Sandbox can give each agent storage that survives restarts. Those volumes hold whatever the agent wrote, possibly secrets or customer data, so idle agent workspaces need a retention and cleanup policy you own. Since v1.37 (beta, on by default) a PVC gets an `Unused` condition once no running or Pending Pod uses it; finished Pods don't count, and its `lastTransitionTime` is the idle-since time. Treat it as a review queue, not permission to delete: Kubernetes only reports it.",
+      "Agent Sandbox can give each agent storage that survives restarts. Those volumes hold whatever the agent wrote, possibly secrets or customer data, so idle workspaces need a retention and cleanup policy you own. Since v1.37 (beta, on by default) a PVC gets an `Unused` condition once no running or Pending Pod uses it, and its `lastTransitionTime` is the idle-since time. Kubernetes only reports it, so treat it as a review queue.",
     ],
     quiz: [
       { q: "Why would you use `volumeBindingMode: WaitForFirstConsumer`?", a: "So the volume is provisioned or bound only after a Pod using it is scheduled, in a topology (such as a zone) that node can reach. With `Immediate`, a zonal disk can end up where the Pod can't run." },

@@ -204,8 +204,8 @@ export const CHAPTERS = [
       "Federation config fails for everyone at once. AWS lists an expired SAML signing certificate as its own emergency failure mode.",
       "In mutual TLS only the leaf certificate proves its sender holds the key. LXD trusted any certificate in the client's chain, so a trusted client's public cert sent as an intermediate logged an attacker in as that client (Canonical, 28 Oct 2026).",
       "A trust that checks only issuer and audience lets any workload from that issuer in. Pin the subject per repo and per cluster.",
-      "A vendor's cross-account role is standing access until you delete it. In October 2026 an attacker with credentials from Qubole's AWS account assumed customers' integration roles: \"Every AssumeRole request we attributed to the threat actor included an External ID, and every one succeeded\" (Wiz, 9 Nov). Most of those roles \"were not otherwise in use\", and Sentra found them \"still in place long after companies had stopped using Qubole\". Inventory third-party trust policies across the org, delete the unused ones, and add a source IP condition to the rest.",
-      "MFA only guards the sign-in path it sits on. A stolen session cookie skips it, as CircleCI found in 2022. Device code phishing skips passkeys \"because the victim signs in on the real Microsoft page\" (Carlos Perez, Oct 2026). Any other login method left on skips it too: SonicWall's SSL-VPN let a password for an alternate method bypass SAML and its MFA (CISA KEV, 6 Nov 2026). Turn off every sign-in path but the IdP, block device code flow outside documented exceptions, keep prod sessions short and ask for step-up on writes.",
+      "A vendor's cross-account role is standing access until you delete it. In October 2026 an attacker with credentials from Qubole's AWS account assumed customers' integration roles: \"Every AssumeRole request we attributed to the threat actor included an External ID, and every one succeeded\" (Wiz, 9 Nov 2026). Sentra found the roles \"still in place long after companies had stopped using Qubole\". Inventory third-party trust policies across the org, delete the unused ones, and add a source IP condition to the rest.",
+      "MFA only guards the sign-in path it sits on. A stolen session cookie skips it, as CircleCI found in 2022. Device code phishing skips passkeys \"because the victim signs in on the real Microsoft page\" (Carlos Perez, Oct 2026). So does any other login method left on, as with SonicWall's SSL-VPN (CISA KEV, 6 Nov 2026). Turn off every sign-in path but the IdP, block device code flow outside documented exceptions, keep prod sessions short and ask for step-up on writes.",
     ],
     agentic: [
       "Agents are workloads: each gets its own federated identity and short-lived credentials, never a person's key, with the human who launched it recorded by the IdP or launcher, never by the agent.",
@@ -283,7 +283,7 @@ export const CHAPTERS = [
     agentic: [
       "Anything that enters an agent's context can end up in transcripts and logs. Give agents tools that use a credential instead of the credential itself.",
       "Agents copy secrets into commits and config as readily as people do. Keep push protection on for agent PRs and rotate any secret an agent saw.",
-      "Stolen keys now buy model time. Google's threat intelligence team (2 Nov 2026) says the main way in is \"exposed or stolen cloud identity tokens\", with charges \"reaching $1 million USD before access was revoked\". Vendors now let you pin model keys to your own network: Anthropic's IP allowlist (beta, 5 Nov 2026) refuses requests from other addresses, \"which limits where a leaked API key can be used\", and OpenAI requires one for GPT-6-Cyber. Allowlist your gateway's egress and alert on model spend per key and project.",
+      "Stolen cloud credentials get spent on model time. In its LLMjacking investigations Google's threat intelligence team (2 Nov 2026) says the main way in is \"exposed or stolen cloud identity tokens\", with charges \"reaching $1 million USD before access was revoked\". Some vendors let you pin model keys to your own network: Anthropic's IP allowlist (beta, 5 Nov 2026) \"limits where a leaked API key can be used\". Allowlist your gateway's egress and alert on model spend per key and project.",
     ],
     quiz: [
       { q: "What fields does a secret inventory need to be useful in an incident?", a: "Type, owner, what it grants access to, every location it's stored or copied, and when it was last rotated. That lets you answer what was exposed and who has to act." },
@@ -347,7 +347,7 @@ export const CHAPTERS = [
     gotchas: [
       "An attestation tells you where and how something was built. GitHub's own docs say it doesn't guarantee the artifact is secure.",
       "A tag can be moved to a different commit. Pin to the full SHA, and check it comes from the action's own repo and not a fork.",
-      "From 2 December 2026 GitHub blocks `pull_request_target` by default in all public repos, \"unless an applicable Actions event policy explicitly allows them\". Brownouts on 9 and 16 November show which workflows break. Decide the allow list once at org level, not per repo.",
+      "From 2 December 2026 GitHub blocks `pull_request_target` by default in all public repos, \"unless an applicable Actions event policy explicitly allows them\". Find the workflows that use it and decide the allow list once at org level, not per repo.",
       "Vendor scripts on signed-in pages run with the user's session. In October 2026 a compromised performance-monitoring script on Polymarket \"used their active session to sell positions and move funds\". Pin or self-host them, sandbox them, and set a strict CSP.",
     ],
     agentic: [

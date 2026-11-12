@@ -50,7 +50,7 @@ export const CHAPTERS = [
       "If the program has no owner, each part has a different one: tooling in one team, reviews in another, on-call policy in HR. Nobody sees the loop, so nobody fixes the slowest stage.",
     ],
     agentic: [
-      "Agents now work inside the respond and learn stages: Microsoft tested LLM root-cause suggestions on over 40,000 incidents, and more than 70% of on-call engineers rated them 3 of 5 or better. Treat that as a new input to the loop, and still measure the loop by outcomes.",
+      "Agents now work inside the respond and learn stages: in that Microsoft study, more than 70% of on-call engineers rated the LLM's root-cause suggestions 3 of 5 or better. Treat that as a new input to the loop, and still measure the loop by outcomes.",
       "Google's AI in SRE paper sorts agents by autonomy: read-only investigation first, mitigation only with human approval, more autonomy for minor incidents. That is a program decision, set once for the company, not per team.",
     ],
     quiz: [
@@ -164,7 +164,7 @@ export const CHAPTERS = [
     codeNote: "Primary schedule, then secondary after 10 minutes, repeated twice. The names are an example; the resource and arguments are from PagerDuty's Terraform provider docs.",
     say30: "Routing has to be data. Every alert names a service, the catalog maps it to one owning team, and the team's escalation policy and schedule pick the person. Policies live in code, so a reorg is a reviewed change. Dependencies live in the catalog too, so one failed dependency pages its owner, not every team downstream. A daily audit tickets every gap: services with no owner, one-person rotations, people unreachable at high urgency. Misrouting is costly; Microsoft found reassignment can make triage up to ten times slower. So the gap list is risk, counted by tier and reviewed weekly.",
     gotchas: [
-      "Backstage says its owner field is mainly for display and not for granting authorization in runtime systems. Don't let the catalog quietly become your access control.",
+      "Ownership data built for routing is not access control. Backstage says its owner field is mainly for display and not for granting authorization in runtime systems.",
       "Reorgs break routing silently. Teams get renamed, services move, and pages keep going to a rotation nobody reads. Check ownership after every reorg, not once a year.",
     ],
     agentic: [
@@ -214,7 +214,7 @@ export const CHAPTERS = [
       { text: "Many incidents at once, each one with someone clearly in charge. Press Next." },
       { text: "Declaring should cost one command. incident.io workflows fire when an incident is created or its severity changes, and can post to channels or start an escalation. Responders get their own channel, and the hundreds who want to watch read a separate updates channel.", on: ["inc", "tool"], flow: ["e-open"] },
       { text: "Most incidents stay with the owning team, with the same roles one level down. PagerDuty notes one person can cover several roles on a small incident.", on: ["tool", "q", "team"], flow: ["e-route", "e-no"] },
-      { text: "Major or cross-team incidents get an incident commander from a trained pool on its own schedule. At PagerDuty anyone can become an IC, no seniority needed. Publish the rule that the IC runs the incident, so executives get updates from the comms lead and don't direct from the bridge.", on: ["q", "icpool"], flow: ["e-yes"] },
+      { text: "Major or cross-team incidents get an incident commander from a trained pool on its own schedule. At PagerDuty anyone can become an IC, no seniority needed. Whatever authority you give the IC, publish it, so executives get updates from the comms lead and don't direct from the bridge.", on: ["q", "icpool"], flow: ["e-yes"] },
       { text: "Big incidents split into workstreams. PagerDuty's complex-incident guide uses named sub-teams, each with a leader reporting to the IC and a Slack room and bridge set up in advance. Google's GKE outage in the Workbook ran up to four task forces at once.", on: ["icpool", "parent"], flow: ["e-split"] },
       { text: "A shared dependency fails and several teams each open their own incident. Link them under one parent and run one response. Microsoft built LiDAR to find linked and duplicate incidents automatically, since knowing the links gets responders to a fix faster.", on: ["inc", "link", "parent"], flow: ["e-dup", "e-join"] },
       { text: "Watch the IC pool too. Two concurrent majors need two ICs, and long ones rotate: in the Workbook's PagerDuty NTP case, every four hours. Count majors per IC each month. If the same few people take them all, train more.", on: ["icpool", "parent"] },

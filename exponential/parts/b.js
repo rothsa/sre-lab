@@ -90,7 +90,7 @@ export const CHAPTERS = [
     steps: [
       { text: "Agent output can double; most of what turns it into shipped, trusted work does not. Throughput is set by the slowest stage." },
       { text: "Attention: people have the same hours, and every prompt spends them. Anthropic says sandboxing cut its internal permission prompts by 84% (October 2025) by letting safe work run inside a boundary.", on: ["out", "att", "f-att"], flow: ["e-a", "e-fa"] },
-      { text: "Review: METR found test-passing agent fixes often aren't mergeable (none of 15 in August 2025, about half in a larger March 2026 note). Across hundreds of repos, gate on deterministic checks, auto-merge only low-risk classes with owners' consent, and track review latency as an SLO.", on: ["rev", "f-rev"], flow: ["e-b", "e-fr"] },
+      { text: "Review: METR found agent fixes that pass tests often aren't mergeable (none of 15 hand-reviewed in August 2025; about half of test-passing ones in a larger March 2026 note). Across hundreds of repos, gate on deterministic checks, auto-merge only low-risk classes with owners' consent, and track review latency as an SLO.", on: ["rev", "f-rev"], flow: ["e-b", "e-fr"] },
       { text: "Trust and approvals: Claude Code users approve 97% of permission prompts (Anthropic, August 2026), so a prompt is a weak control. Put the boundary in sandboxes and task-scoped credentials, keep prompts for irreversible actions, and let evals and track record widen what agents do unattended.", on: ["trust", "f-trust"], flow: ["e-c", "e-ft"] },
       { text: "Compute budget: token prices fall, but bigger tasks use more tokens, and Epoch expects power to bind first. Shared GPU and API quotas become the queue, so give each team a budget and priority class, and alert on cost per task.", on: ["budget", "f-budget"], flow: ["e-d", "e-fb"] },
       { text: "Organizational change: in Anthropic's study most engineers could fully delegate only 0 to 20% of their work, and they reported less mentoring as questions went to the model first. Adoption is a people change: pilot, measure, then scale.", on: ["org", "f-org"], flow: ["e-e", "e-fo"] },
@@ -100,7 +100,6 @@ export const CHAPTERS = [
     gotchas: [
       "Adding agents in front of a fixed review stage just grows the queue. Measure lead time to merge, not pull requests opened.",
       "Reading agent output is now a job of its own. Anthropic says that by August 2026 its interactive agent hours outnumbered employees' six to one, and reading all of their agents' output would take half their work week.",
-      "A high approval rate is a symptom, not a success metric: it usually means prompts are too frequent to read.",
       "Cheaper tokens can raise the bill: as tasks get longer and run in parallel, spend per task rises even when price per token falls.",
     ],
     quiz: [
@@ -147,7 +146,7 @@ export const CHAPTERS = [
     steps: [
       { text: "The curve may keep compounding or flatten into an S-curve, and nobody can say when. Build plans that work in both futures, and let measurement say which one you're in." },
       { text: "Benchmarks saturate: OpenAI stopped reporting SWE-bench Verified in February 2026, then in July withdrew its suggested replacement after estimating about 30% of its tasks were broken. If every team picks models off one public benchmark, its flaws are everyone's blind spot; shared private evals spread the risk.", on: ["s1", "measure"], flow: ["e-s1"] },
-      { text: "Yardsticks top out: METR's suite is unreliable above 16 hours and its tracker is no longer updated, so this explainer's own trend can't measure its frontier.", on: ["s2", "q"], flow: ["e-s2"] },
+      { text: "Yardsticks top out: METR's suite is unreliable above 16 hours and its tracker is no longer actively updated, so the trend behind this explainer can't be measured at its frontier.", on: ["s2", "q"], flow: ["e-s2"] },
       { text: "Trends bend: Epoch measured the longest context windows growing about 30x a year from mid-2023 (June 2025); in October 2026 the newest models from Anthropic, OpenAI and Google list about 1M tokens, far below that line.", on: ["s3", "q"], flow: ["e-s3"] },
       { text: "Measurement decides, not belief. Run your own evals, capability and regression, on every release; their trend is the only curve about your work.", on: ["measure", "q"], flow: ["e-m"] },
       { text: "If it holds: keep harnesses thin and re-examine them every release. Anthropic (March 2026): strip pieces that stop being load-bearing and add new ones.", on: ["q", "holds"], flow: ["e-h"] },
@@ -157,7 +156,7 @@ export const CHAPTERS = [
     say30: "I don't bet the roadmap on one curve: it may keep compounding or flatten, and nobody knows when. The strain shows: SWE-bench Verified saturated and was dropped, METR's suite can't measure past about 16 hours, and context windows sit near a million tokens, below their old 30x-a-year trend. So shared private evals decide each release. If the curve holds, thin harnesses re-examined every release keep pace. If it bends, the pinned model and its scaffolding still ship, kept warm and budgeted like a DR test. Every major roadmap item states its fallback, so the org's bets don't fail together.",
     gotchas: [
       "\"It will bend soon\" is as much a forecast as \"it will keep doubling\". METR (5 Nov 2026) estimates Anthropic now improves its models on well-specified tasks \"at around twice the rate\" it did from March 2024 to October 2025, but 1.3x or 3x wouldn't surprise it, and Anthropic redacted most of the evidence. Neither belongs in a plan without a measurement attached.",
-      "A fallback you never run rots. Keep the pinned current model in a scheduled eval run so you know it still works.",
+      "A fallback you never run rots. Keep the pinned current model in a scheduled eval run.",
       "Saturated benchmarks can look like a plateau when the models are still improving on harder tasks. Check whether the yardstick or the capability stopped.",
     ],
     quiz: [
@@ -212,7 +211,7 @@ export const CHAPTERS = [
       { text: "Hiring. Canva (Jun 2025) replaced its computer science fundamentals screen for backend and frontend roles with an AI-assisted round that checks whether candidates fix issues in AI-generated code. Hundreds of interviewers drift, so calibrate with a shared rubric.", on: ["you", "k1", "c1"], flow: ["e-k1"] },
       { text: "Anthropic's interview scorecards mentioned candidates' AI use three to four times as often in 2026 as in 2024, and comments on judgment grew most for technical candidates (Oct 2026).", on: ["k1"] },
       { text: "Leveling. Commits per engineer at Anthropic reached about five times their level six months earlier, so a ladder that counts output promotes everyone. Count trusted change, incidents and eval coverage, or the people verifying agent work go unrecognized.", on: ["you", "k2", "c2"], flow: ["e-k2"] },
-      { text: "Skill investment goes to verification. Hamel Husain calls error analysis the most valuable activity in AI development, and METR found none of 15 test-passing agent fixes mergeable as-is.", on: ["you", "k3"], flow: ["e-k3"] },
+      { text: "Skill investment goes to verification. Hamel Husain calls error analysis the most valuable activity in AI development, and METR found none of 15 hand-reviewed agent fixes mergeable as-is.", on: ["you", "k3"], flow: ["e-k3"] },
       { text: "Juniors. Anthropic's share of junior technical hires fell from 27% to 9% since early 2025, and its report says its proposed actions don't address that. Seniors come from juniors, so hire some on purpose and pair them on real incidents.", on: ["you", "k4"], flow: ["e-k4"] },
       { text: "Learning from incidents: Google's SRE book treats blameless postmortems as part of SRE culture. Mentoring thins when questions go to the model first (Anthropic, 2025), so large teams need incident reviews that teach.", on: ["you", "k5"], flow: ["e-k5"] },
       { text: "One level down are the individual skills: judgment, specs, verification, reliable systems. Supervising agents takes the coding skills heavy use can erode, so some of Anthropic's engineers practice without AI on purpose.", on: ["k1", "k3", "c1"] },

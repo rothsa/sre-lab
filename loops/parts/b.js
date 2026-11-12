@@ -195,7 +195,7 @@ export const CHAPTERS = [
     ],
     quiz: [
       { q: "Name Anthropic's five workflow patterns. Which one contains a loop?", a: "Prompt chaining, routing, parallelization, orchestrator-workers and evaluator-optimizer. Evaluator-optimizer loops: one call generates, another evaluates and gives feedback, until the output passes." },
-      { q: "In LangGraph, how does a loop end, and what is the backstop?", a: "Most commonly a conditional edge routes to END once a termination condition holds. If it never does, the recursion limit (10,007 super-steps by default since 1.1.4; 10,000 from 1.0.6) raises GraphRecursionError." },
+      { q: "In LangGraph, how does a loop end, and what is the backstop?", a: "Most commonly a conditional edge routes to END once a termination condition holds. If it never does, the recursion limit (10,007 super-steps by default since 1.1.4) raises GraphRecursionError." },
       { q: "In a Claude Code dynamic workflow, who writes the graph, and where do intermediate results live?", a: "Claude writes the JavaScript script from your description. The script's variables hold the loop, the branching and the intermediate results, so Claude's context gets only the final answer." },
     ],
     code: [

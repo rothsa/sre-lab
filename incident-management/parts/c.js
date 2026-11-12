@@ -50,7 +50,7 @@ export const CHAPTERS = [
       "A freeze nobody enforces teaches teams the budget is optional. Write down who can grant exceptions, and log every one.",
     ],
     agentic: [
-      "Agents can draft items and even open the PR, but a person owns each item, reviews the change and checks the end state. Google's agents need explicit human approval to execute mitigations at the level it starts them on.",
+      "Agents can draft items and even open the PR, but a person owns each item, reviews the change and checks the end state. Google starts its mitigating agents at a level that needs explicit human approval to act.",
       "If an agent contributed to the incident, fix it by limiting what the agent can do. Google routes agent actions through a control plane that can drop a request back to human approval when risk is high.",
     ],
     quiz: [
@@ -102,9 +102,9 @@ export const CHAPTERS = [
       { text: "Top-tier services get a full review. Google's production readiness review covers architecture and dependencies, monitoring, emergency response, capacity, change management and performance.", on: ["tier", "full"], flow: ["e-full"] },
       { text: "Per-service reviews don't scale. Google found each takeover took two or three SREs and often two or three quarters. It moved best practices into shared frameworks, so services start ready and some reach production quality in days.", on: ["tier", "light", "full"], flow: ["e-light"] },
       { text: "Launch gradually, then keep checking. AWS teams self-assess against readiness checklists for the whole life of a service. Services drift after launch, so run automated checks against the catalog for every service and send the results to the owning team.", on: ["full", "light", "launch", "score"], flow: ["e-l1", "e-l2", "e-recheck"] },
-      { text: "Test the response itself. Google's DiRT runs real and fictitious incidents across the company to test systems, processes and people, using spare capacity and stopping the test before that capacity is needed.", on: ["score", "drills"], flow: ["e-drill"] },
+      { text: "Test the response itself. Google's DiRT runs real and fictitious incidents across the company to test systems, processes and people, using spare capacity and stopping the test before that capacity is needed. Cloudflare ran an engineering-wide drill with more than 200 people in April 2026.", on: ["score", "drills"], flow: ["e-drill"] },
       { text: "Run drills like experiments: a steady-state hypothesis and a small blast radius, as the chaos engineering principles say. Put them on one central calendar so they don't collide, warn the affected on-callers, and pause drills when a real incident starts.", on: ["drills"] },
-      { text: "What drills and incidents find becomes new checklist questions for everyone. AWS built its readiness questions from COE learnings. Cloudflare ran an engineering-wide drill with more than 200 people in April 2026.", on: ["drills", "find", "tier"], flow: ["e-find", "e-q"] },
+      { text: "What drills and incidents find becomes new checklist questions for everyone. AWS built its readiness questions from COE learnings.", on: ["drills", "find", "tier"], flow: ["e-find", "e-q"] },
     ],
     say30: "I make readiness a policy by tier, so SRE isn't the launch bottleneck. Top-tier services get a full production readiness review: dependencies, monitoring, emergency response, capacity, change management. Lower tiers self-assess against the same checklist, and shared frameworks make services start ready. Launches roll out gradually, and automated checks against the catalog keep running for every service after launch. Then I test the response itself with a company-wide drill program like Google's DiRT: hypotheses, small blast radius, one calendar, and real incidents pause drills. Findings from drills and incidents become new checklist questions, which is how AWS builds its readiness reviews.",
     gotchas: [
@@ -162,21 +162,21 @@ export const CHAPTERS = [
     steps: [
       { text: "Keep a number only if it changes a decision. Press Next." },
       { text: "Start from the records, with each timestamp defined once for every tool. incident.io defines each duration as the time between two incident timestamps. Then ask of every metric what you'd do differently if it moved. If the answer is nothing, it's a vanity number.", on: ["data", "q"], flow: ["e-in"] },
-      { text: "MTTR fails that test. Google's Davidovič report used Monte Carlo simulation to show MTTR and similar means are poorly suited to decisions or trend analysis. The VOID, with over 10,000 public incident reports, found no statistical link between duration and severity.", on: ["q", "drop"], flow: ["e-none"] },
-      { text: "Counts are worse. Allspaw calls counts and averages shallow data that teach next to nothing alone, and counting incidents rewards not declaring them. Keep both as context, never as targets.", on: ["drop"] },
+      { text: "MTTR fails that test as a target or a trend line. Google's Davidovič report used Monte Carlo simulation to show MTTR and similar means are poorly suited to decisions or trend analysis. The VOID, with over 10,000 public incident reports, found no statistical link between duration and severity.", on: ["q", "drop"], flow: ["e-none"] },
+      { text: "Counts have their own problem. Allspaw calls counts and averages shallow data that teach next to nothing alone, and counting incidents rewards not declaring them. Keep both as context, never as targets.", on: ["drop"] },
       { text: "Measure impact against what customers were promised: error budget burned by incidents, per service and tier. The error budget policy already ties that number to decisions like freezes.", on: ["q", "impact"], flow: ["e-k1"] },
       { text: "Measure how you find out. The share of incidents customers reported before an alert fired tells you where to invest in detection.", on: ["q", "detect"], flow: ["e-k2"] },
       { text: "Measure the people and the follow-through: pages per shift by rotation (chapter 6), overdue items and repeat incidents (chapter 8). Those drive staffing and funding decisions.", on: ["q", "load", "follow"], flow: ["e-k3", "e-k4"] },
       { text: "One dashboard, reviewed quarterly with engineering leaders, broken down by team, tier and severity so a good average can't hide a team at zero. Each number has an owner and a decision. Retire any that hasn't driven one in two quarters. Read a few incidents in full at the same meeting.", on: ["impact", "detect", "load", "follow", "dash"], flow: ["e-d1", "e-d2", "e-d3", "e-d4"] },
     ],
-    say30: "I keep a metric only if it changes a decision. MTTR fails: Google's analysis shows mean durations are poor for decisions or trends, and the VOID found duration doesn't track severity. Counts reward not declaring. So the program dashboard has error budget burned by incidents, the share of incidents customers found first, pages per shift by rotation, and overdue items and repeats, each broken down by team, tier and severity, with timestamps defined once. Each has an owner and a decision, and we retire any that stops driving one. AI agents fit as read-only evidence gatherers. People decide and act, and we measure how often the agent's findings held up.",
+    say30: "I keep a metric only if it changes a decision. MTTR fails as a target: Google's analysis shows mean durations are poor for decisions or trends, and the VOID found duration doesn't track severity. Counts reward not declaring. So the program dashboard has error budget burned by incidents, the share of incidents customers found first, pages per shift by rotation, and overdue items and repeats, each broken down by team, tier and severity, with timestamps defined once. Each has an owner and a decision, and we retire any that stops driving one. AI agents fit as read-only evidence gatherers. People decide and act, and we measure how often the agent's findings held up.",
     gotchas: [
-      "The minute a metric becomes a target, people change behavior to hit it. Courtney Nash makes this point about incident metrics; MTTR targets push teams to close early or split incidents.",
+      "The minute a metric becomes a target, people change behavior to hit it. Courtney Nash makes this point about incident metrics; MTTR targets can push teams to close early or split incidents.",
       "Switching to median MTTR doesn't help much. The samples are small and skewed whichever average you pick.",
     ],
     agentic: [
       "Agents fit as evidence gatherers. Google's AI Alert runs read-only, and mitigating agents start at a level that needs explicit human approval. People decide and act through the normal change path.",
-      "Measure the agent like any tool: how often its finding held up in the review. Meta's ranker had the root cause in its top five for 42% of backtested investigations; Microsoft found over 70% of on-call engineers rated LLM suggestions 3 of 5 or better.",
+      "Measure the agent like any tool: how often its finding held up in the review. Meta reports its ranker had the root cause in its top five for 42% of backtested investigations.",
       "Don't let agents improve MTTR on paper. If an agent's start time gets logged as acknowledgement, the number moves while time to detect, which starts at impact, stays the same. Record agent and human timestamps separately.",
     ],
     quiz: [

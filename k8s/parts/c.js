@@ -60,7 +60,7 @@ export const CHAPTERS = [
     agentic: [
       "Scaling stays with the controllers built for it. An agent running `kubectl scale` on an HPA-managed Deployment is overwritten on the next sync, so changes belong in the HPA's min, max or metrics, reviewed like any other change.",
       "Agents can read HPA conditions and Pending Pods quickly and explain why no node arrived. Check that the explanation uses requests, not usage, since both the HPA's percentage and node autoscalers work from requests.",
-      "Agent workloads are bursty and mostly idle. Agent Sandbox can scale idle sandboxes to zero and keep a SandboxWarmPool for fast starts; the pool size trades cost for latency, a capacity decision like HPA `minReplicas`. Since v1.0.7 a warm pool keeps members whose Pods wait on scheduling gates, such as a Kueue admission, instead of deleting them as stuck. v1.0.8 (22 Oct 2026) caps an agent's command output at 30,000 characters by default, with no deprecation period, and can replace a failed Pod while the Sandbox keeps its identity and volumes.",
+      "Agent workloads are bursty and mostly idle. Agent Sandbox can scale idle sandboxes to zero and keep a SandboxWarmPool of pre-started Pods for fast starts. Warm Pods hold requests, so they use capacity the scheduler counts: the pool size trades cost for latency, a capacity decision like HPA `minReplicas`.",
     ],
     quiz: [
       { q: "An HPA targets 50% CPU. 3 Pods each request 200m and use 300m. What does it do?", a: "Utilization is 300m / 200m = 150%. desired = ceil(3 × 150/50) = 9 Pods, capped at `maxReplicas`. The default scale-up rate (100% or 4 Pods per 15s, whichever is more) gets it there in two steps: 7, then 9." },
@@ -215,7 +215,7 @@ export const CHAPTERS = [
       { text: "The operator reports in `status`. With the status subresource enabled, writes to the object ignore `status` and writes to `/status` ignore everything else, so users own `spec` and the controller owns `status`.", on: ["op", "api", "cr"], flow: ["e-status"] },
       { text: "It's a loop: if someone deletes the Service, the next reconcile recreates it. etcd keeps about 5 minutes of change history, so a watch that falls further behind gets `410 Gone` and relists everything. Require `allowWatchBookmarks=true` so the resume point stays fresh.", on: ["op", "cr", "svc", "sts"], flow: ["e-watch"] },
       { text: "APF puts requests from controllers in Pods (any ServiceAccount) in `workload-low`, so a chatty operator is queued instead of starving built-in controllers or leader election. Rejections there in `apiserver_flowcontrol_rejected_requests_total` mean some operator is too chatty.", on: ["op", "api"] },
-      { text: "Custom resources share etcd. SIG Scalability's envelope is 150,000 objects per resource type and 1.5MB per object, so an operator that creates one object per tenant or bloats `status` eats into it. Cap counts with ResourceQuota and track `apiserver_resource_objects`.", on: ["cr", "crd"] },
+      { text: "Custom resources share etcd. SIG Scalability's envelope, set for built-in types, is 150,000 objects per type and 1.5MB per object, so an operator that creates one object per tenant or bloats `status` eats into it. Cap counts with ResourceQuota and track `apiserver_resource_objects`.", on: ["cr", "crd"] },
       { text: "Require two or more replicas with Lease-based leader election, as kube-controller-manager and kube-scheduler use, so exactly one reconciles while the rest stand by.", on: ["op"] },
       { text: "You delete the Database. Its finalizer keeps it Terminating with a `deletionTimestamp` until the operator does its cleanup (say, a final backup) and removes the finalizer. Garbage collection then removes the StatefulSet and Service through their owner references.", on: ["kubectl", "cr", "op", "job", "sts", "svc"], flow: ["e-apply", "e-job", "e-status"] },
       { text: "Two sharp edges. If the operator is gone, nobody removes the finalizer and the object stays Terminating. And deleting a CRD deletes every custom object of that type.", on: ["crd", "cr"] },
@@ -228,7 +228,7 @@ export const CHAPTERS = [
     ],
     agentic: [
       "Operators are Kubernetes' model for trustworthy automation: a narrow CRD, deterministic reconcile code you can test, and progress in `status`. LLM agents lack the determinism, so give them the rest of the discipline: scoped RBAC, visible status, and no right to strip finalizers.",
-      "Agent Sandbox is itself an operator: a `Sandbox` CRD (`agents.x-k8s.io/v1beta1`) and controller managing a singleton Pod with stable hostname and storage, plus SandboxTemplate, SandboxClaim and SandboxWarmPool extensions. Evaluate it like any operator: CRD lifecycle, controller RBAC, upgrade path.",
+      "Agent Sandbox is itself an operator: a `Sandbox` CRD (`agents.x-k8s.io/v1beta1`) and controller managing a singleton Pod with stable hostname and storage. Evaluate it like any operator: CRD lifecycle, controller RBAC, upgrade path.",
       "An agent can scaffold a controller fast, but reviewers still check level-triggered correctness: idempotent reconcile, handling `410 Gone`, finalizer cleanup. An agent that clears a stuck Terminating object by removing its finalizer has skipped the cleanup the finalizer guarded.",
     ],
     quiz: [
