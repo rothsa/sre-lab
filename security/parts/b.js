@@ -55,7 +55,7 @@ export const CHAPTERS = [
     agentic: [
       "Agents can do the backports too. Trail of Bits reports Codex helped land fixes for 149 CVEs in stable Linux kernels by 29 Oct 2026, at about 30 minutes of human attention for a simple one. The constraint moves to CI capacity and to review, so batch by base image and auto-merge only low-risk bumps with passing tests.",
       "As of late 2026, labs report models that find bugs in bulk and chain them into working exploits. Anthropic (27 Oct 2026) described five attack chains written by an unreleased research model, with 62 Chrome CVEs patched from the work. OpenAI says (4 Nov 2026) one pipeline run \"validated and generated patches for 948 local privilege escalation vulnerabilities\" in Linux. BOD 26-04 already asks whether exploitation can be automated. Expect more kernel fixes than your node cadence was built for, and scan your own code at PR time.",
-      "AI-found bugs get found twice, so an embargo or a batched release buys less time. Xen's XSA-523 (3 Nov 2026) was found by Anthropic using Claude and then \"independently reported\" by a second team. OpenSSH (10.6p2, 5 Nov 2026) moved to \"more frequent releases\" because adversaries \"are likely to be able to discover these bugs too\", and SANS ISC saw exploit attempts on its musl password bypass the day the fix shipped. Measure time to patch from the release, in hours for exposed services.",
+      "AI-found bugs get found twice, so an embargo or a batched release buys less time. Xen's XSA-523 (3 Nov 2026) was found by Anthropic using Claude and then \"independently reported\" by a second team. Apache httpd's critical mod_http2 bug (fixed in 2.4.71, 11 Nov 2026) was reported by Anthropic's scanner on 26 Oct and by Google researchers on 3 Nov. OpenSSH (10.6p2, 5 Nov 2026) moved to \"more frequent releases\", and SANS ISC saw exploit attempts on its musl password bypass the day the fix shipped. Measure time to patch from the release, in hours for exposed services.",
       "Agents can shrink the attack surface, not only find bugs. Anthropic's Frontier Red Team (20 Oct 2026) ran Claude over 25 projects and found 162 configuration combinations accepted with no warning; in 94 a security control silently turned off. Run that kind of sweep over the configs your fleet actually ships.",
     ],
     quiz: [
@@ -65,6 +65,7 @@ export const CHAPTERS = [
     ],
     incidents: ["browserstack-2014-shellshock-aws-key-theft"],
     sources: [
+      { title: "Apache HTTP Server 2.4 vulnerabilities: CVE-2026-119618, fixed in 2.4.71 (11 Nov 2026)", url: "https://httpd.apache.org/security/vulnerabilities_24.html" },
       { title: "Vates: VSA-2026-062 Xen Orchestra empty-object login token (10 Nov 2026)", url: "https://docs.vates.tech/security-advisories/advisories/2026/vates-sa-2026-062/" },
       { title: "Rapid7: Critical vulnerabilities in N-able N-central prompt hosted shutdown (10 Nov 2026)", url: "https://www.rapid7.com/blog/post/etr-critical-vulnerabilities-in-n-able-n-central-prompt-hosted-shutdown" },
       { title: "N-able: N-central 2026.4 HF2 release notes (10 Nov 2026)", url: "https://status.n-able.com/2026/11/10/n-central-2026-4-hf2-release-notes/" },

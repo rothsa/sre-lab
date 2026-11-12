@@ -279,11 +279,12 @@ export const CHAPTERS = [
       "Deleting a commit doesn't unleak a secret. Revoke it at the issuer first, then clean history.",
       "By default anyone with write access can bypass push protection by giving a reason. Use delegated bypass and review the bypass alerts.",
       "Rotation without an inventory misses the copy in the other environment. Cloudflare's 2025 R2 incident began with a rotated credential sent to the wrong Worker environment.",
+      "Rotation doesn't evict an attacker who changed who is trusted. The wfx-loot stealer (from 10 Nov 2026) ran in GitHub Actions on stolen developer tokens: Aikido counted 4,837 compromised accounts opening probe pull requests in 61,764 repositories. It set AWS role trust policies to any account and added Azure federated credentials that work \"even after every token has been rotated\". After a CI compromise, diff role trust policies and federated credentials as well as rotating secrets.",
     ],
     agentic: [
       "Anything that enters an agent's context can end up in transcripts and logs. Give agents tools that use a credential instead of the credential itself.",
       "Agents copy secrets into commits and config as readily as people do. Keep push protection on for agent PRs and rotate any secret an agent saw.",
-      "Stolen cloud credentials get spent on model time. In its LLMjacking investigations Google's threat intelligence team (2 Nov 2026) says the main way in is \"exposed or stolen cloud identity tokens\", with charges \"reaching $1 million USD before access was revoked\". Some vendors let you pin model keys to your own network: Anthropic's IP allowlist (beta, 5 Nov 2026) \"limits where a leaked API key can be used\". Allowlist your gateway's egress and alert on model spend per key and project.",
+      "Stolen cloud credentials get spent on model time. In its LLMjacking investigations Google's threat intelligence team (2 Nov 2026) says the main way in is \"exposed or stolen cloud identity tokens\". Anthropic's IP allowlist (beta, 5 Nov 2026) \"limits where a leaked API key can be used\". Allowlist your gateway's egress and alert on model spend per key and project.",
     ],
     quiz: [
       { q: "What fields does a secret inventory need to be useful in an incident?", a: "Type, owner, what it grants access to, every location it's stored or copied, and when it was last rotated. That lets you answer what was exposed and who has to act." },
@@ -292,6 +293,8 @@ export const CHAPTERS = [
     ],
     incidents: ["cloudflare-2025-salesloft-drift-salesforce-breach", "cloudflare-2025-r2-credential-rotation", "heroku-2022-github-oauth-token-theft", "docker-2026-pat-transfer-org-conversion"],
     sources: [
+      { title: "Aikido: wfx-loot campaign pushes CI secret stealer to tens of thousands of repositories (12 Nov 2026)", url: "https://www.aikido.dev/blog/compromised-github-accounts-push-ci-secret-stealer-to-tens-of-thousands-of-repositories" },
+      { title: "SafeDep: wfx GitHub Actions credential stealer hits 8,000 repos (12 Nov 2026)", url: "https://safedep.io/blog/github-actions-wfx-credential-stealer" },
       { title: "Claude Platform release notes: IP allowlisting (5 Nov 2026)", url: "https://platform.claude.com/docs/en/release-notes/overview#ip-allowlisting" },
       { title: "OpenAI: Daybreak guide, IP allowlisting for GPT-6-Cyber (Nov 2026)", url: "https://developers.openai.com/api/docs/guides/daybreak" },
       { title: "Google Threat Intelligence: LLMjacking, monetizing compromised cloud models (2 Nov 2026)", url: "https://cloud.google.com/blog/topics/threat-intelligence/llmjacking-monetizing-compromised-cloud-models" },
