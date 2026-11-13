@@ -279,7 +279,7 @@ export const CHAPTERS = [
       "Deleting a commit doesn't unleak a secret. Revoke it at the issuer first, then clean history.",
       "By default anyone with write access can bypass push protection by giving a reason. Use delegated bypass and review the bypass alerts.",
       "Rotation without an inventory misses the copy in the other environment. Cloudflare's 2025 R2 incident began with a rotated credential sent to the wrong Worker environment.",
-      "Rotation doesn't evict an attacker who changed who is trusted. The wfx-loot stealer (from 10 Nov 2026) ran in GitHub Actions on stolen developer tokens: Aikido counted 4,837 compromised accounts opening probe pull requests in 61,764 repositories. It set AWS role trust policies to any account and added Azure federated credentials that work \"even after every token has been rotated\". After a CI compromise, diff role trust policies and federated credentials as well as rotating secrets.",
+      "Rotation doesn't evict an attacker who changed who is trusted. The wfx-loot stealer (from 10 Nov 2026) ran in GitHub Actions on stolen developer tokens, from 4,837 compromised accounts by Aikido's count. Fly.io (12 Nov) traced some to its own deploys, which \"left a GitHub access token in the .git/config file of the build directory\" that apps then served. It set AWS role trust policies to any account and added Azure federated credentials that work \"even after every token has been rotated\". After a CI compromise, diff role trust policies and federated credentials as well as rotating secrets.",
     ],
     agentic: [
       "Anything that enters an agent's context can end up in transcripts and logs. Give agents tools that use a credential instead of the credential itself.",
@@ -294,6 +294,7 @@ export const CHAPTERS = [
     incidents: ["cloudflare-2025-salesloft-drift-salesforce-breach", "cloudflare-2025-r2-credential-rotation", "heroku-2022-github-oauth-token-theft", "docker-2026-pat-transfer-org-conversion"],
     sources: [
       { title: "Aikido: wfx-loot campaign pushes CI secret stealer to tens of thousands of repositories (12 Nov 2026)", url: "https://www.aikido.dev/blog/compromised-github-accounts-push-ci-secret-stealer-to-tens-of-thousands-of-repositories" },
+      { title: "Fly.io: GitHub tokens exposed by apps deployed from GitHub (12 Nov 2026)", url: "https://community.fly.io/t/security-github-tokens-exposed-by-apps-deployed-from-github/29070" },
       { title: "SafeDep: wfx GitHub Actions credential stealer hits 8,000 repos (12 Nov 2026)", url: "https://safedep.io/blog/github-actions-wfx-credential-stealer" },
       { title: "Claude Platform release notes: IP allowlisting (5 Nov 2026)", url: "https://platform.claude.com/docs/en/release-notes/overview#ip-allowlisting" },
       { title: "OpenAI: Daybreak guide, IP allowlisting for GPT-6-Cyber (Nov 2026)", url: "https://developers.openai.com/api/docs/guides/daybreak" },

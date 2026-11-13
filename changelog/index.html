@@ -104,11 +104,18 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
 <body>
 <div class="wrap">
   <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-11-12">12 Nov 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-11-13">13 Nov 2026</time></span></div>
   <h1 id="changelog-h">Changelog</h1>
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
     <p>What each daily research pass changed, newest first. Every change is checked against its source, primary where one exists. The lab landing page shows the latest three.</p>
-    <details open><summary><time datetime="2026-11-12">12 Nov 2026</time></summary><ul>
+    <details open><summary><time datetime="2026-11-13">13 Nov 2026</time></summary><ul>
+      <li>Security: a hotfix is not the end of a management-plane incident. Two days after N-able's 10 Nov N-central hotfix a new exploit chain came out, and Huntback found miners on 21 live servers the same day, 19 of them on the patched build. Keep the console off the internet until the vendor says the chain is closed.</li>
+      <li>Security: deploy tooling leaks tokens too. Fly.io traced some of the tokens behind the wfx-loot CI stealer to its own GitHub deploys, which left a token in the build directory's <code>.git/config</code> that apps then served. Keep <code>.git</code> out of images and count deploy integrations in the token inventory.</li>
+      <li>One Agent to Hundreds: review is moving from reading code to reading evidence. Lauren Tan (11 Nov) says her team's review has shrunk to verification artifacts such as videos, screenshots and formal verification. Dex Horthy (12 Nov) expects to stop reading most code but still reviews a subset chosen by the stakes.</li>
+      <li>Agentic Engineering: Claude Code 2.1.323 (12 Nov) fixed a Bash sandbox that could switch off mid-session, six days after a worktree escape fix, and the npm <code>stable</code> tag still has neither. Set the fleet minimum version yourself.</li>
+      <li class="minor">Smaller: Steve Yegge now runs about 50 agents on 22 Claude Max accounts, up from 20+ in October (One Agent to Hundreds); scheduled tasks have a classifier, not a person, approving each step (Graphs and Loops); the LiteLLM token quote now matches the report's wording (Security); Kiro Specs doc date (Graphs and Loops).</li>
+    </ul></details>
+    <details><summary><time datetime="2026-11-12">12 Nov 2026</time></summary><ul>
       <li>Security: rotating secrets doesn't evict an attacker who changed who is trusted. The wfx-loot stealer ran in GitHub Actions on stolen developer tokens (from 10 Nov), with 4,837 compromised accounts probing 61,764 repositories by Aikido's count. It opened AWS role trust policies to any account and added Azure federated credentials that outlast rotation. After a CI compromise, diff trust policies and federated credentials too.</li>
       <li>Delivery: a required check is only a name until you pin who may post it. GitHub lets anyone with write access set any status, and the same stealer carries code to post passing statuses under a repo's required check names. Set the expected source app on every required check, through org rulesets.</li>
       <li>One Agent to Hundreds: skills and context files are written for one model, so teams now measure and prune them. Google Chrome's web guidance skill is tested with and without, and pruned where models already succeed. Geoffrey Huntley reconsiders his at every major model drop. Re-run each skill against no skill at each model upgrade.</li>

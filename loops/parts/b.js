@@ -282,7 +282,7 @@ export const CHAPTERS = [
       { title: "Google ADK docs: Loop agents (max_iterations, escalation)", url: "https://adk.dev/agents/workflow-agents/loop-agents/" },
       { title: "OpenAI Agents SDK docs: Agent orchestration", url: "https://github.com/openai/openai-agents-python/blob/main/docs/multi_agent.md" },
       { title: "Beads README (repo created 2025-10-12)", url: "https://github.com/gastownhall/beads" },
-      { title: "Kiro docs: Specs (updated 2026-10-15)", url: "https://kiro.dev/docs/specs/" },
+      { title: "Kiro docs: Specs (updated 2026-11-12)", url: "https://kiro.dev/docs/specs/" },
       { title: "Cursor (Wilson Lin): Scaling long-running autonomous coding (2026-01-14)", url: "https://cursor.com/blog/scaling-agents" },
     ],
   },
