@@ -107,6 +107,7 @@ export const CHAPTERS = [
   },
   {
     id: "agent-safety",
+    film: "../films/agent-safety/",
     n: 6,
     title: "Permissions and safety for coding agents",
     question: "Thousands of agent sessions run shell commands and read untrusted text daily. What stops the damage, and how does policy reach every machine?",
