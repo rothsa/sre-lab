@@ -22,6 +22,14 @@ jaguar:'<svg viewBox="0 0 120 120"><path d="M18 90 Q0 84 6 64" fill="none" strok
   const critter = document.getElementById("critter");
   const pickAnimal = () => { if (critter) critter.innerHTML = ANIMALS[names[Math.floor(Math.random() * names.length)]]; };
 
+  // The narration is spelled for the voice ("A P I", "P stack"). Captions show it the way it is written.
+  const FIXES = [[/\b(?:[A-Z] )+[A-Z]s?\b/g, (m) => m.replace(/ /g, "")], [/\bAB tests\b/g, "A/B tests"], [/\bOpen AI\b/g, "OpenAI"],
+    [/\bCo-sign/g, "Cosign"], [/\bS-BOM/g, "SBOM"], [/\bP stack\b/g, "pstack"], [/\bkube control\b/g, "kubectl"],
+    [/\b[Cc]laude dot MD\b/g, "CLAUDE.md"], [/\b[Aa]gents dot MD\b/g, "AGENTS.md"], [/ dot MD\b/g, ".md"], [/\bIncident dot IO\b/g, "incident.io"],
+    [/\bLite LLM\b/g, "LiteLLM"], [/\bCyclone DX\b/g, "CycloneDX"], [/\bmicro VM/g, "microVM"], [/\bIT Bench\b/g, "ITBench"],
+    [/\bSWE bench\b/g, "SWE-bench"], [/\bGPT four oh\b/g, "GPT-4o"], [/\bOpen Telemetry\b/g, "OpenTelemetry"]];
+  const readable = (s) => FIXES.reduce((x, [re, to]) => x.replace(re, to), s);
+
   function show(n) {
     i = n; done = false;
     scenes.forEach((s) => s.classList.remove("on"));
@@ -29,7 +37,7 @@ jaguar:'<svg viewBox="0 0 120 120"><path d="M18 90 Q0 84 6 64" fill="none" strok
     scenes[i].classList.add("on");
     bar.style.width = `${((i + 1) / N) * 100}%`;
     count.textContent = `Step ${i + 1} of ${N}`;
-    caption.textContent = data.narration[i];
+    caption.textContent = readable(data.narration[i]);
     if (i === N - 1) pickAnimal();
   }
   function stopAudio() { audio.forEach((a) => { a.pause(); a.onended = a.onerror = null; }); clearTimeout(timer); }

@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Schema-change safety: the film</title>
+<meta name="description" content="How expand and contract, migration lint, role timeouts, a queue and a drop gate keep shared schema changes safe and rollback possible.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+/* rollback-migrations film */
+.rm-teams{position:absolute;left:170px;top:400px;display:grid;grid-template-columns:repeat(10,30px);gap:14px}
+.rm-teams i{width:30px;height:30px;border-radius:50%;background:#3f9a4f;display:block;opacity:0}
+.scene.on .rm-teams i{animation:rm-show .5s var(--d,2s) forwards}
+.rm-teams i:nth-child(7n+1){--d:2.0s}.rm-teams i:nth-child(7n+2){--d:2.5s}.rm-teams i:nth-child(7n+3){--d:2.2s}.rm-teams i:nth-child(7n+4){--d:2.9s}.rm-teams i:nth-child(7n+5){--d:2.4s}.rm-teams i:nth-child(7n+6){--d:3.1s}.rm-teams i:nth-child(7n){--d:2.7s}
+@keyframes rm-show{to{opacity:1}}
+@keyframes rm-hide{to{opacity:0}}
+.rm-db{position:absolute;border:3px solid var(--blue);background:#dff0d3;border-radius:130px/44px;display:flex;align-items:center;justify-content:center;text-align:center;font:600 32px "IBM Plex Sans";box-shadow:0 10px 28px rgba(20,70,35,.10)}
+/* s2 pods */
+.rm-pod{position:absolute;top:430px;width:150px;height:110px;border-radius:30px 10px 30px 10px;border:2.5px solid var(--rule);background:var(--panel);font:600 30px "IBM Plex Sans";box-shadow:0 10px 28px rgba(20,70,35,.10);opacity:0}
+.rm-pod b,.rm-pod i{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:600}
+.rm-pod i{opacity:0;color:var(--blue)}
+.scene.on .rm-pod{animation:in .7s .5s both}
+.scene.on .rm-pod.rm-f{animation:in .7s .5s both,rm-new .4s var(--f) forwards,rm-old .4s var(--b) forwards}
+.scene.on .rm-f b{animation:rm-hide .4s var(--f) forwards,rm-show .4s var(--b) forwards}
+.scene.on .rm-f i{animation:rm-show .4s var(--f) forwards,rm-hide .4s var(--b) forwards}
+@keyframes rm-new{to{border-color:var(--blue);background:#dff0d3}}
+@keyframes rm-old{to{border-color:var(--rule);background:var(--panel)}}
+/* s3 / s9 table columns */
+.rm-col{position:absolute;border:2.5px solid var(--rule);background:var(--panel);border-radius:30px 10px 30px 10px;padding:18px 26px 26px;box-shadow:0 10px 28px rgba(20,70,35,.10)}
+.rm-col.rm-new{border:3px dashed var(--blue)}
+.rm-col b{display:block;height:40px;font:600 30px/40px "IBM Plex Mono"}
+.rm-col b small{font:500 20px "IBM Plex Mono";color:var(--blue);margin-left:14px}
+.rm-cell{height:44px;margin-top:16px;border-radius:10px;background:#e6f0dc;overflow:hidden}
+.rm-cell u{display:block;height:100%;width:70%;border-radius:10px;background:#a9cc98}
+.rm-cell:nth-child(3n) u{width:52%}.rm-cell:nth-child(3n+1) u{width:84%}
+.rm-cell u.rm-bf{width:0;background:var(--green)}
+.scene.on .rm-cell u.rm-bf{animation:rm-bfk .6s var(--d) forwards}
+@keyframes rm-bfk{to{width:var(--w,70%)}}
+.scene.on .rm-cell u.rm-gone{animation:rm-hide .6s var(--d) forwards}
+.rm-dash{stroke-dasharray:12 10}
+/* s6 lanes */
+.rm-pill{position:absolute;height:74px;border-radius:999px;background:#fff;border:2px solid var(--rule);font:600 22px "IBM Plex Mono";display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(20,70,35,.12)}
+.rm-pill.rm-ddl{border-color:var(--red);color:var(--red);opacity:0}
+.scene.on .rm-fail{animation:in .6s var(--d) both,rm-failk .7s var(--o) forwards}
+@keyframes rm-failk{to{opacity:.22;transform:translateY(46px)}}
+/* s7 queue */
+.rm-mig{position:absolute;left:150px;width:260px;height:70px;border-radius:999px;background:#fff;border:2px solid var(--rule);font:600 24px "IBM Plex Mono";display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(20,70,35,.12);opacity:0}
+.scene.on .rm-mig{animation:in .6s var(--d) both}
+.scene.on .rm-mig.rm-go{animation:in .6s var(--d) both,rm-gok 1.3s cubic-bezier(.3,.6,.2,1) 6.6s forwards}
+@keyframes rm-gok{to{transform:translate(1130px,130px);border-color:var(--blue)}}
+.rm-zone{position:absolute;border:4px dashed var(--blue);border-radius:44px;background:rgba(255,255,255,.55)}
+/* s8 gate */
+.rm-list{position:absolute;left:150px;top:310px;width:700px;border-radius:32px 10px 32px 10px;background:#fff;padding:30px 44px 34px;box-shadow:0 24px 60px rgba(20,70,35,.16);font:400 30px/1.3 "IBM Plex Sans"}
+.rm-list b{display:block;font:800 36px "Archivo";margin-bottom:6px}
+.rm-list b small{font:500 22px "IBM Plex Mono";color:var(--muted);margin-left:14px}
+.rm-row{margin-top:14px;padding:12px 22px;border-radius:14px;background:#eef5e6;font:500 26px "IBM Plex Mono"}
+.scene.on .rm-q{animation:in .7s var(--d) both,rm-hide .5s var(--o) forwards}
+.rm-q{opacity:0;position:absolute;right:50px;top:60px;font:900 220px/1 "Archivo";color:var(--amber)}
+.scene.on .rm-gate{animation:in .7s 1s both,rm-openk .7s var(--o) forwards}
+@keyframes rm-openk{to{border-color:var(--green);background:#e9f6dc}}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../delivery/#rollback-migrations">Delivery</a> · film · recorded 15 Nov 2026</div>
+  <h1 class="page">Schema-change safety</h1>
+  <div id="viewport">
+    <div id="stage">
+<!-- 1 -->
+<section class="scene"><div class="kick">Delivery · chapter 6</div><h1>Schema-change safety</h1>
+ <div class="a label" style="--d:1.8s;left:170px;top:356px">Hundreds of teams</div>
+ <div class="rm-teams"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+ <div class="a" style="--d:3.6s"><div class="rm-db" style="left:800px;top:440px;width:280px;height:220px">Shared<br>database</div></div>
+ <div class="dot" style="left:620px;top:541px;--dx:160px;--d:4.2s"></div><div class="dot" style="left:620px;top:541px;--dx:160px;--d:5.8s"></div>
+ <div class="a" style="--d:13.2s"><div class="box blue" style="left:1200px;top:430px;width:580px;height:130px">One team renames a column<small>expand and contract</small></div></div>
+ <div class="a" style="--d:17.5s"><div class="box amber" style="left:1200px;top:600px;width:580px;height:130px">Hundreds of teams, shared schemas<small>without one causing an outage</small></div></div>
+ <div class="a cap" style="--d:7.5s">No outage from any one migration. Rollback stays possible.</div>
+</section>
+
+<!-- 2 -->
+<section class="scene"><div class="kick">Step 2 of 9</div><h1>Old and new code run together</h1>
+ <div class="a label" style="--d:.5s;left:170px;top:376px">Rolling deploy</div>
+ <div class="a label t-amber" style="--d:7.6s;left:560px;top:376px">Rollback: old code comes back</div>
+ <div class="rm-pod rm-f" style="left:170px;--f:2.6s;--b:9.6s"><b>old</b><i>new</i></div>
+ <div class="rm-pod rm-f" style="left:360px;--f:3.1s;--b:9.2s"><b>old</b><i>new</i></div>
+ <div class="rm-pod rm-f" style="left:550px;--f:3.6s;--b:8.8s"><b>old</b><i>new</i></div>
+ <div class="rm-pod rm-f" style="left:740px;--f:4.1s;--b:8.4s"><b>old</b><i>new</i></div>
+ <div class="rm-pod rm-f" style="left:930px;--f:4.6s;--b:8.0s"><b>old</b><i>new</i></div>
+ <div class="rm-pod" style="left:1120px"><b>old</b></div>
+ <div class="rm-pod" style="left:1310px"><b>old</b></div>
+ <div class="rm-pod" style="left:1500px"><b>old</b></div>
+ <svg><g class="a" style="--d:10.6s"><path class="line" d="M245 540V690M435 540V690M625 540V690M815 540V690M1005 540V690M1195 540V690M1385 540V690M1575 540V690"/></g></svg>
+ <div class="a" style="--d:10.4s"><div class="box blue" style="left:170px;top:690px;width:1480px;height:120px;font-size:36px">The schema, right now<small>every version has to work against it</small></div></div>
+</section>
+
+<!-- 3 -->
+<section class="scene"><div class="kick">Step 3 of 9</div><h1>Expand, write both, backfill</h1>
+ <div class="a" style="--d:.5s"><div class="box" style="left:150px;top:340px;width:400px;height:110px">App v1</div></div>
+ <svg><path class="line a" style="--d:5s" d="M260 450V600"/><path class="line rm-dash a" style="--d:13s;stroke:var(--green)" d="M440 600V450"/></svg>
+ <div class="a label" style="--d:5s;left:170px;top:508px">deploy</div>
+ <div class="a label t-green" style="--d:13s;left:458px;top:508px">roll back</div>
+ <div class="a" style="--d:5s"><div class="box blue" style="left:150px;top:600px;width:400px;height:130px">App v2<small>writes both, reads name</small></div></div>
+ <div class="a" style="--d:.5s"><div class="rm-col" style="left:760px;top:330px;width:420px"><b>name</b><div class="rm-cell"><u></u></div><div class="rm-cell"><u></u></div><div class="rm-cell"><u></u></div><div class="rm-cell"><u></u></div><div class="rm-cell"><u></u></div><div class="rm-cell"><u></u></div></div></div>
+ <div class="a" style="--d:1.6s"><div class="rm-col rm-new" style="left:1220px;top:330px;width:420px"><b>full_name<small>nullable</small></b><div class="rm-cell"><u class="rm-bf" style="--d:9.6s;--w:84%"></u></div><div class="rm-cell"><u class="rm-bf" style="--d:9.6s;--w:52%"></u></div><div class="rm-cell"><u class="rm-bf" style="--d:10.6s;--w:70%"></u></div><div class="rm-cell"><u class="rm-bf" style="--d:10.6s;--w:84%"></u></div><div class="rm-cell"><u class="rm-bf" style="--d:11.6s;--w:52%"></u></div><div class="rm-cell"><u class="rm-bf" style="--d:11.6s;--w:70%"></u></div></div></div>
+ <div class="a label" style="--d:9.4s;left:1220px;top:800px">Backfill in small batches, throttled on replica lag</div>
+ <div class="a cap t-green" style="--d:13.2s">Rolling back to v1 loses nothing.</div>
+</section>
+
+<!-- 4 -->
+<section class="scene"><div class="kick">Step 4 of 9</div><h1>Drop the old column last</h1>
+ <svg><path class="line a" style="--d:4.3s" d="M550 520H700"/><path class="line a" style="--d:6.4s" d="M1100 520H1250"/>
+  <g class="a" style="--d:10.4s"><path class="line rm-dash" style="stroke:var(--red)" d="M1450 606C1450 840 350 840 350 618"/><circle cx="350" cy="612" r="9" fill="var(--red)"/></g></svg>
+ <div class="a" style="--d:.6s"><div class="box blue" style="left:150px;top:440px;width:400px;height:160px;font-size:38px">App v3<small>reads full_name, writes both</small></div></div>
+ <div class="a" style="--d:4.3s"><div class="box blue" style="left:700px;top:440px;width:400px;height:160px;font-size:38px">App v4<small>stops writing name</small></div></div>
+ <div class="a" style="--d:6.4s"><div class="box amber" style="left:1250px;top:440px;width:400px;height:160px;font-size:38px">Drop name<small>once v4 runs everywhere</small></div></div>
+ <div class="a cap t-red" style="--d:10.6s;left:0;right:0;bottom:auto;top:700px;text-align:center">After the drop, rollback to v3 breaks.</div>
+</section>
+
+<!-- 5 -->
+<section class="scene"><div class="kick">Step 5 of 9</div><h1>CI lints every migration</h1>
+ <div class="a" style="--d:.6s"><div class="box" style="left:150px;top:320px;width:340px;height:110px">Migration PR<small>every team, every time</small></div></div>
+ <svg><path class="line a" style="--d:6s" d="M490 375H640"/></svg>
+ <div class="a" style="--d:6s"><div class="box blue" style="left:640px;top:320px;width:340px;height:110px">CI lint</div></div>
+ <div class="term a" style="--d:6.6s;left:150px;top:500px;width:960px;font-size:28px;padding:34px 44px"><div><span class="muted">$</span> lint migration</div><div class="a t-red" style="--d:14.2s">blocked: non-concurrent index</div><div class="a t-red" style="--d:16s">blocked: column drop</div></div>
+ <div class="a label" style="--d:6.6s;left:150px;top:776px;font-weight:400">(Made-up example.)</div>
+ <div class="a" style="--d:8.6s"><div class="box green" style="left:1250px;top:450px;width:500px;height:110px">Squawk<small>lints Postgres SQL</small></div></div>
+ <div class="a" style="--d:11s"><div class="box green" style="left:1250px;top:590px;width:500px;height:110px">strong_migrations<small>blocks unsafe Rails migrations</small></div></div>
+ <div class="a" style="--d:17.6s"><div class="box amber" style="left:1250px;top:770px;width:500px;height:120px">Override<small>database reviewer only</small></div></div>
+ <div class="a cap" style="--d:19.2s;left:1250px;right:auto;bottom:auto;top:906px;font-size:30px">Count the overrides.</div>
+</section>
+
+<!-- 6 -->
+<section class="scene"><div class="kick">Step 6 of 9</div><h1>Fail fast instead of queueing</h1>
+ <div class="a" style="--d:.8s;position:absolute;left:150px;top:260px"><span class="chip mono">ALTER ROLE ... SET lock_timeout</span><span class="muted" style="font-size:28px">set once, on the role migrations log in as</span></div>
+ <div class="a" style="--d:4.4s"><div class="label t-green" style="left:150px;top:444px;font-size:26px">With the timeout</div><div class="box amber" style="left:420px;top:420px;width:340px;height:80px">Long query</div></div>
+ <div class="rm-pill rm-ddl rm-fail" style="left:800px;top:423px;width:150px;--d:5.4s;--o:7.4s">DDL</div>
+ <div class="a label t-green" style="--d:7.6s;left:980px;top:444px;font-size:26px">fails fast</div>
+ <div class="dot" style="left:1180px;top:451px;--dx:520px;--d:8s"></div><div class="dot" style="left:1180px;top:451px;--dx:520px;--d:9.6s"></div>
+ <div class="a" style="--d:8.8s"><div class="label t-red" style="left:150px;top:664px;font-size:26px">Without</div><div class="box amber" style="left:420px;top:640px;width:340px;height:80px">Long query</div><div class="rm-pill rm-ddl" style="left:800px;top:643px;width:150px;opacity:1">DDL</div></div>
+ <div class="a rm-pill" style="--d:9.6s;left:990px;top:643px;width:110px">query</div><div class="a rm-pill" style="--d:9.9s;left:1120px;top:643px;width:110px">query</div><div class="a rm-pill" style="--d:10.2s;left:1250px;top:643px;width:110px">query</div><div class="a rm-pill" style="--d:10.5s;left:1380px;top:643px;width:110px">query</div><div class="a rm-pill" style="--d:10.8s;left:1510px;top:643px;width:110px">query</div><div class="a rm-pill" style="--d:11.1s;left:1640px;top:643px;width:110px">query</div>
+ <div class="a label t-red" style="--d:10.4s;left:990px;top:736px;font-size:26px">every query queues behind it</div>
+ <div class="cap" style="bottom:90px;font-size:32px"><span class="a" style="--d:13s;display:inline-block">GoCardless saw that queue.</span> <span class="a" style="--d:15.2s;display:inline-block">Sentry, 2024: a raw SQL migration with no timeouts.</span></div>
+</section>
+
+<!-- 7 -->
+<section class="scene"><div class="kick">Step 7 of 9</div><h1>One ALTER per cluster at a time</h1>
+ <div class="a label" style="--d:.6s;left:150px;top:310px">Approved migrations</div>
+ <div class="a" style="--d:6.4s"><div class="rm-zone" style="left:1180px;top:420px;width:580px;height:280px"></div><div class="label t-blue" style="left:1214px;top:440px">Cluster · idle</div></div>
+ <div class="a" style="--d:3.4s"><div class="box blue" style="left:600px;top:440px;width:400px;height:150px;font-size:36px">skeefree<small>runs ALTERs through gh-ost</small></div></div>
+ <svg><path class="line a" style="--d:3.4s" d="M410 515H600"/><path class="line a" style="--d:6.4s" d="M1000 515H1180"/></svg>
+ <div class="rm-mig rm-go" style="top:350px;--d:.8s">ALTER</div>
+ <div class="rm-mig" style="top:440px;--d:1.1s">ALTER</div>
+ <div class="rm-mig" style="top:530px;--d:1.4s">ALTER</div>
+ <div class="rm-mig" style="top:620px;--d:1.7s">ALTER</div>
+ <div class="a" style="--d:8.2s"><div class="track" style="left:1230px;top:590px;width:480px;height:36px"><div class="fill" style="background:var(--green);--w:72%;--d:8.4s"></div></div></div>
+ <div class="a" style="--d:10s"><div class="box green" style="left:1180px;top:740px;width:580px;height:90px">Progress posted on the PR</div></div>
+ <div class="a" style="--d:12.4s;position:absolute;left:150px;top:880px"><span class="chip">throttle on replica lag</span><span class="chip a" style="--d:14.4s">track queue wait</span></div>
+</section>
+
+<!-- 8 -->
+<section class="scene"><div class="kick">Step 8 of 9</div><h1>The drop needs its own gate</h1>
+ <div class="rm-list a" style="--d:2.6s"><b>Readers of the column<small class="a" style="--d:6.4s;display:inline-block">from query logs</small></b>
+  <div class="rm-q" style="--d:3.2s;--o:6.2s">?</div>
+  <div class="rm-row a" style="--d:6.6s">writing service</div><div class="rm-row a" style="--d:7.1s">another service</div><div class="rm-row a" style="--d:7.6s">a report job</div></div>
+ <div class="a label" style="--d:6.6s;left:150px;top:680px;font-weight:400">(Made-up example.)</div>
+ <svg><path class="line a" style="--d:6.6s" d="M850 480H1220"/></svg>
+ <div class="box amber rm-gate" style="left:1220px;top:440px;width:460px;height:160px;font-size:38px;--o:12.3s">Drop gate<small>readers gone?</small></div>
+ <div class="a label t-green" style="--d:12.4s;left:1220px;top:620px;font-size:30px">Drop allowed</div>
+ <div class="a" style="--d:9.2s"><div class="label" style="left:150px;top:730px;font-size:26px">Nothing else has read the column, for a set period</div><div class="track" style="left:150px;top:776px;width:1530px;height:44px"><div class="fill" style="background:var(--green);--w:100%;--d:9.6s;animation-duration:2.6s"></div></div></div>
+ <div class="a cap" style="--d:13.2s;bottom:90px">One writing service per table makes this easier.</div>
+</section>
+
+<!-- 9 -->
+<section class="scene" style="--egg:5.8s"><div class="kick">Step 9 of 9</div><h1>Down migrations don't save you</h1>
+ <div class="a" style="--d:.5s"><div class="rm-col" style="left:150px;top:320px;width:380px"><b>name</b><div class="rm-cell"><u class="rm-gone" style="--d:1.6s"></u></div><div class="rm-cell"><u class="rm-gone" style="--d:1.6s"></u></div><div class="rm-cell"><u class="rm-gone" style="--d:1.6s"></u></div><div class="rm-cell"><u class="rm-gone" style="--d:1.6s"></u></div></div></div>
+ <div class="a mono t-red" style="--d:1.4s;position:absolute;left:570px;top:360px;font-size:40px;font-weight:600">DROP</div>
+ <div class="a" style="--d:2.8s;position:absolute;left:570px;top:450px;font-size:32px;line-height:1.4">Recreate the column:<br><span class="t-red">its data stays gone.</span></div>
+ <div class="a" style="--d:5.2s"><div class="rm-col" style="left:1010px;top:320px;width:380px"><b>name</b><div class="rm-cell"><u></u></div><div class="rm-cell"><u></u></div><div class="rm-cell"><u></u></div><div class="rm-cell"><u></u></div></div></div>
+ <div class="a mono" style="--d:5.8s;position:absolute;left:1430px;top:420px;font-size:40px;font-weight:600"><span class="strike muted">DROP</span><br><span class="t-green">RENAME</span></div>
+ <div class="a t-green" style="--d:8.2s;position:absolute;left:1430px;top:560px;font-size:32px;line-height:1.3">can still<br>be undone</div>
+ <div class="a cap muted" style="--d:8.8s;bottom:76px;font-size:28px">SRE Lab · Delivery · Schema-change safety</div>
+ <div class="critter"><div id="critter"></div></div>
+</section>
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 3 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../delivery/#rollback-migrations">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Schema-change safety. Hundreds of teams change schemas on shared databases every week. What guardrails make sure no single team's migration causes an outage, and keep rollback possible? First, we follow one team renaming a column with expand and contract. Then, what lets hundreds of teams change shared schemas without one of them causing an outage.", "Why expand and contract? During a rolling deploy, old code and new code run together. And a rollback brings old code back. So every version has to work against whatever the schema is right now.", "Expand first. Add the full name column as nullable. Deploy version two, which writes both columns and still reads name. Then backfill in small batches, throttled on replica lag. If you roll back to version one, you lose nothing.", "Version three reads full name and still writes both. Version four stops writing name. Drop the name column only once version four runs everywhere. After the drop, a rollback to version three breaks.", "That needs every team to get it right every time, and they won't. So C I lints every migration. Squawk lints Postgres S Q L. Strong migrations blocks unsafe Rails migrations, such as a non-concurrent index or a column drop. Only a database reviewer can override, and you count the overrides.", "Set timeouts once, on the role that migrations log in as. Then a D D L statement stuck behind a long query fails fast, instead of queueing every query behind it, whatever tool ran it. GoCardless saw that queue. Sentry's twenty twenty-four outage came from a raw S Q L migration with no timeouts.", "Approved migrations go into a queue. GitHub's skeefree runs alters through ghost, one per cluster at a time, when the cluster is idle, and posts progress on the pull request. Throttle on replica lag, and track how long migrations wait in the queue.", "The drop needs its own gate. On a shared database you may not know every reader. Build a reader list from query logs, and allow the drop only after nothing else has read the column for a set period. One writing service per table makes this easier.", "Down migrations don't save you here. Recreating a column doesn't bring its data back. Skeefree turns a drop into a rename first, so it can still be undone."], "seconds": [22.74, 12.71, 15.45, 13.5, 20.71, 21.18, 16.87, 15.72, 10.28]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

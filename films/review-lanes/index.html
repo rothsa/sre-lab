@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Review lanes set by risk: the film</title>
+<meta name="description" content="A short narrated film on how a lane policy sends each change to no, one or two human reviewers by risk, and how each lane is measured.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+/* review-lanes film: scene-specific classes, prefix rl- */
+.rl-p{display:inline-block;position:relative;width:44px;height:50px;vertical-align:middle;flex:none}
+.rl-p::before{content:"";position:absolute;left:12px;top:0;width:20px;height:20px;border-radius:50%;background:var(--blue)}
+.rl-p::after{content:"";position:absolute;left:2px;top:24px;width:40px;height:26px;border-radius:20px 20px 6px 6px;background:var(--blue)}
+.rl-b{display:inline-block;position:relative;width:46px;height:42px;border-radius:12px;background:var(--amber);vertical-align:middle;flex:none}
+.rl-b::before,.rl-b::after{content:"";position:absolute;top:14px;width:9px;height:9px;border-radius:50%;background:#fff}
+.rl-b::before{left:9px}.rl-b::after{right:9px}
+.rl-row{position:absolute;display:flex;align-items:center;gap:18px}
+.rl-row .chip{margin-right:0}
+.rl-pill{width:80px;height:44px;border-radius:999px;background:var(--panel);border:2px solid var(--rule);box-shadow:0 6px 14px rgba(20,70,35,.08)}
+.rl-queue{position:absolute;display:grid;grid-template-columns:repeat(4,80px);gap:14px}
+.rl-lane{flex-direction:row;justify-content:space-between;padding:0 40px}
+.rl-lane b{font:700 34px "IBM Plex Sans"}
+.rl-lane span{display:flex;align-items:center;gap:10px;font:500 26px "IBM Plex Sans";color:var(--muted)}
+.scene.on .rl-leak{animation:in .7s var(--d) both,rl-leak .8s 7.4s forwards}
+@keyframes rl-leak{to{border-color:var(--amber);background:#fbefd0}}
+.rl-card{position:absolute;background:#fff;border-radius:32px 10px 32px 10px;box-shadow:0 18px 44px rgba(20,70,35,.13);padding:30px 36px}
+.rl-card h3{margin:0 0 6px;font:800 34px "Archivo",sans-serif}
+.rl-bars i{display:block;height:16px;border-radius:8px;background:#d6e6c8;margin-top:18px}
+.rl-bars i.g{background:#a9d6a0}.rl-bars i.r{background:#f0bfa8}
+.scene.on .rl-strike{animation:in .7s var(--d) both,rl-strike .6s var(--o) forwards}
+@keyframes rl-strike{to{opacity:.4;text-decoration:line-through;text-decoration-thickness:3px}}
+.rl-rule{display:flex;align-items:center;gap:16px;font:500 30px "IBM Plex Sans";margin-top:16px}
+.rl-rule::before{content:"";width:16px;height:16px;border-radius:0 70% 0 70%;background:var(--green);flex:none}
+.scene.on .rl-go{animation:in .7s var(--d) both,rl-go .6s var(--o) forwards}
+@keyframes rl-go{to{border-color:var(--green);background:#e9f6dc}}
+.rl-tick{display:inline-block;width:13px;height:24px;border:solid var(--green);border-width:0 5px 5px 0;transform:rotate(45deg);margin:0 8px 6px 8px;flex:none}
+.rl-tok{position:absolute;width:150px;height:150px;border-radius:50%;background:var(--panel);border:3px solid var(--rule);box-shadow:0 10px 28px rgba(20,70,35,.12);display:flex;align-items:center;justify-content:center}
+.rl-tok>span{transform:scale(1.7)}
+.rl-slot{position:absolute;width:200px;height:200px;border-radius:50%;border:4px dashed var(--blue);background:rgba(255,255,255,.5)}
+.scene.on .rl-slot{animation:in .7s var(--d) both,rl-filled .5s 7.7s forwards}
+@keyframes rl-filled{to{border-style:solid;border-color:var(--green);background:#e9f6dc}}
+.scene.on .rl-try{animation:in .6s 2.8s both,rl-try 2.4s ease-in-out 3.5s,rl-dim .6s 6.2s forwards}
+@keyframes rl-try{0%{transform:translateX(0)}40%,55%{transform:translateX(330px)}100%{transform:translateX(0)}}
+@keyframes rl-dim{to{opacity:.4}}
+.scene.on .rl-enter{animation:in .6s 5.6s both,rl-enter 1s cubic-bezier(.3,.6,.2,1) 6.8s forwards}
+@keyframes rl-enter{to{transform:translateX(-505px);border-color:var(--green)}}
+.rl-ap{position:absolute;width:170px;height:54px;border-radius:999px;border:2.5px solid var(--green);background:#e9f6dc;color:var(--blue);font:700 24px "IBM Plex Sans";display:flex;align-items:center;justify-content:center}
+.rl-ap.rl-empty{border-style:dashed;border-color:var(--amber);background:rgba(255,255,255,.6);color:var(--muted)}
+.scene.on .rl-void{animation:in .6s var(--d) both,rl-void .6s 13.3s forwards}
+@keyframes rl-void{to{opacity:.6;color:var(--muted);text-decoration:line-through;border-color:#b9c7b4;background:#e9eee4}}
+.rl-commit{position:absolute;width:70px;height:70px;border-radius:50%;background:var(--blue);border:6px solid #dff0d3;box-shadow:0 6px 16px rgba(20,70,35,.18)}
+.rl-scan{position:absolute;left:24px;right:24px;top:92px;height:34px;border-radius:10px;background:rgba(217,152,30,.28);opacity:0}
+.scene.on .rl-scan{animation:rl-scan 8.4s steps(9,end) 3.4s both}
+@keyframes rl-scan{0%{opacity:1;transform:translateY(0)}99%{opacity:1}100%{opacity:0;transform:translateY(306px)}}
+.scene.on .rl-fade{animation:in .7s var(--d) both,rl-dim .7s var(--o) forwards}
+.rl-lens{position:absolute;right:60px;top:150px;width:170px;height:170px;border-radius:50%;border:8px solid var(--blue);background:rgba(223,240,211,.55)}
+.scene.on .rl-lens{animation:rl-lens 1.6s ease-in-out 9.4s 3 alternate}
+@keyframes rl-lens{to{transform:scale(1.12)}}
+.rl-c{position:absolute;top:452px;width:36px;height:36px;border-radius:50%;background:var(--green);opacity:0}
+.scene.on .rl-c{animation:in .4s var(--d) both}
+.scene.on .rl-c.rl-s{animation:in .4s var(--d) both,rl-pick .8s cubic-bezier(.3,.6,.2,1) var(--o) forwards}
+@keyframes rl-pick{to{transform:translateY(-66px) scale(1.25);background:var(--amber);box-shadow:0 0 0 8px rgba(217,152,30,.22)}}
+.rl-mini{height:36px;border-radius:18px;background:#d6e6c8;overflow:hidden;margin-top:20px}
+.rl-num{white-space:nowrap;font:900 60px/1 "Archivo",sans-serif;color:var(--blue);margin-top:26px}
+.rl-dots{display:flex;gap:14px;margin-top:34px;flex-wrap:wrap}
+.rl-dots i{width:34px;height:34px;border-radius:50%;background:#d6e6c8}
+.rl-dots i.s{background:var(--amber)}
+.rl-up{stroke:var(--amber);stroke-width:7;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:260;stroke-dashoffset:260}
+.scene.on .rl-up{animation:rl-draw 1.6s ease-out 14.7s forwards}
+@keyframes rl-draw{to{stroke-dashoffset:0}}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../delivery/#review-lanes">Delivery</a> · film · recorded 15 Nov 2026</div>
+  <h1 class="page">Review lanes set by risk</h1>
+  <div id="viewport">
+    <div id="stage">
+<!-- 1 -->
+<section class="scene"><div class="kick">Delivery · chapter 10</div><h1>Review lanes<br>set by risk</h1>
+ <div class="rl-row" style="left:110px;top:330px"><span class="chip a" style="--d:6.1s">no human review?</span><span class="chip a" style="--d:7.5s">one person?</span><span class="chip a" style="--d:8.9s">two?</span></div>
+ <div class="a label" style="--d:14s;left:110px;top:520px">Every change</div>
+ <div class="rl-queue" style="left:110px;top:566px"><i class="rl-pill a" style="--d:14s"></i><i class="rl-pill a" style="--d:14.2s"></i><i class="rl-pill a" style="--d:14.4s"></i><i class="rl-pill a" style="--d:18.6s"></i><i class="rl-pill a" style="--d:18.75s"></i><i class="rl-pill a" style="--d:18.9s"></i><i class="rl-pill a" style="--d:19.05s"></i><i class="rl-pill a" style="--d:19.2s"></i><i class="rl-pill a" style="--d:19.35s"></i><i class="rl-pill a" style="--d:19.5s"></i><i class="rl-pill a" style="--d:19.65s"></i><i class="rl-pill a" style="--d:19.8s"></i></div>
+ <div class="a label t-amber" style="--d:19s;left:110px;top:752px;font-size:26px">agent volume</div>
+ <div class="box amber a rl-fade" style="left:530px;top:560px;width:400px;height:160px;font-size:36px;--d:14.3s;--o:20.6s">One review rule<small>tuned to the scariest system</small></div>
+ <svg><path class="line a" style="--d:20.5s" d="M930 640H1020"/><path class="line a" style="--d:21.3s" d="M1300 640L1410 522"/><path class="line a" style="--d:21.7s" d="M1300 640H1410"/><path class="line a" style="--d:22.1s" d="M1300 640L1410 758"/></svg>
+ <div class="a" style="--d:20.4s"><div class="box blue" style="left:1020px;top:560px;width:280px;height:160px;font-size:38px">Lane policy</div></div>
+ <div class="a" style="--d:21.3s"><div class="box green" style="left:1410px;top:480px;width:380px;height:84px">no person</div></div>
+ <div class="a" style="--d:21.7s"><div class="box" style="left:1410px;top:598px;width:380px;height:84px">one person</div></div>
+ <div class="a" style="--d:22.1s"><div class="box amber" style="left:1410px;top:716px;width:380px;height:84px">two people</div></div>
+</section>
+
+<!-- 2 -->
+<section class="scene"><div class="kick">Step 2 of 10</div><h1>The human gate was already leaky</h1>
+ <div class="a label" style="--d:3.3s;left:110px;top:300px">Intercom · past outages</div>
+ <div class="box green a rl-leak" style="left:110px;top:345px;width:300px;height:120px;--d:3.5s">Change<small>reviewed, approved</small></div>
+ <div class="box green a rl-leak" style="left:440px;top:345px;width:300px;height:120px;--d:3.9s">Change<small>reviewed, approved</small></div>
+ <div class="box green a rl-leak" style="left:770px;top:345px;width:300px;height:120px;--d:4.3s">Change<small>reviewed, approved</small></div>
+ <div class="box green a rl-leak" style="left:1100px;top:345px;width:300px;height:120px;--d:4.7s">Change<small>reviewed, approved</small></div>
+ <div class="a cap" style="--d:6.6s;bottom:auto;top:496px">The changes that caused them “were all reviewed and approved by humans”.</div>
+ <div class="a label" style="--d:9.8s;left:110px;top:650px">Imprint · median review time</div>
+ <div class="a" style="--d:10.2s"><div class="label" style="left:110px;top:716px;font-size:26px">Two years earlier</div><div class="track" style="top:700px;width:900px"><div class="fill" style="background:#9fbf8f;--w:38%;--d:10.5s"></div></div></div>
+ <div class="a" style="--d:11.6s"><div class="label" style="left:110px;top:816px;font-size:26px">Now</div><div class="track" style="top:800px;width:900px"><div class="fill" style="background:var(--amber);--w:84%;--d:12.2s"></div></div></div>
+ <div class="a label t-amber" style="--d:12.8s;left:1450px;top:810px;font-size:32px">more than doubled</div>
+ <div class="a cap muted" style="--d:14s;bottom:90px;font-size:28px">as merged pull requests grew</div>
+</section>
+
+<!-- 3 -->
+<section class="scene"><div class="kick">Step 3 of 10</div><h1>The change sets the tier</h1>
+ <div class="rl-row a rl-strike" style="left:110px;top:310px;--d:7.4s;--o:8.6s;font:600 30px 'IBM Plex Sans'"><span class="rl-p"></span>the author</div>
+ <div class="a label" style="--d:.8s;left:110px;top:420px">The change</div>
+ <div class="rl-card rl-bars a" style="--d:.8s;left:110px;top:460px;width:300px;height:240px;padding:14px 30px"><i class="g" style="width:80%"></i><i style="width:60%"></i><i class="r" style="width:70%"></i><i class="g" style="width:90%"></i><i style="width:45%"></i><i class="g" style="width:65%"></i></div>
+ <svg><path class="line a" style="--d:1.2s" d="M410 580H560"/><path class="line a" style="--d:12.6s" d="M900 580L1180 460"/><path class="line a" style="--d:14.1s" d="M900 580H1180"/><path class="line a" style="--d:15.4s" d="M900 580L1180 700"/></svg>
+ <div class="dot" style="left:420px;top:571px;--dx:120px;--d:1.6s"></div>
+ <div class="a" style="--d:1s"><div class="box blue" style="left:560px;top:490px;width:340px;height:180px;font-size:40px">Classifier<small>reads the change</small></div></div>
+ <div class="a" style="--d:12.6s"><div class="box green rl-lane" style="left:1180px;top:410px;width:560px;height:100px"><b>Low</b><span>no person</span></div></div>
+ <div class="a" style="--d:14.1s"><div class="box rl-lane" style="left:1180px;top:530px;width:560px;height:100px"><b>Medium</b><span><i class="rl-p"></i>one</span></div></div>
+ <div class="a" style="--d:15.4s"><div class="box amber rl-lane" style="left:1180px;top:650px;width:560px;height:100px"><b>High</b><span><i class="rl-p"></i><i class="rl-p"></i>two</span></div></div>
+ <div class="a cap" style="--d:6.4s;bottom:90px;right:auto;width:1000px">“The change sets the tier, not the author.” <span class="muted" style="font-size:26px">Claude Code team</span></div>
+</section>
+
+<!-- 4 -->
+<section class="scene"><div class="kick">Step 4 of 10</div><h1>Written once, above the repos</h1>
+ <div class="rl-card a" style="--d:.8s;left:470px;top:285px;width:880px;height:290px"><h3>Lane policy <span class="muted" style="font:400 24px 'IBM Plex Mono'">written once</span></h3>
+  <div class="a muted" style="--d:4s;font:700 22px 'IBM Plex Sans';margin-top:18px">Always a person <span class="a" style="--d:7.4s;display:inline-block">· at Anthropic</span></div>
+  <div class="rl-rule a" style="--d:9.4s">anything owners have listed as sensitive</div>
+  <div class="rl-rule a" style="--d:11.9s">any CI workflow file</div></div>
+ <svg><path class="line a" style="--d:2s" d="M910 575L240 690"/><path class="line a" style="--d:2.1s" d="M910 575L480 690"/><path class="line a" style="--d:2.2s" d="M910 575L720 690"/><path class="line a" style="--d:2.3s" d="M910 575L960 690"/><path class="line a" style="--d:2.4s" d="M910 575L1200 690"/><path class="line a" style="--d:2.5s" d="M910 575L1440 690"/><path class="line a" style="--d:2.6s" d="M910 575L1680 690"/></svg>
+ <div class="a" style="--d:1.6s"><div class="box" style="left:140px;top:690px;width:200px;height:100px">repo</div><div class="box" style="left:380px;top:690px;width:200px;height:100px">repo</div><div class="box" style="left:620px;top:690px;width:200px;height:100px">repo</div><div class="box" style="left:860px;top:690px;width:200px;height:100px">repo</div><div class="box" style="left:1100px;top:690px;width:200px;height:100px">repo</div><div class="box" style="left:1340px;top:690px;width:200px;height:100px">repo</div><div class="box amber" style="left:1580px;top:690px;width:200px;height:100px;font-size:22px;line-height:1.15;padding:6px">money-movement<br>service</div></div>
+ <div class="a mono muted" style="--d:14.4s;font-size:20px"><span style="position:absolute;left:140px;top:804px;width:200px;text-align:center">.small_change</span><span style="position:absolute;left:380px;top:804px;width:200px;text-align:center">.small_change</span><span style="position:absolute;left:620px;top:804px;width:200px;text-align:center">.small_change</span><span style="position:absolute;left:860px;top:804px;width:200px;text-align:center">.small_change</span><span style="position:absolute;left:1100px;top:804px;width:200px;text-align:center">.small_change</span><span style="position:absolute;left:1340px;top:804px;width:200px;text-align:center">.small_change</span><span style="position:absolute;left:1580px;top:804px;width:200px;text-align:center">.small_change</span></div>
+ <div class="a label t-amber" style="--d:17s;left:1580px;top:840px;width:200px;text-align:center;font-size:28px">can opt out</div>
+ <div class="a cap" style="--d:13.8s;bottom:84px;font-size:30px;right:400px">Imprint keeps a <span class="mono">.small_change</span> file per repo.</div>
+</section>
+
+<!-- 5 -->
+<section class="scene"><div class="kick">Step 5 of 10</div><h1>Low risk lands on checks alone</h1>
+ <div class="rl-row" style="left:110px;top:290px"><span class="chip a" style="--d:3.6s">docs</span><span class="chip a" style="--d:4.2s">copy</span><span class="chip a" style="--d:4.9s">additive changes behind a flag</span></div>
+ <svg><path class="line a" style="--d:7.3s" d="M400 480H520"/><path class="line a" style="--d:7.3s" d="M900 480H1020"/><path class="line a" style="--d:12.2s" d="M1400 480H1520"/></svg>
+ <div class="a" style="--d:1s"><div class="box" style="left:110px;top:425px;width:290px;height:110px">Low-risk change</div></div>
+ <div class="box a rl-go" style="left:520px;top:425px;width:380px;height:110px;flex-direction:row;--d:7.3s;--o:10.2s">Automated review<span class="a" style="--d:10.2s"><i class="rl-tick"></i></span></div>
+ <div class="box a rl-go" style="left:1020px;top:425px;width:380px;height:110px;flex-direction:row;--d:7.3s;--o:11.4s">Security checks<span class="a" style="--d:11.4s"><i class="rl-tick"></i></span></div>
+ <div class="a" style="--d:12.2s"><div class="box blue" style="left:1520px;top:415px;width:270px;height:130px">main<small>no human approval</small></div></div>
+ <div class="dot" style="left:405px;top:471px;--dx:100px;--d:12.4s"></div><div class="dot" style="left:905px;top:471px;--dx:100px;--d:12.4s"></div><div class="dot" style="left:1405px;top:471px;--dx:100px;--d:12.4s"></div>
+ <div class="a label" style="--d:13.2s;left:110px;top:618px">Intercom · pull requests auto-approved</div>
+ <div class="a" style="--d:14.2s"><div class="label" style="left:110px;top:686px;font-size:26px">April 2026</div><div class="track" style="top:670px"><div class="fill" style="background:var(--green);--w:19%;--d:14.6s"></div></div><div class="label t-green" style="left:1645px;top:678px;font-size:36px">over 19%</div></div>
+ <div class="a" style="--d:19.2s"><div class="label" style="left:110px;top:786px;font-size:26px">By July</div><div class="track" style="top:770px"><div class="fill" style="background:var(--green);--w:50%;--d:19.5s"></div></div><div class="label t-green" style="left:1645px;top:778px;font-size:36px">half</div></div>
+ <div class="a cap muted" style="--d:21s;bottom:84px;font-size:30px">Its agent refuses large ones.</div>
+</section>
+
+<!-- 6 -->
+<section class="scene"><div class="kick">Step 6 of 10</div><h1>An agent can't be that person</h1>
+ <div class="a label" style="--d:1.6s;left:760px;top:318px;width:400px;text-align:center;font-size:26px">One person</div>
+ <div class="rl-slot a" style="--d:1.6s;left:860px;top:360px"></div>
+ <div class="rl-tok rl-try a" style="left:400px;top:385px"><span class="rl-b"></span></div>
+ <div class="a label" style="--d:2.8s;left:375px;top:548px;width:200px;text-align:center;font-size:26px">Agent</div>
+ <div class="a label t-red" style="--d:6.2s;left:275px;top:588px;width:400px;text-align:center;font-size:26px">approval never counts</div>
+ <div class="rl-tok rl-enter a" style="left:1390px;top:385px"><span class="rl-p"></span></div>
+ <svg><path class="line a" style="--d:10s" d="M670 770H800"/><path class="line a" style="--d:9.2s" d="M1040 770H1170"/></svg>
+ <div class="a" style="--d:10s"><div class="box blue" style="left:330px;top:710px;width:340px;height:120px">Person<small>directs the agent</small></div></div>
+ <div class="a" style="--d:9.2s"><div class="box" style="left:800px;top:710px;width:240px;height:120px">Agent</div></div>
+ <div class="a" style="--d:8.6s"><div class="box" style="left:1170px;top:710px;width:340px;height:120px">Change<small>agent-written</small></div></div>
+ <div class="rl-row" style="left:330px;top:872px"><span class="chip a" style="--d:12.4s">counts as one required reviewer</span><span class="chip a" style="--d:14.8s">on the hook for it</span></div>
+</section>
+
+<!-- 7 -->
+<section class="scene"><div class="kick">Step 7 of 10</div><h1>Two people for the highest risk</h1>
+ <div class="rl-row" style="left:110px;top:300px"><span class="chip a" style="--d:.9s">highest-risk code</span><span class="chip a" style="--d:2.4s">a short list of paths</span>
+  <span class="a rl-row" style="--d:4.4s;position:static;gap:8px;margin-left:30px;font:700 30px 'IBM Plex Sans';color:var(--blue)"><i class="rl-p"></i><i class="rl-p"></i>&nbsp;two people</span></div>
+ <div class="a label" style="--d:5.4s;left:110px;top:450px">Kept out of Imprint's fast lane</div>
+ <div class="rl-row" style="left:110px;top:492px"><span class="chip a" style="--d:6.1s;border-color:var(--amber);color:var(--fg)">shared libraries</span><span class="chip a" style="--d:7.8s;border-color:var(--amber);color:var(--fg)">anything near money</span><span class="chip a" style="--d:8.6s;border-color:var(--amber);color:var(--fg)">or security</span></div>
+ <svg><path class="line a" style="--d:11s" d="M200 800H1720"/></svg>
+ <div class="rl-commit a" style="--d:11s;left:500px;top:765px"></div>
+ <div class="a label" style="--d:11s;left:435px;top:852px;width:200px;text-align:center;font-size:26px">one commit</div>
+ <div class="rl-ap a rl-void" style="--d:11.3s;left:355px;top:690px">approved</div><div class="rl-ap a rl-void" style="--d:11.6s;left:545px;top:690px">approved</div>
+ <div class="rl-commit a" style="--d:13s;left:1100px;top:765px"></div>
+ <div class="a label" style="--d:13s;left:1035px;top:852px;width:200px;text-align:center;font-size:26px">new commit</div>
+ <div class="rl-ap rl-empty a" style="--d:14.2s;left:955px;top:690px"></div><div class="rl-ap rl-empty a" style="--d:14.4s;left:1145px;top:690px"></div>
+ <div class="a label t-amber" style="--d:14.8s;left:1350px;top:700px;font-size:30px">has to be given again</div>
+</section>
+
+<!-- 8 -->
+<section class="scene"><div class="kick">Step 8 of 10</div><h1>What people read changes too</h1>
+ <div class="rl-row" style="left:110px;top:290px"><span class="chip a" style="--d:5.2s">still review every change request</span></div>
+ <div class="rl-card rl-bars a rl-fade" style="--d:2.9s;--o:12.4s;left:170px;top:410px;width:660px;height:450px"><h3 class="a rl-strike" style="--d:2.9s;--o:12.4s">Every line of code</h3><div class="rl-scan"></div>
+  <i class="g" style="width:82%;margin-top:26px"></i><i style="width:64%"></i><i class="r" style="width:74%"></i><i class="g" style="width:92%"></i><i style="width:48%"></i><i class="g" style="width:70%"></i><i class="r" style="width:58%"></i><i style="width:86%"></i><i class="g" style="width:66%"></i><i style="width:40%"></i></div>
+ <svg><path class="line a" style="--d:8.8s" d="M850 635H1030"/><path class="line a" style="--d:8.8s" d="M1010 615L1030 635L1010 655"/></svg>
+ <div class="a label t-blue" style="--d:8.8s;left:850px;top:580px;width:180px;text-align:center;font-size:28px">now</div>
+ <div class="rl-card a" style="--d:9s;left:1050px;top:410px;width:660px;height:450px;background:#dff0d3;border:2.5px solid var(--blue)"><h3>The intent of the change</h3>
+  <div class="rl-bars" style="width:300px"><i style="width:100%;height:26px;border-radius:13px;background:#9fcf93;margin-top:60px"></i><i style="width:78%;height:26px;border-radius:13px;background:#9fcf93;margin-top:30px"></i><i style="width:90%;height:26px;border-radius:13px;background:#9fcf93;margin-top:30px"></i></div><div class="rl-lens"></div></div>
+ <div class="a cap muted" style="--d:2.9s;bottom:84px;font-size:28px">Anthropic's source control rewrite</div>
+</section>
+
+<!-- 9 -->
+<section class="scene"><div class="kick">Step 9 of 10</div><h1>Read after they land, by sample</h1>
+ <div class="rl-row" style="left:110px;top:296px"><span class="chip a" style="--d:3.5s;border-color:var(--amber)">a sample at a time</span></div>
+ <svg><path class="line a" style="--d:.8s" d="M110 470H1800"/></svg>
+ <i class="rl-c" style="left:150px;--d:.9s"></i><i class="rl-c" style="left:242px;--d:1s"></i><i class="rl-c" style="left:334px;--d:1.1s"></i><i class="rl-c rl-s" style="left:426px;--d:1.2s;--o:3.6s"></i><i class="rl-c" style="left:518px;--d:1.3s"></i><i class="rl-c" style="left:610px;--d:1.4s"></i><i class="rl-c" style="left:702px;--d:1.5s"></i><i class="rl-c" style="left:794px;--d:1.6s"></i><i class="rl-c rl-s" style="left:886px;--d:1.7s;--o:4.1s"></i><i class="rl-c" style="left:978px;--d:1.8s"></i><i class="rl-c" style="left:1070px;--d:1.9s"></i><i class="rl-c" style="left:1162px;--d:2s"></i><i class="rl-c" style="left:1254px;--d:2.1s"></i><i class="rl-c rl-s" style="left:1346px;--d:2.2s;--o:4.6s"></i><i class="rl-c" style="left:1438px;--d:2.3s"></i><i class="rl-c" style="left:1530px;--d:2.4s"></i><i class="rl-c" style="left:1622px;--d:2.5s"></i><i class="rl-c" style="left:1714px;--d:2.6s"></i>
+ <div class="a label" style="--d:1.6s;left:110px;top:510px">main · low-lane changes, already landed</div>
+ <div class="rl-row a" style="--d:5.4s;left:110px;top:590px;font:500 32px 'IBM Plex Sans'"><i class="rl-p"></i>Reviewers look for what a checker can't see.</div>
+ <div class="a label" style="--d:8.4s;left:110px;top:716px;font-size:26px">John Allspaw</div>
+ <div class="a cap" style="--d:10.3s;bottom:auto;top:758px;font-size:32px">An experienced engineer says they don't understand a diff:</div>
+ <div class="a cap t-blue" style="--d:14.1s;bottom:auto;top:820px;font:800 68px 'Archivo',sans-serif">“their confusion is the finding”</div>
+</section>
+
+<!-- 10 -->
+<section class="scene" style="--egg:12.9s"><div class="kick">Step 10 of 10</div><h1>Each lane gets numbers</h1>
+ <div class="rl-card a" style="--d:2.4s;left:110px;top:290px;width:420px;height:340px"><h3>Share of changes</h3>
+  <div class="a muted" style="--d:7.3s;font:400 22px 'IBM Plex Mono';margin-top:10px">Imprint's fast lane</div>
+  <div class="rl-mini a" style="--d:7.3s"><div class="fill" style="background:var(--green);--w:10%;--d:9.1s;border-radius:18px"></div></div>
+  <div class="rl-num a" style="--d:9.1s">about 10%</div></div>
+ <div class="rl-card a" style="--d:4.6s;left:555px;top:290px;width:420px;height:340px"><h3>Revert rate</h3>
+  <div class="a chip" style="--d:16.6s;margin:14px 0 0;border-color:var(--amber);color:var(--fg)">tighter rules</div></div>
+ <svg><path class="line a" style="--d:5s;stroke-width:7;stroke-linecap:round;stroke-linejoin:round" d="M595 580L660 574L725 579L790 572"/><path class="rl-up" d="M790 572L850 540L895 490L935 440"/></svg>
+ <div class="rl-card a" style="--d:6.1s;left:1000px;top:290px;width:420px;height:340px"><h3>What sampling found</h3>
+  <div class="rl-dots"><i></i><i></i><i class="s"></i><i></i><i></i><i></i><i></i><i class="s"></i><i></i><i></i><i></i><i></i><i></i><i class="s"></i></div></div>
+ <div class="a cap" style="--d:11s;bottom:auto;top:662px;font-size:34px">Larson: “too early to give a useful result”</div>
+ <div class="a cap muted" style="--d:15.5s;bottom:76px;font-size:28px">SRE Lab · Delivery · Review lanes set by risk</div>
+ <div class="critter"><div id="critter"></div></div>
+</section>
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 3 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../delivery/#review-lanes">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Review lanes set by risk. Across hundreds of repos, who decides which changes land with no human review, which need one person and which need two, and how do you know the lanes are safe? One review rule for every change is tuned to the scariest system you run, and it breaks at agent volume. A lane policy sends each change to the review its risk needs.", "The human gate was already leaky. Intercom said of its past outages that the changes that caused them were all reviewed and approved by humans. At Imprint, the median review time more than doubled in two years, as merged pull requests grew.", "A classifier picks the lane from the change itself. In the Claude Code team's words: the change sets the tier, not the author. A classifier reads the change and picks its risk tier. Low needs no person, medium needs one, and high needs two.", "The policy is written once, above the repos. Owners list the paths that always need a person. At Anthropic, that is anything owners have listed as sensitive, and any C I workflow file. Imprint keeps a small change file in each repo, so a money-movement service can opt out.", "Low risk lands on checks alone: docs, copy, and additive changes behind a flag. Anthropic requires no human approval once automated review and security checks are green. Intercom auto-approved over nineteen percent of pull requests this way in April twenty twenty-six, and half by July. Its agent refuses large ones.", "Ordinary changes need one person, and an agent can't be that person. An agent's approval never counts as a person's. On an agent-written change, the person directing the agent counts as one required reviewer, and is on the hook for it.", "The highest-risk code and a short list of paths need two people. Imprint keeps shared libraries, and anything near money or security, out of its fast lane. An approval covers one commit. If new commits land, it has to be given again.", "What people read changes too. On Anthropic's source control rewrite, engineers still review every change request for the system. But they now examine the intent of the change, as opposed to reading every line of code.", "Low-lane changes get read after they land, a sample at a time. Reviewers look for what a checker can't see. John Allspaw puts it this way: when an experienced engineer says they don't understand a diff, their confusion is the finding.", "Each lane gets numbers: the share of changes it takes, its revert rate, and what sampling found. Imprint's fast lane takes about ten percent of changes, and Larson says it is too early to give a useful result. A lane whose revert rate climbs gets tighter rules."], "seconds": [23.1, 16.15, 16.32, 18.47, 22.51, 15.57, 15.4, 14.08, 15.27, 17.39]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

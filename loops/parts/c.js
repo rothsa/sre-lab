@@ -80,7 +80,6 @@ export const CHAPTERS = [
   },
   {
     id: "policy",
-    film: "../films/loop-policy/",
     n: 6,
     title: "Policy for unattended loops",
     question: "What must every loop declare before the platform runs it without a person watching, and how do you audit hundreds of them?",

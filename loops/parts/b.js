@@ -4,7 +4,6 @@
 export const CHAPTERS = [
   {
     id: "loops",
-    film: "../films/work-check-stop/",
     n: 3,
     title: "Loops: work, check, stop",
     question: "What parts does every loop in a fleet need to repeat its work, check it and stop, and which loop type fits which job?",

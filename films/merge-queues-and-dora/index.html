@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Merge queues, monorepos and DORA: the film</title>
+<meta name="description" content="How a merge queue keeps one busy main branch green and deployable, and how DORA metrics show whether delivery is improving.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.mq-pr{position:absolute;height:64px;padding:0 28px;border-radius:999px;background:#fff;border:2px solid var(--rule);box-shadow:0 8px 20px rgba(20,70,35,.10);font:600 26px "IBM Plex Mono",monospace;display:flex;align-items:center;justify-content:center}
+.mq-blk{position:absolute;width:170px;height:86px;border-radius:24px 8px 24px 8px;border:2.5px solid var(--rule);background:var(--panel);box-shadow:0 8px 20px rgba(20,70,35,.08);font:600 28px "IBM Plex Mono",monospace;display:flex;align-items:center;justify-content:center}
+.mq-blk.m{border-color:var(--blue);background:#dff0d3}
+.mq-blk.n{border-color:var(--amber);background:#fbefd0}
+.mq-thick{stroke-width:14;stroke-linecap:round;stroke:#b9d3a8}
+.scene.on .mq-trunk{animation:in .7s var(--d,0s) both,mq-green .9s var(--g,99s) forwards}
+@keyframes mq-green{to{stroke:var(--green)}}
+.scene.on .mq-fail{animation:in .7s var(--d,0s) both,mq-bad .5s var(--b,99s) forwards,mq-dim .6s var(--o,99s) forwards}
+@keyframes mq-bad{to{border-color:var(--red);background:#fbe4d9;color:var(--red)}}
+@keyframes mq-dim{to{opacity:.45}}
+.mq-swap{position:relative;display:block;width:100%;height:44px}
+.mq-swap span{position:absolute;left:0;right:0;top:0;text-align:center}
+.scene.on .mq-old{animation:mq-gone .4s var(--o,99s) forwards}
+@keyframes mq-gone{to{opacity:0}}
+.mq-row{font:600 32px "IBM Plex Mono",monospace}
+.mq-lane{position:absolute;font:500 26px "IBM Plex Mono",monospace;color:var(--fg)}
+.mq-term{left:1160px;top:420px;width:620px;font-size:30px;padding:36px 44px}
+.scene.on .mq-hl{animation:in .7s var(--d,0s) both,mq-hl .5s var(--h,99s) forwards}
+@keyframes mq-hl{to{color:#ffd27a}}
+.mq-group{position:absolute;border:4px dashed var(--blue);border-radius:40px;background:rgba(255,255,255,.55)}
+.mq-cells{position:absolute;display:grid;grid-template-columns:repeat(8,64px);gap:14px}
+.mq-cells i{display:block;width:64px;height:64px;border-radius:18px 6px 18px 6px;background:#d6e6c8}
+.scene.on .mq-cells i.t{animation:mq-lit .5s var(--d,0s) forwards}
+@keyframes mq-lit{to{background:var(--green)}}
+.mq-commit{position:absolute;width:80px;height:80px;border-radius:50%;background:var(--green);border:6px solid #eef5e6;box-shadow:0 8px 20px rgba(20,70,35,.14)}
+.mq-canary{position:absolute;width:120px;height:120px;border-radius:50%;background:#fbefd0;border:4px solid var(--amber)}
+.mq-fleet{position:absolute;display:grid;grid-template-columns:repeat(10,46px);gap:16px}
+.mq-fleet i{display:block;width:46px;height:46px;border-radius:50%;background:#d6e6c8}
+.scene.on .mq-fleet i{animation:mq-lit .5s var(--d,0s) forwards}
+.mq-sq{position:absolute;width:40px;height:40px;border-radius:12px 4px 12px 4px;background:var(--green)}
+.mq-sq.w{background:var(--amber)}
+.mq-met{font-size:30px;line-height:1.2}
+.mq-spark{stroke:var(--green);stroke-width:6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.mq-stall{opacity:.0}
+.scene.on .mq-stall{animation:in .7s var(--d,0s) both,mq-wait 1.6s 1.5s 3 alternate}
+@keyframes mq-wait{from{border-color:var(--amber)}to{border-color:var(--rule)}}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../delivery/#delivery-at-scale">Delivery</a> · film · recorded 15 Nov 2026</div>
+  <h1 class="page">Merge queues, monorepos and DORA</h1>
+  <div id="viewport">
+    <div id="stage">
+<!-- 1 -->
+<section class="scene"><div class="kick">Delivery · chapter 8</div><h1>Merge queues, monorepos<br>and DORA</h1>
+ <svg>
+  <g class="a" style="--d:3s">
+   <path class="line" d="M150 380C420 380 520 560 720 560"/><path class="line" d="M150 425C420 425 520 560 720 560"/>
+   <path class="line" d="M150 470C420 470 520 560 720 560"/><path class="line" d="M150 515C420 515 520 560 720 560"/>
+   <path class="line" d="M150 560H720"/>
+   <path class="line" d="M150 605C420 605 520 560 720 560"/><path class="line" d="M150 650C420 650 520 560 720 560"/>
+   <path class="line" d="M150 695C420 695 520 560 720 560"/><path class="line" d="M150 740C420 740 520 560 720 560"/>
+  </g>
+  <path class="line mq-thick mq-trunk a" style="--d:5s;--g:15s" d="M720 560H1770"/>
+ </svg>
+ <div class="a label" style="--d:3s;left:150px;top:790px;font-size:28px">Hundreds of engineers</div>
+ <div class="a label" style="--d:5s;left:1560px;top:490px;font-size:30px;color:var(--fg)">one main branch</div>
+ <div class="a" style="--d:13.8s"><div class="box blue" style="left:820px;top:480px;width:380px;height:160px;font-size:42px">Merge queue<small>keeps main green</small></div></div>
+ <div class="a" style="--d:16.2s"><div class="box amber" style="left:1330px;top:690px;width:440px;height:130px;font-size:40px">DORA<small>is delivery improving?</small></div></div>
+ <div class="mq-pr a" style="--d:18.2s;left:830px;top:700px">#1</div>
+ <div class="mq-pr a" style="--d:18.5s;left:955px;top:700px">#2</div>
+ <div class="mq-pr a" style="--d:18.8s;left:1080px;top:700px">#3</div>
+ <div class="a label" style="--d:18.2s;left:830px;top:790px;font-size:24px">three PRs through the queue</div>
+</section>
+
+<!-- 2 -->
+<section class="scene"><div class="kick">Step 2 of 11</div><h1>Small batches, merged daily</h1>
+ <svg>
+  <path class="line mq-thick a" style="--d:.8s;stroke:var(--green)" d="M150 720H1250"/>
+  <path class="line a" style="--d:3.6s;stroke:var(--blue);stroke-width:5" d="M220 720C245 640 325 640 350 720"/>
+  <path class="line a" style="--d:4.3s;stroke:var(--blue);stroke-width:5" d="M420 720C445 640 525 640 550 720"/>
+  <path class="line a" style="--d:5s;stroke:var(--blue);stroke-width:5" d="M620 720C645 640 725 640 750 720"/>
+  <path class="line a" style="--d:5.7s;stroke:var(--blue);stroke-width:5" d="M820 720C845 640 925 640 950 720"/>
+  <path class="line a" style="--d:6.4s;stroke:var(--blue);stroke-width:5" d="M1020 720C1045 640 1125 640 1150 720"/>
+  <path class="line a" style="--d:10.2s;stroke:var(--red);stroke-width:4;stroke-dasharray:12 12;opacity:.7" d="M200 720C230 480 330 440 480 440H920C1070 440 1170 480 1200 720"/>
+ </svg>
+ <div class="a label" style="--d:.8s;left:150px;top:750px;font-size:30px;color:var(--fg)">main</div>
+ <div class="a label t-blue" style="--d:8.6s;left:560px;top:750px;font-size:30px">branches that live hours</div>
+ <div class="a label" style="--d:10.2s;left:610px;top:380px;font-size:30px"><span class="strike">not weeks</span></div>
+ <div class="a" style="--d:12.2s"><div class="big" style="left:1400px;top:440px;font-size:260px">≤3</div>
+  <div class="label" style="left:1400px;top:720px;font-size:30px;color:var(--fg)">active branches</div>
+  <div class="label" style="left:1400px;top:766px;font-size:24px">linked by DORA to better<br>delivery performance</div></div>
+</section>
+
+<!-- 3 -->
+<section class="scene"><div class="kick">Step 3 of 11</div><h1>Pass alone, break together</h1>
+ <svg><path class="line a" style="--d:5.4s" d="M340 555L400 475"/><path class="line a" style="--d:6s" d="M340 555L400 625"/>
+  <path class="line a" style="--d:7.2s" d="M630 475L710 555"/><path class="line a" style="--d:7.2s" d="M630 625L710 555"/>
+  <path class="line a" style="--d:.8s;stroke-dasharray:6 12" d="M975 330V900"/></svg>
+ <div class="a label" style="--d:.8s;left:130px;top:360px;font-size:28px">Checked alone</div>
+ <div class="a" style="--d:2.2s"><div class="box" style="left:130px;top:500px;width:210px;height:110px">main<small>an hour ago</small></div></div>
+ <div class="a" style="--d:5.4s"><div class="box green" style="left:400px;top:430px;width:230px;height:90px">PR<small>passes alone</small></div></div>
+ <div class="a" style="--d:6s"><div class="box green" style="left:400px;top:580px;width:230px;height:90px">PR<small>passes alone</small></div></div>
+ <div class="box a mq-fail" style="--d:7.2s;--b:7.9s;left:710px;top:500px;width:210px;height:110px">main<small>breaks together</small></div>
+ <div class="a label" style="--d:9s;left:1030px;top:360px;font-size:28px">In the merge queue</div>
+ <div class="a" style="--d:10.6s"><div class="mq-blk m" style="left:1030px;top:430px">main</div><div class="mq-blk" style="left:1210px;top:430px">#1</div></div>
+ <div class="a" style="--d:11.4s"><div class="mq-blk m" style="left:1030px;top:546px">main</div><div class="mq-blk" style="left:1210px;top:546px">#1</div><div class="mq-blk" style="left:1390px;top:546px">#2</div></div>
+ <div class="a" style="--d:12.2s"><div class="mq-blk m" style="left:1030px;top:662px">main</div><div class="mq-blk" style="left:1210px;top:662px">#1</div><div class="mq-blk" style="left:1390px;top:662px">#2</div><div class="mq-blk" style="left:1570px;top:662px">#3</div></div>
+ <div class="a cap" style="--d:12.2s;left:1030px;bottom:120px;font-size:30px">Each PR is tested against main<br>plus every PR ahead of it.</div>
+</section>
+
+<!-- 4 -->
+<section class="scene"><div class="kick">Step 4 of 11</div><h1>Temporary branches, CI in parallel</h1>
+ <div class="a label" style="--d:1.2s;left:130px;top:360px;font-size:26px">Temporary branches</div>
+ <div class="a label" style="--d:3.4s;left:580px;top:360px;font-size:26px">CI on each, in parallel</div>
+ <div class="a mq-lane" style="--d:1.2s;left:130px;top:432px">gh-readonly-queue/main/…</div>
+ <div class="a mq-lane" style="--d:1.7s;left:130px;top:532px">gh-readonly-queue/main/…</div>
+ <div class="a mq-lane" style="--d:2.2s;left:130px;top:632px">gh-readonly-queue/main/…</div>
+ <div class="a" style="--d:3.4s"><div class="track" style="left:580px;top:424px;width:480px;height:48px"><div class="fill" style="background:var(--green);--w:100%;--d:3.8s"></div></div>
+  <div class="track" style="left:580px;top:524px;width:480px;height:48px"><div class="fill" style="background:var(--green);--w:100%;--d:3.8s"></div></div>
+  <div class="track" style="left:580px;top:624px;width:480px;height:48px"><div class="fill" style="background:var(--green);--w:100%;--d:3.8s"></div></div></div>
+ <div class="term mq-term"><div class="a" style="--d:6s">on:</div><div class="a" style="--d:6s">&nbsp;&nbsp;pull_request:</div><div class="a mq-hl" style="--d:8s;--h:9.1s">&nbsp;&nbsp;merge_group:</div></div>
+ <div class="a label" style="--d:6s;left:1160px;top:700px;font-size:22px">GitHub Actions workflow. (Made-up example.)</div>
+ <div class="a cap" style="--d:10.3s">Without the <span class="mono">merge_group</span> event, the required check never reports.</div>
+</section>
+
+<!-- 5 -->
+<section class="scene"><div class="kick">Step 5 of 11</div><h1>CI time sets the queue's throughput</h1>
+ <div class="a" style="--d:4.4s"><div class="big" style="left:120px;top:300px;font-size:230px">100</div><div class="label" style="left:130px;top:540px;font-size:30px;color:var(--fg)">groups tested at once</div></div>
+ <div class="a" style="--d:7s"><div class="mq-group" style="left:760px;top:320px;width:560px;height:170px"></div><div class="label t-blue" style="left:790px;top:338px">One group, several PRs</div>
+  <div class="mq-pr" style="left:800px;top:396px">PR</div><div class="mq-pr" style="left:930px;top:396px">PR</div><div class="mq-pr" style="left:1060px;top:396px">PR</div></div>
+ <div style="position:absolute;left:760px;top:520px"><span class="chip a" style="--d:9.5s">min size</span><span class="chip a" style="--d:10.2s">max size</span><span class="chip a" style="--d:11.4s">wait time</span></div>
+ <div class="a" style="--d:12.4s"><div class="label" style="left:130px;top:680px;font-size:28px;color:var(--fg)">Shard tests across runners</div>
+  <div class="track" style="left:130px;top:740px;width:170px;height:48px"><div class="fill" style="background:var(--green);--w:100%;--d:12.9s"></div></div>
+  <div class="track" style="left:320px;top:740px;width:170px;height:48px"><div class="fill" style="background:var(--green);--w:100%;--d:12.9s"></div></div>
+  <div class="track" style="left:510px;top:740px;width:170px;height:48px"><div class="fill" style="background:var(--green);--w:100%;--d:12.9s"></div></div>
+  <div class="track" style="left:700px;top:740px;width:170px;height:48px"><div class="fill" style="background:var(--green);--w:100%;--d:12.9s"></div></div></div>
+ <div class="a" style="--d:14.2s"><div class="label" style="left:1100px;top:680px;font-size:28px;color:var(--fg)">Monorepo: only tests the changed paths affect</div>
+  <div class="mq-cells" style="left:1100px;top:740px"><i></i><i class="t" style="--d:16s"></i><i></i><i></i><i></i><i></i><i class="t" style="--d:16.3s"></i><i></i><i></i><i></i><i></i><i class="t" style="--d:16.6s"></i><i></i><i></i><i></i><i></i></div></div>
+</section>
+
+<!-- 6 -->
+<section class="scene"><div class="kick">Step 6 of 11</div><h1>PR #2 fails, the queue rebuilds</h1>
+ <div class="a" style="--d:.3s"><div class="box green mq-row" style="left:130px;top:340px;width:640px;height:100px">main + #1</div><div class="label t-green" style="left:800px;top:372px;font-size:28px">passes</div></div>
+ <div class="box a mq-fail mq-row" style="--d:.3s;--b:1.4s;--o:5.4s;left:130px;top:470px;width:640px;height:100px">main + #1 + #2</div>
+ <div class="a label t-red" style="--d:1.5s;left:800px;top:486px;font-size:28px">fails</div>
+ <div class="a label" style="--d:5.6s;left:800px;top:526px;font-size:24px">removed, author told why</div>
+ <div class="a" style="--d:.3s"><div class="box mq-row" style="left:130px;top:600px;width:640px;height:100px"><span class="mq-swap"><span class="mq-old" style="--o:9.6s">main + #1 + #2 + #3</span><span class="a" style="--d:10s">main + #1 + #3</span></span></div></div>
+ <div class="a label t-blue" style="--d:10.6s;left:800px;top:632px;font-size:28px">rebuilt, retested</div>
+ <div class="a" style="--d:2.4s;position:absolute;left:130px;top:770px"><span class="chip">Only merge non-failing pull requests: on</span></div>
+ <div class="a" style="--d:14.6s"><div class="box amber" style="left:1280px;top:440px;width:500px;height:130px">One flaky test<small>ejects a good PR and every group behind it</small></div></div>
+ <div class="a" style="--d:20s"><div class="box blue" style="left:1280px;top:620px;width:500px;height:130px;font-size:38px">Eject rate<small>a health metric</small></div></div>
+</section>
+
+<!-- 7 -->
+<section class="scene"><div class="kick">Step 7 of 11</div><h1>Main only moves to green commits</h1>
+ <svg><path class="line mq-thick a" style="--d:.5s;stroke:var(--green)" d="M150 600H1770"/><path class="line a" style="--d:6.6s;stroke:var(--blue);stroke-width:4" d="M1590 650V730"/></svg>
+ <div class="a label" style="--d:.5s;left:150px;top:500px;font-size:34px;color:var(--fg)">main</div>
+ <div class="mq-commit a" style="--d:1s;left:290px;top:560px"></div><div class="mq-commit a" style="--d:1.6s;left:500px;top:560px"></div>
+ <div class="mq-commit a" style="--d:2.2s;left:710px;top:560px"></div><div class="mq-commit a" style="--d:2.8s;left:920px;top:560px"></div>
+ <div class="mq-commit a" style="--d:3.4s;left:1130px;top:560px"></div><div class="mq-commit a" style="--d:4s;left:1340px;top:560px"></div>
+ <div class="mq-commit a" style="--d:4.6s;left:1550px;top:560px"></div>
+ <div class="a label" style="--d:3s;left:290px;top:680px;font-size:30px">every commit passed CI as a whole</div>
+ <div class="a" style="--d:6.6s"><div class="box blue" style="left:1390px;top:730px;width:400px;height:130px;font-size:40px">Deploy<small>anyone, at any time</small></div></div>
+</section>
+
+<!-- 8 -->
+<section class="scene"><div class="kick">Step 8 of 11</div><h1>Canary first, then the fleet</h1>
+ <svg><path class="line a" style="--d:1s" d="M470 560H640"/><path class="line a" style="--d:4.8s" d="M780 560H920"/></svg>
+ <div class="a" style="--d:.6s"><div class="box" style="left:250px;top:495px;width:220px;height:130px;font-size:36px">Merge</div></div>
+ <div class="dot" style="left:480px;top:551px;--dx:140px;--d:1.4s"></div>
+ <div class="a" style="--d:3.8s"><div class="mq-canary" style="left:650px;top:500px"></div><div class="label t-amber" style="left:662px;top:640px;font-size:30px">canary</div></div>
+ <div class="a" style="--d:4.8s"><div class="mq-fleet" style="left:940px;top:413px">
+  <i style="--d:5.20s"></i><i style="--d:5.35s"></i><i style="--d:5.50s"></i><i style="--d:5.65s"></i><i style="--d:5.80s"></i><i style="--d:5.95s"></i><i style="--d:6.10s"></i><i style="--d:6.25s"></i><i style="--d:6.40s"></i><i style="--d:6.55s"></i>
+  <i style="--d:5.20s"></i><i style="--d:5.35s"></i><i style="--d:5.50s"></i><i style="--d:5.65s"></i><i style="--d:5.80s"></i><i style="--d:5.95s"></i><i style="--d:6.10s"></i><i style="--d:6.25s"></i><i style="--d:6.40s"></i><i style="--d:6.55s"></i>
+  <i style="--d:5.20s"></i><i style="--d:5.35s"></i><i style="--d:5.50s"></i><i style="--d:5.65s"></i><i style="--d:5.80s"></i><i style="--d:5.95s"></i><i style="--d:6.10s"></i><i style="--d:6.25s"></i><i style="--d:6.40s"></i><i style="--d:6.55s"></i>
+  <i style="--d:5.20s"></i><i style="--d:5.35s"></i><i style="--d:5.50s"></i><i style="--d:5.65s"></i><i style="--d:5.80s"></i><i style="--d:5.95s"></i><i style="--d:6.10s"></i><i style="--d:6.25s"></i><i style="--d:6.40s"></i><i style="--d:6.55s"></i>
+  <i style="--d:5.20s"></i><i style="--d:5.35s"></i><i style="--d:5.50s"></i><i style="--d:5.65s"></i><i style="--d:5.80s"></i><i style="--d:5.95s"></i><i style="--d:6.10s"></i><i style="--d:6.25s"></i><i style="--d:6.40s"></i><i style="--d:6.55s"></i>
+ </div><div class="label t-green" style="left:940px;top:740px;font-size:30px">the fleet</div></div>
+ <div class="a cap" style="--d:6.8s">Small, frequent deploys: easy to understand, easy to revert.</div>
+</section>
+
+<!-- 9 -->
+<section class="scene"><div class="kick">Step 9 of 11</div><h1>DORA: throughput and instability</h1>
+ <div class="a label t-green" style="--d:3s;left:130px;top:320px;font-size:30px">Throughput</div>
+ <div class="a" style="--d:4s"><div class="box green mq-met" style="left:130px;top:372px;width:400px;height:150px">Change<br>lead time</div></div>
+ <div class="a" style="--d:5.6s"><div class="box green mq-met" style="left:560px;top:372px;width:400px;height:150px">Deployment<br>frequency</div></div>
+ <div class="a" style="--d:7s"><div class="box green mq-met" style="left:990px;top:372px;width:400px;height:150px">Failed deployment<br>recovery time</div></div>
+ <div class="a label t-amber" style="--d:9s;left:130px;top:580px;font-size:30px">Instability</div>
+ <div class="a" style="--d:10s"><div class="box amber mq-met" style="left:130px;top:632px;width:400px;height:150px">Change<br>fail rate</div></div>
+ <div class="a" style="--d:11.6s"><div class="box amber mq-met" style="left:560px;top:632px;width:400px;height:150px">Deployment<br>rework rate</div></div>
+ <div class="a" style="--d:16.2s"><div class="box" style="left:1100px;top:632px;width:560px;height:150px"></div><div class="label" style="left:1130px;top:650px">each team's trend</div>
+  <svg><path class="mq-spark" d="M1140 750L1230 738L1310 744L1400 716L1490 706L1620 676"/></svg></div>
+ <div class="a cap" style="--d:16.8s">Per application. For each team's trend and bottleneck, never a leaderboard.</div>
+</section>
+
+<!-- 10 -->
+<section class="scene"><div class="kick">Step 10 of 11</div><h1>A freeze stacks up risk</h1>
+ <svg><path class="line a" style="--d:.4s" d="M130 480H1250"/><path class="line a" style="--d:8s" d="M130 730H1790"/></svg>
+ <div class="a label" style="--d:.4s;left:130px;top:340px;font-size:28px">Company-wide freeze</div>
+ <div class="a" style="--d:.4s"><div class="mq-sq" style="left:180px;top:460px"></div><div class="mq-sq" style="left:300px;top:460px"></div><div class="mq-sq" style="left:420px;top:460px"></div></div>
+ <div class="a" style="--d:.8s"><div class="mq-group" style="left:520px;top:400px;width:680px;height:160px;border-radius:36px"></div><div class="label t-blue" style="left:548px;top:412px">freeze</div></div>
+ <div class="mq-sq w a" style="--d:1.4s;left:560px;top:472px"></div><div class="mq-sq w a" style="--d:1.7s;left:636px;top:472px"></div><div class="mq-sq w a" style="--d:2s;left:712px;top:472px"></div><div class="mq-sq w a" style="--d:2.3s;left:788px;top:472px"></div>
+ <div class="mq-sq w a" style="--d:2.6s;left:864px;top:472px"></div><div class="mq-sq w a" style="--d:2.9s;left:940px;top:472px"></div><div class="mq-sq w a" style="--d:3.2s;left:1016px;top:472px"></div><div class="mq-sq w a" style="--d:3.5s;left:1092px;top:472px"></div>
+ <div class="a" style="--d:4.8s"><div class="box red" style="left:1250px;top:400px;width:170px;height:160px;font-size:26px">weeks of changes</div>
+  <div class="label t-red" style="left:1450px;top:445px;font-size:28px">one risky<br>first deploy</div></div>
+ <div class="a label" style="--d:8s;left:130px;top:630px;font-size:28px">High performers: deploy on demand, even in business hours</div>
+ <div class="a mq-sq" style="--d:10.6s;left:180px;top:710px"></div><div class="a mq-sq" style="--d:10.7s;left:260px;top:710px"></div><div class="a mq-sq" style="--d:10.8s;left:340px;top:710px"></div><div class="a mq-sq" style="--d:10.9s;left:420px;top:710px"></div><div class="a mq-sq" style="--d:11.0s;left:500px;top:710px"></div>
+ <div class="a mq-sq" style="--d:11.1s;left:580px;top:710px"></div><div class="a mq-sq" style="--d:11.2s;left:660px;top:710px"></div><div class="a mq-sq" style="--d:11.3s;left:740px;top:710px"></div><div class="a mq-sq" style="--d:11.4s;left:820px;top:710px"></div><div class="a mq-sq" style="--d:11.5s;left:900px;top:710px"></div>
+ <div class="a mq-sq" style="--d:11.6s;left:980px;top:710px"></div><div class="a mq-sq" style="--d:11.7s;left:1060px;top:710px"></div><div class="a mq-sq" style="--d:11.8s;left:1140px;top:710px"></div><div class="a mq-sq" style="--d:11.9s;left:1220px;top:710px"></div><div class="a mq-sq" style="--d:12.0s;left:1300px;top:710px"></div>
+ <div class="a mq-sq" style="--d:12.1s;left:1380px;top:710px"></div><div class="a mq-sq" style="--d:12.2s;left:1460px;top:710px"></div><div class="a mq-sq" style="--d:12.3s;left:1540px;top:710px"></div><div class="a mq-sq" style="--d:12.4s;left:1620px;top:710px"></div><div class="a mq-sq" style="--d:12.5s;left:1700px;top:710px"></div>
+ <div style="position:absolute;left:130px;top:850px"><span class="a label" style="--d:14.4s;position:static;font-size:28px;margin-right:24px">Spend the effort on</span><span class="chip a" style="--d:15.6s">canaries</span><span class="chip a" style="--d:16.4s">automated rollback</span><span class="chip a" style="--d:17.2s">flags</span></div>
+</section>
+
+<!-- 11 -->
+<section class="scene" style="--egg:9.2s"><div class="kick">Step 11 of 11</div><h1>The pipeline is a product</h1>
+ <div class="a label" style="--d:.6s;left:130px;top:340px;font-size:28px">The queue stalls</div>
+ <div class="mq-pr mq-stall" style="--d:.6s;left:130px;top:400px;width:300px">PR</div>
+ <div class="mq-pr mq-stall" style="--d:.8s;left:130px;top:484px;width:300px">PR</div>
+ <div class="mq-pr mq-stall" style="--d:1s;left:130px;top:568px;width:300px">PR</div>
+ <div class="a label t-red" style="--d:2.2s;left:130px;top:656px;font-size:28px">every engineer stops</div>
+ <div class="a" style="--d:5.6s"><div class="box blue" style="left:590px;top:400px;width:460px;height:160px;font-size:44px">A product<small>queue · CI · deploy tooling</small></div></div>
+ <div style="position:absolute;left:590px;top:590px"><span class="chip a" style="--d:8.2s">platform team</span><span class="chip a" style="--d:9.4s">on-call</span></div>
+ <div class="a label" style="--d:10.2s;left:1200px;top:410px;font-size:28px">Targets</div>
+ <div class="a" style="--d:10.8s"><div class="box" style="left:1200px;top:460px;width:560px;height:70px">Queue wait</div></div>
+ <div class="a" style="--d:11.8s"><div class="box" style="left:1200px;top:545px;width:560px;height:70px">CI success rate</div></div>
+ <div class="a" style="--d:12.8s"><div class="box" style="left:1200px;top:630px;width:560px;height:70px">Deploy duration</div></div>
+ <div class="a cap muted" style="--d:13.2s;bottom:76px;font-size:28px">SRE Lab · Delivery · Merge queues, monorepos and DORA</div>
+ <div class="critter"><div id="critter"></div></div>
+</section>
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 3 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../delivery/#delivery-at-scale">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Merge queues, monorepos and DORA. Hundreds of engineers merge into one main branch every day. How do you keep it green and deployable, and how do you know delivery is getting better? A merge queue keeps main green, and DORA shows whether delivery is improving. We'll follow three pull requests through the queue.", "Start with trunk-based development. Work lands in small batches, merged into main at least once a day, on branches that live for hours, not weeks. DORA links having three or fewer active branches to better delivery performance.", "Why a queue? A pull request's checks ran against the main of an hour ago. Two pull requests that each pass alone can break main together. A merge queue tests each one against main plus every pull request ahead of it.", "The queue builds temporary branches and runs C I on each of them in parallel. In GitHub Actions, the workflow must listen for the merge group event. If it doesn't, the required check never reports.", "C I time sets the queue's throughput. GitHub can test up to a hundred groups at once and merge several pull requests per group, with minimum and maximum group sizes and a wait time. Shard tests across runners. In a monorepo, run only the tests that the changed paths affect.", "Pull request two fails. With only merge non-failing pull requests switched on, it is removed and its author is told why. Groups behind it are rebuilt without it, so number three is retested as main plus one plus three. One flaky test does this to a good pull request and every group behind it, so treat eject rate as a health metric.", "Passing groups merge. So main only ever moves to commits that passed C I as a whole. A green main means anyone can deploy it at any time.", "Each merge flows through the deploy pipeline: canary first, then the fleet. Small, frequent deploys keep each change easy to understand and easy to revert.", "DORA measures each application. Throughput is change lead time, deployment frequency, and failed deployment recovery time. Instability is change fail rate and deployment rework rate. Across hundreds of services, use them for each team's trend and bottleneck, never as a leaderboard.", "A company-wide freeze stacks up weeks of changes into one risky first deploy after it lifts. DORA finds that high performers avoid code freezes and can deploy on demand, even in business hours. Spend the effort on canaries, automated rollback and flags.", "When the queue stalls, every engineer stops. The queue, C I and deploy tooling are a product. It has an owning platform team, on-call, and targets for queue wait, C I success rate and deploy duration."], "seconds": [19.56, 15.49, 13.7, 12.97, 18.6, 22.1, 9.17, 10.69, 19.05, 17.83, 13.72]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

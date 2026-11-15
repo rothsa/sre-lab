@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trunk-based delivery without a blocking review: the film</title>
+<meta name="description" content="When review stops blocking the merge, where each job the pull request did goes: authorization, test gates, the second look and the record.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.tb-pr{position:absolute;left:150px;top:450px;width:640px;height:470px;border:3px solid var(--blue);border-radius:44px 14px 44px 14px;background:rgba(255,255,255,.6);opacity:0}
+.tb-pr b,.tb-slot b{position:absolute;left:44px;top:20px;font:700 24px "IBM Plex Sans";color:var(--blue)}
+.scene.on .tb-pr{animation:in .7s 14.5s both,tb-gone .8s 22.6s forwards}
+@keyframes tb-gone{to{border-style:dashed;border-color:#a9bfa0;background:rgba(255,255,255,.25);opacity:.45}}
+.tb-slot{position:absolute;left:1130px;top:450px;width:640px;height:470px;border:3px dashed var(--blue);border-radius:44px 14px 44px 14px;background:rgba(255,255,255,.6)}
+.scene.on .tb-job{animation:in .7s var(--d) both,tb-move .9s cubic-bezier(.4,0,.2,1) var(--m) forwards}
+@keyframes tb-move{to{transform:translateX(980px);border-color:var(--blue);background:#dff0d3}}
+.tb-wait{height:100%;width:0;border-radius:32px;background:var(--amber)}
+.scene.on .tb-wait{animation:grow 5.6s linear 10.2s forwards}
+.tb-card{position:absolute;width:760px;height:290px;border:2.5px solid var(--rule);background:var(--panel);border-radius:36px 12px 36px 12px;box-shadow:0 10px 28px rgba(20,70,35,.10);padding:34px 44px;font:400 28px/1.35 "IBM Plex Sans"}
+.tb-card b{display:block;font:800 42px "Archivo";margin-bottom:22px}
+.tb-row{display:flex;align-items:center;gap:18px;margin-bottom:24px}
+.tb-p{width:52px;height:52px;border-radius:50%;background:#d6e6c8}
+.tb-p.on{background:var(--green);box-shadow:0 0 0 5px rgba(63,154,79,.25)}
+.tb-sig{width:56px;height:56px;border-radius:50%;background:var(--green);color:#fff;font:700 30px "IBM Plex Sans";display:flex;align-items:center;justify-content:center}
+.tb-link{width:44px;height:5px;border-radius:3px;background:#9fbf8f;margin:0 -8px}
+.tb-zone{position:absolute;top:340px;width:770px;height:400px;border-radius:44px 14px 44px 14px;border:3px dashed var(--rule);background:rgba(255,255,255,.5)}
+.tb-zone b{position:absolute;left:44px;top:24px;font:700 26px "IBM Plex Sans";color:var(--muted)}
+.tb-push{position:absolute;left:880px;top:505px;width:160px;height:70px;border-radius:999px;background:var(--blue);color:#fff;font:700 30px "IBM Plex Sans";display:flex;align-items:center;justify-content:center;box-shadow:0 10px 24px rgba(20,70,35,.2)}
+.tb-c{position:absolute;top:458px;width:84px;height:84px;border-radius:50%;border:4px solid var(--green);background:#e9f6dc;box-shadow:0 8px 20px rgba(20,70,35,.12)}
+.tb-c.bad{border-color:var(--red);background:#fbe4d9}
+.tb-blk{position:absolute;top:640px;width:170px;height:54px;border-radius:999px;border:2.5px solid var(--red);background:#fbe4d9;color:var(--red);font:700 24px "IBM Plex Sans";display:flex;align-items:center;justify-content:center}
+.tb-step{flex-direction:row;justify-content:flex-start;gap:26px;padding:10px 40px;font-size:34px}
+.tb-step i{font:800 34px "Archivo";font-style:normal;width:60px;height:60px;border-radius:50%;background:#d3e8c4;color:var(--blue);display:flex;align-items:center;justify-content:center;flex:none}
+.tb-step small{margin:0 0 0 auto}
+.tb-tog{width:120px;height:60px;border-radius:30px;background:#cfd8c8;position:relative;flex:none;margin-left:auto}
+.tb-tog::after{content:"";position:absolute;left:7px;top:7px;width:46px;height:46px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.tb-fleet{position:absolute;left:720px;top:360px;display:grid;grid-template-columns:repeat(8,36px);gap:12px}
+.tb-fleet i{width:36px;height:36px;border-radius:50%;background:#d6e6c8;display:block}
+.scene.on .tb-fleet i{animation:lit .5s var(--d) forwards}
+.tb-can{position:absolute;left:520px;top:432px;width:64px;height:64px;border-radius:50%;background:#d6e6c8}
+.scene.on .tb-can{animation:lit .5s 3.6s forwards}
+.tb-ring{fill:none;stroke:var(--amber);stroke-width:24;stroke-linecap:round;stroke-dasharray:943;stroke-dashoffset:0}
+.scene.on .tb-ring{animation:tb-drain 5s linear 8s forwards}
+@keyframes tb-drain{to{stroke-dashoffset:-330}}
+.tb-pause{position:absolute;left:1240px;top:770px;width:280px;height:84px;border-radius:999px;border:3px solid var(--amber);background:#fbefd0;font:700 34px "IBM Plex Sans";display:flex;align-items:center;justify-content:center;opacity:0}
+.scene.on .tb-pause{animation:in .7s 10.7s both,tb-press .4s 13s forwards}
+@keyframes tb-press{to{background:var(--amber);color:#fff;transform:scale(.94)}}
+.tb-bar{height:24px;border-radius:12px;background:#dfe9d6;margin-top:22px}
+.scene.on .tb-hl{animation:tb-hl .6s 11.2s forwards}
+@keyframes tb-hl{to{background:var(--amber)}}
+.tb-merged{position:absolute;left:700px;top:330px;background:var(--green);color:#fff;font:800 36px "IBM Plex Sans";padding:12px 34px;border-radius:999px;box-shadow:0 12px 26px rgba(63,154,79,.3);opacity:0}
+.scene.on .tb-merged{animation:stamp .35s 9.4s both}
+.tb-bub{position:absolute;left:640px;top:590px;width:470px;border:2.5px solid var(--amber);background:#fbefd0;border-radius:28px 28px 28px 6px;padding:20px 30px;font:600 30px/1.3 "IBM Plex Sans";box-shadow:0 10px 24px rgba(20,70,35,.12)}
+.tb-q{position:absolute;left:150px;top:300px;font:800 84px/1.1 "Archivo";color:var(--blue);letter-spacing:-.01em}
+.tb-pill{position:absolute;height:84px;border-radius:999px;border:3px solid var(--rule);background:var(--panel);font:700 30px "IBM Plex Sans";display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(20,70,35,.12)}
+.tb-post{position:absolute;top:670px;width:18px;height:144px;border-radius:9px;background:#b7d4a6}
+.scene.on .tb-rev{animation:in .6s 12s both,tb-rev 2s cubic-bezier(.4,0,.3,1) 12.7s forwards}
+@keyframes tb-rev{to{transform:translateX(830px);border-color:var(--green);background:#e9f6dc}}
+.tb-chain{display:flex;align-items:center;margin-top:30px}
+.tb-node{border:2.5px solid var(--blue);background:#dff0d3;border-radius:999px;padding:16px 34px;font:700 30px "IBM Plex Sans";white-space:nowrap}
+.tb-node.plain{border-color:var(--rule);background:var(--panel)}
+.tb-chain u{display:block;width:70px;height:5px;background:#9fbf8f;flex:none}
+.tb-chk{position:absolute;left:1130px;display:flex;align-items:center;gap:26px;font:600 42px "IBM Plex Sans"}
+.tb-chk i{width:56px;height:56px;border-radius:16px 6px 16px 6px;background:var(--green);color:#fff;font:700 34px "IBM Plex Sans";font-style:normal;display:flex;align-items:center;justify-content:center}
+.tb-dots{position:absolute;background-image:radial-gradient(circle,var(--blue) 3.4px,transparent 3.9px);background-size:10px 10px}
+.scene.on .tb-many{animation:tb-many 3.4s cubic-bezier(.3,.5,.3,1) 7.4s both}
+@keyframes tb-many{from{width:0}to{width:800px}}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../delivery/#trunk-without-blocking-review">Delivery</a> · film · recorded 15 Nov 2026</div>
+  <h1 class="page">Trunk-based delivery without a blocking review</h1>
+  <div id="viewport">
+    <div id="stage">
+<!-- 1 -->
+<section class="scene"><div class="kick">Delivery · chapter 9</div><h1>Trunk-based delivery<br>without a blocking review</h1>
+ <div class="a" style="--d:3s"><div class="box" style="left:150px;top:316px;width:360px;height:96px">Teams and agents<small>many changes a day</small></div>
+  <div class="box blue" style="left:1010px;top:316px;width:260px;height:96px;font-size:38px">main</div></div>
+ <div class="dot" style="left:530px;top:355px;--dx:450px;--d:3.4s"></div><div class="dot" style="left:530px;top:355px;--dx:450px;--d:5s"></div>
+ <div class="dot" style="left:530px;top:355px;--dx:450px;--d:6.4s"></div><div class="dot" style="left:530px;top:355px;--dx:450px;--d:7.2s"></div>
+ <div class="dot" style="left:530px;top:355px;--dx:450px;--d:7.8s"></div><div class="dot" style="left:530px;top:355px;--dx:450px;--d:8.6s"></div>
+ <div class="tb-pr"><b>Pull request</b></div>
+ <div class="tb-slot a" style="--d:22.8s"><b>A new home for each job</b></div>
+ <div class="box tb-job a" style="left:200px;top:520px;width:540px;height:80px;--d:17.4s;--m:23.2s">Authorizes the change</div>
+ <div class="box tb-job a" style="left:200px;top:615px;width:540px;height:80px;--d:18.7s;--m:23.4s">Gates it on tests</div>
+ <div class="box tb-job a" style="left:200px;top:710px;width:540px;height:80px;--d:20.4s;--m:23.6s">Gets it a second look</div>
+ <div class="box tb-job a" style="left:200px;top:805px;width:540px;height:80px;--d:22s;--m:23.8s">Leaves a record</div>
+</section>
+
+<!-- 2 -->
+<section class="scene"><div class="kick">Step 2 of 11</div><h1>Merge to trunk at least once a day</h1>
+ <svg><path class="line a" style="--d:.6s;stroke:var(--blue);stroke-width:9;stroke-linecap:round" d="M150 480H1750"/>
+  <g class="a" style="--d:1.4s"><path class="line" style="stroke-width:5" d="M200 480C240 380 380 380 420 480"/><circle cx="420" cy="480" r="15" fill="#1f7a3a"/></g>
+  <g class="a" style="--d:2.1s"><path class="line" style="stroke-width:5" d="M500 480C540 380 680 380 720 480"/><circle cx="720" cy="480" r="15" fill="#1f7a3a"/></g>
+  <g class="a" style="--d:2.8s"><path class="line" style="stroke-width:5" d="M800 480C840 380 980 380 1020 480"/><circle cx="1020" cy="480" r="15" fill="#1f7a3a"/></g>
+  <g class="a" style="--d:3.5s"><path class="line" style="stroke-width:5" d="M1100 480C1140 380 1280 380 1320 480"/><circle cx="1320" cy="480" r="15" fill="#1f7a3a"/></g>
+  <g class="a" style="--d:4.2s"><path class="line" style="stroke-width:5" d="M1400 480C1440 380 1580 380 1620 480"/><circle cx="1620" cy="480" r="15" fill="#1f7a3a"/></g></svg>
+ <div class="a label t-blue" style="--d:.6s;left:150px;top:504px;font-size:26px">trunk</div>
+ <div class="a" style="--d:5.4s"><div class="label" style="left:150px;top:610px;font-size:26px">DORA: a common obstacle</div>
+  <div class="box amber" style="left:150px;top:660px;width:700px;height:150px;font-size:36px">An overly heavy<br>code-review process</div></div>
+ <div class="a" style="--d:9.6s"><div class="label" style="left:960px;top:610px;font-size:26px">Asked for asynchronous review</div>
+  <div class="track" style="left:960px;top:703px;width:800px"><div class="tb-wait" style="--w:100%"></div></div></div>
+ <div class="a label" style="--d:13.6s;left:960px;top:790px;font-size:30px;color:var(--fg)">Changes wait</div>
+ <div class="a label t-amber" style="--d:14.6s;left:1290px;top:790px;font-size:30px">hours</div>
+ <div class="a label t-amber" style="--d:15.4s;left:1640px;top:790px;font-size:30px">or days</div>
+</section>
+
+<!-- 3 -->
+<section class="scene"><div class="kick">Step 3 of 11</div><h1>Authorization moves to the branch</h1>
+ <div class="a" style="--d:.8s"><div class="box blue" style="left:750px;top:290px;width:420px;height:130px;font-size:44px">main<small class="a" style="--d:3.6s">no pull requests</small></div></div>
+ <svg><path class="line a" style="--d:9s" d="M960 420L530 520"/><path class="line a" style="--d:13.6s" d="M960 420L1390 520"/></svg>
+ <div class="tb-card a" style="--d:9s;left:150px;top:520px"><b>Restricted push access</b>
+  <div class="tb-row"><span class="tb-p on"></span><span class="tb-p on"></span><span class="tb-p"></span><span class="tb-p"></span><span class="tb-p"></span><span class="tb-p"></span><span class="tb-p"></span><span class="tb-p"></span></div>
+  <div class="a muted" style="--d:11s">You can explain exactly who has it and why.</div></div>
+ <div class="tb-card a" style="--d:13.6s;left:1010px;top:520px"><b>Verified signatures</b>
+  <div class="tb-row"><span class="tb-sig">✓</span><span class="tb-link"></span><span class="tb-sig">✓</span><span class="tb-link"></span><span class="tb-sig">✓</span><span class="tb-link"></span><span class="tb-sig">✓</span><span class="tb-link"></span><span class="tb-sig">✓</span></div>
+  <div class="a muted" style="--d:15.8s">The author on every commit is provable.</div></div>
+ <div class="a" style="--d:18.8s;position:absolute;left:0;right:0;top:860px;text-align:center"><span class="chip" style="margin:0;font-size:30px">An org sets both in a ruleset</span></div>
+</section>
+
+<!-- 4 -->
+<section class="scene"><div class="kick">Step 4 of 11</div><h1>The first gate runs before the push</h1>
+ <div class="tb-zone a" style="--d:.8s;left:150px"><b>Before the push</b></div>
+ <div class="tb-zone a" style="--d:.8s;left:1000px"><b>After the push</b></div>
+ <svg><path class="line a" style="--d:3.6s;stroke:var(--blue);stroke-width:5;stroke-dasharray:4 14;stroke-linecap:round" d="M960 320V790"/></svg>
+ <div class="tb-push a" style="--d:3.6s">push</div>
+ <div class="a" style="--d:4.8s"><div class="box green" style="left:200px;top:450px;width:300px;height:180px;font-size:38px">Hooks</div></div>
+ <div class="a" style="--d:6.2s"><div class="box green" style="left:540px;top:450px;width:330px;height:180px;font-size:38px">Machine<br>review</div></div>
+ <div class="a" style="--d:11.2s"><div class="box blue" style="left:1050px;top:450px;width:310px;height:180px;font-size:38px">Human<br>review</div></div>
+ <div class="a" style="--d:12.2s"><div class="box green" style="left:1400px;top:450px;width:320px;height:180px;font-size:38px">More machine<br>review</div></div>
+ <div class="a cap" style="--d:7.4s">How Mitchell Hashimoto's Superlogical does it: machine-aided review pre-push, human plus more machine-aided review post-push.</div>
+</section>
+
+<!-- 5 -->
+<section class="scene"><div class="kick">Step 5 of 11</div><h1>Main can be red. Production never is.</h1>
+ <svg><path class="line a" style="--d:.6s;stroke:var(--blue);stroke-width:7;stroke-linecap:round" d="M250 500H1560"/>
+  <path class="line a" style="--d:1.4s;stroke:var(--green);stroke-width:5" d="M342 545V800"/><path class="line a" style="--d:2s;stroke:var(--green);stroke-width:5" d="M562 545V800"/>
+  <path class="line a" style="--d:5.4s;stroke:var(--red);stroke-dasharray:8 10" d="M782 545V640"/><path class="line a" style="--d:8.4s;stroke:var(--red);stroke-dasharray:8 10" d="M1002 545V640"/><path class="line a" style="--d:9.2s;stroke:var(--red);stroke-dasharray:8 10" d="M1222 545V640"/>
+  <path class="line a" style="--d:11.4s;stroke:var(--green);stroke-width:5" d="M1442 545V800"/></svg>
+ <div class="a label t-blue" style="--d:.6s;left:150px;top:482px;font-size:28px">main</div>
+ <div class="tb-c a" style="--d:.9s;left:300px"></div><div class="tb-c a" style="--d:1.5s;left:520px"></div>
+ <div class="tb-c bad a" style="--d:3.6s;left:740px"></div><div class="tb-c bad a" style="--d:8s;left:960px"></div><div class="tb-c bad a" style="--d:8.8s;left:1180px"></div>
+ <div class="tb-c a" style="--d:10.8s;left:1400px"></div>
+ <div class="a label t-red" style="--d:3.8s;left:712px;top:410px;font-size:26px">failed check</div>
+ <div class="a label" style="--d:8s;left:1018px;top:410px;font-size:26px">later pushes</div>
+ <div class="a label t-green" style="--d:10.8s;left:1424px;top:410px;font-size:26px">fix</div>
+ <div class="tb-blk a" style="--d:5.4s;left:697px">blocked</div><div class="tb-blk a" style="--d:8.4s;left:917px">blocked</div><div class="tb-blk a" style="--d:9.2s;left:1137px">blocked</div>
+ <div class="a" style="--d:7s;position:absolute;left:560px;top:320px"><span class="chip" style="border-color:var(--amber);color:var(--fg);background:#fbefd0">pings the commit author</span></div>
+ <div class="a" style="--d:.6s"><div class="box green" style="left:250px;top:800px;width:1310px;height:110px;font-size:36px">Production<small class="a" style="--d:14.2s;font-size:26px;color:var(--fg)">never gets a red commit</small></div></div>
+</section>
+
+<!-- 6 -->
+<section class="scene"><div class="kick">Step 6 of 11</div><h1>Unfinished work lands dark</h1>
+ <div class="a" style="--d:2.4s"><div class="box tb-step" style="left:150px;top:320px;width:720px;height:120px"><i>1</i>Add the column<small class="a" style="--d:3.8s;font-size:26px">ship it</small></div></div>
+ <div class="a" style="--d:4.9s"><div class="box tb-step" style="left:150px;top:480px;width:720px;height:120px"><i>2</i>Then the code</div></div>
+ <div class="a" style="--d:6.3s"><div class="box amber tb-step" style="left:150px;top:640px;width:720px;height:130px">Behind a flag<span class="tb-tog"></span><span class="mono muted" style="font-size:30px">off</span></div></div>
+ <div class="a label" style="--d:8.6s;left:1010px;top:420px;font-size:30px">Thorsten Ball: agents now do these chores</div>
+ <div class="big a" style="--d:13s;left:1000px;top:480px;font-size:250px">10x</div>
+ <div class="a cap" style="--d:13.8s;left:1010px;right:110px;bottom:auto;top:740px;font-size:44px">easier to just work on main</div>
+</section>
+
+<!-- 7 -->
+<section class="scene"><div class="kick">Step 7 of 11</div><h1>Green deploys, with one human gate</h1>
+ <div class="a" style="--d:.8s"><div class="box green" style="left:150px;top:420px;width:270px;height:90px">Green commit</div></div>
+ <svg><path class="line a" style="--d:3.4s" d="M420 465H516"/><path class="line a" style="--d:4.7s" d="M590 465H710"/>
+  <g class="a" style="--d:7.6s"><circle cx="1380" cy="570" r="150" fill="#fbfdf6" stroke="#d6e6c8" stroke-width="24"/><circle class="tb-ring" cx="1380" cy="570" r="150" transform="rotate(-90 1380 570)"/></g></svg>
+ <div class="a" style="--d:3.4s"><div class="tb-can"></div><div class="label" style="left:514px;top:520px;font-size:26px">canary</div></div>
+ <div class="a" style="--d:4.7s"><div class="tb-fleet"><i style="--d:4.90s"></i><i style="--d:5.12s"></i><i style="--d:5.34s"></i><i style="--d:5.56s"></i><i style="--d:5.78s"></i><i style="--d:6.00s"></i><i style="--d:6.22s"></i><i style="--d:6.44s"></i><i style="--d:4.95s"></i><i style="--d:5.17s"></i><i style="--d:5.39s"></i><i style="--d:5.61s"></i><i style="--d:5.83s"></i><i style="--d:6.05s"></i><i style="--d:6.27s"></i><i style="--d:6.49s"></i><i style="--d:5.00s"></i><i style="--d:5.22s"></i><i style="--d:5.44s"></i><i style="--d:5.66s"></i><i style="--d:5.88s"></i><i style="--d:6.10s"></i><i style="--d:6.32s"></i><i style="--d:6.54s"></i><i style="--d:5.05s"></i><i style="--d:5.27s"></i><i style="--d:5.49s"></i><i style="--d:5.71s"></i><i style="--d:5.93s"></i><i style="--d:6.15s"></i><i style="--d:6.37s"></i><i style="--d:6.59s"></i><i style="--d:5.10s"></i><i style="--d:5.32s"></i><i style="--d:5.54s"></i><i style="--d:5.76s"></i><i style="--d:5.98s"></i><i style="--d:6.20s"></i><i style="--d:6.42s"></i><i style="--d:6.64s"></i></div><div class="label" style="left:720px;top:612px;font-size:26px">then the fleet</div></div>
+ <div class="a label t-amber" style="--d:5.4s;left:1280px;top:330px;font-size:28px">One human gate</div>
+ <div class="a" style="--d:7.6s;position:absolute;left:1230px;top:515px;width:300px;text-align:center;font:800 72px/1 'Archivo'">15 min<div style="font:400 22px 'IBM Plex Mono';color:var(--muted);margin-top:10px">countdown in Slack</div></div>
+ <div class="tb-pause">Pause</div>
+ <div class="a label" style="--d:11s;left:1180px;top:880px;width:400px;text-align:center;font-size:28px">Anyone in the company can pause it</div>
+</section>
+
+<!-- 8 -->
+<section class="scene"><div class="kick">Step 8 of 11</div><h1>The second look moves after the land</h1>
+ <div class="doc a" style="--d:3.6s;left:150px;top:300px;width:820px;padding:40px 52px 52px"><b>Show</b><br><span class="muted">A change you open as a pull request</span>
+  <div class="tb-bar" style="width:86%"></div><div class="tb-bar" style="width:64%"></div><div class="tb-bar tb-hl" style="width:74%"></div><div class="tb-bar" style="width:52%"></div><div class="tb-bar" style="width:80%"></div><div class="tb-bar" style="width:40%"></div></div>
+ <div class="tb-merged">Merged</div>
+ <div class="a label t-green" style="--d:9.8s;left:1010px;top:430px;font-size:30px">without waiting for anyone</div>
+ <div class="tb-bub a" style="--d:11.2s">The team reads it afterwards</div>
+ <svg><path class="line a" style="--d:13.2s;stroke-width:4" d="M1110 680C1180 700 1200 720 1240 720"/></svg>
+ <div class="doc a" style="--d:13.2s;left:1240px;top:620px;width:530px;padding:30px 40px 40px"><b style="font-size:34px">Follow-up commit</b>
+  <div class="tb-bar" style="width:90%;background:#bfe0b0"></div><div class="tb-bar" style="width:60%;background:#bfe0b0"></div></div>
+ <div class="a cap" style="--d:15.6s;bottom:80px">What the reviewer finds becomes a commit, not a <span class="strike muted">blocked merge</span>.</div>
+</section>
+
+<!-- 9 -->
+<section class="scene"><div class="kick">Step 9 of 11</div><h1>Recovery has to be fast and owned</h1>
+ <div class="tb-q a" style="--d:7s">&ldquo;only works if you<br>fix your mess&rdquo;</div>
+ <div class="a label" style="--d:6.2s;left:156px;top:510px;font-size:28px">Hashimoto, on pushing to main</div>
+ <svg><path class="line a" style="--d:1s;stroke-width:5;stroke-linecap:round" d="M150 742H1610"/></svg>
+ <div class="tb-pill a" style="--d:1.2s;left:150px;top:700px;width:250px;border-color:var(--red);background:#fbe4d9;color:var(--red)">Bad change</div>
+ <div class="a label" style="--d:10.3s;left:150px;top:810px;font-size:28px">The author watches the rollout</div>
+ <div class="a" style="--d:12s"><div class="tb-post" style="left:820px"></div><div class="tb-post" style="left:1010px"></div><div class="tb-post" style="left:1200px"></div>
+  <div class="label" style="left:820px;top:830px;width:398px;text-align:center;font-size:28px">the same gates</div></div>
+ <div class="a" style="--d:1s"><div class="box blue" style="left:1610px;top:690px;width:160px;height:104px;font-size:36px">main</div></div>
+ <div class="tb-pill tb-rev a" style="left:440px;top:700px;width:320px;border-color:var(--blue);background:#dff0d3">Revert: one commit</div>
+</section>
+
+<!-- 10 -->
+<section class="scene"><div class="kick">Step 10 of 11</div><h1>The record still has to exist</h1>
+ <div class="doc a" style="--d:.8s;left:150px;top:300px;width:860px;padding:40px 50px 54px"><b>Change record</b>
+  <div class="tb-chain a" style="--d:3.4s"><span class="tb-node plain">Commit</span><u></u><span class="tb-node a" style="--d:5.2s">Agent thread that produced it</span></div>
+  <div class="tb-chain a" style="--d:8s"><span class="tb-node plain">CI/CD</span><u></u><span class="tb-node a" style="--d:10s">Path to deployment</span></div></div>
+ <div class="a label" style="--d:12.3s;left:1130px;top:410px;font-size:28px">The auditors asked for changes to be</div>
+ <div class="tb-chk a" style="--d:14.6s;top:470px"><i>✓</i>Authorized</div>
+ <div class="tb-chk a" style="--d:15.1s;top:550px"><i>✓</i>Tested</div>
+ <div class="tb-chk a" style="--d:15.6s;top:630px"><i>✓</i>Approved</div>
+ <div class="tb-chk a" style="--d:16.2s;top:710px"><i>✓</i>Recorded</div>
+ <div class="a cap" style="--d:17.2s;bottom:110px">The criteria never mention <span class="strike muted">pull requests</span>.</div>
+</section>
+
+<!-- 11 -->
+<section class="scene" style="--egg:12.9s"><div class="kick">Step 11 of 11</div><h1>A per-repo choice, made by blast radius</h1>
+ <div class="a" style="--d:5.6s"><div class="label" style="left:150px;top:320px;font-size:28px;color:var(--fg)">Amp: 20 people</div>
+  <div class="tb-dots" style="left:150px;top:380px;width:50px;height:40px"></div></div>
+ <div class="a" style="--d:7.2s"><div class="label" style="left:560px;top:320px;font-size:28px;color:var(--fg)">A 2,000-person company</div></div>
+ <div class="tb-dots tb-many" style="left:560px;top:380px;width:0;height:250px"></div>
+ <div class="a cap t-red" style="--d:9.8s;left:1410px;right:110px;bottom:auto;top:450px;font-size:32px">should not let everyone push to main</div>
+ <div style="position:absolute;left:150px;top:668px"><span class="label a" style="--d:12.2s;position:static;font-size:28px;margin-right:24px">Track</span><span class="chip a" style="--d:12.6s">which repos run this way</span><span class="chip a" style="--d:14.5s">how long main stays red</span><span class="chip a" style="--d:16.4s">each one's revert rate</span></div>
+ <div class="a cap muted" style="--d:16.6s;bottom:76px;font-size:28px">SRE Lab · Delivery · Trunk-based delivery without a blocking review</div>
+ <div class="critter"><div id="critter"></div></div>
+</section>
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 3 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../delivery/#trunk-without-blocking-review">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Trunk-based delivery without a blocking review. Teams want to land on main many times a day, and agents now open more changes than people can read. If review stops blocking the merge, where does each job the pull request did go? A pull request does four jobs at once. It authorizes a change, gates it on tests, gets it a second look, and leaves a record. Take the blocking review away, and each job needs a new home.", "Trunk-based development means merging to trunk at least once a day. DORA lists an overly heavy code review process as a common obstacle to it. It also says reviewers should not be asked for asynchronous review, because changes then wait hours or days.", "Authorization moves to the branch. Amp runs a main with no pull requests, and its SOC 2 controls for that are two things. Push access is restricted, and you can explain exactly who has it and why. Signatures are verified, so the author on every commit is provable. An org sets both in a ruleset.", "The first test gate runs before the push: hooks, and a machine review. Mitchell Hashimoto's Superlogical does machine-aided code review before the push, and human plus more machine-aided code review after the push.", "The second gate is C I on main. At Amp, a failed check blocks the deploy and pings the commit author. C I keeps running on later pushes until a fix turns it green. Main can be red for a while. Production never gets a red commit.", "Unfinished work lands dark. Add the column first and ship it. Then ship the code, behind a flag that is off. Thorsten Ball says agents now do these chores, so, in his words, it's now ten times easier to just work on main.", "A green commit deploys, to a canary first, then the fleet. Superlogical adds one human gate here. A release starts a fifteen-minute countdown in Slack, and anyone in the company can pause the release rollout.", "The second look moves after the land. In Ship, Show, Ask, a Show change is one you open as a pull request and merge without waiting for anyone. The team reads it afterwards. What the reviewer finds becomes a follow-up commit, not a blocked merge.", "Review no longer stops a bad change, so recovery has to be fast and owned. Hashimoto says pushing to main only works if you fix your mess. The author watches the rollout, and a revert is one commit through the same gates.", "The record still has to exist. Amp links each commit to the agent thread that produced it, and C I and C D record the path to deployment. Its auditors asked that changes be authorized, tested, approved, and recorded. Amp notes the criteria never mention pull requests.", "Across hundreds of teams, this is a per-repo choice, made by blast radius. Amp is twenty people, and says a two-thousand-person company should not let everyone push to main. Track which repos run this way, how long main stays red, and each one's revert rate."], "seconds": [25.0, 16.47, 20.67, 13.85, 15.3, 15.47, 13.65, 16.81, 14.49, 18.99, 17.37]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

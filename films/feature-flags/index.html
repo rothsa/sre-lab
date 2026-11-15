@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Flag governance: the film</title>
+<meta name="description" content="A short narrated film on running thousands of feature flags: staged flips, a tier 0 flag service, safe defaults, expiry dates and a per-team scorecard.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.ff-flags{position:absolute;left:130px;top:420px;display:grid;grid-template-columns:repeat(30,56px);grid-auto-rows:56px}
+.ff-flags i{position:relative;display:block;width:30px;height:22px;margin:6px 0 0 14px;background:#3f9a4f;border-radius:2px 12px 12px 2px;opacity:0}
+.ff-flags i::before{content:"";position:absolute;left:-5px;top:-2px;width:5px;height:42px;border-radius:3px;background:#2d6a3c}
+.scene.on .ff-flags i{animation:ff-pop .45s var(--d) both}
+.scene.on .ff-flags i.ff-bad{animation:ff-pop .45s var(--d) both,ff-bad .5s var(--b) forwards}
+@keyframes ff-pop{from{opacity:0;transform:translateY(14px) scale(.6)}to{opacity:1;transform:none}}
+@keyframes ff-bad{to{background:var(--red);transform:scale(1.35)}}
+.ff-frame{position:absolute;border:4px dashed var(--amber);border-radius:44px 14px 44px 14px;background:rgba(217,152,30,.10)}
+.ff-ctr{position:absolute;border:4px dashed var(--blue);border-radius:44px 14px 44px 14px;background:rgba(255,255,255,.55)}
+.ff-toggle{position:absolute;width:230px;height:110px;border-radius:55px;background:#d6e6c8;border:3px solid var(--rule)}
+.ff-toggle b{position:absolute;left:10px;top:9px;width:86px;height:86px;border-radius:50%;background:#8fa893;box-shadow:0 6px 14px rgba(20,70,35,.18)}
+.ff-txt{position:absolute;font:600 34px/1.25 "IBM Plex Sans";color:var(--fg)}
+.ff-ping{position:absolute;width:18px;height:18px;border-radius:50%;background:var(--blue);opacity:0}
+.scene.on .ff-ping{animation:in .4s var(--d) both,ff-ping .9s ease-in-out var(--d) infinite alternate}
+@keyframes ff-ping{from{transform:translateX(0)}to{transform:translateX(var(--dx))}}
+.ff-num{position:absolute;left:110px;top:300px;font:900 210px/1 "Archivo";letter-spacing:-.03em;color:var(--blue);opacity:0;white-space:nowrap}
+.scene.on .ff-num{animation:ff-in .4s var(--d) both,ff-out .3s var(--o,999s) forwards}
+@keyframes ff-in{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes ff-out{to{opacity:0}}
+.ff-track{position:absolute;left:110px;top:590px;width:1700px;height:70px;border-radius:35px;background:#d6e6c8;overflow:hidden}
+.ff-track b{display:block;height:100%;width:0;border-radius:35px;background:var(--green)}
+.scene.on .ff-track b{animation:ff-w0 .5s var(--t0) forwards,ff-w1 .5s var(--t1) forwards,ff-w2 .6s var(--t2) forwards,ff-w3 .9s var(--t3) forwards,ff-wk .25s var(--tk) forwards}
+@keyframes ff-w0{to{width:.4%}}@keyframes ff-w1{to{width:1%}}@keyframes ff-w2{to{width:10%}}@keyframes ff-w3{to{width:100%}}@keyframes ff-wk{to{width:0}}
+.ff-reg{position:absolute;top:870px;width:180px;height:70px;border-radius:999px;border:2.5px solid var(--rule);background:var(--panel);font:600 24px "IBM Plex Sans";color:var(--muted);display:flex;align-items:center;justify-content:center}
+.scene.on .ff-reg{animation:in .6s var(--d) both,ff-hit .25s var(--h) forwards}
+@keyframes ff-hit{to{border-color:var(--amber);background:#fbefd0;color:var(--fg)}}
+.ff-card{position:absolute;background:#fff;border-radius:32px 10px 32px 10px;box-shadow:0 20px 50px rgba(20,70,35,.14);padding:36px 46px;font:400 32px/1.5 "IBM Plex Sans"}
+.ff-card b{font:800 36px "Archivo";display:block;margin-bottom:14px}
+.ff-row{display:flex;align-items:center;gap:20px;margin-top:16px}
+.ff-ck{flex:none;width:40px;height:40px;border-radius:50%;border:3px solid var(--rule);background:#fff;position:relative}
+.ff-ck::after{content:"";position:absolute;left:11px;top:5px;width:10px;height:18px;border:solid #fff;border-width:0 4px 4px 0;transform:rotate(45deg)}
+.scene.on .ff-ck{animation:ff-ck .4s var(--d) forwards}
+@keyframes ff-ck{to{background:var(--green);border-color:var(--green)}}
+.ff-bar{position:absolute;left:1180px;width:560px;height:34px;border-radius:17px;background:#d6e6c8;overflow:hidden}
+.ff-bar b{display:block;height:100%;width:0;border-radius:17px;background:var(--green)}
+.scene.on .ff-bar b{animation:ff-full .8s var(--d) forwards}
+@keyframes ff-full{to{width:100%}}
+.ff-hub{position:absolute;width:220px;height:220px;border-radius:50%;border:4px solid var(--blue);background:#dff0d3;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font:700 30px/1.15 "IBM Plex Sans";box-shadow:0 10px 28px rgba(20,70,35,.12)}
+.ff-hub small{font:400 22px "IBM Plex Mono";color:var(--muted);margin-top:6px}
+.scene.on .ff-hub{animation:in .7s var(--d) both,ff-block .6s var(--g) forwards}
+@keyframes ff-block{to{border-color:#b9c7b4;border-style:dashed;background:#e9eee4;color:#8ea08f}}
+.ff-svc{position:absolute;width:46px;height:46px;border-radius:50%;background:#3f9a4f;opacity:0}
+.scene.on .ff-svc{animation:ff-pop .45s var(--d) both}
+.scene.on .ff-svc.ff-cold{animation:ff-pop .45s var(--d) both,ff-cold .5s var(--c) forwards}
+.scene.on .ff-svc.ff-warm{animation:ff-pop .45s var(--d) both,ff-warm .5s var(--c) forwards}
+@keyframes ff-cold{to{background:#e9eee4;box-shadow:inset 0 0 0 3px #b9c7b4}}
+@keyframes ff-warm{to{box-shadow:0 0 0 7px rgba(63,154,79,.28)}}
+.scene.on .ff-spoke{animation:in .5s var(--d) both,ff-fade .5s var(--g) forwards}
+@keyframes ff-fade{to{opacity:.15}}
+.scene.on .ff-gone{animation:in .6s var(--d) both,ff-out .6s var(--o) forwards}
+.scene.on .ff-down{animation:in .7s var(--d) both,ff-block .6s var(--g) forwards}
+.ff-new{border-style:dashed}
+.ff-code{position:absolute;top:320px;width:800px;border-radius:32px 10px 32px 10px;background:#0d2016;color:#e3f0de;box-shadow:0 24px 60px rgba(20,70,35,.22);padding:36px 46px;font:400 32px/1.8 "IBM Plex Mono"}
+.ff-code .muted{color:#9fb8a2}.ff-code .t-red{color:#ff8a5c}.ff-code .t-green{color:#8fd694}
+.ff-lint{position:absolute;background:var(--blue);color:#fff;font:800 40px "IBM Plex Sans";padding:14px 40px;border-radius:999px;box-shadow:0 14px 30px rgba(31,122,58,.28);opacity:0}
+.scene.on .ff-lint{animation:ff-stamp .35s var(--d) both}
+@keyframes ff-stamp{from{opacity:0;transform:rotate(-3deg) scale(1.7)}to{opacity:1;transform:rotate(-3deg) scale(1)}}
+.ff-kv{display:flex;gap:26px;align-items:baseline;margin-top:10px;font:400 34px "IBM Plex Mono"}
+.ff-kv span{width:150px;color:var(--muted)}
+.ff-tl{position:absolute;left:960px;top:470px;width:800px;height:10px;border-radius:5px;background:#c4d9b3}
+.ff-tick{position:absolute;left:1440px;top:440px;width:6px;height:70px;border-radius:3px;background:var(--amber)}
+.ff-mark{position:absolute;left:960px;top:452px;width:46px;height:46px;border-radius:50%;background:var(--green);opacity:0;box-shadow:0 6px 14px rgba(20,70,35,.2)}
+.scene.on .ff-mark{animation:in .4s var(--d) both,ff-move var(--len) linear var(--d) forwards,ff-late .3s var(--p) forwards}
+@keyframes ff-move{to{transform:translateX(700px)}}
+@keyframes ff-late{to{background:var(--red)}}
+.ff-slot{position:absolute;top:850px;width:50px;height:50px;border-radius:14px 5px 14px 5px;background:#d6e6c8}
+.scene.on .ff-slot{animation:ff-lit .35s var(--d) forwards}
+@keyframes ff-lit{to{background:var(--green)}}
+.ff-th{position:absolute;top:448px;width:400px;text-align:center;font:700 28px "IBM Plex Sans";color:var(--blue)}
+.ff-tr{position:absolute;left:110px;width:1700px;height:74px;border-radius:22px 8px 22px 8px;background:var(--panel);border:2px solid var(--rule)}
+.ff-tr span{position:absolute;left:30px;top:16px;font:600 30px "IBM Plex Sans"}
+.ff-cell{position:absolute;top:20px;width:400px;display:flex;gap:12px;justify-content:center}
+.ff-cell i{width:30px;height:30px;border-radius:50%;background:var(--amber);opacity:0}
+.ff-cell.r i{background:var(--red)}.ff-cell.g i{background:#8fa893}
+.scene.on .ff-cell i{animation:ff-pop .35s var(--d) both}
+.ff-arrow{color:var(--blue);font:700 30px "IBM Plex Sans";margin-right:18px}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../delivery/#feature-flags">Delivery</a> · film · recorded 15 Nov 2026</div>
+  <h1 class="page">Flag governance</h1>
+  <div id="viewport">
+    <div id="stage">
+<!-- 1 -->
+<section class="scene"><div class="kick">Delivery · chapter 5</div><h1>Flag governance</h1>
+ <div class="a label" style="--d:2.69s;left:130px;top:366px;font-size:26px">Thousands of flags <span class="a" style="--d:4.91s">· hundreds of teams</span></div>
+ <div class="ff-flags"><i style="--d:1.00s"></i><i style="--d:1.22s"></i><i style="--d:1.44s"></i><i style="--d:1.22s"></i><i style="--d:1.44s"></i><i style="--d:1.66s"></i><i style="--d:1.43s"></i><i style="--d:1.66s"></i><i style="--d:1.88s"></i><i style="--d:1.65s"></i><i style="--d:1.87s"></i><i style="--d:2.09s"></i><i style="--d:1.87s"></i><i style="--d:2.09s"></i><i style="--d:2.31s"></i><i style="--d:2.08s"></i><i style="--d:2.31s"></i><i style="--d:2.53s"></i><i style="--d:2.30s"></i><i style="--d:2.52s"></i><i style="--d:2.74s"></i><i style="--d:2.52s"></i><i style="--d:2.74s"></i><i style="--d:2.96s"></i><i style="--d:2.73s"></i><i style="--d:2.96s"></i><i style="--d:3.18s"></i><i style="--d:2.95s"></i><i style="--d:3.17s"></i><i style="--d:3.39s"></i><i style="--d:3.17s"></i><i style="--d:3.39s"></i><i style="--d:3.61s"></i><i style="--d:3.38s"></i><i style="--d:3.61s"></i><i style="--d:3.83s"></i><i style="--d:3.60s"></i><i style="--d:3.82s"></i><i style="--d:4.04s"></i><i style="--d:3.82s"></i><i style="--d:4.04s"></i><i style="--d:4.26s"></i><i style="--d:4.03s"></i><i style="--d:4.26s"></i><i style="--d:4.48s"></i><i style="--d:4.25s"></i><i style="--d:4.47s"></i><i style="--d:4.69s"></i><i style="--d:4.47s"></i><i style="--d:4.69s"></i><i style="--d:4.91s"></i><i style="--d:4.68s"></i><i style="--d:4.91s"></i><i style="--d:5.13s"></i><i style="--d:4.90s"></i><i style="--d:5.12s"></i><i style="--d:5.34s"></i><i style="--d:5.12s"></i><i style="--d:5.34s"></i><i style="--d:5.56s"></i><i style="--d:5.33s"></i><i style="--d:5.56s"></i><i style="--d:5.78s"></i><i style="--d:5.55s"></i><i style="--d:5.77s"></i><i style="--d:5.99s"></i><i style="--d:5.77s"></i><i style="--d:5.99s"></i><i style="--d:6.21s"></i><i style="--d:5.98s"></i><i style="--d:6.21s"></i><i class="ff-bad" style="--d:6.43s;--b:20.70s"></i><i style="--d:6.20s"></i><i style="--d:6.42s"></i><i style="--d:6.64s"></i><i style="--d:6.42s"></i><i style="--d:6.64s"></i><i style="--d:6.86s"></i><i style="--d:6.63s"></i><i style="--d:6.86s"></i><i style="--d:7.08s"></i><i style="--d:6.85s"></i><i style="--d:7.07s"></i><i style="--d:7.29s"></i><i style="--d:7.07s"></i><i style="--d:7.29s"></i><i style="--d:7.51s"></i><i style="--d:7.28s"></i><i style="--d:7.51s"></i><i style="--d:7.73s"></i><i style="--d:7.50s"></i><i style="--d:7.72s"></i><i style="--d:7.94s"></i><i style="--d:7.72s"></i><i style="--d:7.94s"></i><i style="--d:8.16s"></i><i style="--d:7.93s"></i><i style="--d:8.16s"></i><i style="--d:8.38s"></i><i style="--d:8.15s"></i><i style="--d:8.37s"></i><i style="--d:8.59s"></i><i style="--d:8.37s"></i><i style="--d:8.59s"></i><i style="--d:8.81s"></i><i style="--d:8.58s"></i><i style="--d:8.81s"></i><i style="--d:9.03s"></i><i style="--d:8.80s"></i><i style="--d:9.02s"></i><i style="--d:9.24s"></i><i style="--d:9.02s"></i><i style="--d:9.24s"></i><i style="--d:9.46s"></i><i style="--d:9.23s"></i><i style="--d:9.46s"></i><i style="--d:9.68s"></i><i style="--d:9.45s"></i><i style="--d:9.67s"></i><i style="--d:9.89s"></i><i style="--d:9.67s"></i><i style="--d:9.89s"></i><i style="--d:10.11s"></i><i style="--d:9.88s"></i><i style="--d:10.11s"></i><i style="--d:10.33s"></i><i style="--d:10.10s"></i><i style="--d:10.32s"></i><i style="--d:10.54s"></i><i style="--d:10.32s"></i><i style="--d:10.54s"></i><i style="--d:10.76s"></i><i style="--d:10.53s"></i><i style="--d:10.76s"></i><i style="--d:10.98s"></i><i style="--d:10.75s"></i><i style="--d:10.97s"></i><i style="--d:11.19s"></i><i style="--d:10.97s"></i><i style="--d:11.19s"></i><i style="--d:11.41s"></i><i style="--d:11.18s"></i><i style="--d:11.41s"></i><i style="--d:11.63s"></i><i style="--d:11.40s"></i><i style="--d:11.62s"></i><i style="--d:11.84s"></i><i style="--d:11.62s"></i><i style="--d:11.84s"></i><i style="--d:12.06s"></i><i style="--d:11.83s"></i><i style="--d:12.06s"></i><i style="--d:12.28s"></i><i style="--d:12.05s"></i><i style="--d:12.27s"></i><i style="--d:12.49s"></i><i style="--d:12.27s"></i><i style="--d:12.49s"></i><i style="--d:12.71s"></i><i style="--d:12.48s"></i><i style="--d:12.71s"></i><i style="--d:12.93s"></i><i style="--d:12.70s"></i><i style="--d:12.92s"></i><i style="--d:13.14s"></i><i style="--d:12.92s"></i><i style="--d:13.14s"></i><i style="--d:13.36s"></i><i style="--d:13.13s"></i><i style="--d:13.36s"></i><i style="--d:13.58s"></i><i style="--d:13.35s"></i><i style="--d:13.57s"></i><i style="--d:13.79s"></i><i style="--d:13.57s"></i><i style="--d:13.79s"></i><i style="--d:14.01s"></i><i style="--d:13.78s"></i><i style="--d:14.01s"></i><i style="--d:14.23s"></i></div>
+ <div class="ff-frame a" style="--d:21.52s;left:104px;top:398px;width:1712px;height:376px"></div>
+ <div class="a cap" style="--d:19.43s;bottom:120px;font-size:40px">The risk moves from <span class="t-red">one bad flip</span> <span class="a" style="--d:21.53s;display:inline-block">to <span class="t-amber" style="font-weight:700">the flag system as a whole.</span></span></div>
+</section>
+
+<!-- 2 -->
+<section class="scene"><div class="kick">Step 2 of 9</div><h1>Code ships dark. Evaluation is local.</h1>
+ <div class="a" style="--d:.7s"><div class="ff-toggle" style="left:150px;top:400px"><b></b></div><div class="ff-txt" style="left:410px;top:412px">Flag: off<br><span class="muted" style="font-weight:400;font-size:28px">code ships dark</span></div></div>
+ <div class="a" style="--d:3.54s"><div class="ff-ctr" style="left:700px;top:410px;width:1080px;height:500px"></div><div class="label t-blue" style="left:734px;top:432px">Service instance</div>
+  <div class="box" style="left:760px;top:520px;width:330px;height:140px">App code</div></div>
+ <div class="a" style="--d:4.87s"><div class="box blue" style="left:1370px;top:520px;width:350px;height:140px">Flag SDK<small>full ruleset in memory</small></div></div>
+ <div class="a" style="--d:7.67s"><div class="box" style="left:150px;top:740px;width:330px;height:110px">Flag service</div>
+  <svg><path class="line" d="M480 795H1545V660"/></svg><div class="label" style="left:800px;top:812px">changes over a stream</div></div>
+ <div class="dot" style="left:490px;top:786px;--dx:1030px;--d:8.17s"></div><div class="dot" style="left:490px;top:786px;--dx:1030px;--d:9.77s"></div>
+ <div class="a" style="--d:10.33s"><svg><path class="line" style="stroke:var(--blue)" d="M1090 590H1370"/></svg><div class="label t-blue mono" style="left:1108px;top:540px;font-size:24px">evaluate(): local</div></div>
+ <div class="ff-ping" style="left:1100px;top:581px;--dx:242px;--d:10.63s"></div>
+</section>
+
+<!-- 3 -->
+<section class="scene" style="--t0:2.41s;--t1:3.94s;--t2:5.19s;--t3:6.09s;--tk:9.96s"><div class="kick">Step 3 of 9</div><h1>Release is a rule change</h1>
+ <div class="ff-num" style="--d:2.41s;--o:3.74s;font-size:150px;top:340px">Internal users</div>
+ <div class="ff-num" style="--d:4.04s;--o:4.99s">1%</div>
+ <div class="ff-num" style="--d:5.29s;--o:5.89s">10%</div>
+ <div class="ff-num" style="--d:6.19s;--o:9.86s">100%</div>
+ <div class="ff-num" style="--d:10.16s;color:var(--muted)">Off</div>
+ <div class="ff-track a" style="--d:.8s"><b></b></div>
+ <div class="a" style="--d:7.41s"><div class="box red" style="left:110px;top:706px;width:330px;height:96px;border-radius:999px">Kill switch</div><div class="ff-txt" style="left:476px;top:732px;font-weight:400">the same path back, in seconds</div></div>
+ <div class="ff-reg" style="left:110px;--d:11.52s;--h:14.59s">region</div><div class="ff-reg" style="left:326px;--d:11.60s;--h:14.59s">region</div><div class="ff-reg" style="left:542px;--d:11.68s;--h:14.59s">region</div><div class="ff-reg" style="left:758px;--d:11.76s;--h:14.59s">region</div><div class="ff-reg" style="left:974px;--d:11.84s;--h:14.59s">region</div><div class="ff-reg" style="left:1190px;--d:11.92s;--h:14.59s">region</div><div class="ff-reg" style="left:1406px;--d:12.00s;--h:14.59s">region</div><div class="ff-reg" style="left:1622px;--d:12.08s;--h:14.59s">region</div>
+ <div class="a ff-txt t-amber" style="--d:14.59s;left:1130px;top:732px;width:680px;text-align:right;font-weight:700">Every region at once</div>
+</section>
+
+<!-- 4 -->
+<section class="scene"><div class="kick">Step 4 of 9</div><h1>Stage the flip, with approval</h1>
+ <div class="ff-card a" style="--d:.7s;left:110px;top:330px;width:800px"><b>Ops and permission flag changes</b>
+  <div class="ff-row"><i class="ff-ck" style="--d:3.27s"></i>By percentage or region</div>
+  <div class="ff-row"><i class="ff-ck" style="--d:5.80s"></i>With approval</div></div>
+ <div class="a" style="--d:2.97s"><div class="label" style="left:1010px;top:400px;font-size:26px">Region by region</div>
+  <div class="label" style="left:1010px;top:454px">region</div><div class="label" style="left:1010px;top:512px">region</div><div class="label" style="left:1010px;top:570px">region</div><div class="label" style="left:1010px;top:628px">region</div><div class="label" style="left:1010px;top:686px">region</div><div class="ff-bar" style="top:452px"><b style="--d:3.27s"></b></div><div class="ff-bar" style="top:510px"><b style="--d:4.27s"></b></div><div class="ff-bar" style="top:568px"><b style="--d:5.27s"></b></div><div class="ff-bar" style="top:626px"><b style="--d:6.27s"></b></div><div class="ff-bar" style="top:684px"><b style="--d:7.27s"></b></div></div>
+ <div class="a" style="--d:6.83s"><div class="box amber" style="left:110px;top:800px;width:800px;height:140px">Google Cloud, 2025 Spot VM incident<small>rollout safety checks were not enforced</small></div></div>
+ <div class="a" style="--d:14.22s"><div class="box green" style="left:1010px;top:800px;width:730px;height:140px">Tier-1 service: a tested kill switch<small>with a documented safe state</small></div></div>
+</section>
+
+<!-- 5 -->
+<section class="scene"><div class="kick">Step 5 of 9</div><h1>The flag service is tier 0</h1>
+ <svg><path class="line a ff-spoke" style="--d:calc(2.75s + 0.00s);--g:12.27s" d="M620 522L620 415"/><path class="line a ff-spoke" style="--d:calc(2.75s + 0.12s);--g:12.27s" d="M665 531L706 432"/><path class="line a ff-spoke" style="--d:calc(2.75s + 0.24s);--g:12.27s" d="M703 557L779 481"/><path class="line a ff-spoke" style="--d:calc(2.75s + 0.36s);--g:12.27s" d="M729 595L828 554"/><path class="line a ff-spoke" style="--d:calc(2.75s + 0.48s);--g:12.27s" d="M738 640L845 640"/><path class="line a ff-spoke" style="--d:calc(2.75s + 0.60s);--g:12.27s" d="M729 685L828 726"/><path class="line a ff-spoke" style="--d:calc(2.75s + 0.72s);--g:12.27s" d="M703 723L779 799"/><path class="line a ff-spoke" style="--d:calc(2.75s + 0.84s);--g:12.27s" d="M665 749L706 848"/><path class="line a ff-spoke" style="--d:calc(2.75s + 0.96s);--g:12.27s" d="M620 758L620 865"/><path class="line a ff-spoke" style="--d:calc(2.75s + 1.08s);--g:12.27s" d="M575 749L534 848"/><path class="line a ff-spoke" style="--d:calc(2.75s + 1.20s);--g:12.27s" d="M537 723L461 799"/><path class="line a ff-spoke" style="--d:calc(2.75s + 1.32s);--g:12.27s" d="M511 685L412 726"/><path class="line a ff-spoke" style="--d:calc(2.75s + 1.44s);--g:12.27s" d="M502 640L395 640"/><path class="line a ff-spoke" style="--d:calc(2.75s + 1.56s);--g:12.27s" d="M511 595L412 554"/><path class="line a ff-spoke" style="--d:calc(2.75s + 1.68s);--g:12.27s" d="M537 557L461 481"/><path class="line a ff-spoke" style="--d:calc(2.75s + 1.80s);--g:12.27s" d="M575 531L534 432"/></svg><div class="ff-svc ff-warm" style="left:597px;top:362px;--d:calc(2.75s + 0.00s);--c:calc(13.24s + 0.00s)"></div><div class="ff-svc ff-warm" style="left:695px;top:381px;--d:calc(2.75s + 0.12s);--c:calc(13.24s + 0.10s)"></div><div class="ff-svc ff-cold" style="left:777px;top:437px;--d:calc(2.75s + 0.24s);--c:calc(13.24s + 0.20s)"></div><div class="ff-svc ff-warm" style="left:833px;top:519px;--d:calc(2.75s + 0.36s);--c:calc(13.24s + 0.30s)"></div><div class="ff-svc ff-warm" style="left:852px;top:617px;--d:calc(2.75s + 0.48s);--c:calc(13.24s + 0.40s)"></div><div class="ff-svc ff-warm" style="left:833px;top:715px;--d:calc(2.75s + 0.60s);--c:calc(13.24s + 0.50s)"></div><div class="ff-svc ff-warm" style="left:777px;top:797px;--d:calc(2.75s + 0.72s);--c:calc(13.24s + 0.60s)"></div><div class="ff-svc ff-cold" style="left:695px;top:853px;--d:calc(2.75s + 0.84s);--c:calc(13.24s + 0.70s)"></div><div class="ff-svc ff-warm" style="left:597px;top:872px;--d:calc(2.75s + 0.96s);--c:calc(13.24s + 0.80s)"></div><div class="ff-svc ff-warm" style="left:499px;top:853px;--d:calc(2.75s + 1.08s);--c:calc(13.24s + 0.90s)"></div><div class="ff-svc ff-warm" style="left:417px;top:797px;--d:calc(2.75s + 1.20s);--c:calc(13.24s + 1.00s)"></div><div class="ff-svc ff-cold" style="left:361px;top:715px;--d:calc(2.75s + 1.32s);--c:calc(13.24s + 1.10s)"></div><div class="ff-svc ff-warm" style="left:342px;top:617px;--d:calc(2.75s + 1.44s);--c:calc(13.24s + 1.20s)"></div><div class="ff-svc ff-warm" style="left:361px;top:519px;--d:calc(2.75s + 1.56s);--c:calc(13.24s + 1.30s)"></div><div class="ff-svc ff-cold" style="left:417px;top:437px;--d:calc(2.75s + 1.68s);--c:calc(13.24s + 1.40s)"></div><div class="ff-svc ff-warm" style="left:499px;top:381px;--d:calc(2.75s + 1.80s);--c:calc(13.24s + 1.50s)"></div>
+ <div class="ff-hub" style="left:510px;top:530px;--d:.6s;--g:12.27s">Flag service<small>tier 0</small></div>
+ <div class="a label" style="--d:3.15s;left:960px;top:400px;font-size:26px">Almost every service reads it at startup</div>
+ <div class="a" style="--d:5.67s;position:absolute;left:960px;top:470px"><span class="chip">an SLO</span><span class="chip a" style="--d:6.92s">an on-call</span></div>
+ <div class="a" style="--d:7.76s;position:absolute;left:960px;top:560px"><span class="chip">SDKs reconnect with backoff and jitter</span></div>
+ <div class="a ff-txt" style="--d:11.30s;left:960px;top:700px;width:800px"><span class="t-amber" style="font-weight:700">Game day:</span> block it.<br><span class="a" style="--d:13.24s;display:inline-block">Count the services that still start cleanly.</span></div>
+</section>
+
+<!-- 6 -->
+<section class="scene"><div class="kick">Step 6 of 9</div><h1>Keep last-known rules close</h1>
+ <div class="box a ff-down" style="left:130px;top:470px;width:330px;height:140px;--d:.5s;--g:13.38s">Flag service</div>
+ <div class="a cap t-red" style="--d:13.58s;left:130px;right:auto;bottom:auto;top:626px;width:330px;text-align:center;font-size:28px">vendor outage</div>
+ <div class="proc a" style="left:1300px;top:420px;--d:.8s">server</div><div class="proc a" style="left:1300px;top:508px;--d:.95s">server</div><div class="proc a" style="left:1300px;top:596px;--d:1.1s">server</div><div class="proc a" style="left:1300px;top:684px;--d:1.25s">server</div>
+ <svg><g class="a ff-gone" style="--d:1.4s;--o:3.23s"><path class="line" stroke-dasharray="10 10" d="M460 505L1300 452"/><path class="line" stroke-dasharray="10 10" d="M460 530L1300 540"/><path class="line" stroke-dasharray="10 10" d="M460 555L1300 628"/><path class="line" stroke-dasharray="10 10" d="M460 580L1300 716"/></g>
+  <g class="a" style="--d:3.63s"><path class="line" d="M460 540H660"/></g>
+  <g class="a" style="--d:4.39s"><path class="line" style="stroke:var(--blue)" d="M1000 520L1300 452"/><path class="line" style="stroke:var(--blue)" d="M1000 535L1300 540"/><path class="line" style="stroke:var(--blue)" d="M1000 550L1300 628"/><path class="line" style="stroke:var(--blue)" d="M1000 565L1300 716"/></g>
+  <g class="a" style="--d:9.09s"><path class="line" d="M830 615V770"/></g>
+  <g class="a" style="--d:12.31s"><path class="line" style="stroke:var(--blue)" d="M1000 830H1300"/></g></svg>
+ <div class="a" style="--d:3.43s"><div class="box blue" style="left:660px;top:465px;width:340px;height:150px">Relay proxy<small>last-known rules</small></div></div>
+ <div class="a label t-blue" style="--d:4.39s;left:1060px;top:432px">local stream</div>
+ <div class="a" style="--d:9.09s"><div class="box" style="left:660px;top:770px;width:340px;height:120px">Store<small>new instances can read</small></div></div>
+ <div class="a" style="--d:11.91s"><div class="proc ff-new" style="left:1300px;top:798px;width:190px">new instance</div><div class="label" style="left:1300px;top:872px">cold start</div></div>
+ <div class="a ff-txt t-green" style="--d:14.74s;left:1520px;top:808px;font-weight:700">real rules</div>
+</section>
+
+<!-- 7 -->
+<section class="scene"><div class="kick">Step 7 of 9</div><h1>Make the default the safe path</h1>
+ <div class="ff-code a" style="--d:.7s;left:110px"><div class="muted"># a release flag</div><div>default: <span class="t-green">false</span></div><div class="a muted" style="--d:3.30s">on any error:</div><div class="a" style="--d:4.72s">&nbsp; returns <span class="t-green">false</span></div></div>
+ <div class="a" style="--d:6.12s"><div class="box green" style="left:110px;top:700px;width:800px;height:110px">Vendor outage: the safe path</div></div>
+ <div class="ff-code a" style="--d:7.62s;left:1010px"><div class="muted"># a release flag</div><div>default: <span class="t-red">true</span></div><div class="muted">on any error:</div><div>&nbsp; returns <span class="t-red">true</span></div></div>
+ <div class="a" style="--d:10.12s"><div class="box red" style="left:1010px;top:700px;width:800px;height:110px">Vendor outage: a release</div></div>
+ <div class="ff-lint" style="left:1470px;top:842px;--d:12.69s">Lint for it</div>
+ <div class="a cap muted" style="--d:1.5s;bottom:90px;font-size:24px">(Made-up example.)</div>
+</section>
+
+<!-- 8 -->
+<section class="scene"><div class="kick">Step 8 of 9</div><h1>An owner, a type and an expiry</h1>
+ <div class="ff-card a" style="--d:.6s;left:110px;top:330px;width:720px"><b>Every flag</b>
+  <div class="ff-kv a" style="--d:1.71s"><span>owner</span>team-a</div>
+  <div class="ff-kv a" style="--d:2.41s"><span>type</span>release</div>
+  <div class="ff-kv a" style="--d:2.90s"><span>expiry</span><em class="t-amber" style="font-style:normal">a date</em></div></div>
+ <div class="a cap muted" style="--d:1.5s;left:110px;right:auto;bottom:auto;top:660px;font-size:24px">(Made-up example.)</div>
+ <div class="a" style="--d:3.64s"><div class="ff-tl"></div><div class="ff-tick"></div><div class="label t-amber" style="left:1400px;top:400px">expiry</div></div>
+ <div class="ff-mark" style="--d:3.94s;--len:7.83s;--p:9.31s"></div>
+ <div class="a" style="--d:9.31s"><div class="box red" style="left:960px;top:560px;width:380px;height:100px">Tests fail</div><div class="box red" style="left:1380px;top:560px;width:380px;height:100px">App won't start</div></div>
+ <div class="a" style="--d:10.83s"><div class="label" style="left:960px;top:796px;font-size:26px">Some teams cap how many flags they hold</div>
+  <div style="position:absolute;left:1606px;top:832px;width:6px;height:86px;border-radius:3px;background:var(--amber)"></div><div class="label t-amber" style="left:1628px;top:860px">cap</div></div>
+ <div class="ff-slot" style="left:960px;--d:11.13s"></div><div class="ff-slot" style="left:1024px;--d:11.35s"></div><div class="ff-slot" style="left:1088px;--d:11.57s"></div><div class="ff-slot" style="left:1152px;--d:11.79s"></div><div class="ff-slot" style="left:1216px;--d:12.01s"></div><div class="ff-slot" style="left:1280px;--d:12.23s"></div><div class="ff-slot" style="left:1344px;--d:12.45s"></div><div class="ff-slot" style="left:1408px;--d:12.67s"></div><div class="ff-slot" style="left:1472px;--d:12.89s"></div><div class="ff-slot" style="left:1536px;--d:13.11s"></div>
+</section>
+
+<!-- 9 -->
+<section class="scene" style="--egg:12.0s"><div class="kick">Step 9 of 9</div><h1>The scorecard counts debt per team</h1>
+ <div style="position:absolute;left:110px;top:320px;white-space:nowrap">
+  <span class="a" style="--d:3.05s;display:inline-block"><span class="chip" style="font-size:24px">serves one variation</span><span class="ff-arrow">→</span><span class="chip" style="font-size:24px">Launched</span></span>
+  <span class="a" style="--d:7.47s;display:inline-block"><span class="ff-arrow">→</span><span class="chip" style="font-size:24px">temporary, Launched 30 days</span></span>
+  <span class="a" style="--d:11.28s;display:inline-block"><span class="ff-arrow">→</span><span class="chip" style="font-size:24px;border-color:var(--amber);color:var(--fg);background:#fbefd0;margin-right:0">ready for code removal</span></span></div>
+ <div class="a" style="--d:0.90s"><div class="label" style="left:140px;top:452px">Per team <span style="font-weight:400">(Made-up example.)</span></div>
+  <div class="ff-th" style="left:530px">Ready for code removal</div><div class="ff-th" style="left:950px">Expired</div><div class="ff-th" style="left:1370px">No owner</div></div>
+ <div class="ff-tr a" style="top:500px;--d:1.20s"><span>Team A</span><div class="ff-cell " style="left:420px"><i style="--d:13.59s"></i><i style="--d:13.59s"></i><i style="--d:13.59s"></i><i style="--d:13.59s"></i><i style="--d:13.59s"></i></div><div class="ff-cell r" style="left:840px"><i style="--d:14.48s"></i><i style="--d:14.48s"></i></div><div class="ff-cell g" style="left:1260px"><i style="--d:15.77s"></i></div></div><div class="ff-tr a" style="top:586px;--d:1.50s"><span>Team B</span><div class="ff-cell " style="left:420px"><i style="--d:13.74s"></i><i style="--d:13.74s"></i></div><div class="ff-cell r" style="left:840px"><i style="--d:14.63s"></i><i style="--d:14.63s"></i><i style="--d:14.63s"></i><i style="--d:14.63s"></i></div><div class="ff-cell g" style="left:1260px"><i style="--d:15.92s"></i><i style="--d:15.92s"></i><i style="--d:15.92s"></i></div></div><div class="ff-tr a" style="top:672px;--d:1.80s"><span>Team C</span><div class="ff-cell " style="left:420px"><i style="--d:13.89s"></i></div><div class="ff-cell r" style="left:840px"><i style="--d:14.78s"></i></div><div class="ff-cell g" style="left:1260px"></div></div>
+ <div class="a cap muted" style="--d:13.5s;bottom:76px;font-size:28px">SRE Lab · Delivery · Flag governance</div>
+ <div class="critter"><div id="critter"></div></div>
+</section>
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 3 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../delivery/#feature-flags">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Flag governance. How do you keep thousands of feature flags, across hundreds of teams, from turning into debt and an outage source, when the flag service itself is a dependency of almost everything? We follow one service's flag path, then the governance around all flags. With thousands of flags, the risk moves from one bad flip to the flag system as a whole.", "Code ships dark, behind a flag that is off. A server-side S D K pulls the full ruleset into memory, and gets changes over a stream. So each evaluate call is local.", "Release is a rule change. Internal users first, then one percent, ten percent, a hundred percent. A kill switch is the same path back, and it takes seconds. That speed is also the blast radius. One flip reaches every region at once.", "So changes to ops and permission flags roll out by percentage or by region, with approval. Google Cloud's twenty twenty-five Spot V M incident spread because rollout safety checks were not enforced. Each tier one service keeps a tested kill switch, with a documented safe state.", "The flag service is tier zero. Almost every service reads it at startup. Give it an S L O, an on-call, and S D Ks that reconnect with backoff and jitter. In game days, block it, and count the services that still start cleanly.", "Keep last-known rules close to services. A relay proxy gives servers a local stream, instead of many outbound connections. Add a store that new instances can read. Then a cold start during a vendor outage still gets real rules.", "Make the default in code the safe path. The OpenFeature spec returns the caller's default on any error. A release flag whose default is true turns a vendor outage into a release. So lint for it.", "Every flag gets an owner, a type and an expiry. Fowler's article describes tests that fail, or apps that won't start, once a flag passes its date. Some teams cap how many flags they hold.", "The scorecard counts debt per team. LaunchDarkly marks a flag Launched when it serves one variation. A temporary flag that has been Launched for thirty days is marked ready for code removal. Count those, expired flags, and flags with no owner."], "seconds": [22.83, 12.01, 16.13, 19.03, 15.7, 15.66, 13.1, 13.01, 16.53]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

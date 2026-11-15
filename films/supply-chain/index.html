@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Supply chain: provenance, signing and SBOMs: the film</title>
+<meta name="description" content="How to prove every image running in production was built by your CI from a reviewed commit, and keep everything else out.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.sc-fleet{position:absolute;display:grid;gap:12px}
+.sc-fleet i{width:36px;height:36px;border-radius:12px 4px 12px 4px;background:#cfe3bf;display:block}
+.scene.on .sc-fleet i.sc-one{animation:sc-one .6s var(--d) forwards}
+@keyframes sc-one{to{background:var(--blue);transform:scale(1.35)}}
+.sc-q{font:700 34px "Archivo",sans-serif!important}
+.sc-chips{position:absolute;left:110px;display:flex;align-items:center;gap:18px}
+.sc-chips .chip{margin:0;font-size:30px;padding:14px 34px}
+.sc-arrow{font:700 30px "IBM Plex Sans";color:#9fbf8f}
+.sc-step{align-items:flex-start;text-align:left;padding:28px 40px;justify-content:flex-start}
+.sc-step b{font:800 44px "Archivo",sans-serif;margin-bottom:10px}
+.sc-step span{font:500 28px/1.4 "IBM Plex Sans";display:block}
+.sc-tok{position:absolute;background:#fff;border-radius:32px 10px 32px 10px;box-shadow:0 24px 60px rgba(20,70,35,.16);padding:30px 44px;font:500 28px/1 "IBM Plex Mono",monospace}
+.sc-tok b{display:block;font:800 34px "Archivo",sans-serif;margin-bottom:22px}
+.sc-tok div{display:flex;align-items:center;height:50px}
+.sc-tok .k{width:210px;color:var(--muted)}
+.sc-tok .v{height:16px;border-radius:8px;background:#d6e6c8;display:block}
+.sc-tok .sub{color:var(--blue);font-weight:600}.sc-tok .sub .k{color:var(--blue)}
+.sc-keys{position:absolute;display:grid;grid-template-columns:repeat(34,38px);gap:12px}
+.sc-keys i{display:block;width:38px;height:20px;border-radius:10px;background:var(--amber)}
+.scene.on .sc-keys{animation:in .7s var(--d) both,sc-dim .8s var(--o) forwards}
+@keyframes sc-dim{to{opacity:.16}}
+.scene.on .sc-gone{animation:in .7s var(--d) both,sc-gone .5s var(--o) forwards}
+@keyframes sc-gone{to{opacity:0}}
+.sc-pill{position:absolute;border-radius:999px;border:2px solid var(--amber);background:#fbefd0;font:600 24px "IBM Plex Mono",monospace;display:flex;align-items:center;justify-content:center}
+.scene.on .sc-key{animation:in .7s var(--d) both,sc-disc .6s var(--o) forwards}
+@keyframes sc-disc{to{opacity:.5;text-decoration:line-through;border-style:dashed}}
+.sc-log{position:absolute;display:flex;flex-direction:column;gap:12px}
+.sc-log div{height:60px;border-radius:18px 6px 18px 6px;background:var(--panel);border:2px solid var(--rule);display:flex;align-items:center;padding:0 24px;font:600 24px "IBM Plex Sans"}
+.sc-log div i{display:block;height:14px;border-radius:7px;background:#d6e6c8}
+.sc-log .g{border-color:var(--green);background:#e9f6dc}.sc-log .r{border-color:var(--red);background:#fbe4d9;color:var(--red)}
+.sc-reg{position:absolute;border:4px dashed var(--blue);border-radius:44px;background:rgba(255,255,255,.55)}
+.sc-grid{position:absolute;display:grid;grid-template-columns:repeat(34,34px);gap:12px}
+.sc-grid i{display:block;width:34px;height:34px;border-radius:11px 4px 11px 4px;background:#cfe3bf}
+.scene.on .sc-grid i.h{animation:sc-amber .4s var(--d) forwards,sc-green .5s var(--g) forwards}
+@keyframes sc-amber{to{background:var(--amber)}}
+@keyframes sc-green{to{background:var(--green)}}
+.sc-scan{position:absolute;width:10px;border-radius:5px;background:var(--blue);opacity:0}
+.scene.on .sc-scan{animation:sc-scan var(--len) linear var(--d) both}
+@keyframes sc-scan{0%{opacity:0;transform:translateX(0)}4%{opacity:.8}96%{opacity:.8}100%{opacity:0;transform:translateX(1560px)}}
+.scene.on .sc-base{animation:in .7s var(--d) both,sc-bad .5s var(--b) forwards,sc-good .5s var(--g) forwards}
+@keyframes sc-bad{to{border-color:var(--red);background:#fbe4d9}}
+@keyframes sc-good{to{border-color:var(--green);background:#e9f6dc}}
+.sc-pod{position:absolute;left:390px;top:502px;width:140px;height:56px;border-radius:999px;background:#fff;border:2px solid var(--rule);box-shadow:0 8px 20px rgba(20,70,35,.12);font:600 20px "IBM Plex Mono",monospace;display:flex;align-items:center;justify-content:center;opacity:0;z-index:2}
+.scene.on .sc-pod{animation:sc-pass 3s linear var(--d) both}
+@keyframes sc-pass{0%{opacity:0;transform:translate(0,0)}10%{opacity:1}38%{transform:translate(380px,0);border-color:var(--rule)}62%{transform:translate(690px,0);border-color:var(--green)}100%{opacity:1;transform:translate(var(--dx),var(--dy));border-color:var(--green)}}
+.sc-gate{z-index:3}
+.sc-list{position:absolute;left:260px;top:300px;width:1180px;background:#fff;border-radius:32px 10px 32px 10px;box-shadow:0 24px 60px rgba(20,70,35,.16);padding:34px 56px}
+.sc-list div{display:flex;align-items:center;height:104px;font:600 34px "IBM Plex Sans";border-top:2px solid #e3eeda}
+.sc-list div:first-child{border-top:0}
+.sc-list small{font:400 24px "IBM Plex Mono",monospace;color:var(--muted);margin-left:20px}
+.sc-list u{flex:none;width:48px;height:48px;border-radius:50%;border:3px solid var(--rule);margin-right:28px;position:relative;text-decoration:none}
+.sc-list u::after{content:"";position:absolute;left:14px;top:6px;width:13px;height:24px;border:solid #fff;border-width:0 5px 5px 0;transform:rotate(42deg)}
+.scene.on .sc-list u{animation:sc-tick .4s var(--k) forwards}
+@keyframes sc-tick{to{background:var(--green);border-color:var(--green)}}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../delivery/#supply-chain">Delivery</a> · film · recorded 15 Nov 2026</div>
+  <h1 class="page">Supply chain: provenance, signing and SBOMs</h1>
+  <div id="viewport">
+    <div id="stage">
+<section class="scene"><div class="kick">Delivery · chapter 7</div><h1>Supply chain: provenance,<br>signing and SBOMs</h1>
+ <div class="a label" style="--d:3.8s;left:110px;top:322px">Hundreds of repos ship images every day</div>
+ <div class="a sc-fleet" style="--d:3.8s;left:110px;top:366px;grid-template-columns:repeat(12,36px)"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class=sc-one style=--d:23.5s></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+ <svg><path class="line a" style="--d:14.0s" d="M690 528H810"/><path class="line a" style="--d:16.2s" d="M1110 528L1250 422"/><path class="line a" style="--d:17.1s" d="M1110 528H1250"/><path class="line a" style="--d:18.1s" d="M1110 528L1250 634"/></svg>
+ <div class="a" style="--d:14.0s"><div class="box blue" style="left:810px;top:448px;width:300px;height:160px;font-size:40px">Every image<small>in the fleet</small></div></div>
+ <div class="a" style="--d:16.2s"><div class="box sc-q" style="left:1250px;top:430px;width:500px;height:84px">Who built it?</div></div>
+ <div class="a" style="--d:17.1s"><div class="box sc-q" style="left:1250px;top:536px;width:500px;height:84px">From what?</div></div>
+ <div class="a" style="--d:18.1s"><div class="box sc-q" style="left:1250px;top:642px;width:500px;height:84px">Changed since?</div></div>
+ <div class="sc-chips" style="top:810px"><span class="chip a" style="--d:20.1s">Build</span><span class="sc-arrow a" style="--d:20.6s">→</span><span class="chip a" style="--d:20.6s">Sign</span><span class="sc-arrow a" style="--d:21.2s">→</span><span class="chip a" style="--d:21.2s">Record</span><span class="sc-arrow a" style="--d:21.8s">→</span><span class="chip a" style="--d:21.8s">Verify</span><span class="a muted" style="--d:22.3s;font-size:30px;margin-left:10px">in every cluster</span></div>
+</section>
+
+<section class="scene"><div class="kick">Step 2 of 9</div><h1>A reviewed commit triggers the build</h1>
+ <div class="a" style="--d:.6s"><div class="box" style="left:110px;top:300px;width:360px;height:110px">Reviewed commit</div></div>
+ <svg><path class="line a" style="--d:2.1s" d="M470 355H660"/></svg>
+ <div class="dot" style="left:480px;top:346px;--dx:160px;--d:2.1s"></div>
+ <div class="a" style="--d:3.0s"><div class="box blue" style="left:660px;top:300px;width:400px;height:110px">Build<small>on a hosted runner</small></div></div>
+ <div class="a" style="--d:4.8s"><div class="box green sc-step" style="left:110px;top:690px;width:800px;height:230px"><b>SLSA Build L2</b><span>A hosted platform<br>that signs provenance</span></div></div>
+ <div class="a" style="--d:9.6s"><div class="box blue sc-step" style="left:910px;top:500px;width:800px;height:420px"><b>SLSA Build L3</b><span class="a" style="--d:10.5s">+ isolation between runs</span><span class="a" style="--d:12.7s;margin-top:14px">+ the signing key kept away<br>from user build steps</span></div></div>
+</section>
+
+<section class="scene"><div class="kick">Step 3 of 9</div><h1>One token, valid for one job</h1>
+ <div class="sc-tok a" style="--d:.7s;left:110px;top:290px;width:760px"><b>Signed OIDC token</b>
+  <div class="a" style="--d:3.9s"><span class="k">repo</span><i class="v" style="width:220px"></i></div>
+  <div class="a" style="--d:4.6s"><span class="k">ref</span><i class="v" style="width:150px"></i></div>
+  <div class="a" style="--d:5.3s"><span class="k">workflow</span><i class="v" style="width:260px"></i></div>
+  <div class="a" style="--d:6.2s"><span class="k">environment</span><i class="v" style="width:180px"></i></div>
+  <div class="a sub" style="--d:19.4s"><span class="k">sub</span>repo, branch or environment</div></div>
+ <svg><path class="line a" style="--d:7.6s" d="M870 450H1050"/></svg>
+ <div class="a label t-blue" style="--d:7.6s;left:894px;top:408px">swapped for</div>
+ <div class="a" style="--d:8.6s"><div class="box amber" style="left:1050px;top:380px;width:380px;height:140px">Cloud credentials<small>valid for that one job</small></div></div>
+ <div class="a label" style="--d:12.3s;left:110px;top:680px">Thousands of stored keys</div>
+ <div class="a label t-red" style="--d:16.6s;left:420px;top:680px">each one a leak point</div>
+ <div class="sc-keys" style="--d:12.3s;--o:14.2s;left:110px;top:724px"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+ <div class="a cap" style="--d:18.5s;bottom:84px">Scope each trust policy by the <span class="mono t-blue">sub</span> claim.</div>
+</section>
+
+<section class="scene"><div class="kick">Step 4 of 9</div><h1>Keyless signing</h1>
+ <div class="a" style="--d:2.9s"><div class="box blue" style="left:110px;top:470px;width:320px;height:160px;font-size:40px">cosign</div></div>
+ <svg><path class="line a" style="--d:3.8s" d="M270 470V370H760"/><path class="line a" style="--d:14.3s" d="M430 550H1180"/></svg>
+ <div class="a label" style="--d:3.8s;left:300px;top:326px">throwaway public key + ID token →</div>
+ <div class="a" style="--d:6.6s"><div class="box" style="left:760px;top:300px;width:320px;height:140px">Fulcio</div></div>
+ <div class="a label t-green" style="--d:8.2s;left:300px;top:386px">← short-lived certificate</div>
+ <div class="sc-pill sc-key" style="--d:3.8s;--o:13.0s;left:110px;top:690px;width:320px;height:70px">private key</div>
+ <div class="a label t-red" style="--d:13.0s;left:110px;top:778px">discarded</div>
+ <div class="a" style="--d:11.1s"><div class="box green" style="left:620px;top:510px;width:300px;height:80px;border-radius:999px">signed digest</div></div>
+ <div class="a label" style="--d:14.3s;left:1180px;top:446px;font-size:26px">Rekor · append-only log</div>
+ <div class="sc-log" style="left:1180px;top:494px;width:610px">
+  <div class="a" style="--d:14.3s"><i style="width:300px"></i></div><div class="a" style="--d:14.3s"><i style="width:380px"></i></div><div class="a" style="--d:14.3s"><i style="width:240px"></i></div>
+  <div class="a g" style="--d:15.7s">The signature</div>
+  <div class="a r" style="--d:21.2s">Made with a stolen identity: still here</div></div>
+ <div class="a label t-blue" style="--d:18.0s;left:1180px;top:866px;font-size:26px">Anyone can audit it</div>
+</section>
+
+<section class="scene"><div class="kick">Step 5 of 9</div><h1>Pushed by digest, with an SBOM</h1>
+ <div class="a" style="--d:.6s"><div class="sc-reg" style="left:110px;top:300px;width:860px;height:600px"></div><div class="label t-blue" style="left:150px;top:326px;font-size:26px">Registry</div><div class="label mono" style="left:700px;top:326px;font-size:26px">@sha256:…</div></div>
+ <div class="a" style="--d:1.6s"><div class="box blue" style="left:170px;top:390px;width:740px;height:170px;font-size:40px">Image<small>pushed by digest</small></div></div>
+ <div class="a" style="--d:4.7s"><div class="box green" style="left:170px;top:590px;width:740px;height:120px">SLSA provenance</div></div>
+ <div class="a" style="--d:7.4s"><div class="box amber" style="left:170px;top:740px;width:740px;height:120px">SBOM<small>SPDX or CycloneDX</small></div></div>
+ <div class="a label" style="--d:11.3s;left:1080px;top:440px;font-size:26px">Private repositories</div>
+ <div class="a" style="--d:12.5s"><div class="box" style="left:1080px;top:486px;width:680px;height:140px">GitHub's own Sigstore instance<small>signs the attestations</small></div></div>
+ <div class="a cap" style="--d:16.0s;left:1080px;right:110px;bottom:auto;top:666px">No public transparency log.</div>
+ <div class="a cap t-blue" style="--d:18.5s;left:1080px;right:110px;bottom:auto;top:736px;font-weight:600">Your policies must trust that root.</div>
+</section>
+
+<section class="scene"><div class="kick">Step 6 of 9</div><h1>One CVE, thousands of images</h1>
+ <div class="a sc-grid" style="--d:.5s;left:184px;top:320px"><i class="h" style="--d:5.80s;--g:12.70s"></i><i></i><i class="h" style="--d:6.01s;--g:12.86s"></i><i class="h" style="--d:6.11s;--g:12.94s"></i><i></i><i class="h" style="--d:6.32s;--g:13.09s"></i><i class="h" style="--d:6.42s;--g:13.17s"></i><i></i><i class="h" style="--d:6.62s;--g:13.33s"></i><i class="h" style="--d:6.73s;--g:13.41s"></i><i></i><i class="h" style="--d:6.93s;--g:13.57s"></i><i class="h" style="--d:7.04s;--g:13.65s"></i><i></i><i class="h" style="--d:7.24s;--g:13.80s"></i><i class="h" style="--d:7.35s;--g:13.88s"></i><i></i><i class="h" style="--d:7.55s;--g:14.04s"></i><i class="h" style="--d:7.65s;--g:14.12s"></i><i></i><i class="h" style="--d:7.86s;--g:14.28s"></i><i class="h" style="--d:7.96s;--g:14.35s"></i><i></i><i class="h" style="--d:8.17s;--g:14.51s"></i><i class="h" style="--d:8.27s;--g:14.59s"></i><i></i><i class="h" style="--d:8.48s;--g:14.75s"></i><i class="h" style="--d:8.58s;--g:14.83s"></i><i></i><i class="h" style="--d:8.79s;--g:14.98s"></i><i class="h" style="--d:8.89s;--g:15.06s"></i><i></i><i class="h" style="--d:9.10s;--g:15.22s"></i><i class="h" style="--d:9.20s;--g:15.30s"></i><i></i><i></i><i></i><i class="h" style="--d:6.11s;--g:12.94s"></i><i></i><i></i><i class="h" style="--d:6.42s;--g:13.17s"></i><i class="h" style="--d:6.52s;--g:13.25s"></i><i></i><i></i><i class="h" style="--d:6.83s;--g:13.49s"></i><i class="h" style="--d:6.93s;--g:13.57s"></i><i></i><i></i><i class="h" style="--d:7.24s;--g:13.80s"></i><i></i><i></i><i></i><i class="h" style="--d:7.65s;--g:14.12s"></i><i></i><i></i><i class="h" style="--d:7.96s;--g:14.35s"></i><i class="h" style="--d:8.07s;--g:14.43s"></i><i></i><i></i><i class="h" style="--d:8.38s;--g:14.67s"></i><i class="h" style="--d:8.48s;--g:14.75s"></i><i></i><i></i><i class="h" style="--d:8.79s;--g:14.98s"></i><i></i><i></i><i></i><i class="h" style="--d:9.20s;--g:15.30s"></i><i></i><i></i><i></i><i></i><i class="h" style="--d:6.21s;--g:13.02s"></i><i class="h" style="--d:6.32s;--g:13.09s"></i><i class="h" style="--d:6.42s;--g:13.17s"></i><i></i><i></i><i></i><i></i><i class="h" style="--d:6.93s;--g:13.57s"></i><i class="h" style="--d:7.04s;--g:13.65s"></i><i class="h" style="--d:7.14s;--g:13.72s"></i><i></i><i></i><i></i><i></i><i></i><i class="h" style="--d:7.76s;--g:14.20s"></i><i class="h" style="--d:7.86s;--g:14.28s"></i><i class="h" style="--d:7.96s;--g:14.35s"></i><i></i><i></i><i></i><i></i><i class="h" style="--d:8.48s;--g:14.75s"></i><i class="h" style="--d:8.58s;--g:14.83s"></i><i class="h" style="--d:8.68s;--g:14.91s"></i><i></i><i></i><i></i><i></i><i></i><i class="h" style="--d:5.80s;--g:12.70s"></i><i></i><i class="h" style="--d:6.01s;--g:12.86s"></i><i></i><i class="h" style="--d:6.21s;--g:13.02s"></i><i></i><i class="h" style="--d:6.42s;--g:13.17s"></i><i></i><i></i><i></i><i></i><i class="h" style="--d:6.93s;--g:13.57s"></i><i></i><i class="h" style="--d:7.14s;--g:13.72s"></i><i></i><i class="h" style="--d:7.35s;--g:13.88s"></i><i></i><i class="h" style="--d:7.55s;--g:14.04s"></i><i></i><i class="h" style="--d:7.76s;--g:14.20s"></i><i></i><i class="h" style="--d:7.96s;--g:14.35s"></i><i></i><i></i><i></i><i></i><i class="h" style="--d:8.48s;--g:14.75s"></i><i></i><i class="h" style="--d:8.68s;--g:14.91s"></i><i></i><i class="h" style="--d:8.89s;--g:15.06s"></i><i></i><i class="h" style="--d:9.10s;--g:15.22s"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="h" style="--d:6.42s;--g:13.17s"></i><i class="h" style="--d:6.52s;--g:13.25s"></i><i class="h" style="--d:6.62s;--g:13.33s"></i><i class="h" style="--d:6.73s;--g:13.41s"></i><i class="h" style="--d:6.83s;--g:13.49s"></i><i class="h" style="--d:6.93s;--g:13.57s"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="h" style="--d:7.96s;--g:14.35s"></i><i class="h" style="--d:8.07s;--g:14.43s"></i><i class="h" style="--d:8.17s;--g:14.51s"></i><i class="h" style="--d:8.27s;--g:14.59s"></i><i class="h" style="--d:8.38s;--g:14.67s"></i><i class="h" style="--d:8.48s;--g:14.75s"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="h" style="--d:5.80s;--g:12.70s"></i><i></i><i class="h" style="--d:6.01s;--g:12.86s"></i><i class="h" style="--d:6.11s;--g:12.94s"></i><i></i><i class="h" style="--d:6.32s;--g:13.09s"></i><i class="h" style="--d:6.42s;--g:13.17s"></i><i></i><i class="h" style="--d:6.62s;--g:13.33s"></i><i class="h" style="--d:6.73s;--g:13.41s"></i><i></i><i class="h" style="--d:6.93s;--g:13.57s"></i><i class="h" style="--d:7.04s;--g:13.65s"></i><i></i><i class="h" style="--d:7.24s;--g:13.80s"></i><i class="h" style="--d:7.35s;--g:13.88s"></i><i></i><i class="h" style="--d:7.55s;--g:14.04s"></i><i class="h" style="--d:7.65s;--g:14.12s"></i><i></i><i class="h" style="--d:7.86s;--g:14.28s"></i><i class="h" style="--d:7.96s;--g:14.35s"></i><i></i><i class="h" style="--d:8.17s;--g:14.51s"></i><i class="h" style="--d:8.27s;--g:14.59s"></i><i></i><i class="h" style="--d:8.48s;--g:14.75s"></i><i class="h" style="--d:8.58s;--g:14.83s"></i><i></i><i class="h" style="--d:8.79s;--g:14.98s"></i><i class="h" style="--d:8.89s;--g:15.06s"></i><i></i><i class="h" style="--d:9.10s;--g:15.22s"></i><i class="h" style="--d:9.20s;--g:15.30s"></i><i></i><i></i><i></i><i class="h" style="--d:6.11s;--g:12.94s"></i><i></i><i></i><i class="h" style="--d:6.42s;--g:13.17s"></i><i class="h" style="--d:6.52s;--g:13.25s"></i><i></i><i></i><i class="h" style="--d:6.83s;--g:13.49s"></i><i class="h" style="--d:6.93s;--g:13.57s"></i><i></i><i></i><i class="h" style="--d:7.24s;--g:13.80s"></i><i></i><i></i><i></i><i class="h" style="--d:7.65s;--g:14.12s"></i><i></i><i></i><i class="h" style="--d:7.96s;--g:14.35s"></i><i class="h" style="--d:8.07s;--g:14.43s"></i><i></i><i></i><i class="h" style="--d:8.38s;--g:14.67s"></i><i class="h" style="--d:8.48s;--g:14.75s"></i><i></i><i></i><i class="h" style="--d:8.79s;--g:14.98s"></i><i></i><i></i><i></i><i class="h" style="--d:9.20s;--g:15.30s"></i></div>
+ <div class="sc-scan" style="left:176px;top:306px;height:340px;--d:5.8s;--len:3.6s"></div>
+ <div class="box sc-base" style="--d:.6s;--b:1.4s;--g:12.7s;left:184px;top:690px;width:1552px;height:90px;border-radius:30px 10px 30px 10px">Shared base layer</div>
+ <div class="sc-gone label t-red" style="--d:1.4s;--o:12.7s;left:1560px;top:718px;font-size:28px">one CVE</div>
+ <div class="a label t-green" style="--d:13.0s;left:1560px;top:718px;font-size:28px">patched</div>
+ <div class="sc-gone cap" style="--d:5.8s;--o:12.3s;bottom:110px">Scanners match stored SBOMs against new vulnerability data.</div>
+ <div class="a cap" style="--d:13.0s;bottom:110px"><span class="t-green">Rebuild from the patched base. Redeploy through the normal pipeline.</span></div>
+</section>
+
+<section class="scene"><div class="kick">Step 7 of 9</div><h1>In the path of every deploy</h1>
+ <div class="a" style="--d:.4s"><div class="box" style="left:110px;top:470px;width:260px;height:120px">Deploy</div>
+  <div style="position:absolute;left:1320px;top:420px;width:480px;height:250px;border:4px dashed var(--blue);border-radius:44px;background:rgba(255,255,255,.55)"></div><div class="label t-blue" style="left:1352px;top:436px">Cluster</div></div>
+ <svg><path class="line a" style="--d:.4s" d="M370 530H1320"/></svg>
+ <div class="a" style="--d:10.4s"><div class="box blue" style="left:786px;top:466px;width:320px;height:180px;z-index:1"></div></div>
+ <div class="a sc-gate" style="--d:.6s;position:relative"><div class="box blue" style="left:760px;top:440px;width:320px;height:180px">Admission webhook<small>checks every Pod</small></div></div>
+ <div class="a label" style="--d:2.6s;left:760px;top:396px">such as Sigstore policy-controller</div>
+ <div class="sc-pod" style="--d:1.6s;--dx:955px;--dy:-22px">Pod</div><div class="sc-pod" style="--d:3.2s;--dx:1105px;--dy:-22px">Pod</div><div class="sc-pod" style="--d:4.9s;--dx:1255px;--dy:-22px">Pod</div><div class="sc-pod" style="--d:6.5s;--dx:955px;--dy:58px">autoscale</div><div class="sc-pod" style="--d:7.8s;--dx:1105px;--dy:58px">autoscale</div>
+ <div class="sc-chips" style="top:810px"><span class="chip a" style="--d:10.4s">Run it highly available</span><span class="chip a" style="--d:12.2s">Opt namespaces in by label</span><span class="chip a" style="--d:14.3s">Fail-open or fail-closed, on purpose</span></div>
+</section>
+
+<section class="scene"><div class="kick">Step 8 of 9</div><h1>What the webhook checks</h1>
+ <div class="sc-list"><div class="a" style="--d:0.9s"><u style="--k:2.0s"></u>Signature and attestations<small>fetched</small></div><div class="a" style="--d:3.9s"><u style="--k:5.0s"></u>Certificate identity and issuer<small>match your release workflow</small></div><div class="a" style="--d:8.8s"><u style="--k:9.9s"></u>Chain to Sigstore's root</div><div class="a" style="--d:10.8s"><u style="--k:11.9s"></u>Rekor inclusion</div><div class="a" style="--d:12.8s"><u style="--k:13.9s"></u>Provenance fields<small>builder, source repo</small></div></div>
+</section>
+
+<section class="scene" style="--egg:11.9s"><div class="kick">Step 9 of 9</div><h1>Admit, reject, or warn</h1>
+ <div class="a" style="--d:0.9s"><div class="box" style="left:110px;top:320px;width:440px;height:112px">Pass</div><div class="box green" style="left:740px;top:320px;width:680px;height:112px">Pod admitted<small>tag resolved to the verified digest</small></div></div><svg><path class="line a" style="--d:0.9s" d="M550 376H740"/></svg>
+ <div class="a" style="--d:6.4s"><div class="box" style="left:110px;top:458px;width:440px;height:112px">No policy matches</div><div class="box red" style="left:740px;top:458px;width:680px;height:112px">Rejected by default</div></div><svg><path class="line a" style="--d:6.4s" d="M550 514H740"/></svg>
+ <div class="a" style="--d:9.9s"><div class="box" style="left:110px;top:596px;width:440px;height:112px">Vendor image</div><div class="box amber" style="left:740px;top:596px;width:680px;height:112px">Its own policy, naming its signers<small class="a" style="--d:13.4s">warn mode while you onboard</small></div></div><svg><path class="line a" style="--d:9.9s" d="M550 652H740"/></svg>
+ <div class="a cap muted" style="--d:15.0s;bottom:76px;font-size:28px">SRE Lab · Delivery · Supply chain: provenance, signing and SBOMs</div>
+ <div class="critter"><div id="critter"></div></div>
+</section>
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 3 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../delivery/#supply-chain">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Supply chain: provenance, signing and S-BOMs. Hundreds of repos ship images every day. How do you prove each one running in production was built by your C I from a reviewed commit, and stop anything else from running? Ask three questions of every image in the fleet. Who built it? From what? Was it changed since? So you build, sign, record, and verify in every cluster. We'll follow one image.", "A reviewed commit triggers a build on a hosted runner. S L S A Build level two needs a hosted platform that signs provenance. Level three adds isolation between runs, and keeps the signing key away from user build steps.", "The job gets a signed O I D C token that describes it: repo, ref, workflow and environment. It swaps that token for cloud credentials that are valid for that one job. Across thousands of repos, that replaces thousands of stored keys, and each stored key is a leak point. Scope each trust policy by the sub claim, down to repo, branch or environment.", "This is keyless signing. Co-sign sends a throwaway public key and the I D token to Fulcio, and gets back a short-lived certificate for the workflow identity. It signs the digest and discards the private key. The signature goes into Rekor, an append-only log that anyone can audit. So a signature made with a stolen identity still shows up.", "C I pushes the image by digest, with S L S A provenance and an S-BOM, in S P D X or Cyclone D X format. For private repositories, GitHub signs attestations with its own Sigstore instance. That instance has no public transparency log, so your policies must trust that root.", "One C V E in a shared base layer touches thousands of images. Scanners match the stored S-BOMs against new vulnerability data. That tells you which images are affected. You rebuild them from the patched base and redeploy through the normal pipeline.", "An admission webhook, such as Sigstore policy-controller, checks every Pod, including each autoscale. So it sits in the path of every deploy. Run it highly available. Opt namespaces in by label. And choose fail-open or fail-closed on purpose.", "The webhook fetches the signature and the attestations. It checks that the certificate identity and issuer match your release workflow. It checks the chain to Sigstore's root, and inclusion in Rekor. And it checks provenance fields, like the builder and the source repo.", "On a pass, the Pod is admitted, with its tag resolved to the verified digest. Images that no policy matches are rejected by default. Vendor images get their own policies that name their signers, and run in warn mode while you onboard them."], "seconds": [24.73, 15.47, 23.89, 23.3, 20.97, 17.15, 16.75, 16.83, 16.38]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

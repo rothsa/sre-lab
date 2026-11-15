@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rollout policy as a platform default: the film</title>
+<meta name="description" content="How a platform makes metric-gated canary rollout the default for every service, and measures how much of the fleet uses it.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.pd-panel{position:absolute;border:2.5px solid var(--rule);background:rgba(255,255,255,.6);border-radius:44px 14px 44px 14px;box-shadow:0 10px 28px rgba(20,70,35,.08)}
+.pd-panel.pd-dash{border:4px dashed var(--blue)}
+.pd-t{position:absolute;font:700 36px "IBM Plex Sans";color:var(--fg)}
+.pd-chips{position:absolute;white-space:nowrap}
+.pd-split{position:absolute;display:flex;height:96px;border-radius:48px;overflow:hidden;font:700 30px "IBM Plex Sans";color:#fff}
+.pd-split b{display:flex;align-items:center;justify-content:center;font-weight:700}
+.pd-g{position:absolute;display:grid;gap:14px}
+.pd-g i{display:block;border-radius:50%;background:#d6e6c8}
+.scene.on .pd-g i{animation:pd-lit .5s var(--d) forwards}
+@keyframes pd-lit{to{background:#3f9a4f}}
+.pd-quote{position:absolute;left:110px;top:290px;width:1280px;font:600 46px/1.25 "IBM Plex Sans";border-left:10px solid var(--blue);padding:6px 0 6px 36px}
+.pd-quote small{display:block;font:400 26px "IBM Plex Mono";color:var(--muted);margin-top:10px}
+.pd-stair{position:absolute;width:190px;border-radius:26px 8px 0 0;background:#dff0d3;border:2.5px solid var(--blue);border-bottom:0;transform-origin:bottom}
+.scene.on .pd-stair{animation:pd-rise .8s cubic-bezier(.2,.7,.2,1) var(--d) both}
+@keyframes pd-rise{from{opacity:0;transform:scaleY(.1)}to{opacity:1;transform:none}}
+.pd-gate{position:absolute;width:64px;height:64px;border-radius:50%;background:var(--green);color:#fff;font:800 34px "IBM Plex Sans";display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(20,70,35,.2)}
+.pd-doc{left:110px;top:300px;width:820px;padding:40px 52px;font-size:34px;line-height:1.9}
+.pd-doc b{display:block;margin-bottom:8px}
+.pd-doc .mono{font-size:30px}
+.pd-pt{position:absolute;width:40px;height:40px;border-radius:50%;background:var(--green);box-shadow:0 4px 10px rgba(20,70,35,.18)}
+.pd-pt.r{background:var(--red)}
+.pd-wt{position:absolute;height:44px;border-radius:22px;background:#d6e6c8;overflow:hidden}
+.pd-wt div{height:100%;width:20%;background:var(--amber);border-radius:22px}
+.scene.on .pd-wt div{animation:pd-zero 1.2s cubic-bezier(.3,.6,.2,1) var(--d) forwards}
+@keyframes pd-zero{to{width:0}}
+.pd-bar{position:absolute;height:70px;transform-origin:left;opacity:0}
+.pd-bar.ro{background:var(--green);border-radius:35px 0 0 35px}
+.pd-bar.bk{border-radius:0 35px 35px 0;background:repeating-linear-gradient(45deg,#bfe0a8 0 14px,#e9f6dc 14px 28px);border:2.5px solid var(--green);border-left:0}
+.scene.on .pd-bar{animation:pd-wide .9s cubic-bezier(.2,.7,.2,1) var(--d) both}
+@keyframes pd-wide{from{opacity:0;transform:scaleX(.05)}to{opacity:1;transform:none}}
+.pd-sw{display:inline-block;width:56px;height:26px;vertical-align:-4px;margin:0 10px 0 0}
+.pd-rail{position:absolute;left:300px;top:733px;width:1320px;height:14px;border-radius:7px;background:#d6e6c8}
+.pd-stop{position:absolute;top:718px;width:44px;height:44px;border-radius:50%;background:var(--panel);border:4px solid #9fbf8f}
+.pd-knob{position:absolute;left:266px;top:696px;width:88px;height:88px;border-radius:50%;background:var(--blue);box-shadow:0 10px 24px rgba(20,70,35,.3);border:6px solid #fff}
+.scene.on .pd-knob{animation:in .6s var(--d) both,pd-k1 1s cubic-bezier(.4,0,.2,1) var(--k1) forwards,pd-k2 1s cubic-bezier(.4,0,.2,1) var(--k2) forwards}
+@keyframes pd-k1{to{transform:translateX(660px)}}
+@keyframes pd-k2{from{transform:translateX(660px)}to{transform:translateX(1320px)}}
+.pd-sl{position:absolute;top:600px;width:500px;text-align:center;font:700 38px "IBM Plex Sans"}
+.pd-tag{position:absolute;background:var(--red);color:#fff;font:800 28px "IBM Plex Sans";padding:8px 26px;border-radius:999px;box-shadow:0 8px 18px rgba(217,72,30,.25)}
+.pd-row{position:absolute;left:150px;font:600 34px "IBM Plex Sans"}
+.pd-ok{position:absolute;width:150px;height:56px;border-radius:999px;background:#e9f6dc;border:2.5px solid var(--green);color:var(--green);font:700 26px "IBM Plex Sans";display:flex;align-items:center;justify-content:center}
+.pd-hr{position:absolute;left:150px;width:970px;height:2px;background:var(--rule)}
+.pd-col{position:absolute;bottom:310px;width:76px;border-radius:20px 6px 0 0;background:var(--amber);transform-origin:bottom}
+.scene.on .pd-col{animation:pd-rise .7s cubic-bezier(.2,.7,.2,1) var(--d) both}
+.pd-join{border-radius:50%}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../delivery/#progressive-delivery">Delivery</a> · film · recorded 15 Nov 2026</div>
+  <h1 class="page">Rollout policy as a platform default</h1>
+  <div id="viewport">
+    <div id="stage">
+<section class="scene"><div class="kick">Delivery · chapter 4</div><h1>Rollout policy<br>as a platform default</h1>
+ <div class="pd-chips" style="left:110px;top:306px"><span class="chip a" style="--d:4.4s">wave-based</span><span class="chip a" style="--d:5.2s">metric-gated</span><span class="chip a" style="--d:6.4s">the default for every service</span><span class="chip a" style="--d:10s">how much of the fleet uses it?</span></div>
+ <div class="a" style="--d:15.2s"><div class="pd-panel" style="left:110px;top:430px;width:800px;height:440px"></div>
+  <div class="label" style="left:160px;top:466px">The worked example</div><div class="pd-t" style="left:160px;top:500px">One service's canary</div>
+  <div class="pd-split" style="left:160px;top:640px;width:700px"><b style="width:80%;background:var(--green)">Stable</b><b style="width:20%;background:var(--amber)">Canary</b></div></div>
+ <div class="a" style="--d:18.2s"><div class="pd-panel" style="left:1010px;top:430px;width:800px;height:440px"></div>
+  <div class="label" style="left:1060px;top:466px">The platform</div><div class="pd-t" style="left:1060px;top:500px">Every service, by default</div>
+  <div class="pd-g" style="left:1060px;top:590px;grid-template-columns:repeat(12,42px);gap:14px"><i style="width:42px;height:42px;--d:18.80s"></i><i style="width:42px;height:42px;--d:18.85s"></i><i style="width:42px;height:42px;--d:18.90s"></i><i style="width:42px;height:42px;--d:18.95s"></i><i style="width:42px;height:42px;--d:19.00s"></i><i style="width:42px;height:42px;--d:19.05s"></i><i style="width:42px;height:42px;--d:19.10s"></i><i style="width:42px;height:42px;--d:19.15s"></i><i style="width:42px;height:42px;--d:19.20s"></i><i style="width:42px;height:42px;--d:19.25s"></i><i style="width:42px;height:42px;--d:19.30s"></i><i style="width:42px;height:42px;--d:19.35s"></i><i style="width:42px;height:42px;--d:19.40s"></i><i style="width:42px;height:42px;--d:19.45s"></i><i style="width:42px;height:42px;--d:19.50s"></i><i style="width:42px;height:42px;--d:19.55s"></i><i style="width:42px;height:42px;--d:19.60s"></i><i style="width:42px;height:42px;--d:19.65s"></i><i style="width:42px;height:42px;--d:19.70s"></i><i style="width:42px;height:42px;--d:19.75s"></i><i style="width:42px;height:42px;--d:19.80s"></i><i style="width:42px;height:42px;--d:19.85s"></i><i style="width:42px;height:42px;--d:19.90s"></i><i style="width:42px;height:42px;--d:19.95s"></i><i style="width:42px;height:42px;--d:20.00s"></i><i style="width:42px;height:42px;--d:20.05s"></i><i style="width:42px;height:42px;--d:20.10s"></i><i style="width:42px;height:42px;--d:20.15s"></i><i style="width:42px;height:42px;--d:20.20s"></i><i style="width:42px;height:42px;--d:20.25s"></i><i style="width:42px;height:42px;--d:20.30s"></i><i style="width:42px;height:42px;--d:20.35s"></i><i style="width:42px;height:42px;--d:20.40s"></i><i style="width:42px;height:42px;--d:20.45s"></i><i style="width:42px;height:42px;--d:20.50s"></i><i style="width:42px;height:42px;--d:20.55s"></i></div></div>
+ <div class="pd-chips a" style="--d:21.3s;left:1060px;top:780px"><span class="chip" style="margin:0">and checks that it does</span></div>
+</section>
+
+<section class="scene"><div class="kick">Step 2 of 11</div><h1>Most incidents start with a push</h1>
+ <div class="pd-quote a" style="--d:.8s">Most incidents start with a binary or config push.<small>Google's SRE workbook, on its own incidents</small></div>
+ <div class="a" style="--d:6.5s"><div class="box" style="left:110px;top:560px;width:330px;height:84px">Code pushes</div></div>
+ <div class="a" style="--d:7.1s"><div class="box" style="left:110px;top:668px;width:330px;height:84px">Config pushes</div></div>
+ <div class="a" style="--d:7.7s"><div class="box" style="left:110px;top:776px;width:330px;height:84px">Flag pushes</div></div>
+ <svg><path class="line a" style="--d:9s" d="M440 818H600"/><path class="line a" style="--d:9s" d="M110 860H1640"/></svg>
+ <div class="pd-stair" style="left:620px;top:770px;height:90px;--d:9.20s"></div><div class="pd-stair" style="left:870px;top:690px;height:170px;--d:9.55s"></div><div class="pd-stair" style="left:1120px;top:610px;height:250px;--d:9.90s"></div><div class="pd-stair" style="left:1370px;top:530px;height:330px;--d:10.25s"></div><div class="pd-gate a" style="left:838px;top:760px;--d:10.50s">✓</div><div class="pd-gate a" style="left:1088px;top:680px;--d:10.75s">✓</div><div class="pd-gate a" style="left:1338px;top:600px;--d:11.00s">✓</div>
+ <div class="a label" style="--d:9.4s;left:1400px;top:470px;font-size:30px">in steps</div>
+ <div class="a label t-green" style="--d:10.6s;left:1650px;top:700px;font-size:30px;width:160px">with a metric gate</div>
+ <div class="a cap" style="--d:11.8s;bottom:84px">No team should have to build that machinery itself.</div>
+</section>
+
+<section class="scene"><div class="kick">Step 3 of 11</div><h1>The default lives in the service template</h1>
+ <div class="doc pd-doc a" style="--d:.8s"><b>Service template</b>
+  <div class="a" style="--d:3.6s"><span class="chip" style="font-size:24px;padding:6px 20px">golden path</span>new service</div>
+  <div class="a mono" style="--d:5.8s">starts as a <span class="t-blue" style="font-weight:600">Rollout</span></div>
+  <div class="a mono" style="--d:7.3s">standard steps</div>
+  <div class="a mono" style="--d:8.4s">shared analysis, wired in</div></div>
+ <div class="a" style="--d:10.6s"><div class="box" style="left:1110px;top:470px;width:560px;height:120px">A team that does nothing</div></div>
+ <svg><path class="line a" style="--d:11.6s" d="M1390 590V690"/></svg>
+ <div class="a" style="--d:12.1s"><div class="box green" style="left:1110px;top:690px;width:560px;height:130px;font-size:40px">gets the safe path</div></div>
+</section>
+
+<section class="scene"><div class="kick">Step 4 of 11</div><h1>One service: a canary at 20%</h1>
+ <div class="a" style="--d:2s"><div class="box" style="left:150px;top:330px;width:320px;height:110px">Argo CD<small>syncs a new image</small></div></div>
+ <div class="a" style="--d:4.6s"><div class="box blue" style="left:640px;top:330px;width:360px;height:110px">Rollouts controller</div></div>
+ <div class="a" style="--d:8.6s"><div class="box" style="left:640px;top:640px;width:360px;height:110px">Traffic router</div></div>
+ <div class="a" style="--d:8.6s"><div class="box" style="left:150px;top:640px;width:320px;height:110px">Users</div></div>
+ <svg><path class="line a" style="--d:4.6s" d="M470 385H640"/><path class="line a" style="--d:8.6s" d="M820 440V640"/><path class="line a" style="--d:8.6s" d="M470 695H640"/>
+  <path class="line a" style="--d:10.3s;stroke:var(--green);stroke-width:14" d="M1000 675L1350 580"/><path class="line a" style="--d:10.3s;stroke:var(--amber);stroke-width:5" d="M1000 715L1350 820"/></svg>
+ <div class="dot" style="left:476px;top:686px;--dx:150px;--d:9s"></div><div class="dot" style="left:476px;top:686px;--dx:150px;--d:10.6s"></div>
+ <div class="a" style="--d:8.6s"><div class="box green" style="left:1350px;top:520px;width:400px;height:120px">Stable<small>stays fully scaled</small></div></div>
+ <div class="a" style="--d:6.2s"><div class="box amber" style="left:1350px;top:760px;width:400px;height:120px">Canary<small>new ReplicaSet</small></div></div>
+ <div class="a label t-green" style="--d:10.3s;left:1120px;top:548px;font-size:44px">80%</div>
+ <div class="a label t-amber" style="--d:10.3s;left:1120px;top:790px;font-size:44px">20%</div>
+ <div class="a cap" style="--d:13.2s;bottom:84px;right:700px">So traffic can snap back.</div>
+</section>
+
+<section class="scene"><div class="kick">Step 5 of 11</div><h1>The gate is a query on an interval</h1>
+ <div class="a" style="--d:.6s"><div class="pd-panel" style="left:110px;top:310px;width:1120px;height:570px"></div><div class="label" style="left:160px;top:820px">every interval →</div></div>
+ <div class="a mono" style="--d:4.2s;position:absolute;left:160px;top:338px;font-size:30px">non-5xx / all requests</div>
+ <svg><path class="line a" style="--d:9.2s;stroke:var(--green);stroke-dasharray:14 12;stroke-width:4" d="M160 540H1180"/><path class="line a" style="--d:.6s" d="M160 790H1180"/></svg>
+ <div class="a mono t-green" style="--d:9.2s;position:absolute;left:1030px;top:490px;font-size:30px;font-weight:600">&gt;= 0.95</div>
+ <div class="pd-pt a" style="left:250px;top:430px;--d:1.4s"></div><div class="pd-pt a" style="left:390px;top:455px;--d:2.4s"></div><div class="pd-pt a" style="left:530px;top:420px;--d:3.4s"></div><div class="pd-pt a" style="left:670px;top:445px;--d:6.5s"></div><div class="pd-pt a r" style="left:810px;top:610px;--d:11.4s"></div><div class="pd-pt a r" style="left:950px;top:680px;--d:12.2s"></div>
+ <div class="a" style="--d:13.1s"><div class="box red" style="left:1320px;top:420px;width:470px;height:100px">Rollout aborts</div></div>
+ <div class="a" style="--d:13.1s"><div class="label" style="left:1320px;top:570px">Canary</div><div class="pd-wt" style="left:1320px;top:610px;width:470px"><div style="--d:14.6s"></div></div></div>
+ <div class="a label t-red" style="--d:14.8s;left:1320px;top:668px;font-size:26px">drops to zero</div>
+ <div class="a" style="--d:16.5s"><div class="box amber" style="left:1320px;top:770px;width:470px;height:110px">Inconclusive<small>pauses for a human</small></div></div>
+</section>
+
+<section class="scene"><div class="kick">Step 6 of 11</div><h1>Teams shouldn't each write that query</h1>
+ <div class="a out" style="--d:.8s;--o:4.4s"><div class="proc" style="left:110px;top:300px">team</div><div class="label mono strike" style="left:122px;top:372px;font-size:20px">own query</div><div class="proc" style="left:310px;top:300px">team</div><div class="label mono strike" style="left:322px;top:372px;font-size:20px">own query</div><div class="proc" style="left:510px;top:300px">team</div><div class="label mono strike" style="left:522px;top:372px;font-size:20px">own query</div><div class="proc" style="left:710px;top:300px">team</div><div class="label mono strike" style="left:722px;top:372px;font-size:20px">own query</div></div>
+ <div class="a" style="--d:3.8s"><div class="pd-panel" style="left:110px;top:440px;width:900px;height:310px"></div><div class="label" style="left:150px;top:466px">Shipped by the platform</div><div class="box blue" style="left:150px;top:520px;width:250px;height:84px;font-size:24px">AnalysisTemplate</div><div class="box blue" style="left:430px;top:520px;width:250px;height:84px;font-size:24px">AnalysisTemplate</div><div class="box blue" style="left:710px;top:520px;width:250px;height:84px;font-size:24px">AnalysisTemplate</div></div>
+ <div class="pd-chips" style="left:150px;top:650px"><span class="chip a" style="--d:6.2s">built from SLIs</span><span class="chip a" style="--d:8s">empty-result guard: already in</span></div>
+ <div class="a" style="--d:10.8s"><div class="label" style="left:1100px;top:466px;font-size:28px">Canary metrics: about a dozen</div></div>
+ <div class="pd-g" style="left:1100px;top:530px;grid-template-columns:repeat(6,64px);gap:26px"><i style="width:64px;height:64px;--d:11.20s"></i><i style="width:64px;height:64px;--d:11.32s"></i><i style="width:64px;height:64px;--d:11.44s"></i><i style="width:64px;height:64px;--d:11.56s"></i><i style="width:64px;height:64px;--d:11.68s"></i><i style="width:64px;height:64px;--d:11.80s"></i><i style="width:64px;height:64px;--d:11.92s"></i><i style="width:64px;height:64px;--d:12.04s"></i><i style="width:64px;height:64px;--d:12.16s"></i><i style="width:64px;height:64px;--d:12.28s"></i><i style="width:64px;height:64px;--d:12.40s"></i><i style="width:64px;height:64px;--d:12.52s"></i></div>
+ <div class="a" style="--d:14.2s"><div class="box" style="left:110px;top:810px;width:420px;height:110px">Prometheus<small>in every deploy path</small></div></div>
+ <svg><path class="line a" style="--d:17.4s" d="M530 865H700"/><path class="line a" style="--d:18.6s" d="M1120 865H1290"/></svg>
+ <div class="a" style="--d:17.4s"><div class="box red" style="left:700px;top:810px;width:420px;height:110px">AnalysisRun errors</div></div>
+ <div class="a" style="--d:18.6s"><div class="box blue" style="left:1290px;top:810px;width:420px;height:110px">alert the platform team</div></div>
+</section>
+
+<section class="scene"><div class="kick">Step 7 of 11</div><h1>Regional waves come from above the cluster</h1>
+ <div class="pd-chips" style="left:110px;top:300px"><span class="chip a" style="--d:.8s">Argo Rollouts: one cluster</span><span class="chip a" style="--d:5.2s">Argo CD Progressive Syncs (beta)</span><span class="chip a" style="--d:9s">or your deploy system</span></div>
+ <div class="a label" style="--d:4.2s;left:110px;top:468px;font-size:30px">Region 1</div><div class="pd-bar ro" style="left:330px;top:450px;width:200px;--d:4.2s"></div><div class="pd-bar bk" style="left:530px;top:450px;width:140px;--d:4.9s"></div><div class="a label" style="--d:5.8s;left:110px;top:588px;font-size:30px">Region 2</div><div class="pd-bar ro" style="left:670px;top:570px;width:200px;--d:5.8s"></div><div class="pd-bar bk" style="left:870px;top:570px;width:140px;--d:6.5s"></div><div class="a label" style="--d:7.4s;left:110px;top:708px;font-size:30px">Region 3</div><div class="pd-bar ro" style="left:1010px;top:690px;width:200px;--d:7.4s"></div><div class="pd-bar bk" style="left:1210px;top:690px;width:140px;--d:8.1s"></div>
+ <svg><path class="line a" style="--d:5.8s;stroke-dasharray:8 8" d="M670 430V650"/><path class="line a" style="--d:7.4s;stroke-dasharray:8 8" d="M1010 550V770"/></svg>
+ <div class="a label" style="--d:4.9s;left:330px;top:810px;font-size:26px"><span class="pd-sw" style="background:var(--green);border-radius:13px"></span>rollout &nbsp;&nbsp;&nbsp; <span class="pd-sw" style="background:repeating-linear-gradient(45deg,#bfe0a8 0 8px,#e9f6dc 8px 16px);border:2px solid var(--green);border-radius:13px"></span>bake</div>
+ <div class="a cap" style="--d:10.8s;bottom:84px;font-size:32px;right:560px">Count deploys that reached a second region before the first finished its bake.</div>
+ <div class="big a" style="--d:16s;left:1500px;top:470px;font-size:280px">0</div>
+ <div class="a label" style="--d:16s;left:1500px;top:440px;font-size:30px">the target</div>
+</section>
+
+<section class="scene"><div class="kick">Step 8 of 11</div><h1>Defaults drift unless something checks them</h1>
+ <div class="a" style="--d:3.4s"><div class="box blue" style="left:830px;top:330px;width:540px;height:130px">ValidatingAdmissionPolicy</div></div>
+ <div class="a" style="--d:5.6s"><div class="box" style="left:110px;top:330px;width:540px;height:130px">Production Deployment<small>skips the Rollout</small></div></div>
+ <svg><path class="line a" style="--d:5.6s" d="M650 395H830"/></svg>
+ <div class="pd-tag a" style="--d:7.2s;left:520px;top:306px">caught</div>
+ <div class="a" style="--d:8.6s"><div class="pd-rail"></div><div class="pd-stop" style="left:278px"></div><div class="pd-stop" style="left:938px"></div><div class="pd-stop" style="left:1598px"></div></div>
+ <div class="pd-knob a" style="--d:8.6s;--k1:10.6s;--k2:12.3s"></div>
+ <div class="pd-sl a" style="--d:8.8s;left:50px">Warn and Audit</div>
+ <div class="pd-sl a" style="--d:10.8s;left:710px">Fix what shows up</div>
+ <div class="pd-sl a t-blue" style="--d:12.5s;left:1370px">Deny</div>
+</section>
+
+<section class="scene"><div class="kick">Step 9 of 11</div><h1>Exceptions get an owner and an end date</h1>
+ <div class="a" style="--d:.8s"><div class="pd-panel" style="left:110px;top:310px;width:1050px;height:470px"></div><div class="label" style="left:150px;top:350px">Exception</div></div>
+ <div class="a label" style="--d:7s;left:735px;top:350px">Owner</div><div class="a label" style="--d:7.8s;left:945px;top:350px">End date</div>
+ <div class="pd-row a" style="--d:2.6s;top:440px">Singleton</div><div class="pd-ok a" style="--d:7.10s;left:700px;top:434px">✓</div><div class="pd-ok a" style="--d:7.90s;left:920px;top:434px">✓</div><div class="pd-hr a" style="--d:2.6s;top:516px"></div><div class="pd-row a" style="--d:3.4s;top:550px">Batch job</div><div class="pd-ok a" style="--d:7.25s;left:700px;top:544px">✓</div><div class="pd-ok a" style="--d:8.05s;left:920px;top:544px">✓</div><div class="pd-hr a" style="--d:3.4s;top:626px"></div><div class="pd-row a" style="--d:4.3s;top:660px">Too little traffic to judge</div><div class="pd-ok a" style="--d:7.40s;left:700px;top:654px">✓</div><div class="pd-ok a" style="--d:8.20s;left:920px;top:654px">✓</div>
+ <div class="pd-col" style="left:1300px;height:70px;--d:9.00s"></div><div class="pd-col" style="left:1400px;height:130px;--d:9.30s"></div><div class="pd-col" style="left:1500px;height:190px;--d:9.60s"></div><div class="pd-col" style="left:1600px;height:260px;--d:9.90s"></div><div class="pd-col" style="left:1700px;height:330px;--d:10.20s;background:var(--red)"></div>
+ <svg><path class="line a" style="--d:9s" d="M1280 770H1800"/></svg>
+ <div class="a cap" style="--d:9.2s;left:1280px;right:110px;bottom:auto;top:790px;font-size:32px">A list that only grows</div>
+ <div class="a cap t-red" style="--d:11.3s;left:1280px;right:110px;bottom:auto;top:840px;font-size:32px">means the policy is failing.</div>
+</section>
+
+<section class="scene"><div class="kick">Step 10 of 11</div><h1>How much of the fleet really uses it</h1>
+ <div class="a label" style="--d:6.6s;left:110px;top:330px">Argo Rollouts exports</div>
+ <div class="a" style="--d:8s"><div class="box mono" style="left:110px;top:370px;width:420px;height:90px;font-family:'IBM Plex Mono'">rollout_info</div></div>
+ <div class="a" style="--d:8.9s"><div class="box mono" style="left:110px;top:490px;width:420px;height:90px;font-family:'IBM Plex Mono'">analysis_run_info</div></div>
+ <div class="a" style="--d:11s"><div class="box amber" style="left:110px;top:680px;width:420px;height:90px">Deploy records</div></div>
+ <svg><path class="line a" style="--d:10.2s" d="M530 415L670 560"/><path class="line a" style="--d:10.2s" d="M530 535L670 580"/><path class="line a" style="--d:11s" d="M530 725L670 620"/><path class="line a" style="--d:12.4s" d="M790 590H900"/></svg>
+ <div class="a" style="--d:10.2s"><div class="box blue pd-join" style="left:670px;top:530px;width:120px;height:120px;font-size:28px">Join</div></div>
+ <div class="a" style="--d:.8s"><div class="pd-panel" style="left:900px;top:410px;width:910px;height:480px"></div><div class="pd-t" style="left:950px;top:440px">Fleet scorecard</div></div>
+ <div class="a label" style="--d:12.4s;left:950px;top:500px;font-size:26px">Share of production deploys that ran a gated canary</div>
+ <div class="a" style="--d:12.9s"><div class="label" style="left:950px;top:588px;font-size:26px">Org A</div><div class="track" style="left:1070px;top:580px;width:680px;height:44px"><div class="fill" style="background:var(--green);--w:82%;--d:13.2s"></div></div></div><div class="a" style="--d:13.5s"><div class="label" style="left:950px;top:668px;font-size:26px">Org B</div><div class="track" style="left:1070px;top:660px;width:680px;height:44px"><div class="fill" style="background:var(--green);--w:55%;--d:13.8s"></div></div></div><div class="a" style="--d:14.1s"><div class="label" style="left:950px;top:748px;font-size:26px">Org C</div><div class="track" style="left:1070px;top:740px;width:680px;height:44px"><div class="fill" style="background:var(--green);--w:91%;--d:14.4s"></div></div></div>
+ <div class="a label" style="--d:15.4s;left:950px;top:830px;font-size:22px;font-weight:400">per org &nbsp;·&nbsp; (Made-up example.)</div>
+</section>
+
+<section class="scene" style="--egg:9.6s"><div class="kick">Step 11 of 11</div><h1>Then check the gate does work</h1>
+ <div class="a" style="--d:6.6s"><div class="box blue" style="left:110px;top:330px;width:380px;height:110px">Gated services</div></div>
+ <div class="a" style="--d:7.4s"><div class="box" style="left:640px;top:330px;width:380px;height:110px">Ungated services</div></div>
+ <div class="a label" style="--d:3.4s;left:540px;top:366px;font-size:30px">vs</div>
+ <div class="a label" style="--d:3.4s;left:110px;top:462px;font-size:28px">Compare change fail rate (DORA)</div>
+ <div class="a label" style="--d:8.8s;left:110px;top:540px;font-size:28px">Aborts per 100 deploys</div>
+ <div class="pd-g" style="left:110px;top:590px;grid-template-columns:repeat(25,28px);gap:12px"><i style="width:28px;height:28px;--d:9.00s"></i><i style="width:28px;height:28px;--d:9.02s"></i><i style="width:28px;height:28px;--d:9.04s"></i><i style="width:28px;height:28px;--d:9.06s"></i><i style="width:28px;height:28px;--d:9.08s"></i><i style="width:28px;height:28px;--d:9.10s"></i><i style="width:28px;height:28px;--d:9.12s"></i><i style="width:28px;height:28px;--d:9.14s"></i><i style="width:28px;height:28px;--d:9.16s"></i><i style="width:28px;height:28px;--d:9.18s"></i><i style="width:28px;height:28px;--d:9.20s"></i><i style="width:28px;height:28px;--d:9.22s"></i><i style="width:28px;height:28px;--d:9.24s"></i><i style="width:28px;height:28px;--d:9.26s"></i><i style="width:28px;height:28px;--d:9.28s"></i><i style="width:28px;height:28px;--d:9.30s"></i><i style="width:28px;height:28px;--d:9.32s"></i><i style="width:28px;height:28px;--d:9.34s"></i><i style="width:28px;height:28px;--d:9.36s"></i><i style="width:28px;height:28px;--d:9.38s"></i><i style="width:28px;height:28px;--d:9.40s"></i><i style="width:28px;height:28px;--d:9.42s"></i><i style="width:28px;height:28px;--d:9.44s"></i><i style="width:28px;height:28px;--d:9.46s"></i><i style="width:28px;height:28px;--d:9.48s"></i><i style="width:28px;height:28px;--d:9.50s"></i><i style="width:28px;height:28px;--d:9.52s"></i><i style="width:28px;height:28px;--d:9.54s"></i><i style="width:28px;height:28px;--d:9.56s"></i><i style="width:28px;height:28px;--d:9.58s"></i><i style="width:28px;height:28px;--d:9.60s"></i><i style="width:28px;height:28px;--d:9.62s"></i><i style="width:28px;height:28px;--d:9.64s"></i><i style="width:28px;height:28px;--d:9.66s"></i><i style="width:28px;height:28px;--d:9.68s"></i><i style="width:28px;height:28px;--d:9.70s"></i><i style="width:28px;height:28px;--d:9.72s"></i><i style="width:28px;height:28px;--d:9.74s"></i><i style="width:28px;height:28px;--d:9.76s"></i><i style="width:28px;height:28px;--d:9.78s"></i><i style="width:28px;height:28px;--d:9.80s"></i><i style="width:28px;height:28px;--d:9.82s"></i><i style="width:28px;height:28px;--d:9.84s"></i><i style="width:28px;height:28px;--d:9.86s"></i><i style="width:28px;height:28px;--d:9.88s"></i><i style="width:28px;height:28px;--d:9.90s"></i><i style="width:28px;height:28px;--d:9.92s"></i><i style="width:28px;height:28px;--d:9.94s"></i><i style="width:28px;height:28px;--d:9.96s"></i><i style="width:28px;height:28px;--d:9.98s"></i><i style="width:28px;height:28px;--d:10.00s"></i><i style="width:28px;height:28px;--d:10.02s"></i><i style="width:28px;height:28px;--d:10.04s"></i><i style="width:28px;height:28px;--d:10.06s"></i><i style="width:28px;height:28px;--d:10.08s"></i><i style="width:28px;height:28px;--d:10.10s"></i><i style="width:28px;height:28px;--d:10.12s"></i><i style="width:28px;height:28px;--d:10.14s"></i><i style="width:28px;height:28px;--d:10.16s"></i><i style="width:28px;height:28px;--d:10.18s"></i><i style="width:28px;height:28px;--d:10.20s"></i><i style="width:28px;height:28px;--d:10.22s"></i><i style="width:28px;height:28px;--d:10.24s"></i><i style="width:28px;height:28px;--d:10.26s"></i><i style="width:28px;height:28px;--d:10.28s"></i><i style="width:28px;height:28px;--d:10.30s"></i><i style="width:28px;height:28px;--d:10.32s"></i><i style="width:28px;height:28px;--d:10.34s"></i><i style="width:28px;height:28px;--d:10.36s"></i><i style="width:28px;height:28px;--d:10.38s"></i><i style="width:28px;height:28px;--d:10.40s"></i><i style="width:28px;height:28px;--d:10.42s"></i><i style="width:28px;height:28px;--d:10.44s"></i><i style="width:28px;height:28px;--d:10.46s"></i><i style="width:28px;height:28px;--d:10.48s"></i><i style="width:28px;height:28px;--d:10.50s"></i><i style="width:28px;height:28px;--d:10.52s"></i><i style="width:28px;height:28px;--d:10.54s"></i><i style="width:28px;height:28px;--d:10.56s"></i><i style="width:28px;height:28px;--d:10.58s"></i><i style="width:28px;height:28px;--d:10.60s"></i><i style="width:28px;height:28px;--d:10.62s"></i><i style="width:28px;height:28px;--d:10.64s"></i><i style="width:28px;height:28px;--d:10.66s"></i><i style="width:28px;height:28px;--d:10.68s"></i><i style="width:28px;height:28px;--d:10.70s"></i><i style="width:28px;height:28px;--d:10.72s"></i><i style="width:28px;height:28px;--d:10.74s"></i><i style="width:28px;height:28px;--d:10.76s"></i><i style="width:28px;height:28px;--d:10.78s"></i><i style="width:28px;height:28px;--d:10.80s"></i><i style="width:28px;height:28px;--d:10.82s"></i><i style="width:28px;height:28px;--d:10.84s"></i><i style="width:28px;height:28px;--d:10.86s"></i><i style="width:28px;height:28px;--d:10.88s"></i><i style="width:28px;height:28px;--d:10.90s"></i><i style="width:28px;height:28px;--d:10.92s"></i><i style="width:28px;height:28px;--d:10.94s"></i><i style="width:28px;height:28px;--d:10.96s"></i><i style="width:28px;height:28px;--d:10.98s"></i></div>
+ <div class="a" style="--d:11.8s"><div class="box amber" style="left:1180px;top:590px;width:560px;height:150px;font-size:34px">A gate that never aborts<small style="font-size:24px">is probably watching the wrong metric</small></div></div>
+ <div class="a cap muted" style="--d:12.6s;bottom:76px;font-size:28px">SRE Lab · Delivery · Rollout policy as a platform default</div>
+ <div class="critter"><div id="critter"></div></div>
+</section>
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 3 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../delivery/#progressive-delivery">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Rollout policy as a platform default. How do you make wave-based, metric-gated rollout the default for every service in the fleet, and how do you measure how much of the fleet actually uses it? There are two halves. First, one service's canary, as the worked example. Then, how the platform gives every service that canary by default, and checks that it does.", "Google's S R E workbook says most of its incidents start with a binary or config push. So code, config and flag pushes all go out in steps, with a metric gate. And no team should have to build that machinery itself.", "The default lives in the service template. A new service on the golden path starts as a Rollout, with standard steps and the shared analysis already wired in. A team that does nothing gets the safe path.", "Here is one service. Argo C D syncs a new image. The Rollouts controller creates a canary replica set, and tells the router to send it twenty percent of traffic. Stable stays fully scaled, so traffic can snap back.", "An analysis run queries Prometheus on an interval. Say, requests that did not return a five hundred error, over all requests, at ninety-five percent or better. Past the failure limit, the rollout aborts and the canary drops to zero. An inconclusive result pauses for a human.", "Teams shouldn't each write that query. The platform ships analysis templates built from service level indicators, with the empty-result guard already in. Google advises keeping canary metrics to about a dozen. Prometheus is now in every deploy path, so analysis run errors alert the platform team.", "Argo Rollouts works inside one cluster. So regional waves come from Argo C D Progressive Syncs, which is in beta, or from your deploy system. Count the deploys that reached a second region before the first finished its bake. The target is zero.", "Defaults drift unless something checks them. A validating admission policy can catch a production Deployment that skips the Rollout. Run it in Warn and Audit first, fix what shows up, then switch to Deny.", "Some services need an exception: a singleton, a batch job, or too little traffic to judge. Each exception gets an owner and an end date. A list that only grows means the policy is failing.", "The scorecard says how much of the fleet really uses it. Argo Rollouts exports two metrics, rollout info and analysis run info. Join them with deploy records to get the share of production deploys that ran a gated canary, per org.", "Then check that the gate does work. Compare change fail rate, the DORA measure, for gated and ungated services, and count aborts per hundred deploys. A gate that never aborts is probably watching the wrong metric."], "seconds": [22.46, 14.91, 13.1, 14.93, 18.94, 20.07, 16.92, 13.14, 12.8, 16.13, 14.14]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

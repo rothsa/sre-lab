@@ -2,6 +2,7 @@
 export const CHAPTERS = [
   {
     id: "trunk-without-blocking-review",
+    film: "../films/trunk-without-blocking-review/",
     n: 9,
     title: "Trunk-based delivery without a blocking review",
     question: "Teams want to land on main many times a day, and agents now open more changes than people can read. If review stops blocking the merge, where does each job the pull request did go?",
@@ -83,6 +84,7 @@ export const CHAPTERS = [
   },
   {
     id: "review-lanes",
+    film: "../films/review-lanes/",
     n: 10,
     title: "Review lanes set by risk",
     question: "Across hundreds of repos, who decides which changes land with no human review, which need one person and which need two, and how do you know the lanes are safe?",

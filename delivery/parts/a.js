@@ -4,6 +4,7 @@ export const CHAPTERS = [
   // ---------------------------------------------------------------- 1
   {
     id: "ci-pipeline",
+    film: "../films/ci-pipeline/",
     n: 1,
     title: "CI as a shared service",
     question: "2,000 engineers share one CI. What has to stay fast and trusted for a pull request to merge, and which numbers tell you it is slipping?",
@@ -141,6 +142,7 @@ publish:
   // ---------------------------------------------------------------- 2
   {
     id: "artifacts-promotion",
+    film: "../films/artifacts-promotion/",
     n: 2,
     title: "Build once, promote everywhere",
     question: "Thousands of services build on every merge. How do you make sure each one runs in production exactly what it ran in staging, and that the previous version is still there to roll back to?",
@@ -244,6 +246,7 @@ publish:
   // ---------------------------------------------------------------- 3
   {
     id: "gitops",
+    film: "../films/gitops/",
     n: 3,
     title: "Desired-state control across hundreds of clusters",
     question: "With Argo CD managing hundreds of clusters, how do you know how much of the fleet matches Git right now, and what is the policy when someone has to change production by hand?",
@@ -400,6 +403,7 @@ count by (project) (
   // ---------------------------------------------------------------- 4
   {
     id: "progressive-delivery",
+    film: "../films/progressive-delivery/",
     n: 4,
     title: "Rollout policy as a platform default",
     question: "How do you make wave-based, metric-gated rollout the default for every service in the fleet, and how do you measure how much of the fleet actually uses it?",

@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Build once, promote everywhere: the film</title>
+<meta name="description" content="A short narrated film: build one image, deploy the same digest to dev, staging and production, and keep the previous digest for rollback.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.ap-pill{position:absolute;height:64px;padding:0 26px;border-radius:999px;background:#fff;border:2.5px solid var(--blue);font:600 26px "IBM Plex Mono",monospace;display:flex;align-items:center;justify-content:center;white-space:nowrap;box-shadow:0 8px 20px rgba(20,70,35,.12)}
+.ap-frame{position:absolute;border:4px dashed var(--blue);border-radius:44px;background:rgba(255,255,255,.55)}
+.ap-chips{position:absolute;left:110px;white-space:nowrap}
+/* s1 */
+.ap-svcs{position:absolute;left:112px;top:312px;display:grid;grid-template-columns:repeat(28,16px);gap:8px}
+.ap-svcs i{width:16px;height:16px;border-radius:5px 2px 5px 2px;background:#d6e6c8;display:block}
+.scene.on .ap-svcs i{animation:ap-blink 2.4s 1.2s infinite}
+.scene.on .ap-svcs i:nth-child(3n){animation-delay:1.8s}.scene.on .ap-svcs i:nth-child(5n+1){animation-delay:2.3s}.scene.on .ap-svcs i:nth-child(7n+2){animation-delay:2.9s}
+@keyframes ap-blink{0%,100%{background:#d6e6c8}30%{background:#3f9a4f}}
+.ap-old{position:absolute;height:44px;width:170px;border-radius:999px;border:2px solid var(--rule);background:var(--panel);font:400 20px "IBM Plex Mono",monospace;color:var(--muted);display:flex;align-items:center;justify-content:center}
+/* s2 */
+.ap-bytes{position:absolute;left:130px;top:560px;display:grid;grid-template-columns:repeat(8,34px);gap:8px}
+.ap-bytes i{width:34px;height:34px;border-radius:9px 3px 9px 3px;background:#bcd9ab;display:block}
+.ap-bytes i:nth-child(3n){background:#3f9a4f}.ap-bytes i:nth-child(4n+1){background:#8fc48a}
+.ap-digest{position:absolute;font:600 84px/1 "IBM Plex Mono",monospace;color:var(--blue);letter-spacing:-.02em;white-space:nowrap}
+.ap-cert{position:absolute;border-radius:32px 10px 32px 10px;background:#fff;box-shadow:0 24px 60px rgba(20,70,35,.16);padding:34px 40px;font:400 28px/1.5 "IBM Plex Sans"}
+.ap-cert b{font:800 34px "Archivo";display:block;margin-bottom:6px}
+.ap-row{display:flex;justify-content:space-between;align-items:center;border-top:2px solid #e3eedb;padding-top:12px;margin-top:14px;font-weight:600}
+.scene.on .ap-push{animation:ap-push 2.2s cubic-bezier(.4,0,.2,1) 1.6s both}
+@keyframes ap-push{0%{opacity:0;transform:translateX(0)}15%{opacity:1}85%{opacity:1}100%{opacity:0;transform:translateX(330px)}}
+/* s3 */
+.ap-tag{position:absolute;left:330px;top:296px;height:66px;padding:0 30px 0 44px;border-radius:12px 999px 999px 12px;background:var(--amber);color:#fff;font:600 30px "IBM Plex Mono",monospace;display:flex;align-items:center;box-shadow:0 10px 22px rgba(217,152,30,.3)}
+.ap-tag::before{content:"";position:absolute;left:16px;top:25px;width:16px;height:16px;border-radius:50%;background:#fff}
+.ap-tag::after{content:"";position:absolute;left:90px;top:66px;width:4px;height:36px;background:var(--amber)}
+.scene.on .ap-tag{animation:in .7s .8s both,ap-move 1.6s cubic-bezier(.5,0,.2,1) 3.6s forwards}
+@keyframes ap-move{to{transform:translateX(640px)}}
+.scene.on .ap-swap{animation:in .7s var(--d) both,ap-toB .6s 12.6s forwards}
+@keyframes ap-toB{to{border-color:var(--amber);background:#fbefd0}}
+.ap-two{position:relative;display:block;height:26px;width:100%}
+.ap-two span{position:absolute;left:0;right:0;top:0;font:400 20px "IBM Plex Mono",monospace;color:var(--muted)}
+.scene.on .ap-two .ap-t1{animation:ap-hide .4s var(--s) forwards}
+.ap-two .ap-t2{opacity:0}
+.scene.on .ap-two .ap-t2{animation:ap-show .4s var(--s) forwards}
+@keyframes ap-hide{to{opacity:0}}@keyframes ap-show{to{opacity:1}}
+/* s4 */
+.scene.on .ap-drop{animation:ap-dropin 1.4s cubic-bezier(.3,.7,.2,1) .9s both}
+@keyframes ap-dropin{from{opacity:0;transform:translateX(-520px)}to{opacity:1;transform:none}}
+.ap-cfg{position:absolute;border-radius:30px 10px 30px 10px;border:2.5px solid var(--amber);background:#fbefd0;padding:26px 34px;font:600 30px/1.2 "IBM Plex Sans";box-shadow:0 10px 28px rgba(20,70,35,.10)}
+.ap-cfg div{font:400 28px/1.75 "IBM Plex Mono",monospace}
+/* s5 */
+.ap-env{position:absolute;top:400px;width:470px;height:300px;border-radius:40px 12px 40px 12px;border:2.5px solid var(--blue);background:#dff0d3;box-shadow:0 10px 28px rgba(20,70,35,.10);padding:34px 20px;text-align:center;font:800 44px "Archivo"}
+.ap-env .mono{display:block;margin-top:38px;font-weight:600;font-size:46px;color:var(--blue)}
+.ap-env small{display:block;margin-top:26px;font:400 22px "IBM Plex Mono",monospace;color:var(--muted)}
+.ap-env.ap-ghost{border-style:dashed;background:rgba(255,255,255,.55)}
+.ap-eq{position:absolute;top:478px;width:140px;text-align:center;font:900 130px/1 "Archivo";color:var(--green)}
+/* s6 */
+.ap-q{position:absolute;left:130px;top:320px;display:grid;grid-template-columns:repeat(7,84px);gap:16px}
+.ap-q i{position:relative;width:84px;height:66px;border-radius:18px 6px 18px 6px;background:var(--panel);border:2.5px solid var(--rule);display:block}
+.ap-q i::after{content:"";position:absolute;left:30px;top:13px;width:16px;height:30px;border:solid var(--amber);border-width:0 6px 6px 0;transform:rotate(42deg);opacity:0}
+.scene.on .ap-q i{animation:ap-st .25s var(--d) forwards}
+.scene.on .ap-q i::after{animation:ap-show .2s var(--d) forwards}
+@keyframes ap-st{to{background:#fbefd0;border-color:var(--amber)}}
+/* s7 */
+.ap-gate{position:absolute;left:668px;top:365px;width:24px;height:230px;border-radius:12px;background:var(--amber);transform-origin:50% 0}
+.scene.on .ap-gate{animation:in .5s .2s both,ap-open .8s 1.4s forwards}
+@keyframes ap-open{to{transform:scaleY(.22);background:var(--green)}}
+.scene.on .ap-go{animation:ap-thru 2.6s cubic-bezier(.4,0,.2,1) 1.7s both}
+@keyframes ap-thru{0%{opacity:0;transform:translateX(0)}12%{opacity:1}100%{opacity:1;transform:translateX(var(--dx))}}
+.scene.on .ap-rules{animation:in .7s 4.4s both,ap-pass .5s 6.6s forwards}
+@keyframes ap-pass{to{border-color:var(--green);background:#e9f6dc}}
+/* s8 */
+.ap-bar{position:absolute;height:36px;border-radius:18px;background:#d6e6c8;overflow:hidden}
+.scene.on .ap-wait{animation:in .7s 13.6s both,ap-pass .6s 16.2s forwards}
+/* s9 */
+.ap-shelf{position:absolute;left:130px;width:560px;height:68px;border-radius:22px 8px 22px 8px;border:2.5px solid var(--rule);background:var(--panel);display:flex;align-items:center;justify-content:space-between;padding:0 28px;font:600 26px "IBM Plex Mono",monospace;box-shadow:0 8px 20px rgba(20,70,35,.08)}
+.ap-shelf small{font:400 22px "IBM Plex Sans";color:var(--muted)}
+.scene.on .ap-exp{animation:in .7s var(--d) both,ap-gone .7s var(--o) forwards}
+@keyframes ap-gone{to{opacity:.16;border-style:dashed}}
+.scene.on .ap-risk{animation:in .7s var(--d) both,ap-warn .5s var(--o) forwards,ap-keep .6s var(--k) forwards}
+@keyframes ap-warn{to{border-color:var(--red);background:#fbe4d9}}
+@keyframes ap-keep{to{border-color:var(--green);background:#e9f6dc}}
+.ap-rb{stroke:var(--blue);stroke-width:4;fill:none;stroke-dasharray:12 10}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../delivery/#artifacts-promotion">Delivery</a> · film · recorded 15 Nov 2026</div>
+  <h1 class="page">Build once, promote everywhere</h1>
+  <div id="viewport">
+    <div id="stage">
+<!-- 1 -->
+<section class="scene"><div class="kick">Delivery · chapter 2</div><h1>Build once,<br>promote everywhere</h1>
+ <div class="ap-svcs a" style="--d:1.2s"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+ <div class="ap-chips" style="top:402px"><span class="chip a" style="--d:6.2s">Production runs exactly what staging ran?</span><span class="chip a" style="--d:11.5s">Previous version still there?</span></div>
+ <svg><path class="line a" style="--d:18s" d="M280 640V530H1530M770 530V570M1150 530V570M1530 530V570"/></svg>
+ <div class="a" style="--d:17s"><div class="box blue" style="left:130px;top:640px;width:300px;height:130px;font-size:36px">One artifact</div></div>
+ <div class="a" style="--d:18.1s"><div class="box" style="left:620px;top:570px;width:300px;height:100px">Dev</div></div>
+ <div class="a" style="--d:18.4s"><div class="box" style="left:1000px;top:570px;width:300px;height:100px">Staging</div></div>
+ <div class="a" style="--d:18.7s"><div class="box" style="left:1380px;top:570px;width:300px;height:100px">Production</div></div>
+ <div class="a" style="--d:19.2s"><div class="box amber" style="left:650px;top:700px;width:240px;height:70px;font-size:24px">Dev config</div></div>
+ <div class="a" style="--d:19.5s"><div class="box amber" style="left:1030px;top:700px;width:240px;height:70px;font-size:24px">Staging config</div></div>
+ <div class="a" style="--d:19.8s"><div class="box amber" style="left:1410px;top:700px;width:240px;height:70px;font-size:24px">Prod config</div></div>
+ <div class="a label" style="color:var(--blue);--d:21.2s;left:620px;top:486px;font-size:26px">The only path for every service</div>
+ <div class="a" style="--d:22.8s"><div class="label" style="left:130px;top:812px">Old digests, kept for rollback</div>
+  <div class="ap-old" style="left:130px;top:856px">sha256:…</div><div class="ap-old" style="left:316px;top:856px">sha256:…</div><div class="ap-old" style="left:502px;top:856px">sha256:…</div></div>
+</section>
+
+<!-- 2 -->
+<section class="scene"><div class="kick">Step 2 of 9</div><h1>One build, one digest</h1>
+ <div class="a" style="--d:.7s"><div class="box" style="left:130px;top:310px;width:280px;height:120px">CI pipeline<small>builds once</small></div></div>
+ <svg><path class="line a" style="--d:1.4s" d="M410 370H800"/></svg>
+ <div class="ap-pill ap-push" style="left:430px;top:338px;opacity:0">image</div>
+ <div class="a" style="--d:2.6s"><div class="box blue" style="left:800px;top:310px;width:300px;height:120px">Registry</div></div>
+ <div class="a" style="--d:4.8s"><div class="label" style="left:130px;top:516px">The content</div><div class="ap-bytes"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+ <div class="a ap-digest" style="--d:6s;left:530px;top:584px"><span class="muted" style="font-weight:400">→</span> sha256:9f2c…</div>
+ <div class="a cap" style="--d:8.6s;left:130px;right:auto;bottom:auto;top:770px">Same digest, same bytes. Always.</div>
+ <div class="a ap-cert" style="--d:11.6s;left:1270px;top:500px;width:500px"><b>Attestation</b>Provenance, bound to the digest
+  <div class="ap-row a" style="--d:16.4s"><span>From your CI</span><span class="t-green">yes</span></div>
+  <div class="ap-row a" style="--d:17.8s"><span>From a laptop</span><span class="t-red">no</span></div></div>
+</section>
+
+<!-- 3 -->
+<section class="scene"><div class="kick">Step 3 of 9</div><h1>A tag is a movable name</h1>
+ <div class="ap-tag a">v1.4.2</div>
+ <div class="a" style="--d:.4s"><div class="box blue" style="left:300px;top:400px;width:380px;height:100px"><span class="mono">sha256:9f2c…</span></div></div>
+ <div class="a" style="--d:2.6s"><div class="box amber" style="left:940px;top:400px;width:380px;height:100px">A different image</div></div>
+ <svg><path class="line a" style="--d:6.6s" d="M430 500V610"/><path class="line a" style="--d:8.8s;stroke:var(--amber)" d="M1130 500V610"/><path class="line a" style="--d:12.6s;stroke:var(--amber);stroke-dasharray:10 10" d="M1250 500L1560 610"/></svg>
+ <div class="a" style="--d:6.6s"><div class="box blue" style="left:250px;top:610px;width:360px;height:120px">Node<small>pulled v1.4.2 earlier</small></div></div>
+ <div class="a" style="--d:8.8s"><div class="box amber" style="left:950px;top:610px;width:360px;height:120px">Node<small>pulled v1.4.2 later</small></div></div>
+ <div class="box blue a ap-swap" style="--d:11s;left:1400px;top:610px;width:360px;height:120px">Replaced node<span class="ap-two" style="--s:12.6s"><span class="ap-t1">pulls v1.4.2 again</span><span class="ap-t2">silently upgraded</span></span></div>
+ <div class="ap-chips" style="top:860px"><span class="chip a" style="--d:14.2s">Tag immutability: on</span><span class="chip a" style="--d:17.6s">Reused tag: push rejected</span><span class="chip a" style="--d:20.4s">Pin digests in manifests</span></div>
+</section>
+
+<!-- 4 -->
+<section class="scene"><div class="kick">Step 4 of 9</div><h1>Config stays out of the image</h1>
+ <div class="a" style="--d:.3s"><div class="ap-frame" style="left:560px;top:310px;width:560px;height:470px"></div><div class="label t-blue" style="left:596px;top:334px;font-size:26px">Dev</div></div>
+ <div class="box blue ap-drop" style="left:630px;top:400px;width:420px;height:130px;opacity:0">Image<small style="font-size:24px">sha256:9f2c…</small></div>
+ <div class="a ap-cfg" style="--d:2.6s;left:1290px;top:420px;width:440px">Dev config<div class="a" style="--d:3.6s">endpoints</div><div class="a" style="--d:4.2s">flags</div><div class="a" style="--d:4.8s">credentials</div></div>
+ <svg><path class="line a" style="--d:5.4s;stroke:var(--amber)" d="M1290 640H1050"/></svg>
+ <div class="dot" style="left:1262px;top:631px;--dx:-200px;--d:5.6s;background:var(--amber)"></div><div class="dot" style="left:1262px;top:631px;--dx:-200px;--d:7.2s;background:var(--amber)"></div>
+ <div class="a" style="--d:5.6s"><div class="box" style="left:630px;top:580px;width:420px;height:120px;border-style:dashed;border-color:var(--amber)">Injected<small>at deploy time</small></div></div>
+ <div class="a label" style="--d:10.6s;left:150px;top:440px;font-size:28px;width:360px;line-height:1.35">The image:<br><span class="t-blue">no config inside</span></div>
+ <div class="a label" style="--d:13s;left:1290px;top:760px;font-size:28px">Its own reviewed path</div>
+ <div class="a cap" style="--d:7.4s;bottom:84px">Config is whatever differs between deploys.</div>
+</section>
+
+<!-- 5 -->
+<section class="scene"><div class="kick">Step 5 of 9</div><h1>Nothing is rebuilt</h1>
+ <div class="a ap-env" style="--d:.2s;left:120px">Dev<span class="mono">sha256:9f2c…</span><small class="a t-green" style="--d:.9s;color:var(--green);font-weight:600;font-size:26px">checks pass</small></div>
+ <div class="a ap-eq" style="--d:3.4s;left:595px">=</div>
+ <div class="a ap-env" style="--d:2.8s;left:740px">Staging<span class="mono">sha256:9f2c…</span><small class="a" style="--d:5s;font-size:24px">+ staging config</small></div>
+ <div class="a ap-eq" style="--d:9s;left:1215px">=</div>
+ <div class="a ap-env ap-ghost" style="--d:8.4s;left:1360px;width:440px">Production<span class="mono">sha256:9f2c…</span><small style="font-size:24px">will run</small></div>
+ <div class="a cap" style="--d:6.2s;bottom:150px;text-align:center;font-size:40px"><span class="mono strike muted">rebuild</span>&nbsp; Same digest, moved along.</div>
+</section>
+
+<!-- 6 -->
+<section class="scene"><div class="kick">Step 6 of 9</div><h1>Approve everything, read nothing</h1>
+ <div class="ap-q"><i style="--d:0.90s"></i><i style="--d:1.06s"></i><i style="--d:1.22s"></i><i style="--d:1.38s"></i><i style="--d:1.54s"></i><i style="--d:1.70s"></i><i style="--d:1.86s"></i><i style="--d:2.02s"></i><i style="--d:2.18s"></i><i style="--d:2.34s"></i><i style="--d:2.50s"></i><i style="--d:2.66s"></i><i style="--d:2.82s"></i><i style="--d:2.98s"></i><i style="--d:3.14s"></i><i style="--d:3.30s"></i><i style="--d:3.46s"></i><i style="--d:3.62s"></i><i style="--d:3.78s"></i><i style="--d:3.94s"></i><i style="--d:4.10s"></i><i style="--d:4.26s"></i><i style="--d:4.42s"></i><i style="--d:4.58s"></i><i style="--d:4.74s"></i><i style="--d:4.90s"></i><i style="--d:5.06s"></i><i style="--d:5.22s"></i></div>
+ <div class="a label" style="--d:1s;left:130px;top:670px;font-size:26px">Every deploy of every service</div>
+ <div class="a label" style="color:var(--amber);--d:4.6s;left:130px;top:712px;font-size:34px">Rubber-stamping</div>
+ <div class="a" style="--d:6.4s"><div class="box amber" style="left:950px;top:400px;width:800px;height:130px;font-size:34px">High-risk tiers<small style="font-size:24px">required reviewers</small></div></div>
+ <div class="a" style="--d:9s"><div class="box green" style="left:950px;top:570px;width:800px;height:130px;font-size:34px">The rest<small style="font-size:24px">automated checks</small></div></div>
+ <div class="ap-chips" style="top:860px"><span class="chip a" style="--d:12s">GitHub environments: custom protection rules from GitHub Apps</span></div>
+</section>
+
+<!-- 7 -->
+<section class="scene"><div class="kick">Step 7 of 9</div><h1>Through the gate, to production</h1>
+ <div class="a" style="--d:.2s"><div class="box" style="left:130px;top:425px;width:300px;height:110px">Staging</div></div>
+ <svg><path class="line a" style="--d:.3s" d="M430 480H900"/><path class="line a" style="--d:6.8s" d="M480 792H900"/></svg>
+ <div class="ap-gate a"></div><div class="a label" style="--d:.3s;left:636px;top:612px">The gate</div>
+ <div class="a" style="--d:.5s"><div class="box blue" style="left:900px;top:350px;width:400px;height:190px;font-size:34px;justify-content:flex-start;padding-top:24px">Production</div></div>
+ <div class="ap-pill ap-go" style="left:450px;top:448px;--dx:495px;opacity:0">sha256:9f2c…</div>
+ <div class="box amber ap-rules a" style="left:130px;top:732px;width:350px;height:120px">Protection rules<span class="ap-two" style="--s:6.6s"><span class="ap-t1">checking</span><span class="ap-t2">pass</span></span></div>
+ <div class="a" style="--d:4.6s"><div class="box" style="left:900px;top:662px;width:400px;height:190px;justify-content:flex-start;padding-top:24px">The job</div></div>
+ <div class="ap-pill ap-go" style="left:500px;top:760px;--dx:432px;opacity:0;animation-delay:6.9s;border-color:var(--amber);font:600 26px 'IBM Plex Sans'">Environment secrets</div>
+ <div class="a ap-cert" style="--d:9s;left:1370px;top:520px;width:430px"><b>OIDC trust policy</b>can require
+  <div class="ap-row a mono t-blue" style="--d:11.2s;font-size:25px;justify-content:flex-start">environment: production</div></div>
+</section>
+
+<!-- 8 -->
+<section class="scene"><div class="kick">Step 8 of 9</div><h1>Wait for every region</h1>
+ <div class="a" style="--d:.5s"><div class="box blue" style="left:130px;top:500px;width:330px;height:160px;font-size:34px">Registry<small style="font-size:22px">sha256:9f2c…</small></div></div>
+ <svg><path class="line a" style="--d:1.2s" d="M460 550L560 438M460 610L560 718"/><path class="line a" style="--d:13.6s" d="M1420 438L1500 540M1420 718L1500 620"/></svg>
+ <div class="a" style="--d:1.2s"><div class="ap-bar" style="left:560px;top:420px;width:520px"><div class="fill" style="background:var(--green);--w:100%;--d:11s"></div></div>
+  <div class="ap-bar" style="left:560px;top:700px;width:520px"><div class="fill" style="background:var(--green);--w:100%;--d:11.5s"></div></div></div>
+ <div class="a" style="--d:1.8s"><div class="box" style="left:1110px;top:380px;width:310px;height:116px">Region<small class="a" style="--d:12.6s;color:var(--green)">digest arrived</small></div>
+  <div class="box" style="left:1110px;top:660px;width:310px;height:116px">Region<small class="a" style="--d:13.1s;color:var(--green)">digest arrived</small></div></div>
+ <div class="a label" style="--d:11s;left:560px;top:560px;font-size:28px;width:520px;text-align:center">Most images arrive<br>within 30 minutes</div>
+ <div class="box amber ap-wait a" style="left:1500px;top:510px;width:290px;height:140px;font-size:34px">Deploy<span class="ap-two" style="--s:16.2s"><span class="ap-t1">waiting</span><span class="ap-t2">in each region</span></span></div>
+ <div class="ap-chips" style="top:880px"><span class="chip a" style="--d:5s">Copies only images pushed after setup</span><span class="chip a" style="--d:9.4s">Deletes are not replicated</span></div>
+</section>
+
+<!-- 9 -->
+<section class="scene" style="--egg:14.2s"><div class="kick">Step 9 of 9</div><h1>Rollback needs the old digest</h1>
+ <div class="ap-shelf a ap-risk" style="--d:.3s;--o:5.6s;--k:11.4s;top:300px"><span>current digest</span><small>running</small></div>
+ <div class="ap-shelf a ap-risk" style="--d:.5s;--o:7.6s;--k:11.8s;top:384px"><span>previous digest</span><small>for rollback</small></div>
+ <div class="ap-shelf a ap-exp" style="--d:.7s;--o:4.4s;top:468px"><span>older digest</span><small class="a" style="--d:4.6s">expired</small></div>
+ <div class="ap-shelf a ap-exp" style="--d:.9s;--o:4.7s;top:552px"><span>older digest</span><small class="a" style="--d:4.9s">expired</small></div>
+ <div class="ap-shelf a ap-exp" style="--d:1.1s;--o:5s;top:636px"><span>older digest</span><small class="a" style="--d:5.2s">expired</small></div>
+ <div class="a" style="--d:.6s"><div class="box blue" style="left:1010px;top:300px;width:360px;height:120px;font-size:34px">Production</div></div>
+ <svg><path class="ap-rb a" style="--d:1.6s" d="M1010 392C900 418 800 418 700 418"/><path class="a" style="--d:1.6s;fill:var(--blue)" d="M690 418l22-12v24z"/></svg>
+ <div class="a label" style="color:var(--blue);--d:1.8s;left:740px;top:440px;font-size:24px">redeploy</div>
+ <div class="a label" style="--d:3.4s;left:740px;top:560px;font-size:28px">Lifecycle rules</div>
+ <div class="ap-chips" style="left:740px;top:608px"><span class="chip a" style="--d:9.3s">Preview them</span><span class="chip a" style="--d:10.6s">Exclude release tags</span><span class="chip a" style="--d:12.6s;margin-right:0">Keep the last few deployed</span></div>
+ <div class="a label" style="--d:14.6s;left:740px;top:700px;font-size:24px">Old code must fit today's</div>
+ <div class="ap-chips" style="left:1050px;top:684px"><span class="chip a" style="--d:16.4s;padding:8px 22px">schema</span><span class="chip a" style="--d:17s;padding:8px 22px">data</span><span class="chip a" style="--d:17.6s;padding:8px 22px">config</span></div>
+ <div class="critter"><div id="critter"></div></div>
+</section>
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 3 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../delivery/#artifacts-promotion">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Build once, promote everywhere. Thousands of services build on every merge. How do you make sure each one runs in production exactly what it ran in staging, and that the previous version is still there to roll back to? We'll follow one service's release: one artifact, three environments, three configs. The platform makes that the only path for every service, and keeps old digests around for rollback.", "C I builds the image once and pushes it. The digest is a hash of the content, so it always means the same bytes. With many build systems, artifact attestations bind provenance to the digest. Verifying the attestation proves the image came from your C I and not a laptop.", "A tag like version one point four point two is a movable name. Nodes that pull at different times can run different images under one tag, and a replaced node can silently upgrade. Turn on tag immutability for release repositories. E C R then rejects a push that reuses a tag. And pin digests in manifests.", "Dev deploys by digest. Its config, meaning endpoints, flags and credentials, is injected at deploy time. Config is whatever differs between deploys. So it stays out of the image, and goes through its own reviewed path.", "Checks pass, so the pipeline deploys the same digest to staging, with staging's config. Nothing is rebuilt. So what staging tests is what production will run.", "A human approval on every deploy of every service turns into rubber-stamping. Keep required reviewers for high-risk tiers, and automated checks for the rest. GitHub environments also accept custom protection rules from GitHub Apps.", "After the gate, the same digest goes to production. Environment secrets reach the job only after protection rules pass. And the O I D C trust policy can require the production environment.", "Replicate the registry so scale-ups don't pull across regions. E C R copies only images pushed after replication is set up. It doesn't replicate deletes, and most images arrive within thirty minutes. So the deploy waits until the digest exists in each region.", "Rollback is redeploying the previous digest. Lifecycle rules can expire an image that is still running, or one you need for rollback. So preview them, and exclude release tags or the last few deployed digests. The old code must also fit today's schema, data and config."], "seconds": [24.62, 19.05, 22.29, 15.4, 10.73, 15.45, 13.55, 18.07, 18.73]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

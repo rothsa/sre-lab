@@ -4,6 +4,7 @@ export const CHAPTERS = [
   // ---------------------------------------------------------------- 5
   {
     id: "feature-flags",
+    film: "../films/feature-flags/",
     n: 5,
     title: "Flag governance",
     question: "How do you keep thousands of feature flags across hundreds of teams from turning into debt and an outage source, when the flag service itself is a dependency of almost everything?",
@@ -89,6 +90,7 @@ export const CHAPTERS = [
   // ---------------------------------------------------------------- 6
   {
     id: "rollback-migrations",
+    film: "../films/rollback-migrations/",
     n: 6,
     title: "Schema-change safety",
     question: "Hundreds of teams change schemas on shared databases every week. What guardrails make sure no single team's migration causes an outage, and keep rollback possible?",
@@ -180,6 +182,7 @@ export const CHAPTERS = [
   // ---------------------------------------------------------------- 7
   {
     id: "supply-chain",
+    film: "../films/supply-chain/",
     n: 7,
     title: "Supply chain: provenance, signing and SBOMs",
     question: "Hundreds of repos ship images every day. How do you prove each one running in production was built by your CI from a reviewed commit, and stop anything else from running?",
@@ -271,6 +274,7 @@ export const CHAPTERS = [
   // ---------------------------------------------------------------- 8
   {
     id: "delivery-at-scale",
+    film: "../films/merge-queues-and-dora/",
     n: 8,
     title: "Merge queues, monorepos and DORA",
     question: "Hundreds of engineers merge into one main branch every day. How do you keep it green and deployable, and how do you know delivery is getting better?",

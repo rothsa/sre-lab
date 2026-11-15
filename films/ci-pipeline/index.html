@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CI as a shared service: the film</title>
+<meta name="description" content="One pull request&#x27;s path through a CI shared by 2,000 engineers: queue time, runners, cache, parallel tests, OIDC, flaky checks and the merge queue.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.ci-tile{position:absolute;width:140px;height:104px;border:2.5px solid var(--rule);background:var(--panel);border-radius:26px 8px 26px 8px;display:flex;align-items:center;justify-content:center;font:600 22px "IBM Plex Mono";box-shadow:0 8px 20px rgba(20,70,35,.10)}
+.ci-add{border-color:var(--green);background:#e9f6dc}
+.ci-fresh{border-color:var(--blue);background:#dff0d3;color:var(--blue)}
+.scene.on .ci-old{animation:in .7s .95s both,ci-busy .5s 11.3s forwards,ci-gone .8s 15.3s forwards}
+@keyframes ci-busy{to{background:#fbefd0;border-color:var(--amber)}}
+@keyframes ci-gone{to{opacity:0;transform:scale(.6);background:#fbefd0;border-color:var(--amber)}}
+.ci-step{position:absolute;top:670px;width:360px;height:110px}
+.ci-txt{position:absolute;font:400 34px/1.3 "IBM Plex Sans"}
+.ci-arrow{position:absolute;font:700 40px "IBM Plex Sans";color:#9fbf8f}
+.ci-job{position:absolute;width:120px;height:64px;border-radius:999px;background:#fbefd0;border:2px solid var(--amber);font:500 22px "IBM Plex Mono";display:flex;align-items:center;justify-content:center}
+.ci-segs{position:absolute;left:900px;top:590px;width:860px;height:64px;display:flex;gap:8px}
+.ci-segs i{flex:1;border-radius:14px 4px 14px 4px;background:var(--green);display:block}
+.scene.on .ci-oldest{animation:ci-evict 1s 14.6s forwards}
+@keyframes ci-evict{40%{opacity:1;background:var(--amber);transform:none}to{opacity:0;transform:scale(.3);background:var(--amber)}}
+.ci-mono{position:absolute;left:800px;top:420px;display:grid;grid-template-columns:repeat(14,52px);gap:12px}
+.ci-mono i{width:52px;height:52px;border-radius:14px 4px 14px 4px;background:#d6e6c8;display:block}
+.scene.on .ci-mono i{animation:ci-hot .4s var(--d) forwards,ci-cool .5s 12.3s forwards}
+.scene.on .ci-mono i.ch{animation:ci-hot .4s var(--d) forwards,ci-cool .5s 12.3s forwards,ci-chg .5s 12.9s forwards}
+@keyframes ci-hot{to{background:var(--amber)}}
+@keyframes ci-cool{to{background:#d6e6c8}}
+@keyframes ci-chg{to{background:var(--green)}}
+.ci-card{position:absolute;top:500px;width:770px;height:380px;border:2.5px solid var(--rule);background:var(--panel);border-radius:40px 12px 40px 12px;box-shadow:0 10px 28px rgba(20,70,35,.10);padding:36px 44px}
+.ci-card b{display:block;font:800 44px "Archivo"}
+.ci-card p{margin:8px 0 0;font:400 28px "IBM Plex Sans";color:var(--muted)}
+.ci-life{margin-top:34px;height:30px;border-radius:15px;background:#d6e6c8;overflow:hidden}
+.ci-life div{height:100%;width:100%;border-radius:15px}
+.scene.on .ci-shr{animation:ci-shr 5s linear 13.6s forwards}
+@keyframes ci-shr{to{width:7%}}
+.ci-chips{position:absolute;white-space:nowrap}
+.ci-card .chip{margin-top:30px}
+.ci-runs{position:absolute;left:760px;top:470px;display:grid;grid-template-columns:repeat(22,34px);gap:10px}
+.ci-runs i{width:34px;height:34px;border-radius:50%;background:#d6e6c8;display:block}
+.scene.on .ci-runs i{animation:ci-ok .4s var(--d) forwards}
+.scene.on .ci-runs i.fl{animation:ci-ok .4s var(--d) forwards,ci-fl .4s var(--f) forwards}
+@keyframes ci-ok{to{background:var(--green)}}
+@keyframes ci-fl{to{background:var(--red)}}
+.ci-st{position:absolute;left:110px;width:330px;height:64px;border-radius:999px;background:#e9f6dc;border:2px solid var(--green);font:500 24px "IBM Plex Mono";display:flex;align-items:center;justify-content:center}
+.ci-fail{background:#fbe4d9;border-color:var(--red);color:var(--red)}
+.scene.on .ci-st.out{animation:in .7s var(--d) both,ci-hide .2s var(--o) forwards}
+@keyframes ci-hide{to{opacity:0}}
+.ci-pr{position:absolute;top:350px;width:150px;height:64px;border-radius:999px;background:var(--panel);border:2px solid var(--rule);font:600 22px "IBM Plex Mono";display:flex;align-items:center;justify-content:center}
+.scene.on .ci-re{animation:in .7s var(--d) both,ci-re .5s var(--r) forwards,fadeout .6s 8.6s forwards}
+@keyframes ci-re{to{background:#fbefd0;border-color:var(--amber)}}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../delivery/#ci-pipeline">Delivery</a> · film · recorded 15 Nov 2026</div>
+  <h1 class="page">CI as a shared service</h1>
+  <div id="viewport">
+    <div id="stage">
+<!-- 1 -->
+<section class="scene"><div class="kick">Delivery · chapter 1</div><h1>CI as a shared service</h1>
+ <div class="big a" style="left:110px;top:300px;font-size:240px;--d:2.7s">2,000</div>
+ <div class="ci-txt a" style="left:860px;top:340px;font-size:46px;font-weight:600;--d:3.3s">engineers share one CI</div>
+ <div class="ci-txt muted a" style="left:860px;top:420px;--d:5s">What has to stay fast and trusted?</div>
+ <div class="ci-txt muted a" style="left:860px;top:476px;--d:9.5s">Which numbers tell you it is slipping?</div>
+ <svg><path class="line a" style="--d:13s" d="M370 780H1790"/></svg>
+ <div class="dot" style="left:380px;top:771px;--dx:1380px;--d:13.5s;animation-duration:5s"></div>
+ <div class="box amber a" style="left:110px;top:735px;width:270px;height:90px;border-radius:999px;--d:12.3s">One pull request</div>
+ <div class="box a" style="left:480px;top:725px;width:280px;height:110px;--d:20.5s">Runners</div>
+ <div class="box a" style="left:820px;top:725px;width:280px;height:110px;--d:21.3s">Cache</div>
+ <div class="box a" style="left:1160px;top:725px;width:280px;height:110px;--d:22s">Required checks</div>
+ <div class="box blue a" style="left:1500px;top:725px;width:290px;height:110px;--d:22.9s">The way into main</div>
+ <div class="label a" style="left:480px;top:870px;font-size:26px;--d:18.5s">The shared parts: keep them fast and trusted</div>
+</section>
+
+<!-- 2 -->
+<section class="scene"><div class="kick">Step 2 of 8</div><h1>Queue time is a separate number</h1>
+ <div class="box a" style="left:110px;top:400px;width:330px;height:110px;--d:.8s">Push or pull request<small>emits an event</small></div>
+ <svg><path class="line a" style="--d:3s" d="M440 455H560"/><path class="line a" style="--d:7.2s" d="M1250 455H1400"/></svg>
+ <div class="label a" style="left:560px;top:372px;--d:5.2s">Job queue</div>
+ <div class="ci-job a" style="left:560px;top:423px;--d:5.2s">job</div><div class="ci-job a" style="left:695px;top:423px;--d:5.5s">job</div><div class="ci-job a" style="left:830px;top:423px;--d:5.8s">job</div><div class="ci-job a" style="left:965px;top:423px;--d:6.1s">job</div><div class="ci-job a" style="left:1100px;top:423px;--d:6.4s">job</div>
+ <div class="box blue a" style="left:1400px;top:400px;width:360px;height:110px;--d:7.4s">Runner<small>with matching labels</small></div>
+ <div class="a" style="--d:10s"><div class="label" style="left:110px;top:668px;font-size:30px;color:var(--fg)">Queue time</div><div class="track" style="top:650px"><div class="fill" style="background:var(--amber);--w:82%;--d:10.3s"></div></div></div>
+ <div class="a" style="--d:12.2s"><div class="label" style="left:110px;top:778px;font-size:30px;color:var(--fg)">Run time</div><div class="track" style="top:760px"><div class="fill" style="background:var(--green);--w:36%;--d:12.5s"></div></div></div>
+ <div class="a cap" style="--d:13.4s;bottom:90px">On a busy shared CI, queue time is often the larger one.</div>
+</section>
+
+<!-- 3 -->
+<section class="scene"><div class="kick">Step 3 of 8</div><h1>One job, then a fresh runner</h1>
+ <div class="label a" style="left:110px;top:380px;font-size:26px;--d:.8s">Runner fleet: a platform service</div>
+ <div class="ci-tile a" style="left:110px;top:430px;--d:0.80s">runner</div><div class="ci-tile ci-old" style="left:275px;top:430px">runner</div><div class="ci-tile ci-fresh a" style="left:275px;top:430px;--d:18s">fresh</div><div class="ci-tile a" style="left:440px;top:430px;--d:1.10s">runner</div><div class="ci-tile a" style="left:605px;top:430px;--d:1.25s">runner</div><div class="ci-tile ci-add a" style="left:770px;top:430px;--d:6.10s">runner</div><div class="ci-tile ci-add a" style="left:935px;top:430px;--d:6.60s">runner</div><div class="ci-tile ci-add a" style="left:1100px;top:430px;--d:7.10s">runner</div><div class="ci-tile ci-add a" style="left:1265px;top:430px;--d:7.60s">runner</div>
+ <div class="ci-chips" style="left:110px;top:566px"><span class="chip a" style="--d:3.8s">queue time per runner label</span><span class="chip a" style="--d:6.1s">autoscale on job events</span><span class="chip a" style="--d:8.3s">Actions Runner Controller</span></div>
+ <div class="box amber ci-step a" style="left:110px;--d:11.3s">One job</div>
+ <div class="box ci-step a" style="left:530px;--d:12.1s">De-register<small>wipes nothing</small></div>
+ <div class="box red ci-step a" style="left:950px;--d:15.3s">Destroy the VM or pod</div>
+ <div class="box blue ci-step a" style="left:1370px;--d:18s">Start a fresh one</div>
+ <div class="ci-arrow a" style="left:482px;top:698px;--d:12.1s">→</div><div class="ci-arrow a" style="left:902px;top:698px;--d:15.3s">→</div><div class="ci-arrow a" style="left:1322px;top:698px;--d:18s">→</div>
+ <div class="a cap" style="--d:20s;bottom:90px"><span class="t-green">Scale-in never kills a running job.</span></div>
+</section>
+
+<!-- 4 -->
+<section class="scene"><div class="kick">Step 4 of 8</div><h1>A cache keyed on the lockfile hash</h1>
+ <div class="box a" style="left:110px;top:330px;width:560px;height:120px;--d:1.5s">The exact commit<small class="a" style="--d:5.2s">for a pull request, a merge ref</small></div>
+ <div class="ci-chips mono" style="left:110px;top:540px"><span class="chip a" style="--d:8.6s;margin-right:10px">lockfile</span><span class="a t-blue" style="--d:9.4s;display:inline-block;font-size:34px;margin-right:10px">→</span><span class="chip a" style="--d:9.4s;margin-right:10px">hash</span><span class="a t-blue" style="--d:10.2s;display:inline-block;font-size:34px;margin-right:10px">→</span><span class="chip a" style="--d:10.2s">cache key</span></div>
+ <div class="big a" style="left:900px;top:300px;font-size:190px;--d:12.2s">10 GB</div>
+ <div class="label a" style="left:904px;top:510px;font-size:30px;--d:13s">of cache per repository (GitHub's default)</div>
+ <div class="ci-segs a" style="--d:13s"><i class="ci-oldest"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div>
+ <div class="label t-amber a" style="left:900px;top:672px;font-size:26px;--d:14.6s">oldest evicted first</div>
+ <div class="label a" style="left:1300px;top:672px;font-size:26px;--d:16.2s">a big monorepo runs cold</div>
+ <svg><path class="line a" style="--d:18.6s" d="M590 850H760"/></svg>
+ <div class="box blue a" style="left:110px;top:790px;width:480px;height:120px;--d:18.2s">Default branch cache<small class="a" style="--d:21s">keep it warm</small></div>
+ <div class="proc a" style="left:760px;top:818px;--d:18.8s">branch</div><div class="proc a" style="left:940px;top:818px;--d:19.2s">branch</div><div class="proc a" style="left:1120px;top:818px;--d:19.6s">branch</div>
+ <div class="label a" style="left:1310px;top:835px;font-size:26px;--d:19.6s">Every branch can restore from it</div>
+</section>
+
+<!-- 5 -->
+<section class="scene"><div class="kick">Step 5 of 8</div><h1>Test the change, not the repo</h1>
+ <svg><path class="line a" style="--d:1.4s" d="M300 600L440 432"/><path class="line a" style="--d:1.7s" d="M300 600L440 544"/><path class="line a" style="--d:2s" d="M300 600L440 656"/><path class="line a" style="--d:2.3s" d="M300 600L440 768"/></svg>
+ <div class="box a" style="left:110px;top:550px;width:190px;height:100px;--d:.8s">Tests</div>
+ <div class="proc a" style="left:440px;top:400px;width:200px;--d:1.4s">parallel job</div><div class="proc a" style="left:440px;top:512px;width:200px;--d:1.7s">parallel job</div><div class="proc a" style="left:440px;top:624px;width:200px;--d:2s">parallel job</div><div class="proc a" style="left:440px;top:736px;width:200px;--d:2.3s">parallel job</div>
+ <div class="label a" style="left:110px;top:850px;font-size:26px;--d:3.9s">from a matrix, or GitLab's needs</div>
+ <div class="label a" style="left:800px;top:374px;font-size:26px;--d:6.3s">Monorepo</div>
+ <div class="label t-amber a out" style="left:1000px;top:374px;font-size:26px;--d:9.4s;--o:12.3s">everything, on every commit</div>
+ <div class="ci-mono a" style="--d:6.3s"><i style="--d:7.60s"></i><i style="--d:7.83s"></i><i style="--d:8.06s"></i><i style="--d:8.29s"></i><i style="--d:8.51s"></i><i style="--d:8.74s"></i><i style="--d:8.97s"></i><i style="--d:9.20s"></i><i style="--d:9.43s"></i><i style="--d:9.66s"></i><i style="--d:9.89s"></i><i style="--d:10.11s"></i><i style="--d:10.34s"></i><i style="--d:10.57s"></i><i style="--d:7.64s"></i><i style="--d:7.87s"></i><i style="--d:8.10s"></i><i style="--d:8.32s"></i><i style="--d:8.55s"></i><i style="--d:8.78s"></i><i style="--d:9.01s"></i><i style="--d:9.24s"></i><i style="--d:9.47s"></i><i style="--d:9.70s"></i><i style="--d:9.92s"></i><i style="--d:10.15s"></i><i style="--d:10.38s"></i><i style="--d:10.61s"></i><i style="--d:7.68s"></i><i style="--d:7.90s"></i><i style="--d:8.13s"></i><i style="--d:8.36s"></i><i class="ch" style="--d:8.59s"></i><i class="ch" style="--d:8.82s"></i><i style="--d:9.05s"></i><i style="--d:9.28s"></i><i style="--d:9.50s"></i><i style="--d:9.73s"></i><i style="--d:9.96s"></i><i style="--d:10.19s"></i><i style="--d:10.42s"></i><i style="--d:10.65s"></i><i style="--d:7.71s"></i><i style="--d:7.94s"></i><i style="--d:8.17s"></i><i style="--d:8.40s"></i><i class="ch" style="--d:8.63s"></i><i class="ch" style="--d:8.86s"></i><i class="ch" style="--d:9.09s"></i><i style="--d:9.31s"></i><i style="--d:9.54s"></i><i style="--d:9.77s"></i><i style="--d:10.00s"></i><i style="--d:10.23s"></i><i style="--d:10.46s"></i><i style="--d:10.69s"></i><i style="--d:7.75s"></i><i style="--d:7.98s"></i><i style="--d:8.21s"></i><i style="--d:8.44s"></i><i style="--d:8.67s"></i><i style="--d:8.90s"></i><i style="--d:9.12s"></i><i style="--d:9.35s"></i><i style="--d:9.58s"></i><i style="--d:9.81s"></i><i style="--d:10.04s"></i><i style="--d:10.27s"></i><i style="--d:10.50s"></i><i style="--d:10.72s"></i><i style="--d:7.79s"></i><i style="--d:8.02s"></i><i style="--d:8.25s"></i><i style="--d:8.48s"></i><i style="--d:8.70s"></i><i style="--d:8.93s"></i><i style="--d:9.16s"></i><i style="--d:9.39s"></i><i style="--d:9.62s"></i><i style="--d:9.85s"></i><i style="--d:10.08s"></i><i style="--d:10.30s"></i><i style="--d:10.53s"></i><i style="--d:10.76s"></i></div>
+ <div class="ci-chips" style="left:800px;top:850px"><span class="chip a" style="--d:12.9s">changed paths</span><span class="chip a" style="--d:15s">affected targets</span><span class="chip a" style="--d:16.6s">child pipelines</span></div>
+</section>
+
+<!-- 6 -->
+<section class="scene"><div class="kick">Step 6 of 8</div><h1>Nothing long-lived to steal</h1>
+ <svg><path class="line a" style="--d:2.6s" d="M440 365H520"/><path class="line a" style="--d:3.8s" d="M800 365H880"/></svg>
+ <div class="box a" style="left:110px;top:320px;width:330px;height:90px;--d:.8s">Packaging, on main</div>
+ <div class="box a" style="left:520px;top:320px;width:280px;height:90px;--d:2.6s">One image</div>
+ <div class="box green a" style="left:880px;top:320px;width:330px;height:90px;--d:3.8s">Registry<small class="a" style="--d:5s">records its digest</small></div>
+ <div class="ci-card a out" style="left:110px;border-color:var(--red);background:#fbe4d9;--d:6.1s;--o:18.8s"><b>Cloud keys stored in CI</b><p>Long-lived.</p><div class="ci-life"><div style="background:var(--red)"></div></div><p class="a t-red" style="--d:9s;margin-top:34px;font-weight:600;font-size:32px">A high-value target</p></div>
+ <div class="ci-card a" style="left:1000px;border-color:var(--green);background:#e9f6dc;--d:10.5s"><b>OIDC token, per job</b><p>Short-lived.</p><div class="ci-life"><div class="ci-shr" style="background:var(--green)"></div></div>
+  <div><span class="chip a" style="--d:16.4s">repo</span><span class="chip a" style="--d:16.9s">ref</span><span class="chip a" style="--d:17.5s">environment</span></div><p class="a" style="--d:14.8s;margin-top:14px">Claims the cloud role checks</p></div>
+</section>
+
+<!-- 7 -->
+<section class="scene"><div class="kick">Step 7 of 8</div><h1>Each flake blocks a merge</h1>
+ <div class="label a" style="left:110px;top:330px;font-size:26px;--d:.9s">Each job reports a status</div>
+ <div class="ci-st a" style="top:380px;--d:1s">status: pass</div><div class="ci-st a" style="top:464px;--d:1.3s">status: pass</div><div class="ci-st a out" style="top:548px;--d:1.6s;--o:11.2s">status: pass</div><div class="ci-st ci-fail a" style="top:548px;--d:11.4s">status: fail</div>
+ <div class="box blue a" style="left:110px;top:660px;width:480px;height:120px;--d:2.8s">Branch protection<small>the checks that must pass</small></div>
+ <div class="label t-red a" style="left:460px;top:565px;font-size:26px;--d:11.6s">a flake</div>
+ <div class="label a" style="left:760px;top:420px;font-size:26px;--d:6s">Runs, across thousands of tests</div>
+ <div class="ci-runs a" style="--d:6s"><i class="fl" style="--d:6.00s;--f:9.99s"></i><i style="--d:6.02s"></i><i style="--d:6.04s"></i><i style="--d:6.06s"></i><i class="fl" style="--d:6.08s;--f:10.84s"></i><i style="--d:6.10s"></i><i style="--d:6.12s"></i><i class="fl" style="--d:6.14s;--f:9.72s"></i><i style="--d:6.16s"></i><i style="--d:6.18s"></i><i style="--d:6.20s"></i><i class="fl" style="--d:6.22s;--f:10.57s"></i><i style="--d:6.24s"></i><i style="--d:6.26s"></i><i class="fl" style="--d:6.28s;--f:9.45s"></i><i style="--d:6.30s"></i><i style="--d:6.32s"></i><i style="--d:6.33s"></i><i class="fl" style="--d:6.35s;--f:10.31s"></i><i style="--d:6.37s"></i><i style="--d:6.39s"></i><i style="--d:6.41s"></i><i style="--d:6.43s"></i><i style="--d:6.45s"></i><i style="--d:6.47s"></i><i class="fl" style="--d:6.49s;--f:10.04s"></i><i style="--d:6.51s"></i><i style="--d:6.53s"></i><i style="--d:6.55s"></i><i class="fl" style="--d:6.57s;--f:10.89s"></i><i style="--d:6.59s"></i><i style="--d:6.61s"></i><i class="fl" style="--d:6.63s;--f:9.77s"></i><i style="--d:6.65s"></i><i style="--d:6.67s"></i><i style="--d:6.69s"></i><i class="fl" style="--d:6.71s;--f:10.63s"></i><i style="--d:6.73s"></i><i style="--d:6.75s"></i><i class="fl" style="--d:6.77s;--f:9.51s"></i><i style="--d:6.79s"></i><i style="--d:6.81s"></i><i style="--d:6.83s"></i><i class="fl" style="--d:6.85s;--f:10.36s"></i><i style="--d:6.87s"></i><i style="--d:6.89s"></i><i style="--d:6.91s"></i><i style="--d:6.93s"></i><i style="--d:6.95s"></i><i style="--d:6.97s"></i><i class="fl" style="--d:6.98s;--f:10.09s"></i><i style="--d:7.00s"></i><i style="--d:7.02s"></i><i style="--d:7.04s"></i><i class="fl" style="--d:7.06s;--f:10.95s"></i><i style="--d:7.08s"></i><i style="--d:7.10s"></i><i class="fl" style="--d:7.12s;--f:9.83s"></i><i style="--d:7.14s"></i><i style="--d:7.16s"></i><i style="--d:7.18s"></i><i class="fl" style="--d:7.20s;--f:10.68s"></i><i style="--d:7.22s"></i><i style="--d:7.24s"></i><i class="fl" style="--d:7.26s;--f:9.56s"></i><i style="--d:7.28s"></i><i style="--d:7.30s"></i><i style="--d:7.32s"></i><i class="fl" style="--d:7.34s;--f:10.41s"></i><i style="--d:7.36s"></i><i style="--d:7.38s"></i><i style="--d:7.40s"></i><i style="--d:7.42s"></i><i style="--d:7.44s"></i><i style="--d:7.46s"></i><i class="fl" style="--d:7.48s;--f:10.15s"></i><i style="--d:7.50s"></i><i style="--d:7.52s"></i><i style="--d:7.54s"></i><i style="--d:7.56s"></i><i style="--d:7.58s"></i><i style="--d:7.60s"></i><i class="fl" style="--d:7.62s;--f:9.88s"></i><i style="--d:7.63s"></i><i style="--d:7.65s"></i><i style="--d:7.67s"></i><i class="fl" style="--d:7.69s;--f:10.73s"></i><i style="--d:7.71s"></i><i style="--d:7.73s"></i><i class="fl" style="--d:7.75s;--f:9.61s"></i><i style="--d:7.77s"></i><i style="--d:7.79s"></i><i style="--d:7.81s"></i><i class="fl" style="--d:7.83s;--f:10.47s"></i><i style="--d:7.85s"></i><i style="--d:7.87s"></i><i style="--d:7.89s"></i><i style="--d:7.91s"></i><i style="--d:7.93s"></i><i style="--d:7.95s"></i><i class="fl" style="--d:7.97s;--f:10.20s"></i><i style="--d:7.99s"></i><i style="--d:8.01s"></i><i style="--d:8.03s"></i><i style="--d:8.05s"></i><i style="--d:8.07s"></i><i style="--d:8.09s"></i><i class="fl" style="--d:8.11s;--f:9.93s"></i><i style="--d:8.13s"></i><i style="--d:8.15s"></i><i style="--d:8.17s"></i><i class="fl" style="--d:8.19s;--f:10.79s"></i><i style="--d:8.21s"></i><i style="--d:8.23s"></i><i class="fl" style="--d:8.25s;--f:9.67s"></i><i style="--d:8.27s"></i><i style="--d:8.28s"></i><i style="--d:8.30s"></i><i class="fl" style="--d:8.32s;--f:10.52s"></i><i style="--d:8.34s"></i><i style="--d:8.36s"></i><i class="fl" style="--d:8.38s;--f:9.40s"></i><i style="--d:8.40s"></i><i style="--d:8.42s"></i><i style="--d:8.44s"></i><i class="fl" style="--d:8.46s;--f:10.25s"></i><i style="--d:8.48s"></i><i style="--d:8.50s"></i><i style="--d:8.52s"></i><i style="--d:8.54s"></i><i style="--d:8.56s"></i><i style="--d:8.58s"></i></div>
+ <div class="label t-red a" style="left:760px;top:752px;font-size:26px;--d:9.6s">A small flake rate per test: many runs fail somewhere</div>
+ <div class="ci-chips" style="left:110px;top:870px"><span class="chip a" style="--d:13.6s">track flake rate per test</span><span class="chip a" style="--d:15.4s">move flaky tests out of the required set</span><span class="chip a" style="--d:18s">give them owners</span></div>
+</section>
+
+<!-- 8 -->
+<section class="scene" style="--egg:14.0s"><div class="kick">Step 8 of 8</div><h1>Test against the latest base</h1>
+ <div class="label a out" style="left:110px;top:300px;font-size:26px;--d:.8s;--o:8.6s">Strict up-to-date checks</div>
+ <div class="ci-pr a out" style="left:110px;border-color:var(--green);background:#e9f6dc;--d:2.5s;--o:8.6s">merge</div>
+ <div class="ci-pr ci-re" style="left:320px;opacity:0;--d:1.2s;--r:4.2s">PR</div><div class="ci-pr ci-re" style="left:490px;opacity:0;--d:1.4s;--r:4.6s">PR</div><div class="ci-pr ci-re" style="left:660px;opacity:0;--d:1.6s;--r:5s">PR</div><div class="ci-pr ci-re" style="left:830px;opacity:0;--d:1.8s;--r:5.4s">PR</div><div class="ci-pr ci-re" style="left:1000px;opacity:0;--d:2s;--r:5.8s">PR</div>
+ <div class="label t-amber a out" style="left:320px;top:432px;font-size:26px;--d:5.2s;--o:8.6s">every other open pull request goes back to rerun</div>
+ <div class="label a out" style="left:980px;top:432px;font-size:26px;--d:6.6s;--o:8.6s">authors race to rebase</div>
+ <div class="label a" style="left:110px;top:520px;font-size:28px;--d:8.6s"><span class="t-blue">Merge queue</span> (GitHub) <span class="a" style="--d:10.8s;display:inline-block">· <span class="t-blue">merge train</span> (GitLab)</span></div>
+ <svg><path class="line a" style="--d:12.7s" d="M400 635H1420"/></svg>
+ <div class="box blue a" style="left:110px;top:580px;width:300px;height:110px;--d:12.7s">Latest base</div>
+ <div class="box a" style="left:470px;top:580px;width:290px;height:110px;--d:13.4s">Change 1<small>base</small></div>
+ <div class="box a" style="left:820px;top:580px;width:290px;height:110px;--d:14.4s">Change 2<small>base + 1</small></div>
+ <div class="box a" style="left:1170px;top:580px;width:290px;height:110px;--d:15.3s">Change 3<small>base + 1 + 2</small></div>
+ <div class="label a" style="left:1520px;top:600px;width:290px;font-size:26px;line-height:1.35;--d:17.4s">Chapter 8 covers running one.</div>
+ <div class="critter"><div id="critter"></div></div>
+</section>
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 3 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../delivery/#ci-pipeline">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["C I as a shared service. Two thousand engineers share one C I. What has to stay fast and trusted for a pull request to merge, and which numbers tell you it is slipping? We follow one pull request through C I. With two thousand engineers on the same system, the job is keeping the shared parts fast and trusted: the runners, the cache, the required checks, and the way into main.", "A push or a pull request emits an event. Every workflow whose trigger matches queues jobs, and each job waits for a runner with matching labels. Queue time is a separate number from run time. On a busy shared C I, it is often the larger one.", "The runner fleet is a platform service. Track queue time per runner label, and autoscale on job events or with Actions Runner Controller. Use ephemeral runners: one job, then de-register. That flag wipes nothing, so the autoscaler destroys the V M or pod and starts a fresh one. Scale-in never kills a running job.", "Each job checks out the exact commit, or for a pull request, a merge ref. It restores dependencies from a cache keyed on the lockfile hash. GitHub's default is ten gigabytes of cache per repository, oldest evicted first, so a big monorepo runs cold. Every branch can restore from the default branch, so keep that cache warm.", "Tests fan out as parallel jobs, from a matrix or GitLab's needs keyword. In a monorepo, testing everything on every commit grows with the repo, not with the change. Trigger jobs on changed paths, build only affected targets, and split the work into child pipelines.", "On main, packaging pushes one image to the registry and records its digest. Long-lived cloud keys stored in C I are a high-value target. With O I D C, each job gets a short-lived token. The cloud role checks its repo, ref and environment claims, so there is nothing long-lived to steal.", "Each job reports a status, and branch protection lists the checks that must pass. Across thousands of tests, a small flake rate per test makes many runs fail somewhere, and each flake blocks a merge. Track flake rate per test, move flaky tests out of the required set, and give them owners.", "With strict up-to-date checks, each merge sends every other open pull request back to rerun, and authors race to rebase. A merge queue on GitHub, or a merge train on GitLab, tests each change against the latest base plus the changes ahead of it. Chapter eight covers running one."], "seconds": [23.83, 16.36, 21.4, 22.27, 18.41, 20.57, 18.88, 18.47]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Desired-state control across hundreds of clusters: the film</title>
+<meta name="description" content="A short narrated film on running Argo CD across hundreds of clusters: sync, drift as a fleet metric, and a written break-glass policy.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.go-fleet{position:absolute;display:grid;grid-template-columns:repeat(20,28px);gap:10px}
+.go-fleet i{width:28px;height:28px;border-radius:9px 3px 9px 3px;background:#d6e6c8;display:block}
+.scene.on .go-fleet i{animation:go-lit .5s var(--d) forwards}
+.scene.on .go-fleet i.go-x{animation:go-lit .5s var(--d) forwards,go-amb .6s var(--o) forwards}
+@keyframes go-lit{to{background:#3f9a4f}}
+@keyframes go-amb{to{background:#d9981e}}
+.go-q{position:absolute;font:600 34px "IBM Plex Sans";display:flex;align-items:center;gap:18px}
+.go-n{flex:none;width:52px;height:52px;border-radius:50%;background:var(--blue);color:#fff;font:800 28px "Archivo";display:flex;align-items:center;justify-content:center}
+.scene.on .go-gone{animation:in .7s var(--d,0s) both,go-hide .4s var(--o,99s) forwards}
+@keyframes go-hide{to{opacity:0}}
+.go-hist{position:absolute;left:200px;top:637px;width:1520px;height:6px;border-radius:3px;background:#9fbf8f}
+.go-c{position:absolute;width:46px;height:46px;border-radius:50%;border:5px solid #9fbf8f;background:var(--panel)}
+.go-c.go-new{border-color:var(--blue);background:#dff0d3;opacity:0}
+.scene.on .go-c.go-new{animation:go-pop .55s cubic-bezier(.3,1.6,.5,1) var(--d) both}
+@keyframes go-pop{from{opacity:0;transform:scale(.2)}to{opacity:1;transform:scale(1)}}
+.go-mid{position:absolute;text-align:center;font:600 34px "IBM Plex Sans"}
+.go-track{position:absolute;left:520px;top:410px;width:1100px;height:64px;border-radius:32px;background:#d6e6c8;overflow:hidden}
+.go-f1,.go-f2{position:absolute;top:0;height:100%;width:0}
+.go-f1{left:0;background:var(--blue)}
+.go-f2{left:66.7%;background:repeating-linear-gradient(135deg,#d9981e 0 14px,#efc763 14px 28px)}
+.scene.on .go-f1{animation:go-w1 2s linear var(--d) forwards}
+.scene.on .go-f2{animation:go-w2 1.2s linear var(--d) forwards}
+@keyframes go-w1{to{width:66.7%}}
+@keyframes go-w2{to{width:33.3%}}
+.go-pane{position:absolute;top:390px;width:440px;height:340px;background:#fff;border-radius:32px 10px 32px 10px;box-shadow:0 24px 60px rgba(20,70,35,.16);padding:34px 40px}
+.go-pane b{display:block;font:800 36px "Archivo";margin-bottom:26px}
+.go-pane i{display:block;height:22px;border-radius:11px;background:#cfe2c0;margin-bottom:22px}
+.scene.on .go-chg{animation:go-chg .6s var(--d) forwards}
+@keyframes go-chg{to{background:var(--amber);width:150px}}
+.go-sign{position:absolute;left:590px;top:480px;width:130px;text-align:center;font:900 110px/1 "Archivo";color:var(--blue)}
+.go-sign span{position:absolute;left:0;right:0;top:0}
+.go-row{position:absolute;font:500 30px "IBM Plex Sans";color:var(--muted);display:flex;align-items:center;gap:18px}
+.go-st{display:inline-block;border:2.5px solid var(--rule);border-radius:999px;padding:10px 26px;font:600 28px "IBM Plex Mono";color:var(--fg)}
+.go-st.green,.go-step.green{border-color:var(--green);background:#e9f6dc}.go-st.amber,.go-step.amber{border-color:var(--amber);background:#fbefd0}.go-st.red{border-color:var(--red);background:#fbe4d9}
+.go-cl{position:absolute;width:250px;height:120px;border:2.5px solid var(--rule);border-radius:30px 10px 30px 10px;background:var(--panel);box-shadow:0 10px 28px rgba(20,70,35,.10);padding:14px 20px;font:500 22px "IBM Plex Mono";color:var(--muted)}
+.go-cl span{display:inline-block;margin-top:12px;border-radius:999px;padding:6px 20px;font:700 22px "IBM Plex Sans";background:#e9f6dc;border:2px solid var(--green);color:var(--blue)}
+.go-cl.go-newc{border-style:dashed;border-color:var(--blue)}
+.go-cl.go-miss{opacity:1}
+.scene.on .go-miss{animation:go-miss .6s var(--d) forwards}
+@keyframes go-miss{to{border-color:var(--amber);background:#fbefd0}}
+.go-cl.go-miss span{background:transparent;border:2px dashed var(--amber);color:#9a6a0c}
+.go-wave{position:absolute;top:812px;width:400px;height:86px;border-radius:999px;border:2.5px solid var(--rule);background:var(--panel);display:flex;align-items:center;gap:14px;padding:0 26px;font:700 24px "IBM Plex Sans"}
+.go-wave i{width:30px;height:30px;border-radius:50%;background:#d6e6c8;display:block}
+.scene.on .go-wave i{animation:go-lit .5s var(--d) forwards}
+.go-metric{position:absolute;background:#0d2016;color:#e3f0de;border-radius:30px 10px 30px 10px;padding:20px 40px;font:600 42px "IBM Plex Mono";box-shadow:0 14px 34px rgba(20,70,35,.2)}
+.go-bar{position:absolute;left:150px;height:34px;border-radius:17px;width:0;background:var(--green)}
+.scene.on .go-bar{animation:go-grow 1.2s cubic-bezier(.2,.7,.2,1) var(--d) forwards}
+@keyframes go-grow{to{width:var(--w)}}
+.go-step{position:absolute;top:400px;width:375px;height:270px;border:2.5px solid var(--rule);background:var(--panel);border-radius:30px 10px 30px 10px;box-shadow:0 10px 28px rgba(20,70,35,.10);padding:26px 28px;font:600 30px/1.25 "IBM Plex Sans"}
+.go-step .go-n{margin-bottom:18px}
+.go-step small{display:block;font:400 21px/1.35 "IBM Plex Mono";color:var(--muted);margin-top:10px}
+.go-lane{position:absolute;left:150px;top:740px;width:1620px;height:104px;border:3px dashed var(--blue);border-radius:999px;background:rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center;gap:30px;font:400 30px "IBM Plex Sans"}
+.go-pause{position:absolute;top:538px;height:44px;border-radius:22px;width:0;background:repeating-linear-gradient(135deg,#d9981e 0 14px,#efc763 14px 28px)}
+.scene.on .go-pause{animation:go-grow 1s cubic-bezier(.2,.7,.2,1) var(--d) forwards}
+.go-c.go-none{border:5px dashed var(--amber);background:transparent}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../delivery/#gitops">Delivery</a> · film · recorded 15 Nov 2026</div>
+  <h1 class="page">Desired-state control across hundreds of clusters</h1>
+  <div id="viewport">
+    <div id="stage">
+<!-- 1 -->
+<section class="scene"><div class="kick">Delivery · chapter 3</div><h1>Desired-state control<br>across hundreds of clusters</h1>
+ <div class="a" style="--d:14.08s"><div class="box blue" style="left:150px;top:470px;width:300px;height:150px;font-size:44px">Git<small>desired state</small></div></div>
+ <div class="a" style="--d:15.82s"><div class="box" style="left:610px;top:490px;width:250px;height:110px">Argo CD<small>pulls</small></div>
+  <div class="label" style="left:1010px;top:366px">Hundreds of clusters</div></div>
+ <svg><path class="line a" style="--d:15.82s" d="M450 545H610"/><path class="line a" style="--d:15.82s" d="M860 545H990"/></svg>
+ <div class="dot" style="left:462px;top:536px;--dx:120px;--d:16.22s"></div>
+ <div class="dot" style="left:868px;top:536px;--dx:100px;--d:16.72s"></div>
+ <div class="go-fleet" style="left:1010px;top:410px"><i style="--d:16.42s"></i><i style="--d:16.51s"></i><i style="--d:16.60s"></i><i style="--d:16.69s"></i><i style="--d:16.78s"></i><i style="--d:16.87s"></i><i style="--d:16.96s"></i><i style="--d:17.05s"></i><i style="--d:17.14s"></i><i style="--d:17.23s"></i><i style="--d:17.32s"></i><i class="go-x" style="--d:17.41s;--o:20.91s"></i><i style="--d:17.50s"></i><i style="--d:17.59s"></i><i style="--d:17.68s"></i><i style="--d:17.77s"></i><i style="--d:17.86s"></i><i style="--d:17.95s"></i><i style="--d:18.04s"></i><i style="--d:18.13s"></i><i style="--d:16.47s"></i><i style="--d:16.56s"></i><i style="--d:16.65s"></i><i class="go-x" style="--d:16.74s;--o:20.59s"></i><i style="--d:16.83s"></i><i style="--d:16.92s"></i><i style="--d:17.01s"></i><i style="--d:17.10s"></i><i style="--d:17.19s"></i><i style="--d:17.28s"></i><i style="--d:17.37s"></i><i style="--d:17.46s"></i><i style="--d:17.55s"></i><i style="--d:17.64s"></i><i style="--d:17.73s"></i><i style="--d:17.82s"></i><i style="--d:17.91s"></i><i style="--d:18.00s"></i><i style="--d:18.09s"></i><i style="--d:18.18s"></i><i style="--d:16.52s"></i><i style="--d:16.61s"></i><i style="--d:16.70s"></i><i style="--d:16.79s"></i><i style="--d:16.88s"></i><i style="--d:16.97s"></i><i style="--d:17.06s"></i><i style="--d:17.15s"></i><i style="--d:17.24s"></i><i style="--d:17.33s"></i><i style="--d:17.42s"></i><i style="--d:17.51s"></i><i style="--d:17.60s"></i><i style="--d:17.69s"></i><i style="--d:17.78s"></i><i style="--d:17.87s"></i><i style="--d:17.96s"></i><i class="go-x" style="--d:18.05s;--o:21.15s"></i><i style="--d:18.14s"></i><i style="--d:18.23s"></i><i style="--d:16.57s"></i><i style="--d:16.66s"></i><i style="--d:16.75s"></i><i style="--d:16.84s"></i><i style="--d:16.93s"></i><i style="--d:17.02s"></i><i style="--d:17.11s"></i><i style="--d:17.20s"></i><i style="--d:17.29s"></i><i style="--d:17.38s"></i><i style="--d:17.47s"></i><i style="--d:17.56s"></i><i class="go-x" style="--d:17.65s;--o:20.95s"></i><i style="--d:17.74s"></i><i style="--d:17.83s"></i><i style="--d:17.92s"></i><i style="--d:18.01s"></i><i style="--d:18.10s"></i><i style="--d:18.19s"></i><i style="--d:18.28s"></i><i style="--d:16.62s"></i><i style="--d:16.71s"></i><i style="--d:16.80s"></i><i style="--d:16.89s"></i><i style="--d:16.98s"></i><i style="--d:17.07s"></i><i class="go-x" style="--d:17.16s;--o:20.71s"></i><i style="--d:17.25s"></i><i style="--d:17.34s"></i><i style="--d:17.43s"></i><i style="--d:17.52s"></i><i style="--d:17.61s"></i><i style="--d:17.70s"></i><i style="--d:17.79s"></i><i style="--d:17.88s"></i><i style="--d:17.97s"></i><i style="--d:18.06s"></i><i style="--d:18.15s"></i><i style="--d:18.24s"></i><i style="--d:18.33s"></i><i style="--d:16.67s"></i><i style="--d:16.76s"></i><i style="--d:16.85s"></i><i style="--d:16.94s"></i><i style="--d:17.03s"></i><i style="--d:17.12s"></i><i style="--d:17.21s"></i><i style="--d:17.30s"></i><i style="--d:17.39s"></i><i style="--d:17.48s"></i><i style="--d:17.57s"></i><i style="--d:17.66s"></i><i style="--d:17.75s"></i><i style="--d:17.84s"></i><i class="go-x" style="--d:17.93s;--o:21.03s"></i><i style="--d:18.02s"></i><i style="--d:18.11s"></i><i style="--d:18.20s"></i><i style="--d:18.29s"></i><i style="--d:18.38s"></i><i style="--d:16.72s"></i><i class="go-x" style="--d:16.81s;--o:20.51s"></i><i style="--d:16.90s"></i><i style="--d:16.99s"></i><i style="--d:17.08s"></i><i style="--d:17.17s"></i><i style="--d:17.26s"></i><i style="--d:17.35s"></i><i style="--d:17.44s"></i><i style="--d:17.53s"></i><i style="--d:17.62s"></i><i style="--d:17.71s"></i><i style="--d:17.80s"></i><i style="--d:17.89s"></i><i style="--d:17.98s"></i><i style="--d:18.07s"></i><i style="--d:18.16s"></i><i style="--d:18.25s"></i><i class="go-x" style="--d:18.34s;--o:21.19s"></i><i style="--d:18.43s"></i><i style="--d:16.77s"></i><i style="--d:16.86s"></i><i style="--d:16.95s"></i><i style="--d:17.04s"></i><i style="--d:17.13s"></i><i style="--d:17.22s"></i><i style="--d:17.31s"></i><i style="--d:17.40s"></i><i style="--d:17.49s"></i><i class="go-x" style="--d:17.58s;--o:20.83s"></i><i style="--d:17.67s"></i><i style="--d:17.76s"></i><i style="--d:17.85s"></i><i style="--d:17.94s"></i><i style="--d:18.03s"></i><i style="--d:18.12s"></i><i style="--d:18.21s"></i><i style="--d:18.30s"></i><i style="--d:18.39s"></i><i style="--d:18.48s"></i></div>
+ <div class="a go-q" style="--d:19.97s;left:150px;top:830px"><span class="go-n">1</span>How much of the fleet matches Git right now?</div>
+ <div class="a go-q" style="--d:22.67s;left:1010px;top:830px"><span class="go-n">2</span>Who may make it not match?</div>
+</section>
+
+<!-- 2 -->
+<section class="scene"><div class="kick">Step 2 of 9</div><h1>A change is a commit</h1>
+ <div class="a" style="--d:.4s"><div class="go-hist"></div><div class="go-c" style="left:277px;top:617px"></div><div class="go-c" style="left:497px;top:617px"></div><div class="go-c" style="left:717px;top:617px"></div><div class="go-c" style="left:937px;top:617px"></div></div>
+ <div class="a" style="--d:2.00s"><div class="box" style="left:1010px;top:400px;width:340px;height:130px">Engineer<small>merges a reviewed PR</small></div></div>
+ <div class="a" style="--d:5.10s"><div class="box" style="left:1390px;top:400px;width:340px;height:130px">CI<small>opens a PR, bumps<br>an image digest</small></div></div>
+ <svg><path class="line a" style="--d:2.30s" d="M1180 530V615"/><path class="line a" style="--d:5.40s" d="M1560 530V615"/>
+  <path class="line a" style="--d:8.27s" d="M277 690V706H983V690"/>
+  <path class="line a" style="--d:10.32s;stroke:var(--blue);stroke-dasharray:10 10" d="M1560 672C1560 770 1180 770 1180 684"/>
+  <path class="a" style="--d:10.32s;fill:var(--blue)" d="M1166 694L1180 668L1194 694Z"/></svg>
+ <div class="go-c go-new" style="left:1157px;top:617px;--d:2.60s"></div>
+ <div class="go-c go-new" style="left:1537px;top:617px;--d:5.70s"></div>
+ <div class="a go-mid" style="--d:8.27s;left:277px;width:706px;top:722px">Git history is the <span class="t-blue">audit log</span></div>
+ <div class="a go-mid" style="--d:10.32s;left:1180px;width:380px;top:762px">and the <span class="t-blue">undo button</span></div>
+ <div class="a cap" style="--d:11.80s">For one app, or 300 clusters.</div>
+</section>
+
+<!-- 3 -->
+<section class="scene"><div class="kick">Step 3 of 9</div><h1>Refresh, render, then scale it</h1>
+ <div class="a" style="--d:.5s"><div class="label" style="left:150px;top:324px;font-size:30px;color:var(--fg)">Webhook</div>
+  <div class="box green" style="left:520px;top:306px;width:400px;height:70px;font-size:28px">triggers a refresh</div></div>
+ <div class="a" style="--d:2.44s"><div class="label" style="left:150px;top:424px;font-size:30px;color:var(--fg)">No webhook</div>
+  <div class="go-track"><div class="go-f1" style="--d:3.31s"></div><div class="go-f2" style="--d:6.96s"></div></div></div>
+ <div class="a label" style="--d:3.71s;left:540px;top:486px;font-size:26px">the controller polls every 120 seconds</div>
+ <div class="a label t-amber" style="--d:6.96s;left:1254px;top:486px;font-size:26px;color:#9a6a0c">plus up to 60 of jitter</div>
+ <svg><path class="line a" style="--d:8.82s" d="M400 620L590 665"/><path class="line a" style="--d:8.82s" d="M400 710L590 665"/><path class="line a" style="--d:11.61s" d="M910 665H1090"/></svg>
+ <div class="a" style="--d:9.88s"><div class="box" style="left:150px;top:584px;width:250px;height:72px">Helm</div><div class="box" style="left:150px;top:674px;width:250px;height:72px">Kustomize</div></div>
+ <div class="a" style="--d:8.82s"><div class="box blue" style="left:590px;top:605px;width:320px;height:120px">Repo server<small>renders</small></div></div>
+ <div class="a" style="--d:11.61s"><div class="box green" style="left:1090px;top:605px;width:340px;height:120px">Plain manifests</div></div>
+ <div class="a label" style="--d:13.07s;left:150px;top:812px">With thousands of apps</div>
+ <div style="position:absolute;left:150px;top:852px;white-space:nowrap"><span class="chip a" style="--d:14.67s">shard the controller by cluster</span><span class="chip a" style="--d:16.86s">add repo servers</span><span class="chip a" style="--d:18.05s">a target for p99 <span class="mono" style="font-weight:600">argocd_app_reconcile</span> time</span></div>
+</section>
+
+<!-- 4 -->
+<section class="scene"><div class="kick">Step 4 of 9</div><h1>Git against live state</h1>
+ <div class="a" style="--d:.5s"><div class="go-pane" style="left:150px"><b>Git</b><i style="width:300px"></i><i style="width:220px"></i><i style="width:260px"></i><i style="width:330px"></i><i style="width:180px"></i></div><div class="go-pane" style="left:720px"><b>Live state</b><i style="width:300px"></i><i style="width:220px"></i><i style="width:260px" class="go-chg" style="width:260px;--d:5.89s"></i><i style="width:330px"></i><i style="width:180px"></i></div></div>
+ <div class="go-sign"><span class="a go-gone" style="--d:3.29s;--o:5.89s">=</span><span class="a t-amber" style="--d:6.19s">≠</span></div>
+ <div class="a go-row" style="--d:3.79s;left:1240px;top:420px">same <span class="go-st green">Synced</span></div>
+ <div class="a go-row" style="--d:6.39s;left:1240px;top:512px">different <span class="go-st amber">OutOfSync</span></div>
+ <div class="a label" style="--d:8.10s;left:1240px;top:626px;font-size:26px">Health is separate</div>
+ <div class="a go-row" style="--d:9.36s;left:1240px;top:672px"><span class="go-st green">Synced</span>and<span class="go-st red">Degraded</span></div>
+ <div class="a cap" style="--d:12.84s">Rollback is <span class="mono t-blue">git revert</span>.</div>
+</section>
+
+<!-- 5 -->
+<section class="scene"><div class="kick">Step 5 of 9</div><h1>One Application per target</h1>
+ <div class="a" style="--d:.5s"><div class="box blue" style="left:150px;top:480px;width:420px;height:140px;font-size:34px">ApplicationSet<small>one Application per target</small></div></div>
+ <svg><path class="line a" style="--d:3.87s" d="M570 550H630"/><path class="line a" style="--d:12.82s" d="M550 855H760"/><path class="line a" style="--d:12.82s" d="M1160 855H1370"/></svg>
+ <div class="dot" style="left:572px;top:541px;--dx:44px;--d:4.17s"></div>
+ <div class="a" style="--d:3.87s"><div class="go-cl" style="left:640px;top:410px">env: prod<br><span class="a" style="--d:4.47s">App</span></div></div><div class="a" style="--d:3.87s"><div class="go-cl" style="left:920px;top:410px">env: prod<br><span class="a" style="--d:4.72s">App</span></div></div><div class="a" style="--d:3.87s"><div class="go-cl" style="left:1200px;top:410px">env: prod<br><span class="a" style="--d:4.97s">App</span></div></div><div class="a" style="--d:3.87s"><div class="go-cl" style="left:1480px;top:410px">env: prod<br><span class="a" style="--d:5.22s">App</span></div></div><div class="a" style="--d:3.87s"><div class="go-cl" style="left:640px;top:560px">env: prod<br><span class="a" style="--d:5.47s">App</span></div></div><div class="a" style="--d:3.87s"><div class="go-cl" style="left:920px;top:560px">env: prod<br><span class="a" style="--d:5.72s">App</span></div></div><div class="go-cl go-newc a" style="left:1200px;top:560px;--d:6.51s">env: prod · new<br><span class="a" style="--d:7.43s">App</span></div><div class="a" style="--d:3.87s"><div class="go-cl go-miss" style="left:1480px;top:560px;--d:10.32s">env: prod<br><span class="a" style="--d:10.32s">missing</span></div></div>
+ <div class="a label" style="--d:12.82s;left:150px;top:762px;font-size:26px;color:var(--fg)">Progressive Syncs <span class="muted" style="font-weight:400">· beta, off until you enable it · clusters by label</span></div>
+ <div class="a" style="--d:12.82s"><div class="go-wave" style="left:150px"><i style="--d:17.23s"></i><i style="--d:17.23s"></i><i style="--d:17.23s"></i><i style="--d:17.23s"></i><i style="--d:17.23s"></i><span class="a t-green" style="--d:17.83s">Healthy</span></div></div><div class="a" style="--d:12.82s"><div class="go-wave" style="left:760px"><i style="--d:18.53s"></i><i style="--d:18.53s"></i><i style="--d:18.53s"></i><i style="--d:18.53s"></i><i style="--d:18.53s"></i><span class="a t-green" style="--d:19.13s">Healthy</span></div></div><div class="a" style="--d:12.82s"><div class="go-wave" style="left:1370px"><i style="--d:19.83s"></i><i style="--d:19.83s"></i><i style="--d:19.83s"></i><i style="--d:19.83s"></i><i style="--d:19.83s"></i><span class="a t-green" style="--d:19.90s">Healthy</span></div></div>
+</section>
+
+<!-- 6 -->
+<section class="scene"><div class="kick">Step 6 of 9</div><h1>Drift, and putting Git's value back</h1>
+ <div class="a" style="--d:.5s"><div class="box blue" style="left:900px;top:330px;width:380px;height:120px">Git<small>Git's value</small></div></div>
+ <div class="a go-gone" style="--d:.5s;--o:3.64s"><div class="box green" style="left:900px;top:565px;width:380px;height:120px">Live state<small>matches Git</small></div></div>
+ <div class="a go-gone" style="--d:3.64s;--o:9.20s"><div class="box amber" style="left:900px;top:565px;width:380px;height:120px">Live state<small>changed by hand</small></div></div>
+ <div class="a" style="--d:9.50s"><div class="box green" style="left:900px;top:565px;width:380px;height:120px">Live state<small>Git's value, back</small></div></div>
+ <div class="term a" style="--d:1.42s;left:150px;top:550px;width:560px;padding:34px 44px"><span class="muted">$</span> kubectl edit</div>
+ <svg><path class="line a" style="--d:2.02s" d="M710 625H900"/><path class="line a" style="--d:5.45s;stroke:var(--blue)" d="M1090 450V565"/><path class="a" style="--d:5.45s;fill:var(--blue)" d="M1076 541L1090 567L1104 541Z"/></svg>
+ <div class="a label" style="--d:5.45s;left:1120px;top:476px;font-size:28px;color:var(--fg)"><span class="mono">selfHeal</span> on <span class="muted" style="font-weight:400;font-size:22px">&nbsp;(off by default)</span></div>
+ <div class="a go-gone go-row" style="--d:3.94s;--o:9.20s;left:1330px;top:598px"><span class="go-st amber">OutOfSync</span></div>
+ <div class="a go-row t-green" style="--d:10.72s;left:1330px;top:606px;font-weight:600;color:var(--green)">back within seconds</div>
+ <div class="a label" style="--d:11.83s;left:150px;top:812px">For production, the platform default</div>
+ <div style="position:absolute;left:150px;top:852px;white-space:nowrap"><span class="chip a" style="--d:12.94s">auto-sync</span><span class="chip a" style="--d:14.05s">prune</span><span class="chip a mono" style="--d:14.47s">selfHeal</span></div>
+</section>
+
+<!-- 7 -->
+<section class="scene"><div class="kick">Step 7 of 9</div><h1>Drift is a fleet metric</h1>
+ <div class="go-metric a" style="--d:2.17s;left:150px;top:300px">argocd_app_info</div>
+ <div style="position:absolute;left:640px;top:318px;white-space:nowrap"><span class="chip a mono" style="--d:4.57s">sync_status</span><span class="chip a mono" style="--d:5.40s">health_status</span></div>
+ <div class="a label" style="--d:6.71s;left:150px;top:456px;font-size:26px">OutOfSync apps, by project and cluster · how long each has been out</div>
+ <div class="go-bar" style="top:520px;--w:70px;--d:6.71s"></div><div class="go-bar" style="top:570px;--w:110px;--d:6.96s"></div><div class="go-bar" style="top:620px;--w:54px;--d:7.21s"></div><div class="go-bar" style="top:670px;--w:92px;--d:7.46s"></div><div class="go-bar" style="top:720px;--w:960px;background:var(--red);--d:10.14s"></div><div class="go-bar" style="top:770px;--w:1180px;background:var(--red);--d:10.44s"></div>
+ <div class="a go-row" style="--d:12.34s;left:330px;top:590px;color:var(--fg)"><b class="t-green">Minutes</b> a sync in flight</div>
+ <div class="a go-row" style="--d:14.34s;left:150px;top:838px;color:var(--fg)"><b class="t-red">Days</b> a second source of truth</div>
+ <div class="a label" style="--d:6.71s;right:150px;top:846px;font-weight:400">(Made-up example.)</div>
+</section>
+
+<!-- 8 -->
+<section class="scene"><div class="kick">Step 8 of 9</div><h1>Break-glass, when Git is too slow</h1>
+ <div class="a label" style="--d:3.26s;left:150px;top:330px;font-size:30px;color:var(--fg)">Written down: <span class="muted" style="font-weight:400">who may do it, and how</span></div>
+ <div class="go-step a amber" style="left:150px;--d:5.66s"><span class="go-n">1</span>Pause sync for that one app<small>a deny sync window,<br>or auto-sync off</small></div><div class="go-step a" style="left:565px;--d:10.12s"><span class="go-n">2</span>Make the fix</div><div class="go-step a" style="left:980px;--d:11.08s"><span class="go-n">3</span>Land the same change in Git</div><div class="go-step a green" style="left:1395px;--d:13.07s"><span class="go-n">4</span>Turn sync back on</div>
+ <div class="go-lane a" style="--d:14.37s"><span class="mono t-blue" style="font-weight:600">manualSync: true</span><span>keeps a human sync path open meanwhile</span></div>
+</section>
+
+<!-- 9 -->
+<section class="scene" style="--egg:7.5s"><div class="kick">Step 9 of 9</div><h1>Then measure break-glass</h1>
+ <div class="a" style="--d:2.07s"><div class="box" style="left:150px;top:310px;width:360px;height:96px">Events per month</div></div>
+ <div class="a" style="--d:3.57s"><div class="box" style="left:540px;top:310px;width:480px;height:96px">How long sync stayed paused</div></div>
+ <div class="a" style="--d:5.37s"><div class="box" style="left:1050px;top:310px;width:360px;height:96px">Did Git catch up?</div></div>
+ <div class="a" style="--d:2.37s"><div class="go-hist" style="left:150px;top:557px;width:1620px"></div></div>
+ <div class="go-pause" style="left:230px;--w:170px;--d:2.67s"></div>
+ <div class="go-pause" style="left:720px;--w:280px;--d:3.17s"></div>
+ <div class="go-pause" style="left:1260px;--w:210px;--d:3.67s"></div>
+ <div class="a label" style="--d:3.57s;left:230px;top:496px">sync paused</div>
+ <div class="go-c go-new" style="left:430px;top:537px;--d:5.77s"></div>
+ <div class="go-c go-new" style="left:1030px;top:537px;--d:6.17s"></div>
+ <div class="a label t-blue" style="--d:5.77s;left:418px;top:596px">commit</div>
+ <div class="a label t-blue" style="--d:6.17s;left:1018px;top:596px">commit</div>
+ <div class="a" style="--d:7.06s"><div class="go-c go-none" style="left:1500px;top:537px"></div><div class="label" style="left:1420px;top:596px;color:#9a6a0c">no matching commit</div></div>
+ <div class="a go-mid" style="--d:9.74s;left:150px;width:1620px;top:668px;text-align:right">Drift someone chose, and then forgot.</div>
+ <div class="critter"><div id="critter"></div></div>
+</section>
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 3 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../delivery/#gitops">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Desired-state control across hundreds of clusters. With Argo C D managing hundreds of clusters, how do you know how much of the fleet matches Git right now, and what is the policy when someone has to change production by hand? Git holds the desired state, and Argo C D pulls it into each cluster. So there are two questions. How much of the fleet matches Git right now? And who may make it not match?", "A change is a commit. An engineer merges a reviewed pull request, or C I opens one that bumps an image digest. Git history is the audit log and the undo button, whether that's for one app or three hundred clusters.", "A webhook triggers a refresh. Without one, the controller polls every hundred and twenty seconds, plus up to sixty of jitter. The repo server renders Helm or Kustomize into plain manifests. With thousands of apps, shard the controller by cluster, add repo servers, and set a target for ninety-ninth percentile reconcile time.", "The controller diffs Git against live state. If they are the same, the app is Synced. If they differ, it is Out Of Sync. Health is separate, so an app can be Synced and Degraded at the same time. Rollback is a git revert.", "Application Sets create one Application per target, such as every cluster labeled env prod. A new cluster gets the standard set with no YAML written. Count the clusters missing any of it. Progressive Syncs, a beta feature that is off until you enable it, step a change through clusters by label and wait for Healthy.", "Drift is when someone runs kube control edit. The app goes Out Of Sync. With self heal on, and it is off by default, Argo C D puts Git's value back within seconds. For production, make auto-sync, prune and self heal the platform default.", "Drift is a fleet metric. Argo C D's app info metric carries sync status and health status. Count Out Of Sync apps by project and by cluster, and how long each has been out. Minutes is a sync in flight. Days means a second source of truth.", "Break-glass is for when Git is too slow. Write down who may do it, and how. Set a deny sync window, or turn auto-sync off, for that one app. Make the fix. Land the same change in Git. Turn sync back on. The manual sync setting keeps a human sync path open in the meantime.", "Then measure break-glass. Count events per month, how long sync stayed paused, and whether Git caught up. A pause with no matching commit afterwards is drift that someone chose and then forgot."], "seconds": [24.02, 15.08, 21.59, 13.97, 20.8, 16.45, 16.36, 18.65, 12.03]}</script>
+<script src="../film.js"></script>
+</body>
+</html>
