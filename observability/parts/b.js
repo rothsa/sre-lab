@@ -347,7 +347,7 @@ export const CHAPTERS = [
       "AI SRE agents now start from the alert: Datadog's Bits Investigation agent auto-investigates only when a monitor enters alert state (not warn or no data) and can end inconclusive. Routing still decides who is accountable: the page reaches a human owner and counts against that team's pager budget, with the agent's findings arriving as evidence (see Agentic Engineering).",
       "The products recommend, people act: New Relic's docs say Autopilot recommends actions but does not take them, and Google's autonomy levels require a human to approve each plan at L2. Keep agent identities read-only on Alertmanager too, because a silence is a write that can hide the next page.",
       "Alert on the model dependency like any third party. A Claude API 529 `overloaded_error` is retryable, but a spend-cap 429 has no `retry-after` and keeps failing until access resumes, so it should reach an owner instead of burning retries; alert on the agent's own success rate and on `gen_ai.client.inference.duration` split by `error.type`, rather than waiting for the provider's status page.",
-      "An agent monitor works better as a spec than a loop. Ben Congdon (19 Oct 2026): letting the agent write \"a spec of how to monitor\" that a deterministic system runs gives \"significantly cleaner signals with dramatically lower token usage\". Review those specs like any other alert rule."
+      "Always-on agent monitors are moving from a loop to a spec. Ben Congdon (19 Oct 2026) has the agent write \"a spec of how to monitor\" that a deterministic system runs. Grafana's Watchers (9 Nov 2026) are calibrated once by an agent, then each run is \"plain code plus one call to a small, fast model\": by its own figures a median under $5 a month per watcher, where one agentic investigation cost $0.56 to $1.26. Review those specs like any other alert rule."
     ],
     quiz: [
       { q: "A team has averaged five pages per shift over the last 21 days. What happens next?", a: "They are over budget, so the set response starts: look at which alerts page and whether anyone acted, delete or demote the noise, put reliability bugs ahead of features, and maybe loan them an experienced SRE with a quarterly goal like under 2 pages a shift." },
@@ -357,6 +357,7 @@ export const CHAPTERS = [
     incidents: ["datadog-2016-pagerduty-notifications-skipped", "pagerduty-2017-notification-delays"],
     sources: [
       { title: "Ben Congdon: Agentic Monitoring (19 Oct 2026)", url: "https://benjamincongdon.me/blog/2026/10/19/Agentic-Monitoring/" },
+      { title: "Grafana Labs: The engineering behind Grafana Assistant Watchers (9 Nov 2026)", url: "https://grafana.com/blog/run-cost-effective-always-on-agents-to-monitor-your-environment-the-engineering-behind-watchers/" },
       { title: "Google SRE book: Being on-call", url: "https://sre.google/sre-book/being-on-call/" },
       { title: "Google SRE workbook: On-call", url: "https://sre.google/workbook/on-call/" },
       { title: "Google SRE workbook: Example error budget policy", url: "https://sre.google/workbook/error-budget-policy/" },

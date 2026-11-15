@@ -178,7 +178,7 @@ export const CHAPTERS = [
       { title: "Uber: Running a software factory efficiently (2026-08-27)", url: "https://www.uber.com/us/en/blog/efficient-software-factory/" },
       { title: "Uber: Designing MCP Gateway (2026-10-01)", url: "https://www.uber.com/blog/designing-mcp-gateway/" },
       { title: "Stripe: Minions part 2 (2026-02-19)", url: "https://stripe.dev/blog/minions-stripes-one-shot-end-to-end-coding-agents-part-2" },
-      { title: "Amazon: Correction on Amazon.com outages and AI (2026-03-12)", url: "https://www.aboutamazon.com/news/company-news/amazon-outage-ai-financial-times-correction" },
+      { title: "Amazon: Correction on Amazon.com outages and AI (2026-03-11)", url: "https://www.aboutamazon.com/news/company-news/amazon-outage-ai-financial-times-correction" },
       { title: "Nubank: When AI skills become supply-chain dependencies (2026-09-02)", url: "https://building.nu.com/when-ai-skills-become-supply-chain-dependencies-2/" },
       { title: "GitHub Docs: Copilot cloud agent risks and mitigations", url: "https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/risks-and-mitigations" },
       { title: "AWS: Security bulletin AWS-2025-015 (Amazon Q extension 1.84.0, 2025-07-23)", url: "https://aws.amazon.com/security/security-bulletins/AWS-2025-015/" },
