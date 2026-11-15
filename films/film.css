@@ -91,8 +91,8 @@ svg{position:absolute;inset:0;width:1920px;height:1080px;overflow:visible}
 @keyframes stamp{from{opacity:0;transform:rotate(-4deg) scale(1.8)}to{opacity:1;transform:rotate(-4deg) scale(1)}}
 .canopy{position:absolute;inset:0;pointer-events:none;z-index:5}.canopy svg{position:absolute;inset:auto;overflow:visible}.sway{transform-origin:top center;animation:sway 7s ease-in-out infinite}.sway.b{animation-duration:9s;animation-delay:-3s}@keyframes sway{0%,100%{transform:rotate(-1.4deg)}50%{transform:rotate(1.4deg)}}
 .critter{position:absolute;left:-220px;bottom:130px;width:190px;height:190px;z-index:7;opacity:0}
-.scene.on .critter{animation:cross 5.6s linear 15.8s both}
-.scene.on .critter>div{animation:hop .56s cubic-bezier(.3,0,.5,1) 15.8s 10 alternate}
+.scene.on .critter{animation:cross 5.6s linear var(--egg,15.8s) both}
+.scene.on .critter>div{animation:hop .56s cubic-bezier(.3,0,.5,1) var(--egg,15.8s) 10 alternate}
 @keyframes cross{0%{opacity:1;transform:translateX(0)}100%{opacity:1;transform:translateX(2360px)}}
 @keyframes hop{from{transform:translateY(0) rotate(4deg)}to{transform:translateY(-120px) rotate(-6deg)}}
 .critter svg{position:static;width:190px;height:190px}

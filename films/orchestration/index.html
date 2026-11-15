@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Orchestrating many agents: the film</title>
+<meta name="description" content="How to split work across many coding agents, keep them from overwriting each other, and bound what lands on main.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.or-pips{position:absolute;display:grid;gap:8px}
+.or-pips i{width:22px;height:22px;border-radius:50%;background:var(--green);display:block}
+.or-pip{position:absolute;width:36px;height:36px;border-radius:50%;background:var(--green);box-shadow:0 4px 10px rgba(20,70,35,.15)}
+.or-chips{position:absolute;white-space:nowrap}
+.or-num{position:absolute;font:900 130px/1 "Archivo",sans-serif;letter-spacing:-.03em;color:var(--blue)}
+.or-txt{position:absolute;font:400 32px/1.3 "IBM Plex Sans";color:var(--fg)}
+.or-panel{position:absolute;border:3px dashed #9fbf8f;border-radius:40px 14px 40px 14px;background:rgba(255,255,255,.5)}
+.scene.on .a.or-dim{animation:in .7s var(--d,0s) both,or-dim .6s var(--e,99s) forwards}
+@keyframes or-dim{to{opacity:.45}}
+.scene.on .a.or-tored{animation:in .7s var(--d,0s) both,or-tored .5s var(--e,99s) forwards}
+@keyframes or-tored{to{border-color:var(--red);background:#fbe4d9;color:var(--red)}}
+.scene.on .or-void{animation:or-void .4s var(--e,99s) forwards}
+@keyframes or-void{to{text-decoration:line-through;text-decoration-color:var(--red);color:#9aa89c}}
+/* s1 */
+.or-solo{position:absolute;display:grid;grid-template-columns:repeat(8,62px);gap:22px 28px}
+.or-solo i{display:block;width:62px;height:26px;background:radial-gradient(circle at 13px 13px,var(--green) 12px,transparent 13px),linear-gradient(#9fbf8f,#9fbf8f) 26px 12px/14px 3px no-repeat;position:relative}
+.or-solo i::after{content:"";position:absolute;right:0;top:0;width:24px;height:24px;border:2.5px solid var(--blue);border-radius:8px 3px 8px 3px;background:#dff0d3}
+/* s2 */
+.or-zone{position:absolute;height:64px;border-radius:0 32px 32px 0;background:repeating-linear-gradient(135deg,rgba(217,72,30,.20) 0 14px,rgba(217,72,30,.08) 14px 28px)}
+.or-mark{position:absolute;width:5px;height:104px;background:var(--fg);border-radius:3px}
+/* s3 */
+.or-brief{position:absolute;border-radius:32px 10px 32px 10px;background:#fff;padding:38px 54px;box-shadow:0 24px 60px rgba(20,70,35,.16);font:500 36px/1.72 "IBM Plex Sans"}
+.or-brief b{font:800 40px "Archivo";display:block;margin-bottom:8px}
+.or-brief span{display:block}
+.or-brief span::before{content:"";display:inline-block;width:18px;height:18px;margin-right:18px;background:var(--green);border-radius:0 70% 0 70%}
+.or-slots{position:absolute;display:grid;grid-template-columns:repeat(10,64px);gap:18px}
+.or-slots i{width:64px;height:64px;border-radius:50%;background:#d6e6c8;display:block}
+.scene.on .or-slots i{animation:lit .5s var(--d) forwards}
+.or-wait{position:absolute;display:grid;grid-template-columns:repeat(8,84px);gap:18px}
+.or-wait i{height:40px;border-radius:999px;background:#fff;border:2px solid var(--rule);display:block}
+/* s4 */
+.or-wt{position:absolute;width:400px;height:190px;border:2.5px solid var(--rule);background:var(--panel);border-radius:30px 10px 30px 10px;box-shadow:0 10px 28px rgba(20,70,35,.10)}
+.or-wt .label{left:24px;top:14px}
+.or-wt .or-pips{left:30px;top:58px;grid-template-columns:repeat(8,26px);gap:14px 16px}
+.or-wt .or-pips i{width:26px;height:26px}
+.scene.on .or-wt .or-pips i:nth-child(odd){animation:or-jos1 .45s infinite alternate}
+.scene.on .or-wt .or-pips i:nth-child(even){animation:or-jos2 .6s infinite alternate}
+.scene.on .or-wt .or-pips i:nth-child(3n){animation-duration:.8s}
+@keyframes or-jos1{from{transform:translate(-7px,4px)}to{transform:translate(8px,-5px)}}
+@keyframes or-jos2{from{transform:translate(6px,6px)}to{transform:translate(-8px,-4px)}}
+.or-pair{position:absolute;width:150px;height:60px}
+.or-pair::before{content:"";position:absolute;left:0;top:12px;width:36px;height:36px;border-radius:50%;background:var(--green)}
+.or-pair::after{content:"";position:absolute;right:0;top:0;width:84px;height:56px;border:2.5px solid var(--blue);border-radius:18px 6px 18px 6px;background:#dff0d3}
+.or-pair i{position:absolute;left:40px;top:28px;width:24px;height:3px;background:#9fbf8f}
+/* s5 */
+.or-slice{position:absolute;top:0;height:100%;border-right:4px solid var(--bg)}
+.or-lane{position:absolute;height:4px;border-radius:2px;background:#d6e6c8}
+.scene.on .a.or-run{animation:in .5s var(--d) both,or-run var(--t) cubic-bezier(.4,.1,.6,1) var(--d) forwards}
+@keyframes or-run{to{transform:translateX(var(--dx))}}
+.scene.on .a.or-run.or-win{animation:in .5s var(--d) both,or-run var(--t) cubic-bezier(.4,.1,.6,1) var(--d) forwards,or-win .5s var(--e) forwards}
+@keyframes or-win{to{box-shadow:0 0 0 8px rgba(63,154,79,.3);background:var(--blue)}}
+/* s6 */
+.or-rep{position:absolute;width:320px;height:190px;border:2.5px solid var(--rule);background:#fff;border-radius:30px 10px 30px 10px;box-shadow:0 10px 28px rgba(20,70,35,.10);padding:24px 28px;font:400 23px/1.6 "IBM Plex Mono";color:var(--muted)}
+.or-rep b{display:block;font:800 46px/1.1 "Archivo";margin-bottom:10px}
+/* s7 */
+.or-led{position:absolute;border-radius:32px 10px 32px 10px;background:#fff;box-shadow:0 24px 60px rgba(20,70,35,.16);padding:26px 44px 34px}
+.or-row{display:grid;grid-template-columns:200px 300px 220px 1fr;align-items:center;height:84px;font:500 32px "IBM Plex Sans";border-top:2px solid #e3eeda}
+.or-row.or-hd{border-top:0;height:60px;font:700 22px "IBM Plex Sans";letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+/* s8 */
+.or-pr{position:absolute;width:190px;height:96px;border-radius:999px;background:#fff;border:2.5px solid var(--green);box-shadow:0 8px 20px rgba(20,70,35,.12);display:flex;flex-direction:column;align-items:center;justify-content:center;font:600 28px "IBM Plex Sans"}
+.or-pr small{font:400 19px "IBM Plex Mono";color:var(--muted)}
+/* s12 */
+.or-span{position:absolute;height:46px;border-radius:23px;font:500 24px/46px "IBM Plex Mono";padding-left:18px;color:#fff;white-space:nowrap}
+.or-span.m{background:var(--blue)}.or-span.t{background:var(--amber);color:#3a2a05}.or-span.r{background:#d6e6c8;color:var(--fg)}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../agentic/#orchestration">Agentic Engineering</a> · film · recorded 15 Nov 2026</div>
+  <h1 class="page">Orchestrating many agents</h1>
+  <div id="viewport">
+    <div id="stage">
+<!-- 1 -->
+<section class="scene"><div class="kick">Agentic Engineering · chapter 4</div><h1>Orchestrating<br>many agents</h1>
+ <div class="or-chips" style="left:110px;top:310px"><span class="chip a" style="--d:4.6s">Split the work</span><span class="chip a" style="--d:6.2s">Stop the clobbering</span><span class="chip a" style="--d:8.6s">Bound what lands on main</span></div>
+ <div class="a" style="--d:14.2s"><div class="label" style="left:110px;top:440px">Independent sessions, one writer each</div>
+  <div class="or-solo" style="left:118px;top:500px"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+ <div class="or-num a" style="--d:19.0s;left:110px;top:730px">1,300+</div>
+ <div class="or-txt a" style="--d:20.6s;left:590px;top:760px;font-size:28px">merged agent PRs a week<br><span class="muted">Stripe reports</span></div>
+ <div class="a" style="--d:11.8s"><div class="or-panel" style="left:980px;top:420px;width:830px;height:520px"></div><div class="label t-blue" style="left:1016px;top:444px">Many writers, one repo</div></div>
+ <div class="a" style="--d:25.4s"><div class="or-pips" style="left:1079px;top:500px;grid-template-columns:repeat(8,22px)"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="box blue" style="left:1020px;top:776px;width:350px;height:120px;font-size:28px">Bun's Rust port<small>about 64 Claudes</small></div></div>
+ <div class="a" style="--d:28.6s"><div class="or-pips" style="left:1559px;top:620px;grid-template-columns:repeat(4,22px)"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="box blue" style="left:1420px;top:776px;width:360px;height:120px;font-size:27px">Anthropic's C compiler<small>16</small></div></div>
+</section>
+
+<!-- 2 -->
+<section class="scene"><div class="kick">Step 2 of 12</div><h1>Frame first: done condition, budget</h1>
+ <div class="a" style="--d:2.4s"><div class="box" style="left:110px;top:300px;width:360px;height:120px">Done condition<small>countable</small></div></div>
+ <div class="a" style="--d:4.6s"><div class="box amber" style="left:510px;top:300px;width:240px;height:120px">Budget</div></div>
+ <div class="a" style="--d:8.5s"><div class="box blue" style="left:800px;top:300px;width:620px;height:120px;font-size:28px">If one agent can finish in budget, use one.<small>pstack's orchestrate playbook</small></div></div>
+ <div class="a" style="--d:12.1s"><div class="label" style="left:110px;top:520px;font-size:26px">How often one agent succeeds <span style="font-weight:400">(Google and MIT study)</span></div>
+  <div class="track" style="left:110px;top:590px;width:1700px"><div class="fill" style="background:var(--green);--w:45%;--d:15.0s"></div></div></div>
+ <div class="a" style="--d:16.8s"><div class="or-mark" style="left:873px;top:570px"></div><div class="label" style="left:800px;top:690px;font-size:34px;color:var(--fg)">about 45%</div></div>
+ <div class="a" style="--d:14.7s"><div class="or-zone" style="left:878px;top:590px;width:932px"></div><div class="label t-red" style="left:1130px;top:604px;font-size:32px">negative returns from here</div></div>
+ <div class="a cap" style="--d:19.4s;bottom:170px">The big parallel wins all had an oracle, like <span class="chip" style="margin:0 0 0 8px">GCC</span></div>
+</section>
+
+<!-- 3 -->
+<section class="scene"><div class="kick">Step 3 of 12</div><h1>Briefs are self-contained</h1>
+ <div class="or-brief a" style="--d:.6s;left:110px;top:300px;width:660px"><b>Brief</b>
+  <span class="a" style="--d:3.9s">Goal</span><span class="a" style="--d:4.3s">Scope</span><span class="a" style="--d:4.6s">Acceptance</span><span class="a" style="--d:5.0s">Verify commands</span><span class="a" style="--d:6.1s">Timebox</span><span class="a" style="--d:6.5s">Forbidden actions</span><span class="a" style="--d:7.9s">Report shape</span></div>
+ <div class="a label t-blue" style="--d:12.4s;left:900px;top:410px;font-size:30px">OpenAI's Symphony</div>
+ <div class="a" style="--d:9.4s"><div class="label" style="left:900px;top:480px;font-size:26px">Issue tracker: the queue</div><div class="or-wait" style="left:900px;top:532px"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+ <svg><path class="line a" style="--d:13.1s" d="M1300 590V650"/><path class="line a" style="--d:13.1s" d="M1286 634L1300 652L1314 634"/></svg>
+ <div class="a" style="--d:15.3s"><div class="label" style="left:900px;top:680px;font-size:26px">Running at once <span class="mono t-blue" style="margin-left:14px">max_concurrent_agents: 10</span></div>
+  <div class="or-slots" style="left:900px;top:736px"><i style="--d:15.7s"></i><i style="--d:15.9s"></i><i style="--d:16.2s"></i><i style="--d:16.4s"></i><i style="--d:16.7s"></i><i style="--d:16.9s"></i><i style="--d:17.2s"></i><i style="--d:17.4s"></i><i style="--d:17.7s"></i><i style="--d:17.9s"></i></div></div>
+ <div class="or-chips" style="left:900px;top:860px"><span class="chip a" style="--d:19.0s">cap per state</span><span class="chip a" style="--d:20.1s">cap per host</span></div>
+</section>
+
+<!-- 4 -->
+<section class="scene"><div class="kick">Step 4 of 12</div><h1>One writer per checkout</h1>
+ <div class="or-wt a or-tored" style="--d:2.5s;--e:8.1s;left:110px;top:300px"><div class="label">worktree · 16 Claudes</div><div class="or-pips"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+ <div class="or-wt a or-tored" style="--d:2.9s;--e:8.3s;left:540px;top:300px"><div class="label">worktree · 16 Claudes</div><div class="or-pips"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+ <div class="or-wt a or-tored" style="--d:3.2s;--e:8.5s;left:110px;top:520px"><div class="label">worktree · 16 Claudes</div><div class="or-pips"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+ <div class="or-wt a or-tored" style="--d:3.6s;--e:8.7s;left:540px;top:520px"><div class="label">worktree · 16 Claudes</div><div class="or-pips"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+ <div class="or-chips mono" style="left:110px;top:750px"><span class="chip a t-red" style="--d:6.3s;font-family:inherit">git stash</span><span class="chip a t-red" style="--d:7.4s;font-family:inherit">reset --hard</span><span class="chip a" style="--d:10.4s;font-family:inherit;color:var(--amber)">one slow grep</span></div>
+ <div class="a or-txt" style="--d:8.5s;left:110px;top:850px">They overwrote each other. <span class="a muted" style="--d:11.2s">Disk I/O froze for minutes.</span></div>
+ <div class="a" style="--d:13.4s"><div class="label t-blue" style="left:1060px;top:420px;font-size:30px">Disk binds before tokens</div></div>
+ <div class="a" style="--d:14.9s"><div class="label" style="left:1060px;top:492px;font-size:24px">Disk I/O</div><div class="track" style="left:1060px;top:530px;width:750px;height:56px"><div class="fill" style="background:var(--red);--w:97%;--d:15.3s"></div></div><div class="label t-red" style="left:1060px;top:598px;font-size:28px">"many GB/s" from hundreds of concurrent compiles</div></div>
+ <div class="a" style="--d:20.6s"><div class="label" style="left:1060px;top:740px;font-size:26px">Stripe: a devbox for each run</div>
+  <div class="or-pair" style="left:1060px;top:800px"><i></i></div><div class="or-pair" style="left:1260px;top:800px"><i></i></div><div class="or-pair" style="left:1460px;top:800px"><i></i></div><div class="or-pair" style="left:1660px;top:800px"><i></i></div></div>
+</section>
+
+<!-- 5 -->
+<section class="scene"><div class="kick">Step 5 of 12</div><h1>Pick a shape</h1>
+ <div class="a" style="--d:1.8s"><div class="label t-blue" style="left:110px;top:300px;font-size:30px">Partition into slices</div>
+  <div style="position:absolute;left:110px;top:440px;width:760px;height:110px;border-radius:30px 10px 30px 10px;overflow:hidden;background:#dff0d3;box-shadow:0 10px 28px rgba(20,70,35,.10)">
+   <div class="or-slice" style="left:0;width:25%;background:#cfe8bd"></div><div class="or-slice" style="left:25%;width:25%;background:#e9f6dc"></div><div class="or-slice" style="left:50%;width:25%;background:#cfe8bd"></div><div class="or-slice" style="left:75%;width:25%;background:#e9f6dc;border:0"></div></div>
+  <div class="or-pip" style="left:187px;top:380px"></div><div class="or-pip" style="left:377px;top:380px"></div><div class="or-pip" style="left:567px;top:380px"></div><div class="or-pip" style="left:757px;top:380px"></div></div>
+ <div class="a" style="--d:4.1s"><div class="label t-blue" style="left:1000px;top:410px;font-size:30px">Or race on one brief</div>
+  <div class="or-lane" style="left:1000px;top:494px;width:560px"></div><div class="or-lane" style="left:1000px;top:554px;width:560px"></div><div class="or-lane" style="left:1000px;top:614px;width:560px"></div></div>
+ <div class="or-pip a or-run" style="left:1000px;top:478px;--d:4.5s;--t:5s;--dx:380px"></div>
+ <div class="or-pip a or-run or-win" style="left:1000px;top:538px;--d:4.5s;--t:4.2s;--dx:530px;--e:8.4s"></div>
+ <div class="or-pip a or-run" style="left:1000px;top:598px;--d:4.5s;--t:5.5s;--dx:300px"></div>
+ <div class="a" style="--d:6.4s"><div class="box amber" style="left:1590px;top:476px;width:220px;height:160px;font-size:24px">Selection rule<small>fixed up front</small></div></div>
+ <div class="a" style="--d:10.3s"><div class="label" style="left:110px;top:650px;font-size:26px">Cursor: several hundred agents</div>
+  <div class="box" style="left:110px;top:780px;width:190px;height:70px;font-size:26px">Planner</div></div>
+ <svg><g class="a" style="--d:12.3s"><path class="line" d="M300 815L400 735"/><path class="line" d="M300 815H400"/><path class="line" d="M300 815L400 895"/></g>
+  <g class="a" style="--d:13.1s"><path class="line" d="M620 735H690"/><path class="line" d="M620 815H690"/><path class="line" d="M620 895H690"/></g></svg>
+ <div class="a" style="--d:12.3s"><div class="box blue" style="left:400px;top:705px;width:220px;height:60px;font-size:24px">Sub-planner</div><div class="box blue" style="left:400px;top:785px;width:220px;height:60px;font-size:24px">Sub-planner</div><div class="box blue" style="left:400px;top:865px;width:220px;height:60px;font-size:24px">Sub-planner</div></div>
+ <div class="a" style="--d:13.1s"><div class="or-pips" style="left:700px;top:724px;grid-template-columns:repeat(6,22px)"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="or-pips" style="left:700px;top:804px;grid-template-columns:repeat(6,22px)"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="or-pips" style="left:700px;top:884px;grid-template-columns:repeat(6,22px)"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+ <div class="or-chips a" style="--d:14.2s;left:1000px;top:740px"><span class="label" style="position:static;font-size:26px;margin-right:18px">Dropped:</span><span class="chip strike muted" style="color:var(--muted)">integrator</span><span class="chip strike muted" style="color:var(--muted)">judge</span></div>
+ <div class="a or-txt" style="--d:16.6s;left:1000px;top:850px">Tolerates a small, steady error rate.</div>
+</section>
+
+<!-- 6 -->
+<section class="scene"><div class="kick">Step 6 of 12</div><h1>Fan-in: verdicts with SHAs and evidence</h1>
+ <div class="or-rep a" style="--d:1.7s;left:110px;top:320px"><b class="t-green">PASS</b>sha 3f9c2a1<br>evidence attached</div>
+ <div class="or-rep a" style="--d:2.1s;left:450px;top:320px"><b class="t-amber">ISSUES</b>sha 81d07be<br>evidence attached</div>
+ <div class="or-rep a" style="--d:2.8s;left:790px;top:320px"><b class="t-red">BLOCKED</b>sha c2e94f6<br>evidence attached</div>
+ <div class="or-rep a or-dim" style="--d:6.5s;--e:8.3s;left:1130px;top:320px"><b class="t-green">PASS</b><span class="t-red">sha missing</span><br>evidence attached</div>
+ <div class="a label t-red" style="--d:7.6s;left:1130px;top:528px;font-size:28px">discarded</div>
+ <div class="a label" style="--d:12.4s;left:1290px;top:528px;font-size:28px;color:var(--fg)">→ a gap, never a pass</div>
+ <div class="a label muted" style="--d:3.5s;left:110px;top:528px;font-weight:400">(Made-up example.)</div>
+ <div class="a" style="--d:15.0s"><div class="label t-blue" style="left:110px;top:660px;font-size:30px">Bound the fan-out</div></div>
+ <div class="a" style="--d:18.3s"><div class="or-num" style="left:110px;top:730px">20</div><div class="or-txt" style="left:300px;top:760px;font-size:28px">concurrent subagents<br><span class="muted">Claude Code default</span></div></div>
+ <div class="a" style="--d:20.1s"><div class="or-num" style="left:680px;top:730px">3</div><div class="or-txt" style="left:780px;top:760px;font-size:28px">levels of nesting<br><span class="muted">Claude Code default</span></div></div>
+ <div class="a" style="--d:22.0s"><div class="label" style="left:1150px;top:740px;font-size:26px">pstack: budget spent</div><div class="track" style="left:1150px;top:786px;width:660px;height:56px"><div class="fill" style="background:var(--amber);--w:70%;--d:22.7s"></div></div><div class="label" style="left:1150px;top:858px;font-size:28px;color:var(--fg)">about 70%: stop spawning</div></div>
+</section>
+
+<!-- 7 -->
+<section class="scene"><div class="kick">Step 7 of 12</div><h1>A verifier that didn't write the code</h1>
+ <div class="a" style="--d:.5s"><div class="box" style="left:110px;top:320px;width:400px;height:110px">Risky unit<small>written by a worker</small></div></div>
+ <svg><path class="line a" style="--d:1.9s" d="M310 430V520"/></svg>
+ <div class="a" style="--d:1.9s"><div class="box blue" style="left:110px;top:520px;width:400px;height:150px;font-size:38px">Verifier<small>didn't write the code</small></div></div>
+ <div class="or-chips" style="left:110px;top:710px"><span class="chip a" style="--d:4.9s">another model family</span></div>
+ <div class="or-chips" style="left:110px;top:790px"><span class="chip a" style="--d:6.5s">at the head SHA</span></div>
+ <svg><path class="line a" style="--d:8.5s" d="M510 595H640"/></svg>
+ <div class="or-led a" style="--d:8.5s;left:640px;top:440px;width:1170px">
+  <div class="label" style="position:static;font-size:26px;margin-bottom:8px">Ledger · keyed by PR and SHA</div>
+  <div class="or-row or-hd"><span>PR</span><span>SHA</span><span>CI</span><span>Verdict</span></div>
+  <div class="or-row a" style="--d:9.2s"><span>#212</span><span class="mono or-void" style="--e:15.8s">a41c9e0</span><span class="t-green">green</span><span><b class="t-green or-void" style="--e:15.8s">PASS</b> <span class="a t-red" style="--d:15.8s;font-size:26px;margin-left:16px">voided by rebase</span></span></div>
+  <div class="or-row a" style="--d:16.1s"><span>#212</span><span class="mono">7be03d2</span><span class="t-green">green</span><span class="muted">no verdict yet</span></div>
+ </div>
+ <div class="a label" style="--d:13.1s;left:1184px;top:800px;font-size:26px;color:var(--fg)">↑ green CI is only an input</div>
+ <div class="a label muted" style="--d:9.2s;left:640px;top:870px;font-weight:400">(Made-up example.)</div>
+</section>
+
+<!-- 8 -->
+<section class="scene"><div class="kick">Step 8 of 12</div><h1>One writer to main</h1>
+ <div class="a" style="--d:2.3s"><div class="box" style="left:110px;top:410px;width:250px;height:130px;font-size:28px">Verified SHAs<small>only these</small></div></div>
+ <div class="a" style="--d:4.3s"><div class="or-panel" style="left:420px;top:390px;width:960px;height:170px"></div><div class="label t-blue" style="left:450px;top:340px;font-size:26px">Merge queue</div></div>
+ <div class="or-pr a" style="--d:5.6s;left:1150px;top:427px">PR 1<small>main + 1</small></div>
+ <div class="or-pr a" style="--d:7.0s;left:920px;top:427px">PR 2<small>main + 1, 2</small></div>
+ <div class="or-pr a" style="--d:8.0s;left:690px;top:427px">PR 3<small>main + 1, 2, 3</small></div>
+ <div class="or-pr a" style="--d:8.6s;left:460px;top:427px;border-style:dashed;border-color:var(--rule)">PR 4<small>waiting</small></div>
+ <svg><path class="line a" style="--d:4.3s" d="M360 475H420"/><path class="line a" style="--d:4.3s" d="M1380 475H1470"/></svg>
+ <div class="a" style="--d:1.6s"><div class="box blue" style="left:1470px;top:410px;width:300px;height:130px;font-size:40px">main</div></div>
+ <div class="a" style="--d:9.7s"><div class="label" style="left:110px;top:640px;font-size:26px">Its throughput is the ceiling <span style="font-weight:400">· Steve Yegge's agents, Aug</span></div>
+  <div class="track" style="left:110px;top:690px;width:1300px"><div class="fill" style="background:var(--green);--w:54%;--d:12.3s"></div></div></div>
+ <div class="a label" style="--d:12.7s;left:130px;top:770px;font-size:30px;color:var(--fg)">270 commits a day</div>
+ <div class="a label" style="--d:15.0s;left:1440px;top:702px;font-size:30px;color:var(--fg)">queue cap 500</div>
+ <div class="a or-txt" style="--d:17.7s;left:110px;top:870px"><b class="t-blue">2,000 to 4,000</b> a week by late Oct</div>
+ <div class="a or-txt" style="--d:20.7s;left:960px;top:870px">GitHub's queue: <b class="t-blue">1 to 100</b> concurrent builds</div>
+</section>
+
+<!-- 9 -->
+<section class="scene"><div class="kick">Step 9 of 12</div><h1>Conflicts become new tasks</h1>
+ <div class="a" style="--d:.4s"><div class="box red" style="left:110px;top:380px;width:280px;height:120px">Conflict</div></div>
+ <svg><path class="line a" style="--d:1.4s" d="M390 440H560"/><path class="line a" style="--d:1.4s" d="M542 426L560 440L542 454"/></svg>
+ <div class="a" style="--d:1.4s"><div class="box amber" style="left:560px;top:380px;width:280px;height:120px">New task<small>back in the queue</small></div></div>
+ <div class="a" style="--d:2.6s"><div class="box" style="left:110px;top:640px;width:330px;height:120px">Coordinator<small>no edits of its own</small></div></div>
+ <div class="a" style="--d:6.2s"><div class="label t-blue" style="left:1040px;top:420px;font-size:28px">pstack: one stacker per stack</div>
+  <div class="box" style="left:1040px;top:490px;width:320px;height:70px;font-size:26px">PR</div><div class="box" style="left:1040px;top:574px;width:320px;height:70px;font-size:26px">PR</div><div class="box" style="left:1040px;top:658px;width:320px;height:70px;font-size:26px">PR</div></div>
+ <svg><path class="line a" style="--d:7.4s" d="M1360 609H1470"/></svg>
+ <div class="a" style="--d:7.4s"><div class="box blue" style="left:1470px;top:554px;width:300px;height:110px">Stacker<small>does the rebasing</small></div></div>
+ <div class="a" style="--d:9.9s"><div class="or-pips" style="left:1040px;top:822px;grid-template-columns:repeat(6,22px)"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="or-txt" style="left:1250px;top:810px">Workers never rebase.</div></div>
+</section>
+
+<!-- 10 -->
+<section class="scene"><div class="kick">Step 10 of 12</div><h1>When parallelism hurts</h1>
+ <div class="a" style="--d:3.6s"><div class="or-pip" style="left:150px;top:330px"></div><div class="or-pip" style="left:150px;top:400px"></div><div class="or-pip" style="left:150px;top:470px"></div><div class="or-pip" style="left:150px;top:540px"></div><div class="or-pip" style="left:150px;top:610px"></div></div>
+ <svg><g class="a" style="--d:4.9s"><path class="line" d="M190 348L520 480"/><path class="line" d="M190 418L520 484"/><path class="line" d="M190 488H520"/><path class="line" d="M190 558L520 492"/><path class="line" d="M190 628L520 496"/></g>
+  <g class="a" style="--d:11.8s"><path class="line" d="M1040 458H1380"/><path class="line" d="M1040 528H1380"/><path class="line" d="M1040 598H1380"/><path class="line" d="M1040 668H1380"/><path class="line" d="M1040 738H1380"/></g></svg>
+ <div class="a" style="--d:4.9s"><div class="box red" style="left:520px;top:430px;width:300px;height:116px">The same bug</div></div>
+ <div class="or-chips" style="left:110px;top:700px"><span class="chip a" style="--d:5.3s">hit the same bug</span><span class="chip a" style="--d:7.0s">fix that bug</span></div>
+ <div class="or-chips" style="left:110px;top:780px"><span class="chip a t-red" style="--d:9.2s">overwrite each other's changes</span></div>
+ <div class="a" style="--d:11.3s"><div class="label t-blue" style="left:1000px;top:400px;font-size:28px">Until GCC split the work</div>
+  <div class="or-pip" style="left:1000px;top:440px"></div><div class="or-pip" style="left:1000px;top:510px"></div><div class="or-pip" style="left:1000px;top:580px"></div><div class="or-pip" style="left:1000px;top:650px"></div><div class="or-pip" style="left:1000px;top:720px"></div></div>
+ <div class="a" style="--d:11.8s"><div class="box green" style="left:1380px;top:436px;width:300px;height:44px;padding:0"></div><div class="box green" style="left:1380px;top:506px;width:300px;height:44px;padding:0"></div><div class="box green" style="left:1380px;top:576px;width:300px;height:44px;padding:0"></div><div class="box green" style="left:1380px;top:646px;width:300px;height:44px;padding:0"></div><div class="box green" style="left:1380px;top:716px;width:300px;height:44px;padding:0"></div></div>
+ <div class="a cap" style="--d:13.9s;bottom:84px;font-size:40px"><span class="muted">Cognition's rule:</span> writes stay single-threaded.</div>
+</section>
+
+<!-- 11 -->
+<section class="scene"><div class="kick">Step 11 of 12</div><h1>Admission control for agent output</h1>
+ <div class="a" style="--d:.4s"><div class="box" style="left:110px;top:410px;width:300px;height:130px">Agent output</div></div>
+ <div class="a" style="--d:0.6s"><div class="box blue" style="left:680px;top:390px;width:340px;height:170px;font-size:34px">Admission control</div></div>
+ <div class="a" style="--d:2.9s"><div class="box green" style="left:1340px;top:410px;width:440px;height:130px">Review and rollout capacity</div></div>
+ <div class="dot" style="left:425px;top:466px;--dx:230px;--d:1s"></div><div class="dot" style="left:425px;top:440px;--dx:230px;--d:1.5s"></div><div class="dot" style="left:425px;top:492px;--dx:230px;--d:2.1s"></div><div class="dot" style="left:425px;top:466px;--dx:230px;--d:2.6s"></div><div class="dot" style="left:425px;top:440px;--dx:230px;--d:3.2s"></div><div class="dot" style="left:425px;top:492px;--dx:230px;--d:3.7s"></div>
+ <div class="dot" style="left:1040px;top:466px;--dx:270px;--d:2.9s"></div>
+ <div class="a" style="--d:5.3s"><div class="label" style="left:560px;top:612px;font-size:26px">Monzo: rate limits by throughput type</div></div>
+ <div class="or-chips" style="left:1070px;top:596px"><span class="chip a" style="--d:7.6s">batch</span><span class="chip a" style="--d:8.5s">ASAP</span></div>
+ <div class="a" style="--d:12.7s"><div class="label t-blue" style="left:110px;top:710px;font-size:26px">Neon: agent-driven customers</div></div>
+ <div class="a" style="--d:15.5s"><div class="or-num" style="left:110px;top:760px">5x</div><div class="or-txt" style="left:300px;top:790px;font-size:30px">faster at creating<br>databases</div></div>
+ <div class="a" style="--d:17.9s"><div class="or-num" style="left:660px;top:760px">50x</div><div class="or-txt" style="left:930px;top:790px;font-size:30px">faster at creating<br>branches</div></div>
+ <div class="or-chips" style="left:1290px;top:700px"><span class="chip a t-red" style="--d:19.3s;border-color:var(--red)">past cluster limits</span></div>
+ <div class="a or-txt" style="--d:20.7s;left:1290px;top:800px;font-size:36px;width:520px"><b>Quota anything agents can create.</b></div>
+</section>
+
+<!-- 12 -->
+<section class="scene" style="--egg:13.5s"><div class="kick">Step 12 of 12</div><h1>Observe it like a distributed system</h1>
+ <div class="a" style="--d:.5s"><div class="or-span r" style="left:110px;top:310px;width:900px">session</div></div>
+ <div class="or-span m a" style="--d:3.9s;left:110px;top:368px;width:250px">model call</div>
+ <div class="or-span t a" style="--d:5.9s;left:350px;top:426px;width:190px">tool call</div>
+ <div class="or-span m a" style="--d:4.4s;left:530px;top:484px;width:230px">model call</div>
+ <div class="or-span t a" style="--d:6.4s;left:750px;top:542px;width:180px">tool call</div>
+ <div class="or-span m a" style="--d:4.9s;left:800px;top:600px;width:210px">model call</div>
+ <div class="or-chips" style="left:110px;top:680px"><span class="chip a" style="--d:8.3s">trigger</span><span class="chip a" style="--d:8.7s">actor chain</span><span class="chip a" style="--d:9.6s">SHAs</span><span class="chip a" style="--d:10.8s">tokens</span><span class="chip a" style="--d:11.6s">CI rounds</span></div>
+ <div class="term" style="left:1090px;top:420px;width:720px;font-size:25px;padding:30px 36px"><div class="a muted" style="--d:12.8s">Claude Code, over OpenTelemetry</div><div class="a" style="--d:14.0s">claude_code.token.usage</div><div class="a" style="--d:14.9s">claude_code.cost.usage</div><div class="a" style="--d:16.1s">claude_code.pull_request.count</div></div>
+ <div class="a cap muted" style="--d:17.7s;bottom:76px;font-size:28px">SRE Lab · Agentic Engineering · Orchestrating many agents</div>
+ <div class="critter"><div id="critter"></div></div>
+</section>
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 5 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../agentic/#orchestration">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Orchestrating many agents. Hundreds of agents share your repos. How do you split work, stop them clobbering each other, and bound what lands on main? Start with the problem: many writers, one repo. Most fleets of hundreds are independent sessions with one writer each. Stripe reports more than thirteen hundred merged agent pull requests a week. This is the harder case, like Bun's Rust port with about sixty-four Claudes, or Anthropic's C compiler with sixteen.", "Frame the job first: a done condition you can count, and a budget. The orchestrate playbook in pstack, by Lauren Tan, says if one agent can finish in budget, use one. A Google and M I T study found negative returns once one agent succeeds about forty-five percent of the time. The big parallel wins all had an oracle, like G C C.", "Each brief stands on its own. It has a goal, scope, acceptance, verify commands, a timebox, forbidden actions, and a report shape. The queue can be a tracker with a concurrency cap. OpenAI's Symphony polls an issue tracker and by default runs at most ten agents at once, with more caps per state and per host.", "One writer per checkout. Bun had sixteen Claudes share each of four worktrees. Their concurrent git stash and hard reset commands overwrote each other, and one slow grep froze disk I O for minutes. Disk binds before tokens. Cursor saw many gigabytes a second of I O from hundreds of concurrent compiles. Stripe gives each run a dev box.", "Pick a shape. Partition the work into slices, or race workers on one brief with the selection rule fixed up front, as pstack's swarm requires. Cursor reached several hundred agents with recursive sub-planners. It dropped its integrator and judge roles, and it tolerates a small, steady error rate.", "Fan-in. Workers report pass, issues or blocked, each with its commit S H A and evidence. pstack's swarm discards a report that is missing its S H A. After one respawn it logs a gap, never a pass. Bound the fan-out too. By default, Claude Code allows at most twenty concurrent subagents and three levels of nesting, and pstack stops spawning at about seventy percent of budget.", "Risky units get a verifier that did not write the code. It runs on another model family, at the head S H A. Its verdict goes into a ledger keyed by pull request and S H A. Green C I is only an input, and a rebase voids the verdict.", "One writer to main. Only a verified S H A enters the merge queue, which tests each pull request on main plus those ahead of it. Its throughput is the ceiling. Steve Yegge's agents averaged two hundred seventy commits a day against a queue cap of five hundred in August, and two to four thousand a week by late October. GitHub's queue allows one to a hundred concurrent builds.", "Conflicts become new tasks. The coordinator does not fix them with its own edits. In pstack, one stacker per stack does the rebasing. Workers never rebase.", "When parallelism hurts. On the Linux kernel, Anthropic's compiler agents would hit the same bug, fix that bug, and then overwrite each other's changes, until G C C split the work. Cognition's rule: writes stay single-threaded.", "Admission control keeps agent output inside review and rollout capacity. Monzo rate-limits by throughput type, batch or A S A P. Agents load your platform too. Neon reported agent-driven customers creating databases five times faster and branches fifty times faster, past cluster limits. Quota anything agents can create.", "Observe it like a distributed system. Record a span for each model call and tool call, plus each session's trigger, actor chain, S H As, tokens and C I rounds. Claude Code exports token usage, cost usage and pull request count over OpenTelemetry."], "seconds": [30.52, 23.23, 21.08, 22.76, 19.22, 25.19, 16.98, 23.64, 10.97, 15.96, 22.89, 18.01]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

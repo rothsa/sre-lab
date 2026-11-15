@@ -71,6 +71,7 @@ export const CHAPTERS = [
   },
   {
     id: "evals",
+    film: "../films/evals-that-compound/",
     n: 5,
     title: "Evals: the asset that compounds most",
     question: "What makes an org's eval suite worth more with every model release, and how does it decide upgrades and show what just became possible?",
@@ -152,6 +153,7 @@ export const CHAPTERS = [
   },
   {
     id: "upgrades",
+    film: "../films/model-upgrades/",
     n: 6,
     title: "Upgrading models safely",
     question: "Your provider just set a retirement date for a model hundreds of services call. How do you move them all without a quality regression, and roll back?",

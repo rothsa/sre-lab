@@ -3,6 +3,7 @@
 export const CHAPTERS = [
   {
     id: "review-at-scale",
+    film: "../films/review-at-scale/",
     n: 5,
     title: "Reviewing agent output",
     question: "Spotify engineers now have 76% more PRs to review. How does an org keep review meaningful when volume outruns reviewers?",
@@ -254,6 +255,7 @@ export const CHAPTERS = [
   },
   {
       id: "agents-in-ops",
+      film: "../films/agents-in-ops/",
       n: 7,
       title: "Agents in SRE operations",
       question: "Agents now work incidents for hundreds of teams. What may they do alone, and how does an alert class earn autonomy?",
@@ -345,6 +347,7 @@ export const CHAPTERS = [
   },
   {
     id: "org-at-scale",
+    film: "../films/org-at-scale/",
     n: 8,
     title: "Running agentic development across an org",
     question: "You're asked to roll out coding agents to 2,000 engineers. What do you build, what do you measure, and what could go wrong?",

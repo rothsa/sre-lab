@@ -6,6 +6,7 @@ const PS = "https://raw.githubusercontent.com/cursor/plugins/main/pstack";
 export const CHAPTERS = [
   {
     id: "agent-loop",
+    film: "../films/agent-loop/",
     n: 1,
     title: "What an agent actually is",
     question: "What is a coding agent mechanically, and what must a platform running thousands of them control around it?",
@@ -97,6 +98,7 @@ export const CHAPTERS = [
   },
   {
     id: "context",
+    film: "../films/context-engineering/",
     n: 2,
     title: "Context engineering",
     question: "Hundreds of repos carry their own rules files and tool lists. How does context reach an agent, and how does a platform keep it short and current?",
@@ -186,6 +188,7 @@ export const CHAPTERS = [
   },
   {
     id: "verification-first",
+    film: "../films/verification-first/",
     n: 3,
     title: "Verification first: go deep, then prove it",
     question: "With hundreds of agents shipping fixes, what counts as proof a change works, and how do you stop agents gaming their own tests?",
@@ -281,6 +284,7 @@ export const CHAPTERS = [
   },
   {
     id: "orchestration",
+    film: "../films/orchestration/",
     n: 4,
     title: "Orchestrating many agents",
     question: "Hundreds of agents share your repos. How do you split work, stop them clobbering each other, and bound what lands on main?",

@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Evals: the asset that compounds most: the film</title>
+<meta name="description" content="Why an eval suite of your own real tasks gains value with every model release, and how it decides upgrades.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.ev-frame{position:absolute;border:4px dashed var(--blue);border-radius:44px;background:rgba(255,255,255,.55)}
+.ev-bar{position:absolute;width:110px;border-radius:26px 8px 0 0;background:linear-gradient(180deg,#6cbf6a,#1f7a3a);transform-origin:bottom;opacity:0}
+.scene.on .ev-bar{animation:ev-rise .9s cubic-bezier(.2,.7,.2,1) var(--d) both}
+@keyframes ev-rise{from{transform:scaleY(0);opacity:0}to{transform:none;opacity:1}}
+.ev-row{position:absolute;left:150px;width:400px;height:46px;border-radius:999px;background:#fff;border:2.5px solid var(--rule)}
+.ev-row i{position:absolute;left:22px;top:17px;height:8px;border-radius:4px;background:#c4d9b3}
+.scene.on .ev-row.ev-bad{animation:in .7s var(--d) both,ev-bad .5s var(--n) forwards}
+@keyframes ev-bad{to{background:#fbe4d9;border-color:var(--red)}}
+.ev-pill{position:absolute;border-radius:999px;padding:14px 40px;font:700 36px "IBM Plex Sans";border:2.5px solid var(--green);background:#e9f6dc;color:var(--blue)}
+.ev-scale{position:absolute;font:600 40px "IBM Plex Mono";color:var(--muted);letter-spacing:.3em}
+.ev-sweepwrap{position:absolute;overflow:hidden;border-radius:30px 10px 30px 10px;pointer-events:none}
+.ev-sweep{position:absolute;left:-260px;top:0;bottom:0;width:260px;background:linear-gradient(90deg,transparent,rgba(63,154,79,.45),transparent);opacity:0}
+.scene.on .ev-sweep{animation:ev-sweep 2.2s ease-in-out var(--d) both}
+@keyframes ev-sweep{0%{opacity:1;transform:translateX(0)}100%{opacity:1;transform:translateX(1600px)}}
+.ev-q{position:absolute;width:46px;height:46px;border-radius:50%;background:var(--green);opacity:0}
+.scene.on .ev-q{animation:in .4s var(--d) both}
+.ev-track{stroke:#d6e6c8;stroke-width:46;fill:none;stroke-linecap:round}
+.ev-arc{stroke-width:46;fill:none;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1}
+.scene.on .ev-arc{animation:ev-arc 1.6s cubic-bezier(.2,.7,.2,1) var(--d) forwards}
+@keyframes ev-arc{to{stroke-dashoffset:var(--o)}}
+.ev-gt{position:absolute;width:520px;text-align:center;font:800 46px "Archivo"}
+.ev-gs{position:absolute;width:520px;text-align:center;font:400 30px "IBM Plex Sans";color:var(--muted)}
+.ev-gv{position:absolute;width:520px;text-align:center;font:700 34px "IBM Plex Sans"}
+.ev-pr{position:absolute;width:120px;height:80px;border-radius:22px 8px 22px 8px;border:2.5px solid var(--green);background:#e9f6dc;color:var(--green);font:800 26px "IBM Plex Sans";display:flex;align-items:center;justify-content:center;opacity:0}
+.scene.on .ev-pr{animation:in .5s var(--d) both,ev-nope .5s var(--n) forwards}
+@keyframes ev-nope{to{border-color:var(--red);border-style:dashed;background:#fbe4d9;color:var(--red)}}
+.ev-lb{position:absolute;left:210px;height:40px;border-radius:20px;background:#d6e6c8}
+.scene.on .ev-lb.ev-top{animation:in .7s var(--d) both,ev-pick .6s var(--n) forwards}
+@keyframes ev-pick{to{background:var(--green)}}
+.ev-tick{position:absolute;width:24px;height:64px;top:696px;border-radius:10px 4px 0 0;background:var(--green);opacity:0}
+.ev-full{position:absolute;width:70px;height:220px;top:540px;border-radius:24px 8px 0 0;background:var(--blue);opacity:0}
+.scene.on .ev-tick,.scene.on .ev-full{animation:ev-rise .5s cubic-bezier(.2,.7,.2,1) var(--d) both;transform-origin:bottom}
+.ev-sw{display:inline-block;vertical-align:-4px;margin-right:14px;border-radius:6px 3px 0 0}
+.ev-card{position:absolute;left:330px;top:300px;width:1260px;border-radius:32px 10px 32px 10px;background:#fff;box-shadow:0 24px 60px rgba(20,70,35,.16);padding:34px 56px 30px}
+.ev-card b{display:block;font:800 40px "Archivo";margin-bottom:14px}
+.ev-line{display:flex;align-items:center;justify-content:space-between;height:98px;border-top:2px solid #e3eeda;font:600 36px "IBM Plex Sans"}
+.ev-tag{border-radius:999px;padding:10px 30px;font:700 28px "IBM Plex Sans";border:2.5px solid var(--green);background:#e9f6dc;color:var(--blue)}
+.ev-tag.ev-am{border-color:var(--amber);background:#fbefd0;color:#8a5d08}
+.ev-tag.ev-rd{border-color:var(--red);background:#fbe4d9;color:var(--red)}
+.ev-draw{stroke:var(--blue);stroke-width:7;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1}
+.scene.on .ev-draw{animation:ev-draw var(--t) linear var(--d) forwards}
+@keyframes ev-draw{to{stroke-dashoffset:0}}
+.ev-ping{position:absolute;width:40px;height:40px;border-radius:50%;background:var(--red);opacity:0}
+.scene.on .ev-ping{animation:in .4s var(--d) both,ev-beat 1s var(--d) infinite}
+@keyframes ev-beat{0%,100%{box-shadow:0 0 0 0 rgba(217,72,30,.45)}60%{box-shadow:0 0 0 26px rgba(217,72,30,0)}}
+.scene.on .ev-jump{animation:ev-low 1s var(--d) forwards,ev-high 1.3s cubic-bezier(.2,.7,.2,1) var(--j) forwards}
+@keyframes ev-low{to{width:16%}}
+@keyframes ev-high{to{width:84%;background:var(--green)}}
+.scene.on .ev-fly{animation:in .5s var(--d) both,ev-fly 1.1s cubic-bezier(.4,0,.2,1) var(--f) forwards}
+@keyframes ev-fly{to{transform:translate(var(--tx),var(--ty)) scale(.55);opacity:0}}
+.scene.on .ev-land{animation:in .7s var(--d) both,ev-land .5s var(--f) 2 alternate}
+@keyframes ev-land{to{transform:scale(1.06)}}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../next-agent/#evals">Engineering for the Next Agent</a> · film · recorded 15 Nov 2026</div>
+  <h1 class="page">Evals: the asset that compounds most</h1>
+  <div id="viewport">
+    <div id="stage">
+<!-- 1 -->
+<section class="scene"><div class="kick">Engineering for the Next Agent · chapter 5</div><h1>Evals: the asset that<br>compounds most</h1>
+ <div class="a" style="--d:15.01s"><div class="ev-frame" style="left:150px;top:350px;width:720px;height:470px"></div><div class="label t-blue" style="left:186px;top:374px">Version control</div></div>
+ <div class="a" style="--d:15.91s"><div class="box" style="left:200px;top:520px;width:250px;height:140px">The agent</div></div>
+ <div class="a" style="--d:11.95s"><div class="label" style="left:520px;top:428px">Eval suite</div><div class="box blue" style="left:520px;top:466px;width:300px;height:110px">Your real tasks</div></div>
+ <div class="a" style="--d:13.75s"><div class="box blue" style="left:520px;top:606px;width:300px;height:110px">Graders</div></div>
+ <div class="a" style="--d:17.53s"><div class="label" style="left:1000px;top:372px">Value of the suite</div><div style="position:absolute;left:1000px;top:800px;width:670px;height:4px;border-radius:2px;background:#9fbf8f"></div><div class="label" style="left:1000px;top:818px">each release</div></div>
+ <div class="ev-bar" style="left:1000px;top:710px;height:90px;--d:18.34s"></div><div class="ev-bar" style="left:1140px;top:640px;height:160px;--d:18.75s"></div><div class="ev-bar" style="left:1280px;top:565px;height:235px;--d:19.16s"></div><div class="ev-bar" style="left:1420px;top:490px;height:310px;--d:19.56s"></div><div class="ev-bar" style="left:1560px;top:420px;height:380px;--d:19.97s"></div>
+ <div class="a cap" style="--d:20.96s;left:1000px;bottom:120px;font-size:32px">How every team judges every new model.</div>
+</section>
+
+<!-- 2 -->
+<section class="scene"><div class="kick">Step 2 of 10</div><h1>Cases come from your own failures</h1>
+ <div class="a" style="--d:3.71s;position:absolute;left:110px;top:262px"><span class="chip">Error analysis first</span></div>
+ <div class="a label" style="--d:5.78s;left:150px;top:372px">1 · Read traces</div>
+ <div class="ev-row a" style="top:420px;--d:5.78s;--n:7.65s"><i style="width:250px"></i></div><div class="ev-row a ev-bad" style="top:480px;--d:5.91s;--n:7.65s"><i style="width:300px"></i></div><div class="ev-row a" style="top:540px;--d:6.03s;--n:7.65s"><i style="width:200px"></i></div><div class="ev-row a" style="top:600px;--d:6.15s;--n:8.06s"><i style="width:320px"></i></div><div class="ev-row a ev-bad" style="top:660px;--d:6.28s;--n:8.06s"><i style="width:270px"></i></div><div class="ev-row a" style="top:720px;--d:6.40s;--n:8.06s"><i style="width:230px"></i></div>
+ <svg><path class="line a" style="--d:7.85s" d="M570 500H740"/><path class="line a" style="--d:7.85s" d="M570 680H740"/><path class="line a" style="--d:9.51s" d="M1130 500H1300"/><path class="line a" style="--d:9.51s" d="M1130 680H1300"/></svg>
+ <div class="a" style="--d:7.85s"><div class="label" style="left:740px;top:372px">2 · Name the failure modes</div>
+  <div class="box amber" style="left:740px;top:445px;width:390px;height:110px">Failure mode</div>
+  <div class="box amber" style="left:740px;top:625px;width:390px;height:110px">Failure mode</div></div>
+ <div class="a" style="--d:9.51s"><div class="label" style="left:1300px;top:372px">3 · Write evals for them</div>
+  <div class="box green" style="left:1300px;top:445px;width:390px;height:110px">Eval case</div>
+  <div class="box green" style="left:1300px;top:625px;width:390px;height:110px">Eval case</div></div>
+ <div class="ev-pill a" style="--d:10.96s;left:150px;top:850px">pass / fail</div>
+ <div class="a cap muted" style="--d:12.41s;left:470px;bottom:auto;top:862px;font-size:32px">rather than</div>
+ <div class="ev-scale strike a" style="--d:12.41s;left:680px;top:858px">1 2 3 4 5</div>
+</section>
+
+<!-- 3 -->
+<section class="scene"><div class="kick">Step 3 of 10</div><h1>Shared suites, plus each team's cases</h1>
+ <div class="a" style="--d:7.34s"><div class="box" style="left:150px;top:440px;width:240px;height:170px">Team<small>its own cases</small></div></div><div class="a" style="--d:7.65s"><div class="box" style="left:420px;top:440px;width:240px;height:170px">Team<small>its own cases</small></div></div><div class="a" style="--d:7.97s"><div class="box" style="left:690px;top:440px;width:240px;height:170px">Team<small>its own cases</small></div></div><div class="a" style="--d:8.29s"><div class="box" style="left:960px;top:440px;width:240px;height:170px">Team<small>its own cases</small></div></div>
+ <div class="a" style="--d:3.13s"><div class="box blue" style="left:150px;top:640px;width:1050px;height:140px;font-size:38px">Shared regression suites<small>common skills and tools</small></div></div>
+ <div class="ev-sweepwrap" style="left:150px;top:640px;width:1050px;height:140px"><div class="ev-sweep" style="--d:10.08s"></div></div>
+ <div class="a cap" style="--d:10.08s;left:150px;right:auto;bottom:auto;top:820px;font-size:34px">A model swap is <span class="t-green">judged once</span> for shared behavior.</div>
+ <div class="a label" style="--d:13.24s;left:1400px;top:416px;font-size:26px">Start small</div>
+ <div class="ev-q" style="left:1400px;top:470px;--d:14.29s"></div><div class="ev-q" style="left:1468px;top:470px;--d:14.41s"></div><div class="ev-q" style="left:1536px;top:470px;--d:14.54s"></div><div class="ev-q" style="left:1604px;top:470px;--d:14.67s"></div><div class="ev-q" style="left:1672px;top:470px;--d:14.79s"></div><div class="ev-q" style="left:1400px;top:538px;--d:14.92s"></div><div class="ev-q" style="left:1468px;top:538px;--d:15.05s"></div><div class="ev-q" style="left:1536px;top:538px;--d:15.17s"></div><div class="ev-q" style="left:1604px;top:538px;--d:15.30s"></div><div class="ev-q" style="left:1672px;top:538px;--d:15.43s"></div><div class="ev-q" style="left:1400px;top:606px;--d:15.55s"></div><div class="ev-q" style="left:1468px;top:606px;--d:15.68s"></div><div class="ev-q" style="left:1536px;top:606px;--d:15.80s"></div><div class="ev-q" style="left:1604px;top:606px;--d:15.93s"></div><div class="ev-q" style="left:1672px;top:606px;--d:16.06s"></div><div class="ev-q" style="left:1400px;top:674px;--d:16.18s"></div><div class="ev-q" style="left:1468px;top:674px;--d:16.31s"></div><div class="ev-q" style="left:1536px;top:674px;--d:16.44s"></div><div class="ev-q" style="left:1604px;top:674px;--d:16.56s"></div><div class="ev-q" style="left:1672px;top:674px;--d:16.69s"></div>
+ <div class="a cap" style="--d:16.18s;left:1400px;right:auto;bottom:auto;top:758px;font-size:34px">about 20 real queries</div>
+</section>
+
+<!-- 4 -->
+<section class="scene"><div class="kick">Step 4 of 10</div><h1>Split the suite</h1>
+ <div class="a" style="--d:0.50s"><div class="box" style="left:810px;top:300px;width:300px;height:96px">Eval cases</div></div>
+ <svg><path class="line a" style="--d:1.43s" d="M810 372L520 470"/><path class="line a" style="--d:1.43s" d="M1110 372L1400 470"/>
+  <path class="ev-track a" style="--d:3.69s" d="M310 720A210 210 0 0 1 730 720"/><path class="ev-arc" pathLength="1" style="stroke:var(--amber);--d:5.34s;--o:.8" d="M310 720A210 210 0 0 1 730 720"/>
+  <path class="ev-track a" style="--d:9.68s" d="M1190 720A210 210 0 0 1 1610 720"/><path class="ev-arc" pathLength="1" style="stroke:var(--green);--d:10.71s;--o:.03" d="M1190 720A210 210 0 0 1 1610 720"/></svg>
+ <div class="ev-gv a t-amber" style="--d:5.34s;left:260px;top:650px;color:#8a5d08">low pass rate</div>
+ <div class="ev-gt a" style="--d:3.69s;left:260px;top:780px">Capability evals</div>
+ <div class="ev-gs a" style="--d:7.41s;left:260px;top:846px">what the agent can't do yet</div>
+ <div class="ev-gv a t-green" style="--d:10.91s;left:1140px;top:650px">close to 100%</div>
+ <div class="ev-gt a" style="--d:9.68s;left:1140px;top:780px">Regression evals</div>
+ <div class="ev-gs a" style="--d:12.77s;left:1140px;top:846px">catch backsliding</div>
+</section>
+
+<!-- 5 -->
+<section class="scene"><div class="kick">Step 5 of 10</div><h1>Grade outcomes, then read transcripts</h1>
+ <div class="a label" style="--d:4.76s;left:150px;top:346px;font-size:26px">Agent fixes that pass tests</div>
+ <div class="ev-pr" style="left:150px;top:400px;--d:4.76s;--n:10.22s">pass</div><div class="ev-pr" style="left:290px;top:400px;--d:4.87s;--n:10.33s">pass</div><div class="ev-pr" style="left:430px;top:400px;--d:4.97s;--n:10.44s">pass</div><div class="ev-pr" style="left:570px;top:400px;--d:5.08s;--n:10.55s">pass</div><div class="ev-pr" style="left:710px;top:400px;--d:5.19s;--n:10.66s">pass</div><div class="ev-pr" style="left:150px;top:500px;--d:5.30s;--n:10.77s">pass</div><div class="ev-pr" style="left:290px;top:500px;--d:5.41s;--n:10.88s">pass</div><div class="ev-pr" style="left:430px;top:500px;--d:5.52s;--n:10.99s">pass</div><div class="ev-pr" style="left:570px;top:500px;--d:5.63s;--n:11.10s">pass</div><div class="ev-pr" style="left:710px;top:500px;--d:5.74s;--n:11.21s">pass</div><div class="ev-pr" style="left:150px;top:600px;--d:5.85s;--n:11.32s">pass</div><div class="ev-pr" style="left:290px;top:600px;--d:5.96s;--n:11.43s">pass</div><div class="ev-pr" style="left:430px;top:600px;--d:6.07s;--n:11.54s">pass</div><div class="ev-pr" style="left:570px;top:600px;--d:6.18s;--n:11.65s">pass</div><div class="ev-pr" style="left:710px;top:600px;--d:6.29s;--n:11.76s">pass</div>
+ <div class="a cap" style="--d:10.44s;left:150px;right:auto;bottom:auto;top:716px;font-size:34px">August 2025: <span class="t-red">none of 15</span> hand-reviewed were mergeable.</div>
+ <div class="a" style="--d:13.50s"><div class="label" style="left:1000px;top:412px;font-size:26px">March 2026 · test-passing fixes</div>
+  <div class="track" style="left:1000px;top:462px;width:740px"><div class="fill" style="background:var(--amber);--w:50%;--d:14.38s"></div></div>
+  <div class="cap" style="left:1000px;right:auto;bottom:auto;top:546px;font-size:34px">about half</div></div>
+ <div class="a cap" style="--d:16.79s;left:1000px;right:auto;bottom:auto;top:612px;font-size:44px;font-weight:700">Tests alone are a <span class="t-red">weak grader</span>.</div>
+ <div class="a" style="--d:19.19s;position:absolute;left:150px;top:860px"><span class="chip">graders under code review</span><span class="chip a" style="--d:21.60s">retire cases tied to removed features</span></div>
+</section>
+
+<!-- 6 -->
+<section class="scene"><div class="kick">Step 6 of 10</div><h1>Benchmarks shortlist. They can't decide.</h1>
+ <div class="a" style="--d:0.50s"><div class="box" style="left:150px;top:340px;width:640px;height:400px"></div><div class="label" style="left:210px;top:380px;font-size:26px">Public benchmark</div></div>
+ <div class="ev-lb a ev-top" style="top:452px;width:470px;--d:0.96s;--n:2.50s"></div><div class="ev-lb a ev-top" style="top:514px;width:430px;--d:1.13s;--n:2.50s"></div><div class="ev-lb a" style="top:576px;width:330px;--d:1.31s;--n:2.50s"></div><div class="ev-lb a" style="top:638px;width:260px;--d:1.49s;--n:2.50s"></div>
+ <div class="a label t-green" style="--d:2.50s;left:560px;top:380px;font-size:26px">shortlist</div>
+ <div class="a" style="--d:6.30s;position:absolute;left:150px;top:780px;width:900px"><div class="cap" style="position:static;font-size:32px">SWE-bench Verified: reporting stopped</div>
+  <div style="margin-top:20px"><span class="chip a" style="--d:10.81s;color:var(--red);border-color:var(--red)">contamination</span><span class="chip a" style="--d:12.00s;color:var(--red);border-color:var(--red)">flawed tasks</span></div></div>
+ <div class="a" style="--d:13.66s"><div class="ev-frame" style="left:1060px;top:430px;width:700px;height:400px"></div><div class="label t-blue" style="left:1096px;top:454px">Your private cases</div></div>
+ <div class="proc a bounce" style="left:1110px;top:530px;--d:14.14s;--dx:450px">case</div>
+ <div class="proc a bounce" style="left:1110px;top:630px;--d:14.73s;--dx:450px">case</div>
+ <div class="proc a bounce" style="left:1110px;top:730px;--d:15.32s;--dx:450px">case</div>
+ <div class="a cap" style="--d:15.56s;left:1060px;right:auto;bottom:auto;top:856px;font-size:32px">can't leak into training data</div>
+</section>
+
+<!-- 7 -->
+<section class="scene"><div class="kick">Step 7 of 10</div><h1>Every change runs the suite</h1>
+ <div style="position:absolute;left:150px;top:290px"><span class="chip a" style="--d:2.85s">model</span><span class="chip a" style="--d:3.87s">prompt</span><span class="chip a" style="--d:4.69s">tool</span><span class="chip a" style="--d:5.51s">harness setting</span></div>
+ <svg><path class="line a" style="--d:1.21s" d="M880 322H1010"/></svg>
+ <div class="a" style="--d:1.21s"><div class="box blue" style="left:1010px;top:274px;width:300px;height:96px">The suite</div></div>
+ <div class="a cap mono t-blue" style="--d:7.55s;left:150px;right:auto;bottom:auto;top:384px;font-size:30px">eval-driven development</div>
+ <div class="a label" style="--d:11.65s;left:150px;top:470px;font-size:26px"><i class="ev-sw" style="width:16px;height:30px;background:var(--green)"></i>Fast regression subset · every change</div>
+ <div class="a label" style="--d:14.71s;left:960px;top:470px;font-size:26px"><i class="ev-sw" style="width:26px;height:30px;background:var(--blue)"></i>Full suite</div>
+ <div class="a" style="--d:10.21s;position:absolute;left:150px;top:760px;width:1620px;height:4px;border-radius:2px;background:#9fbf8f"></div>
+ <div class="ev-tick" style="left:170px;--d:11.85s"></div><div class="ev-tick" style="left:228px;--d:11.93s"></div><div class="ev-tick" style="left:286px;--d:12.01s"></div><div class="ev-tick" style="left:344px;--d:12.10s"></div><div class="ev-tick" style="left:402px;--d:12.18s"></div><div class="ev-tick" style="left:460px;--d:12.26s"></div><div class="ev-tick" style="left:518px;--d:12.34s"></div><div class="ev-tick" style="left:576px;--d:12.42s"></div><div class="ev-tick" style="left:634px;--d:12.51s"></div><div class="ev-tick" style="left:692px;--d:12.59s"></div><div class="ev-tick" style="left:750px;--d:12.67s"></div><div class="ev-tick" style="left:808px;--d:12.75s"></div><div class="ev-tick" style="left:866px;--d:12.83s"></div><div class="ev-tick" style="left:924px;--d:12.91s"></div><div class="ev-tick" style="left:982px;--d:13.00s"></div><div class="ev-tick" style="left:1040px;--d:13.08s"></div><div class="ev-tick" style="left:1098px;--d:13.16s"></div><div class="ev-tick" style="left:1156px;--d:13.24s"></div><div class="ev-tick" style="left:1214px;--d:13.32s"></div><div class="ev-tick" style="left:1272px;--d:13.41s"></div><div class="ev-tick" style="left:1330px;--d:13.49s"></div><div class="ev-tick" style="left:1388px;--d:13.57s"></div><div class="ev-tick" style="left:1446px;--d:13.65s"></div><div class="ev-tick" style="left:1504px;--d:13.73s"></div><div class="ev-tick" style="left:1562px;--d:13.81s"></div><div class="ev-tick" style="left:1620px;--d:13.90s"></div><div class="ev-tick" style="left:1678px;--d:13.98s"></div>
+ <div class="ev-full" style="left:611px;--d:14.92s"></div><div class="ev-full" style="left:1133px;--d:15.23s"></div><div class="ev-full" style="left:1655px;--d:16.76s"></div>
+ <div class="a label" style="--d:14.92s;left:596px;top:782px;font-size:26px">nightly</div><div class="a label" style="--d:15.23s;left:1118px;top:782px;font-size:26px">nightly</div>
+ <div class="a label" style="--d:16.76s;left:1380px;width:390px;text-align:right;top:782px;font-size:26px">before any model switch</div>
+</section>
+
+<!-- 8 -->
+<section class="scene"><div class="kick">Step 8 of 10</div><h1>Better, and nothing regressed</h1>
+ <div class="ev-card a" style="--d:3.72s"><b>April 2025 · sycophancy rollback</b>
+  <div class="ev-line a" style="--d:7.96s">Offline evals<span class="ev-tag">looked good</span></div>
+  <div class="ev-line a" style="--d:9.08s">A/B tests<span class="ev-tag">looked good</span></div>
+  <div class="ev-line a" style="--d:11.31s">Sycophancy<span class="ev-tag ev-am">not evaluated</span></div>
+  <div class="ev-line a" style="--d:13.76s">Expert testers' unease<span class="ev-tag ev-rd">overruled</span></div></div>
+ <div class="a cap" style="--d:1.05s;bottom:84px;font-size:32px"><span class="muted">Upgrade only when it's better and nothing regressed.</span></div>
+</section>
+
+<!-- 9 -->
+<section class="scene"><div class="kick">Step 9 of 10</div><h1>The lab isn't production</h1>
+ <div class="a label" style="--d:0.60s;left:150px;top:384px;font-size:26px">Live traffic</div>
+ <div class="a" style="--d:0.60s;position:absolute;left:150px;top:439px;width:1620px;height:4px;border-radius:2px;background:#c4d9b3"></div>
+ <div class="dot" style="left:150px;top:432px;--dx:1600px;--d:0.82s"></div><div class="dot" style="left:150px;top:432px;--dx:1600px;--d:1.46s"></div><div class="dot" style="left:150px;top:432px;--dx:1600px;--d:2.10s"></div><div class="dot" style="left:150px;top:432px;--dx:1600px;--d:2.74s"></div><div class="dot" style="left:150px;top:432px;--dx:1600px;--d:3.38s"></div>
+ <svg><path class="line a" style="--d:2.81s" d="M960 441V500"/><path class="line a" style="--d:3.92s" d="M960 600V650"/>
+  <path class="line a" style="--d:3.92s;stroke:#c4d9b3" d="M150 880H1770"/>
+  <path class="ev-draw" pathLength="1" style="--d:4.36s;--t:5.08s" d="M150 716L330 708L520 722L700 712L880 720L1060 711L1240 718L1380 716L1470 790L1560 842L1770 852"/></svg>
+ <div class="a" style="--d:2.81s"><div class="box blue" style="left:740px;top:500px;width:440px;height:100px">Grade a sample<small>continuously</small></div></div>
+ <div class="a label" style="--d:4.36s;left:150px;top:650px;font-size:26px">Graded score</div>
+ <div class="ev-ping" style="left:1450px;top:770px;--d:9.11s"></div>
+ <div class="a" style="--d:9.33s;position:absolute;left:1530px;top:700px"><span class="chip" style="color:var(--red);border-color:var(--red);margin:0">alert on drops</span></div>
+</section>
+
+<!-- 10 -->
+<section class="scene" style="--egg:6.4s"><div class="kick">Step 10 of 10</div><h1>What just became possible</h1>
+ <div class="a" style="--d:0.78s"><div class="label" style="left:150px;top:318px;font-size:26px">Capability suite · pass rate</div>
+  <div class="track" style="left:150px;top:366px;width:760px"><div class="fill ev-jump" style="background:var(--amber);--d:1.14s;--j:3.86s"></div></div></div>
+ <div class="a label t-green" style="--d:3.86s;left:700px;top:318px;width:210px;text-align:right;font-size:26px">new model</div>
+ <div class="proc a ev-fly" style="left:150px;top:500px;--d:1.32s;--f:6.21s;--tx:1150px;--ty:-70px">task</div><div class="proc a ev-fly" style="left:330px;top:500px;--d:1.46s;--f:6.39s;--tx:970px;--ty:-70px">task</div><div class="proc a ev-fly" style="left:510px;top:500px;--d:1.60s;--f:6.57s;--tx:790px;--ty:-70px">task</div><div class="proc a ev-fly" style="left:150px;top:600px;--d:1.50s;--f:8.38s;--tx:1150px;--ty:20px">case</div><div class="proc a ev-fly" style="left:330px;top:600px;--d:1.64s;--f:8.56s;--tx:970px;--ty:20px">case</div><div class="proc a ev-fly" style="left:510px;top:600px;--d:1.78s;--f:8.74s;--tx:790px;--ty:20px">case</div>
+ <svg><path class="line a" style="--d:6.03s" d="M760 532H1200"/><path class="line a" style="--d:8.20s" d="M760 632H1200"/></svg>
+ <div class="box green a ev-land" style="left:1200px;top:412px;width:480px;height:140px;font-size:38px;--d:6.03s;--f:7.12s">Roadmap<small>those tasks</small></div>
+ <div class="box blue a ev-land" style="left:1200px;top:590px;width:480px;height:140px;font-size:38px;--d:8.20s;--f:9.29s">Regression suite<small>their cases</small></div>
+ <div class="a cap muted" style="--d:10.01s;bottom:76px;font-size:28px">SRE Lab · Engineering for the Next Agent · Evals: the asset that compounds most</div>
+ <div class="critter"><div id="critter"></div></div>
+</section>
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 3 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../next-agent/#evals">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Evals: the asset that compounds most. What makes an org's eval suite worth more with every model release, and how does it decide upgrades and show what just became possible? An eval suite is a set of your real tasks with graders, kept in version control next to the agent. On a shared platform it gains value each release, because it is how every team judges every new model.", "Cases come from your own failures. Hamel Husain's field guide puts error analysis first. Read traces, name the failure modes, then write evals for them. Use pass or fail judgements, not one to five scales.", "Structure it for many teams. Shared regression suites cover common skills and tools, and each team adds its own cases. That way a model swap is judged once for shared behavior. Start small. Anthropic began its research agent evals with about twenty real queries.", "Split the suite. Anthropic describes two kinds. Capability evals start at a low pass rate, and measure what the agent can't do yet. Regression evals should pass close to one hundred percent, and they catch backsliding.", "Grade outcomes, then read transcripts. METR found that agent fixes that pass tests often aren't mergeable. In August 2025, it was none of fifteen hand-reviewed fixes. In March 2026, about half of the test-passing ones. So tests alone are a weak grader. Keep graders under code review, and retire cases tied to removed features.", "Public benchmarks can shortlist models, but they can't decide for you. OpenAI stopped reporting S W E bench Verified in February 2026, after finding contamination and flawed tasks. Your private cases can't leak into training data.", "Every change runs the suite: a new model, a new prompt, a new tool, or a harness setting. OpenAI calls it eval-driven development. Tier it as it grows. A fast regression subset runs on every change. The full suite runs nightly, and before any model switch.", "Upgrade only when it's better and nothing regressed. Take OpenAI's sycophancy rollback in April 2025. Offline evals and A B tests looked good. Sycophancy wasn't evaluated. And the unease of expert testers was overruled.", "The lab isn't production. Grade a sample of live traffic continuously, as Anthropic committed to after its 2025 postmortem. And alert on drops.", "The capability suite tells you what just became possible. When its pass rate jumps on a new model, those tasks move to the roadmap, and their cases move into the regression suite."], "seconds": [24.32, 13.99, 17.9, 14.44, 24.06, 17.81, 18.41, 16.73, 11.05, 10.86]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Running agentic development across an org: the film</title>
+<meta name="description" content="A narrated walk through rolling out coding agents to 2,000 engineers: platform, eval gates, managed config, labels, spend and outcomes.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.og-n{position:absolute;font:900 120px/1 "Archivo",sans-serif;letter-spacing:-.02em;color:var(--blue);white-space:nowrap}
+.og-t{position:absolute;font:400 30px/1.3 "IBM Plex Sans";white-space:nowrap}
+.og-card{position:absolute;border:2.5px solid var(--rule);background:var(--panel);border-radius:30px 10px 30px 10px;box-shadow:0 10px 28px rgba(20,70,35,.10)}
+.og-card .label,.og-card .og-t,.og-card .og-n{position:static}
+.og-region{position:absolute;border-radius:44px;background:rgba(255,255,255,.55)}
+.og-q{position:absolute;left:110px;border:2px solid #b7d4a6;border-radius:999px;padding:12px 30px;font:700 30px "IBM Plex Sans";color:var(--blue);background:var(--panel);white-space:nowrap}
+.og-slab{position:absolute;border:2.5px solid var(--blue);background:#dff0d3;border-radius:30px 10px 30px 10px;box-shadow:0 10px 28px rgba(20,70,35,.10);padding:20px 30px}
+.og-slab b{display:block;font:700 34px "IBM Plex Sans";margin-bottom:16px}
+.og-slab .chip{margin-right:14px}
+.og-pool{position:absolute;display:grid;grid-template-columns:repeat(30,16px);gap:7px}
+.og-pool i{width:16px;height:16px;border-radius:5px;background:#d6e6c8;display:block}
+.scene.on .og-pool i{animation:lit .25s var(--d) forwards}
+.og-orb{position:absolute;width:60px;height:60px;border-radius:50%;background:var(--amber);opacity:0;box-shadow:0 8px 18px rgba(20,70,35,.18)}
+.scene.on .og-orb{animation:og-orbin .6s var(--d) forwards,og-orbmove 1.8s cubic-bezier(.4,0,.3,1) var(--o) forwards}
+@keyframes og-orbin{to{opacity:.4}}
+@keyframes og-orbmove{to{opacity:1;transform:translateX(680px);background:var(--green)}}
+.og-pill{position:absolute;border-radius:999px;background:var(--blue);color:#fff;font:700 22px "IBM Plex Sans";padding:6px 22px;white-space:nowrap}
+.og-spin{position:absolute;width:56px;height:56px;border-radius:50%;border:7px solid #b7d4a6;border-top-color:var(--blue)}
+.scene.on .og-spin{animation:in .7s var(--d) both,og-spin 2.4s linear var(--d) infinite}
+@keyframes og-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.og-row{display:flex;align-items:center;font:500 36px/1.2 "IBM Plex Sans";margin-top:30px}
+.og-ck{flex:none;width:50px;height:50px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font:700 28px "IBM Plex Sans";margin-right:26px}
+.og-repo{position:absolute;top:350px;width:170px;height:84px;border:2.5px solid var(--rule);background:var(--panel);border-radius:22px 8px 22px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font:600 24px "IBM Plex Sans"}
+.og-repo small{font:400 17px "IBM Plex Mono";color:inherit;opacity:.75}
+.scene.on .og-brk{animation:in .7s var(--d) both,og-brk .5s var(--o) forwards}
+@keyframes og-brk{to{border-color:var(--red);background:#fbe4d9;color:var(--red)}}
+.og-pr{position:absolute;left:110px;top:322px;height:62px;border-radius:999px;background:#fff;border:2px solid var(--rule);box-shadow:0 8px 20px rgba(20,70,35,.12);font:600 24px "IBM Plex Mono";display:flex;align-items:center;padding:0 12px 0 24px;opacity:0;white-space:nowrap}
+.og-pr span{margin-left:14px;background:var(--amber);color:#fff;border-radius:999px;padding:4px 16px;font:700 20px "IBM Plex Sans"}
+.scene.on .og-pr{animation:og-travel 7s cubic-bezier(.4,0,.3,1) var(--d) forwards}
+@keyframes og-travel{0%{opacity:0;transform:translateX(0)}8%{opacity:1}100%{opacity:1;transform:translateX(1060px)}}
+.og-verb{display:flex;flex-direction:column;justify-content:flex-start;padding:28px 30px;width:400px;height:400px;top:460px}
+.og-verb .label{font-size:26px}
+.og-verb .og-n{font-size:104px;margin:34px 0 26px}
+.og-verb em{font:600 34px/1.25 "IBM Plex Mono";font-style:normal;color:var(--amber)}
+.og-verb small{font:400 24px "IBM Plex Sans";color:var(--muted);margin-top:14px}
+.og-sess{position:absolute;display:grid;grid-template-columns:repeat(8,58px);gap:14px}
+.og-sess i{width:58px;height:30px;border-radius:999px;background:#d6e6c8;display:block}
+.scene.on .og-sess i{animation:og-amb .4s var(--d) forwards}
+@keyframes og-amb{to{background:var(--amber)}}
+.og-live{display:inline-block;width:20px;height:20px;border-radius:50%;background:var(--red);margin-right:16px}
+.scene.on .og-live{animation:beat 1s 0s infinite}
+.og-tick{position:absolute;top:500px;width:4px;height:96px;background:var(--fg);opacity:.35;border-radius:2px}
+.og-bar{position:absolute;border-radius:20px 20px 4px 4px;transform:scaleY(0);transform-origin:bottom}
+.scene.on .og-bar{animation:og-rise 1.3s cubic-bezier(.2,.7,.2,1) var(--d) forwards}
+@keyframes og-rise{to{transform:scaleY(1)}}
+.og-base{position:absolute;top:860px;height:4px;border-radius:2px;background:#9fbf8f}
+.og-c{text-align:center;white-space:nowrap}
+.og-f{padding:26px 32px;width:520px;height:330px;top:400px}
+.og-f .label{font-size:26px;color:var(--blue)}
+.og-f p{margin:10px 0 0;font:500 30px/1.3 "IBM Plex Sans"}
+.og-f .chip{position:absolute;margin:0;font-size:24px;padding:8px 22px}
+.og-msg{position:absolute;left:32px;height:26px;border-radius:13px;background:#d6e6c8}
+.og-day{position:absolute;left:32px;right:32px;top:216px;height:40px;border-radius:20px;background:#d6e6c8}
+.og-day b{position:absolute;left:34%;width:36%;top:0;bottom:0;border-radius:20px;background:#bfe0ae}
+.og-day i{position:absolute;top:10px;width:20px;height:20px;border-radius:50%;background:var(--blue);opacity:0}
+.scene.on .og-day i{animation:og-land .6s var(--d) both}
+@keyframes og-land{from{opacity:0;transform:translateY(-46px)}to{opacity:1;transform:none}}
+.og-who{position:absolute;top:186px;width:112px;height:112px;border-radius:50%;border:2.5px solid var(--blue);background:#dff0d3;display:flex;align-items:center;justify-content:center;text-align:center;font:600 22px/1.1 "IBM Plex Sans"}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../agentic/#org-at-scale">Agentic Engineering</a> · film · recorded 15 Nov 2026</div>
+  <h1 class="page">Running agentic development across an org</h1>
+  <div id="viewport">
+    <div id="stage">
+<!-- 1 -->
+<section class="scene"><div class="kick">Agentic Engineering · chapter 8</div><h1>Running agentic development<br>across an org</h1>
+ <div class="og-n a" style="--d:5.4s;left:110px;top:330px;font-size:190px">2,000</div>
+ <div class="og-t a muted" style="--d:5.8s;left:118px;top:525px;font-size:38px">engineers</div>
+ <div class="og-q a" style="--d:6.5s;top:630px">What do you build?</div>
+ <div class="og-q a" style="--d:7.9s;top:718px">What do you measure?</div>
+ <div class="og-q a" style="--d:9.3s;top:806px">What could go wrong?</div>
+ <svg><defs><marker id="og-a0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8fb37e"/></marker></defs>
+  <path class="line a" style="--d:13.6s" d="M1080 525H1152" marker-end="url(#og-a0)"/>
+  <path class="line a" style="--d:15.0s" d="M1400 525H1472" marker-end="url(#og-a0)"/>
+  <path class="line a" style="--d:17.5s" d="M1630 584C1630 720 1570 795 1478 795" marker-end="url(#og-a0)"/>
+  <path class="line a" style="--d:19.2s" d="M1090 795C1000 795 940 720 940 590" marker-end="url(#og-a0)"/></svg>
+ <div class="a" style="--d:12.5s"><div class="box" style="left:800px;top:470px;width:280px;height:110px">Skills and policy</div></div>
+ <div class="a" style="--d:13.6s"><div class="box blue" style="left:1160px;top:470px;width:240px;height:110px">Eval gate</div></div>
+ <div class="a" style="--d:15.0s"><div class="box" style="left:1480px;top:470px;width:300px;height:110px">Agent PRs<small>labelled and capped</small></div></div>
+ <div class="a" style="--d:17.5s"><div class="box green" style="left:1090px;top:740px;width:380px;height:110px">Results return as data</div></div>
+</section>
+
+<!-- 2 -->
+<section class="scene"><div class="kick">Step 2 of 11</div><h1>Platform before agents</h1>
+ <div class="a" style="--d:1.7s"><div class="box amber" style="left:470px;top:400px;width:340px;height:120px">Stripe's minions<small>1,300+ merged PRs a week</small></div></div>
+ <div class="a" style="--d:10.1s"><div class="box" style="left:130px;top:400px;width:300px;height:120px">Engineers</div></div>
+ <div class="og-slab a" style="--d:6.1s;left:110px;top:536px;width:720px;height:180px"><b>The same platform</b><span class="chip">dev boxes</span><span class="chip">linters</span><span class="chip">CI</span></div>
+ <div class="label a" style="--d:11.8s;left:960px;top:415px;font-size:30px">Sandboxes are capacity, like CI</div>
+ <div class="og-n a" style="--d:18.6s;left:960px;top:480px">300</div>
+ <div class="og-t a" style="--d:19.0s;left:1250px;top:492px">sandboxes a second, per cluster<br><span class="muted" style="font-size:24px">GKE Agent Sandbox warm pool, vendor-reported</span></div>
+ <div class="og-pool a" style="--d:18.9s;left:960px;top:622px"><i style="--d:19.20s"></i><i style="--d:19.24s"></i><i style="--d:19.28s"></i><i style="--d:19.32s"></i><i style="--d:19.36s"></i><i style="--d:19.40s"></i><i style="--d:19.44s"></i><i style="--d:19.48s"></i><i style="--d:19.52s"></i><i style="--d:19.56s"></i><i style="--d:19.60s"></i><i style="--d:19.64s"></i><i style="--d:19.68s"></i><i style="--d:19.72s"></i><i style="--d:19.76s"></i><i style="--d:19.80s"></i><i style="--d:19.84s"></i><i style="--d:19.88s"></i><i style="--d:19.92s"></i><i style="--d:19.96s"></i><i style="--d:20.00s"></i><i style="--d:20.04s"></i><i style="--d:20.08s"></i><i style="--d:20.12s"></i><i style="--d:20.16s"></i><i style="--d:20.20s"></i><i style="--d:20.24s"></i><i style="--d:20.28s"></i><i style="--d:20.32s"></i><i style="--d:20.36s"></i></div>
+ <div class="og-n a" style="--d:23.5s;left:960px;top:720px">50,000</div>
+ <div class="og-t a" style="--d:23.9s;left:1440px;top:732px">concurrent, per customer<br><span class="muted" style="font-size:24px">Modal, vendor-reported</span></div>
+</section>
+
+<!-- 3 -->
+<section class="scene"><div class="kick">Step 3 of 11</div><h1>Fragile environments move off laptops</h1>
+ <svg><defs><marker id="og-a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8fb37e"/></marker></defs><path class="line a" style="--d:4.0s" d="M490 345H630" marker-end="url(#og-a2)"/></svg>
+ <div class="a" style="--d:.8s"><div class="box" style="left:110px;top:290px;width:380px;height:110px">Laptop<small>the one working setup</small></div></div>
+ <div class="a" style="--d:4.0s"><div class="box blue" style="left:640px;top:290px;width:440px;height:110px">Setup as code<small>scripts "must be idempotent"</small></div></div>
+ <div class="label a" style="--d:5.9s;left:110px;top:462px">Builds</div>
+ <div class="a" style="--d:5.9s"><div class="box green" style="left:110px;top:500px;width:300px;height:104px">Good build</div></div>
+ <div class="a" style="--d:6.4s"><div class="box green" style="left:450px;top:500px;width:300px;height:104px">Last good build</div></div>
+ <div class="og-pill a" style="--d:7.0s;left:545px;top:616px">active</div>
+ <div class="a" style="--d:11.3s"><div class="box red" style="left:790px;top:500px;width:300px;height:104px">Failed build</div></div>
+ <div class="og-t a" style="--d:12.8s;left:1150px;top:512px;font-size:32px">A failed build doesn't<br>replace the active build.</div>
+ <div class="og-orb" style="left:270px;top:694px;--d:14.8s;--o:15.9s"></div>
+ <div class="a" style="--d:14.8s"><div class="box" style="left:110px;top:770px;width:380px;height:104px">Worker node</div></div>
+ <div class="a" style="--d:15.9s"><div class="box" style="left:790px;top:770px;width:380px;height:104px">Another worker node</div></div>
+ <div class="og-t a" style="--d:15.2s;left:1230px;top:782px;font-size:32px">A paused orb can resume<br>on another worker node.</div>
+</section>
+
+<!-- 4 -->
+<section class="scene"><div class="kick">Step 4 of 11</div><h1>Run the commands inside their network</h1>
+ <div class="a" style="--d:6.5s"><div class="og-region" style="left:110px;top:410px;width:600px;height:380px;border:3px solid var(--rule)"></div><div class="label" style="left:146px;top:434px">Cloud</div>
+  <div class="box blue" style="left:200px;top:540px;width:420px;height:130px;font-size:38px;padding-left:110px">Agent loop</div></div>
+ <div class="og-spin a" style="--d:6.5s;left:240px;top:577px"></div>
+ <div class="a" style="--d:4.5s"><div class="og-region" style="left:1010px;top:410px;width:780px;height:380px;border:4px dashed var(--blue)"></div><div class="label t-blue" style="left:1046px;top:434px">Their network</div>
+  <div class="box" style="left:1090px;top:500px;width:620px;height:120px">Execution<small>commands run "on machines you operate"</small></div></div>
+ <div class="a" style="--d:.9s;position:absolute;left:1090px;top:670px;white-space:nowrap"><span class="chip">on-prem</span><span class="chip a" style="--d:1.5s">VPN-only</span><span class="chip a" style="--d:2.6s">licensed</span></div>
+ <svg><path class="line a" style="--d:4.5s" d="M710 600H1010"/></svg>
+ <div class="label a" style="--d:4.5s;left:800px;top:548px">commands</div>
+ <div class="dot" style="left:726px;top:591px;--dx:250px;--d:4.8s"></div><div class="dot" style="left:726px;top:591px;--dx:250px;--d:6.4s"></div>
+ <div class="a" style="--d:17.9s;position:absolute;left:110px;top:862px;white-space:nowrap;display:flex;align-items:center"><span style="font:700 30px 'IBM Plex Sans';margin-right:26px">Stay local</span><span class="chip">simulators</span><span class="chip a" style="--d:18.3s">hardware</span><span class="chip a" style="--d:19.1s">local-only auth</span></div>
+</section>
+
+<!-- 5 -->
+<section class="scene"><div class="kick">Step 5 of 11</div><h1>A skill change must pass evals</h1>
+ <svg><defs><marker id="og-a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8fb37e"/></marker></defs><path class="line a" style="--d:3.8s" d="M340 560V660" marker-end="url(#og-a4)"/></svg>
+ <div class="a" style="--d:.8s"><div class="box" style="left:110px;top:440px;width:460px;height:120px">Skill or prompt change<small>is a code change</small></div></div>
+ <div class="a" style="--d:3.8s"><div class="box blue" style="left:190px;top:670px;width:300px;height:130px;font-size:40px">Evals<small>must pass</small></div></div>
+ <div class="og-card a" style="--d:5.6s;left:700px;top:400px;width:1080px;height:470px;padding:40px 54px">
+  <div class="label" style="font-size:26px">pstack's eval playbook keeps them blind</div>
+  <div class="og-row a" style="--d:8.2s"><span class="og-ck">&#10003;</span>No hint to candidates that they're tested</div>
+  <div class="og-row a" style="--d:11.2s"><span class="og-ck">&#10003;</span>A held-back rubric</div>
+  <div class="og-row a" style="--d:13.0s"><span class="og-ck">&#10003;</span>A judge from another model family</div>
+  <div class="og-row a" style="--d:15.6s"><span class="og-ck">&#10003;</span>You read every output</div>
+ </div>
+</section>
+
+<!-- 6 -->
+<section class="scene"><div class="kick">Step 6 of 11</div><h1>A model swap is a policy change</h1>
+ <div class="label a" style="--d:3.1s;left:110px;top:306px">Snapshot IDs hard-coded across repos</div>
+ <div class="og-repo og-brk a" style="left:110px;--d:3.1s;--o:5.8s">repo<small>snapshot ID</small></div>
+ <div class="og-repo og-brk a" style="left:300px;--d:3.3s;--o:5.9s">repo<small>snapshot ID</small></div>
+ <div class="og-repo og-brk a" style="left:490px;--d:3.4s;--o:6.0s">repo<small>snapshot ID</small></div>
+ <div class="og-repo og-brk a" style="left:680px;--d:3.6s;--o:6.1s">repo<small>snapshot ID</small></div>
+ <div class="og-repo og-brk a" style="left:870px;--d:3.7s;--o:6.2s">repo<small>snapshot ID</small></div>
+ <div class="og-repo og-brk a" style="left:1060px;--d:3.9s;--o:6.3s">repo<small>snapshot ID</small></div>
+ <div class="og-repo og-brk a" style="left:1250px;--d:4.0s;--o:6.4s">repo<small>snapshot ID</small></div>
+ <div class="a" style="--d:7.7s"><div class="track" style="left:110px;top:590px;width:1680px;height:44px"><div class="fill" style="background:var(--amber);--w:100%;--d:8.1s"></div></div>
+  <div class="label" style="left:110px;top:648px;font-size:26px">Notice lands</div><div class="label" style="right:130px;top:648px;font-size:26px">Model retired</div></div>
+ <div class="og-n a" style="--d:8.4s;left:650px;top:500px;font-size:64px">at least 60 days' notice</div>
+ <div class="a" style="--d:11.8s"><div class="box green" style="left:110px;top:760px;width:480px;height:124px">Pin models centrally</div></div>
+ <div class="a" style="--d:13.4s"><div class="box green" style="left:650px;top:760px;width:540px;height:124px">Find stragglers<small>usage exports, by key and model</small></div></div>
+ <div class="a" style="--d:16.8s"><div class="box green" style="left:1250px;top:760px;width:540px;height:124px">Start the eval run<small>when the notice lands</small></div></div>
+</section>
+
+<!-- 7 -->
+<section class="scene"><div class="kick">Step 7 of 11</div><h1>Promote what passes into managed config</h1>
+ <svg><defs><marker id="og-a6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8fb37e"/></marker></defs><path class="line a" style="--d:1.6s" d="M410 400H512" marker-end="url(#og-a6)"/><path class="line a" style="--d:6.1s" d="M1040 400H1122" marker-end="url(#og-a6)"/></svg>
+ <div class="a" style="--d:.8s"><div class="box green" style="left:110px;top:340px;width:300px;height:120px">Passed evals</div></div>
+ <div class="a" style="--d:1.6s"><div class="box blue" style="left:520px;top:340px;width:520px;height:120px">Managed config<small>teams can't override</small></div></div>
+ <div class="og-pill a" style="--d:4.2s;left:650px;top:474px">model list: locked</div>
+ <div class="a" style="--d:6.1s"><div class="box" style="left:1130px;top:340px;width:300px;height:120px">Gateway<small>its own SLO</small></div></div>
+ <div class="og-card a" style="--d:9.5s;left:110px;top:600px;width:700px;height:290px;padding:40px 48px;border-color:var(--green);background:#e9f6dc">
+  <div class="label">What the gateway runs</div><div class="og-t mono" style="font-size:54px;font-weight:600;margin-top:28px">a pinned version</div></div>
+ <div class="og-card a" style="--d:14.5s;left:880px;top:600px;width:910px;height:290px;padding:40px 48px;border-color:var(--red);background:#fbe4d9">
+  <div class="label">LiteLLM, 21 Oct 2026</div><div class="og-t mono t-red" style="font-size:54px;font-weight:600;margin-top:28px">latest</div>
+  <div class="og-t a" style="--d:16.7s;font-size:30px;margin-top:22px">carried credential-stealing malware for about two hours</div></div>
+</section>
+
+<!-- 8 -->
+<section class="scene"><div class="kick">Step 8 of 11</div><h1>Four numbers, four different verbs</h1>
+ <svg><path class="line a" style="--d:.6s" d="M110 353H1380"/></svg>
+ <div class="label a" style="--d:.6s;left:110px;top:282px">created</div><div class="label a" style="--d:4.7s;left:1272px;top:282px">deployed</div>
+ <div class="og-pr" style="--d:.8s">PR<span>agent</span></div>
+ <div class="og-card og-verb a" style="--d:8.2s;left:110px"><div class="label">Shopify's River</div><div class="og-n">1 in 8</div><em>"coauthored"</em><small>merged PRs</small></div>
+ <div class="og-card og-verb a" style="--d:12.0s;left:540px"><div class="label">Monzo's agent</div><div class="og-n">~10%</div><em>"authoring"</em></div>
+ <div class="og-card og-verb a" style="--d:15.0s;left:970px"><div class="label">Uber</div><div class="og-n" style="font-size:56px;margin:58px 0 50px">11% <span class="muted">to</span> 70%+</div><em>"opened"</em><em class="a" style="--d:17.6s">"attributed"</em></div>
+ <div class="og-card og-verb a" style="--d:19.7s;left:1400px"><div class="label">GitHub</div><div class="og-n">40%</div><em style="font-size:27px">"started with an agent's first draft"</em></div>
+</section>
+
+<!-- 9 -->
+<section class="scene"><div class="kick">Step 9 of 11</div><h1>Spend gets cloud-bill controls</h1>
+ <div class="label a" style="--d:4.2s;left:110px;top:316px;font-size:26px">One Lovable engineer, by May</div>
+ <div class="og-n a" style="--d:5.6s;left:110px;top:366px;font-size:170px;color:var(--amber)">~$25K</div>
+ <div class="og-t a muted" style="--d:7.5s;left:116px;top:540px;font-size:38px">a month</div>
+ <div class="label a" style="--d:1.6s;left:110px;top:668px;font-size:26px">Scales with parallelism</div>
+ <div class="og-sess" style="left:110px;top:716px"><i style="--d:2.00s"></i><i style="--d:2.14s"></i><i style="--d:2.28s"></i><i style="--d:2.42s"></i><i style="--d:2.56s"></i><i style="--d:2.70s"></i><i style="--d:2.84s"></i><i style="--d:2.98s"></i><i style="--d:3.12s"></i><i style="--d:3.26s"></i><i style="--d:3.40s"></i><i style="--d:3.54s"></i><i style="--d:3.68s"></i><i style="--d:3.82s"></i><i style="--d:3.96s"></i><i style="--d:4.10s"></i><i style="--d:4.24s"></i><i style="--d:4.38s"></i><i style="--d:4.52s"></i><i style="--d:4.66s"></i><i style="--d:4.80s"></i><i style="--d:4.94s"></i><i style="--d:5.08s"></i><i style="--d:5.22s"></i></div>
+ <div class="a" style="--d:9.0s"><div class="box" style="left:820px;top:410px;width:420px;height:96px;flex-direction:row"><span class="og-live"></span>Live cost counter</div><div class="label" style="left:820px;top:366px;font-size:26px">Uber</div></div>
+ <div class="a" style="--d:11.2s"><div class="track" style="left:820px;top:610px;width:900px;height:56px"><div class="fill" style="background:linear-gradient(90deg,var(--green),var(--amber) 60%,var(--red));--w:100%;--d:11.5s"></div></div>
+  <div class="label" style="left:820px;top:682px">expected spend</div></div>
+ <div class="og-n a" style="--d:11.9s;left:1220px;top:548px;font-size:44px">50%</div>
+ <div class="og-n a" style="--d:12.3s;left:1460px;top:548px;font-size:44px;color:var(--amber)">80%</div>
+ <div class="og-n a" style="--d:13.0s;left:1618px;top:548px;font-size:44px;color:var(--red)">100%</div>
+ <div class="a" style="--d:15.3s"><div class="box amber" style="left:1330px;top:740px;width:460px;height:110px">Higher tier<small>manager sign-off</small></div></div>
+ <div class="og-n a" style="--d:18.6s;left:820px;top:760px;font-size:100px;color:var(--green)">&minus;52%</div>
+ <div class="og-t a" style="--d:19.0s;left:820px;top:872px;font-size:28px">cost per session, from the June peak</div>
+</section>
+
+<!-- 10 -->
+<section class="scene"><div class="kick">Step 10 of 11</div><h1>Review becomes the constraint</h1>
+ <div class="label a" style="--d:5.2s;left:110px;top:330px;font-size:28px">Spotify: merged changes in August</div>
+ <div class="og-base a" style="--d:5.2s;left:110px;width:560px"></div>
+ <div class="og-bar" style="left:170px;top:690px;width:170px;height:170px;background:#a9d39a;--d:7.1s"></div>
+ <div class="og-n og-c a" style="--d:7.7s;left:150px;width:210px;top:618px;font-size:56px">8,100</div>
+ <div class="og-bar" style="left:440px;top:503px;width:170px;height:357px;background:var(--green);--d:9.5s"></div>
+ <div class="og-n og-c a" style="--d:10.1s;left:420px;width:210px;top:432px;font-size:56px">17,000</div>
+ <div class="label og-c a" style="--d:10.7s;left:150px;width:480px;top:880px;font-size:24px">year over year</div>
+ <div class="label a" style="--d:11.9s;left:860px;top:330px;font-size:28px">Faros, a vendor: high-AI teams</div>
+ <div class="og-base a" style="--d:11.9s;left:860px;width:930px"></div>
+ <div class="og-bar" style="left:920px;top:664px;width:170px;height:196px;background:var(--green);--d:15.0s"></div>
+ <div class="og-n og-c a" style="--d:15.6s;left:880px;width:250px;top:592px;font-size:56px">+98%</div>
+ <div class="label og-c a" style="--d:15.6s;left:880px;width:250px;top:880px;font-size:24px">PRs merged</div>
+ <div class="og-bar" style="left:1230px;top:678px;width:170px;height:182px;background:var(--amber);--d:17.8s"></div>
+ <div class="og-n og-c a" style="--d:18.4s;left:1190px;width:250px;top:606px;font-size:56px;color:var(--amber)">+91%</div>
+ <div class="label og-c a" style="--d:18.4s;left:1190px;width:250px;top:880px;font-size:24px">review time</div>
+ <div class="og-pill a" style="--d:20.5s;left:1070px;top:470px;background:var(--panel);color:var(--muted);border:2px solid var(--rule)">correlational</div>
+ <div class="og-bar" style="left:1540px;top:609px;width:170px;height:251px;background:var(--red);--d:23.3s"></div>
+ <div class="og-n og-c a" style="--d:24.4s;left:1480px;width:290px;top:537px;font-size:56px;color:var(--red)">+125.4%</div>
+ <div class="label og-c a" style="--d:23.3s;left:1480px;width:290px;top:880px;font-size:24px">monthly incidents<br><span style="font-weight:400">September 2026 report</span></div>
+</section>
+
+<!-- 11 -->
+<section class="scene" style="--egg:17.9s"><div class="kick">Step 11 of 11</div><h1>Findings feed back into skills and limits</h1>
+ <div class="og-card og-f a" style="--d:3.8s;left:110px"><div class="label">Shopify</div><p>River's public Slack transcripts</p>
+  <i class="og-msg" style="top:188px;width:170px"></i><i class="og-msg" style="top:228px;width:120px"></i><i class="og-msg" style="top:268px;width:150px"></i>
+  <span class="chip a" style="--d:6.7s;left:290px;top:160px">skills</span><span class="chip a" style="--d:8.1s;left:290px;top:214px">prompts</span><span class="chip a" style="--d:9.0s;left:290px;top:268px">defaults</span></div>
+ <div class="og-card og-f a" style="--d:9.5s;left:700px"><div class="label">Spotify</div><p>Automated changes, scheduled</p>
+  <div class="og-day"><b></b><i style="left:38%;--d:11.4s"></i><i style="left:47%;--d:11.8s"></i><i style="left:56%;--d:12.2s"></i><i style="left:64%;--d:12.6s"></i></div>
+  <div class="label" style="margin-top:118px;text-align:center;font-size:24px">owners' working hours</div></div>
+ <div class="og-card og-f a" style="--d:13.3s;left:1290px;width:500px"><div class="label">DORA</div><p>Guard human skills too</p>
+  <div class="og-who a" style="--d:18.6s;left:32px">new hire</div><div class="og-who a" style="--d:19.0s;left:158px">pair</div>
+  <div class="og-t a" style="--d:20.5s;position:absolute;left:296px;top:198px;font-size:26px;white-space:normal;width:180px">debugging, <span class="t-red">without the agent</span></div></div>
+ <div class="a cap muted" style="--d:21.4s;bottom:76px;font-size:28px">SRE Lab · Agentic Engineering · Running agentic development across an org</div>
+ <div class="critter"><div id="critter"></div></div>
+</section>
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 4 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../agentic/#org-at-scale">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Running agentic development across an org. You're asked to roll out coding agents to two thousand engineers. What do you build, what do you measure, and what could go wrong? Here is the loop. Skills and policy pass an eval gate. Agent pull requests are labelled and capped. And the results come back as data.", "Platform before agents. Stripe's minions merge more than thirteen hundred pull requests a week, and they reuse the dev boxes, linters and C I built for its engineers. Plan sandboxes as capacity, like C I. Vendors report G K E Agent Sandbox's warm pool allocating three hundred sandboxes a second per cluster, and Modal supporting up to fifty thousand at once per customer.", "Old, fragile environments move off laptops too. Capture the one working setup as code, and keep the last good build. Cursor says its setup scripts must be idempotent, and a failed build doesn't replace the active build. Amp's paused orbs can resume on another worker node.", "For on-prem, V P N only, or licensed systems, send execution to their network and keep the agent loop in the cloud. Amp's self-hosted orbs serve teams that need access to internal networks. Devin Outposts run commands on machines you operate. Simulators, hardware and local-only auth stay local.", "A skill or prompt change is a code change, so it must pass evals. P stack's eval playbook keeps them blind. Candidates get no hint that they're being tested. The rubric is held back. The judge comes from another model family. And you read every output.", "A model swap is a policy change. Snapshot I Ds hard-coded across repos all break on one date. Anthropic gives at least sixty days' notice before retiring a model. So pin models centrally, find stragglers in usage exports by key and model, and start the eval run when the notice lands.", "Promote what passes into managed config that teams can't override, with the model list locked. Run the gateway with its own S L O and a pinned version. On the twenty-first of October, twenty twenty-six, Lite L L M's latest image carried credential-stealing malware for about two hours.", "Label agent pull requests at creation, and keep the label through deploy. The headline numbers use different verbs. Shopify's River coauthored one in eight merged pull requests. Monzo's agent is authoring about ten percent. Uber went from eleven percent opened to over seventy percent attributed. GitHub counts forty percent started with an agent's first draft.", "Spend gets cloud-bill controls, and it scales with parallelism. One Lovable engineer reached about twenty-five thousand dollars a month by May. Uber shows a live cost counter, alerts at fifty, eighty and one hundred percent of expected spend, and needs manager sign-off for a higher tier. Its cost per session is down fifty-two percent from the June peak.", "Measure outcomes by change source, and expect review to become the constraint. Spotify's merged changes in August rose from about eighty-one hundred to seventeen thousand, year over year. Faros, a vendor, saw high A I teams merge ninety-eight percent more pull requests while review time rose ninety-one percent. That is a correlation. Its September report saw monthly incidents up one hundred twenty-five percent.", "Findings feed back into skills and limits. Shopify mines River's public Slack transcripts into its skills, prompts and defaults. Spotify schedules automated changes in owners' working hours. Guard human skills too. DORA recommends training critical evaluation and validation, so pair new hires on debugging without the agent."], "seconds": [19.48, 25.43, 17.81, 20.69, 16.98, 19.75, 19.33, 23.55, 22.95, 26.35, 22.42]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Context engineering: the film</title>
+<meta name="description" content="How rules, skills, tools and code reach a coding agent&#x27;s context window, and how a platform keeps that context short and current.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.cx-pill{position:absolute;height:70px;border-radius:999px;background:#fff;border:2px solid var(--rule);box-shadow:0 8px 20px rgba(20,70,35,.10);font:600 26px "IBM Plex Sans";display:flex;align-items:center;justify-content:center;text-align:center}
+.cx-win{position:absolute;border:4px solid var(--blue);border-radius:40px 14px 40px 14px;background:rgba(255,255,255,.6)}
+.cx-win.dash{border-style:dashed}
+.cx-card{position:absolute;background:#fff;border-radius:32px 10px 32px 10px;box-shadow:0 24px 60px rgba(20,70,35,.14);padding:40px 48px}
+.cx-note{position:absolute;font:400 22px "IBM Plex Sans";color:var(--muted)}
+.cx-t{position:absolute;font:600 34px/1.3 "IBM Plex Sans"}
+.cx-chipbox{position:absolute}
+.cx-num{position:absolute;font:900 170px/1 "Archivo";letter-spacing:-.03em;color:var(--blue)}
+/* s2 drifting copies */
+.cx-mini{position:absolute;top:560px;width:120px;height:150px}
+.cx-mini b{display:block;width:120px;height:150px;border-radius:22px 8px 22px 8px;background:#fff;border:2.5px solid var(--amber);box-shadow:0 8px 20px rgba(20,70,35,.10);padding:22px 18px;transform:rotate(var(--r))}
+.cx-mini i{display:block;height:12px;border-radius:6px;background:#cfe0c2;margin-bottom:14px;width:var(--w,100%)}
+.cx-mini i.o{background:var(--amber)}
+.scene.on .cx-mini b{animation:cx-straight .8s var(--fx) forwards}
+.scene.on .cx-mini i{animation:cx-same .8s var(--fx) forwards}
+@keyframes cx-straight{to{transform:rotate(0);border-color:var(--green)}}
+@keyframes cx-same{to{background:#9fcf95;width:100%}}
+/* s3 tree */
+.cx-tree{font:400 30px/1.95 "IBM Plex Mono";white-space:pre}
+.cx-tag{display:inline-block;font:700 20px/1 "IBM Plex Sans";color:var(--blue);background:#dff0d3;border-radius:999px;padding:8px 16px;margin-left:18px;vertical-align:middle;white-space:nowrap}
+/* s4 lines */
+.cx-ln{height:18px;border-radius:9px;background:#cfe0c2;margin-top:22px}
+.scene.on .cx-ln.x1{animation:cx-cut1 .7s var(--d) forwards}
+.scene.on .cx-ln.x2{animation:cx-cut2 .7s var(--d) forwards}
+@keyframes cx-cut1{50%{background:var(--red);opacity:1}to{background:var(--red);opacity:.22}}
+@keyframes cx-cut2{50%{background:var(--amber);opacity:1}to{background:var(--amber);opacity:.3}}
+.cx-sw{display:inline-block;width:44px;height:18px;border-radius:9px;margin-right:18px;vertical-align:middle}
+/* s5 */
+.cx-sk{position:absolute;top:410px;width:290px;height:90px;border-radius:26px 9px 26px 9px;background:#fff;border:2.5px solid var(--rule);box-shadow:0 8px 20px rgba(20,70,35,.10);display:flex;align-items:center;justify-content:center;font:400 22px "IBM Plex Mono";color:var(--muted)}
+.scene.on .cx-sk.hit{animation:in .7s var(--d) both,cx-hit .5s var(--fx) forwards}
+@keyframes cx-hit{to{border-color:var(--blue);background:#dff0d3;color:var(--fg)}}
+.cx-row{font:600 28px "IBM Plex Sans";padding:10px 0;border-top:2px solid #b7d4a6;width:100%;text-align:left}
+/* s8 */
+.cx-blk{position:absolute;height:44px;border-radius:14px;background:#b9d6ac}
+.scene.on .cx-sum{animation:in .5s var(--d) both,cx-go 1.5s cubic-bezier(.4,0,.2,1) var(--fx) forwards}
+@keyframes cx-go{to{transform:translateX(-690px)}}
+/* s9 */
+.cx-bar{position:absolute;left:150px;top:470px;width:1620px;height:110px;border-radius:28px;background:#d6e6c8;overflow:hidden}
+.cx-early{position:absolute;left:12px;top:12px;width:206px;height:86px;border-radius:18px;background:var(--amber);color:#fff;font:700 20px/1.15 "IBM Plex Sans";display:flex;align-items:center;justify-content:center;text-align:center}
+.cx-tk{position:absolute;top:12px;width:17px;height:86px;border-radius:8px;background:var(--green)}
+.scene.on .cx-old{animation:cx-gone .9s var(--fx) forwards}
+@keyframes cx-gone{to{opacity:0}}
+.cx-sumblk{position:absolute;left:12px;top:12px;width:300px;height:86px;border-radius:18px;background:var(--blue);color:#fff;font:700 28px "IBM Plex Sans";display:flex;align-items:center;justify-content:center}
+/* s10 */
+.scene.on .cx-stop{animation:cx-stopk 3.2s linear var(--d) infinite}
+@keyframes cx-stopk{0%{opacity:0;transform:translateX(0)}8%{opacity:1}55%,85%{opacity:1;transform:translateX(350px)}100%{opacity:0;transform:translateX(350px)}}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../agentic/#context">Agentic Engineering</a> · film · recorded 15 Nov 2026</div>
+  <h1 class="page">Context engineering</h1>
+  <div id="viewport">
+    <div id="stage">
+<!-- 1 -->
+<section class="scene"><div class="kick">Agentic Engineering · chapter 2</div><h1>Context engineering</h1>
+ <div class="a cap muted" style="--d:1.2s;top:232px;bottom:auto;right:560px;font-size:32px">Hundreds of repos carry their own rules files and tool lists. How does context reach an agent, and how does a platform keep it short and current?</div>
+ <div class="a cx-win" style="--d:11.18s;left:660px;top:470px;width:560px;height:380px"></div>
+ <div class="a label t-blue" style="--d:11.18s;left:700px;top:496px">Context window</div>
+ <div class="a cx-t" style="--d:11.18s;left:670px;top:590px;width:540px;text-align:center;font-size:38px">Everything the model knows<br><span class="muted" style="font-size:28px;font-weight:400">arrives through this one window</span></div>
+ <div class="a label" style="--d:14.75s;left:150px;top:440px">The task</div>
+ <div class="a cx-pill" style="--d:16.37s;left:150px;top:480px;width:300px">Slack thread</div>
+ <div class="a cx-pill" style="--d:17.41s;left:150px;top:572px;width:300px">Ticket</div>
+ <div class="a cx-pill" style="--d:18.06s;left:150px;top:664px;width:300px">CI event</div>
+ <div class="a cx-pill" style="--d:19.03s;left:150px;top:756px;width:300px">Alert</div>
+ <div class="dot" style="left:470px;top:650px;--dx:160px;--d:16.37s"></div><div class="dot" style="left:470px;top:650px;--dx:160px;--d:18.06s"></div>
+ <div class="a label" style="--d:19.68s;left:1400px;top:440px">The platform decides</div>
+ <div class="a" style="--d:21.04s"><div class="box green" style="left:1400px;top:480px;width:380px;height:100px">Loads always</div></div>
+ <div class="a" style="--d:22.28s"><div class="box amber" style="left:1400px;top:610px;width:380px;height:100px">Loads on demand</div></div>
+ <div class="a" style="--d:23.96s"><div class="box" style="left:1400px;top:740px;width:380px;height:100px">Should never be text</div></div>
+</section>
+
+<!-- 2 -->
+<section class="scene"><div class="kick">Step 2 of 11</div><h1>Org rules, from one managed place</h1>
+ <div class="a" style="--d:.8s"><div class="box blue" style="left:690px;top:300px;width:540px;height:120px;font-size:36px">Org rules<small>load every session</small></div></div>
+ <div class="a label t-amber" style="--d:3.91s;left:200px;top:722px;font-size:26px">Copies drift across hundreds of repos</div>
+ <div class="a cx-mini" style="left:200px;--d:3.91s"><b style="--r:-7deg;--fx:6.16s"><i class="o" style="--w:55%;--fx:6.16s"></i><i class="" style="--w:100%;--fx:6.16s"></i><i class="o" style="--w:55%;--fx:6.16s"></i><i class="o" style="--w:85%;--fx:6.16s"></i><i class="" style="--w:55%;--fx:6.16s"></i></b></div>
+ <div class="a cx-mini" style="left:370px;--d:4.01s"><b style="--r:5deg;--fx:6.16s"><i class="o" style="--w:85%;--fx:6.16s"></i><i class="o" style="--w:70%;--fx:6.16s"></i><i class="" style="--w:85%;--fx:6.16s"></i><i class="o" style="--w:55%;--fx:6.16s"></i><i class="" style="--w:85%;--fx:6.16s"></i></b></div>
+ <div class="a cx-mini" style="left:540px;--d:4.11s"><b style="--r:-3deg;--fx:6.16s"><i class="" style="--w:70%;--fx:6.16s"></i><i class="o" style="--w:85%;--fx:6.16s"></i><i class="" style="--w:85%;--fx:6.16s"></i><i class="o" style="--w:85%;--fx:6.16s"></i><i class="" style="--w:70%;--fx:6.16s"></i></b></div>
+ <div class="a cx-mini" style="left:710px;--d:4.21s"><b style="--r:8deg;--fx:6.16s"><i class="o" style="--w:100%;--fx:6.16s"></i><i class="o" style="--w:85%;--fx:6.16s"></i><i class="o" style="--w:85%;--fx:6.16s"></i><i class="" style="--w:85%;--fx:6.16s"></i><i class="" style="--w:70%;--fx:6.16s"></i></b></div>
+ <div class="a cx-mini" style="left:880px;--d:4.31s"><b style="--r:-6deg;--fx:6.16s"><i class="o" style="--w:85%;--fx:6.16s"></i><i class="o" style="--w:70%;--fx:6.16s"></i><i class="o" style="--w:85%;--fx:6.16s"></i><i class="" style="--w:55%;--fx:6.16s"></i><i class="o" style="--w:100%;--fx:6.16s"></i></b></div>
+ <div class="a cx-mini" style="left:1050px;--d:4.41s"><b style="--r:4deg;--fx:6.16s"><i class="" style="--w:85%;--fx:6.16s"></i><i class="" style="--w:100%;--fx:6.16s"></i><i class="" style="--w:70%;--fx:6.16s"></i><i class="" style="--w:70%;--fx:6.16s"></i><i class="o" style="--w:70%;--fx:6.16s"></i></b></div>
+ <div class="a cx-mini" style="left:1220px;--d:4.51s"><b style="--r:-8deg;--fx:6.16s"><i class="" style="--w:100%;--fx:6.16s"></i><i class="o" style="--w:85%;--fx:6.16s"></i><i class="o" style="--w:85%;--fx:6.16s"></i><i class="" style="--w:70%;--fx:6.16s"></i><i class="" style="--w:55%;--fx:6.16s"></i></b></div>
+ <div class="a cx-mini" style="left:1390px;--d:4.61s"><b style="--r:6deg;--fx:6.16s"><i class="" style="--w:70%;--fx:6.16s"></i><i class="o" style="--w:70%;--fx:6.16s"></i><i class="o" style="--w:70%;--fx:6.16s"></i><i class="o" style="--w:55%;--fx:6.16s"></i><i class="o" style="--w:55%;--fx:6.16s"></i></b></div>
+ <div class="a cx-mini" style="left:1560px;--d:4.71s"><b style="--r:-4deg;--fx:6.16s"><i class="" style="--w:85%;--fx:6.16s"></i><i class="" style="--w:85%;--fx:6.16s"></i><i class="o" style="--w:85%;--fx:6.16s"></i><i class="o" style="--w:70%;--fx:6.16s"></i><i class="" style="--w:100%;--fx:6.16s"></i></b></div>
+ <svg><path class="line a" style="--d:6.16s" d="M960 420L260 552"/><path class="line a" style="--d:6.16s" d="M960 420L430 552"/><path class="line a" style="--d:6.16s" d="M960 420L600 552"/><path class="line a" style="--d:6.16s" d="M960 420L770 552"/><path class="line a" style="--d:6.16s" d="M960 420L940 552"/><path class="line a" style="--d:6.16s" d="M960 420L1110 552"/><path class="line a" style="--d:6.16s" d="M960 420L1280 552"/><path class="line a" style="--d:6.16s" d="M960 420L1450 552"/><path class="line a" style="--d:6.16s" d="M960 420L1620 552"/></svg>
+ <div class="a cx-chipbox" style="--d:7.06s;left:200px;top:790px"><span class="chip">Cursor: team rules, enforced from a dashboard</span></div>
+ <div class="a cx-chipbox" style="--d:10.55s;left:200px;top:868px"><span class="chip">Claude Code: managed CLAUDE.md, plus managed settings</span></div>
+ <div class="a cap" style="--d:16.46s;left:1130px;right:110px;bottom:104px;font-size:34px;text-align:right">Keep them to what is true<br>in every repo.</div>
+</section>
+
+<!-- 3 -->
+<section class="scene"><div class="kick">Step 3 of 11</div><h1>Repo files keep repo commands</h1>
+ <div class="a cx-card cx-tree" style="--d:.8s;left:110px;top:290px;width:830px;height:470px"><div>repo/</div><div class="a" style="--d:2.66s">├─ <b>AGENTS.md</b><span class="cx-tag">build · test · style</span></div><div class="a" style="--d:7.87s">└─ services/</div><div class="a" style="--d:7.87s">   └─ billing/</div><div class="a" style="--d:11.23s">      ├─ <b>AGENTS.md</b><span class="cx-tag">nearest wins</span></div><div class="a muted" style="--d:7.87s">      └─ invoice.py</div></div>
+ <div class="a cx-note" style="--d:.8s;left:120px;top:778px">(Made-up example.)</div>
+ <div class="a cx-pill" style="--d:7.87s;left:1020px;top:560px;width:400px">Root AGENTS.md</div>
+ <div class="a cx-note" style="--d:11.23s;left:1020px;top:519px;width:400px;text-align:center">▲ overrides</div>
+ <div class="a cx-pill" style="--d:11.23s;left:1020px;top:435px;width:400px">Nearest AGENTS.md</div>
+ <div class="a cx-note" style="--d:12.86s;left:1020px;top:394px;width:400px;text-align:center">▲ overrides</div>
+ <div class="a cx-pill" style="--d:12.86s;left:1020px;top:310px;width:400px;border-color:var(--blue);background:#dff0d3">The prompt</div>
+ <div class="a cx-num" style="--d:17.24s;left:1010px;top:690px;font-size:210px">88</div>
+ <div class="a cx-t" style="--d:17.24s;left:1300px;top:715px;width:480px">AGENTS.md files in the main OpenAI repo<br><span class="muted" style="font-size:24px;font-weight:400">says the agents.md site</span></div>
+</section>
+
+<!-- 4 -->
+<section class="scene"><div class="kick">Step 4 of 11</div><h1>Every always-on line is paid for</h1>
+ <div class="a cx-card" style="--d:.8s;left:150px;top:300px;width:580px;height:590px"><div style="font:800 34px Archivo">Always-on lines</div><div class="muted" style="font:400 22px 'IBM Plex Mono';margin-top:6px">every session, every repo</div>
+  <div class="cx-ln" style="width:92%"></div><div class="cx-ln x1" style="width:70%;--d:8.04s"></div><div class="cx-ln" style="width:84%"></div><div class="cx-ln x2" style="width:96%;--d:12.75s"></div><div class="cx-ln x1" style="width:60%;--d:8.34s"></div><div class="cx-ln" style="width:88%"></div><div class="cx-ln x1" style="width:76%;--d:8.64s"></div><div class="cx-ln" style="width:64%"></div><div class="cx-ln x2" style="width:90%;--d:13.05s"></div><div class="cx-ln" style="width:80%"></div><div class="cx-ln" style="width:52%"></div></div>
+ <div class="a cx-num" style="--d:4.53s;left:840px;top:300px;font-size:220px">200</div>
+ <div class="a cx-t" style="--d:4.53s;left:1270px;top:410px;width:480px">lines: stay under,<br>say Claude Code's docs.</div>
+ <div class="a cx-t" style="--d:8.04s;left:840px;top:590px;font-size:28px;font-weight:400"><span class="cx-sw" style="background:var(--red)"></span><span class="mono">/doctor</span> cuts what Claude can work out from the code</div>
+ <div class="a cx-t" style="--d:12.75s;left:840px;top:670px;font-size:28px;font-weight:400"><span class="cx-sw" style="background:var(--amber)"></span><span class="mono">/doctor prompt-audit</span> flags lines written for older models</div>
+ <div class="a cx-t" style="--d:16.79s;left:840px;top:800px;font-size:38px">Cursor suggests rules under <span class="t-blue">500 lines</span>.</div>
+</section>
+
+<!-- 5 -->
+<section class="scene"><div class="kick">Step 5 of 11</div><h1>Skills load on demand</h1>
+ <div class="a cx-sk" style="--d:.8s;left:130px">description</div><div class="a cx-sk" style="--d:1s;left:440px">description</div><div class="a cx-sk hit" style="--d:1.2s;--fx:4.02s;left:750px">description</div><div class="a cx-sk" style="--d:1.4s;left:1060px">description</div><div class="a cx-sk" style="--d:1.6s;left:1370px">description</div>
+ <div class="a cx-chipbox" style="--d:4.02s;left:770px;top:322px"><span class="chip" style="margin:0">the task matches</span></div>
+ <div class="a" style="--d:4.02s"><div class="box blue" style="left:700px;top:520px;width:390px;height:290px;justify-content:flex-start;padding:22px 34px"><div style="margin-bottom:14px">The body</div><div class="cx-row a" style="--d:11.28s">tools</div><div class="cx-row a" style="--d:12.15s">permissions</div><div class="cx-row a" style="--d:13.21s">validation</div></div></div>
+ <div class="a cx-num" style="--d:6.48s;left:130px;top:560px">300+</div>
+ <div class="a cx-t" style="--d:6.48s;left:136px;top:740px;font-size:30px">YAML playbooks at DoorDash</div>
+ <div class="a cx-t" style="--d:14.01s;left:1190px;top:540px">Skills are supply chain</div>
+ <div class="a cx-chipbox" style="--d:15.68s;left:1190px;top:608px"><span class="chip">Nubank: vetted as dependencies</span></div>
+ <div class="a cx-chipbox" style="--d:17.95s;left:1190px;top:686px"><span class="chip">shipped as versioned plugins</span></div>
+ <div class="a cx-chipbox" style="--d:22.35s;left:1190px;top:764px"><span class="chip">changes reviewed in PRs</span></div>
+</section>
+
+<!-- 6 -->
+<section class="scene"><div class="kick">Step 6 of 11</div><h1>Tools sit behind a gateway</h1>
+ <div class="a label" style="--d:4.94s;left:130px;top:300px;font-size:26px">Uber's MCP Gateway fronts</div>
+ <div class="a cx-num" style="--d:4.94s;left:130px;top:345px;font-size:150px">800+</div><div class="a cx-t" style="--d:4.94s;left:560px;top:430px;font-size:40px">servers</div>
+ <div class="a cx-num" style="--d:9.33s;left:130px;top:520px;font-size:150px">5,000+</div><div class="a cx-t" style="--d:9.33s;left:720px;top:605px;font-size:40px">tools</div>
+ <div class="a label" style="--d:1.2s;left:960px;top:400px">loaded on call</div>
+ <div class="a" style="--d:1.2s"><div class="box blue" style="left:960px;top:440px;width:290px;height:200px;font-size:38px">Gateway<small>curates</small></div></div>
+ <svg><path class="line a" style="--d:9.33s" d="M860 540H960"/><path class="line a" style="--d:14.40s" d="M1250 540H1410"/></svg>
+ <div class="a cx-win dash" style="--d:14.40s;left:1410px;top:410px;width:370px;height:300px"></div>
+ <div class="a label t-blue" style="--d:14.40s;left:1440px;top:432px">One minion</div>
+ <div class="a proc" style="--d:14.40s;left:1438px;top:480px">tool</div><div class="a proc" style="--d:14.70s;left:1602px;top:480px">tool</div><div class="a proc" style="--d:15.00s;left:1438px;top:560px">tool</div><div class="a proc" style="--d:15.30s;left:1602px;top:560px">tool</div>
+ <div class="a cx-note" style="--d:15.30s;left:1438px;top:645px;font-size:24px">a small curated subset</div>
+ <div class="a cx-t" style="--d:11.45s;left:130px;top:750px;font-size:36px">Stripe's Toolshed: <span class="t-blue">nearly 500</span></div>
+ <div class="a cap" style="--d:17.48s;bottom:90px">Audit what loads at start like a hot path.</div>
+</section>
+
+<!-- 7 -->
+<section class="scene"><div class="kick">Step 7 of 11</div><h1>Usually the agent greps and reads</h1>
+ <div class="term" style="left:110px;top:300px;width:800px;padding:34px 42px;font-size:28px"><div class="a" style="--d:1s"><span class="muted">$</span> grep -rn "retry" src/</div><div class="a muted" style="--d:1.8s">src/client.py:41: def retry(</div><div class="a" style="--d:2.8s"><span class="muted">$</span> cat src/client.py</div></div>
+ <div class="a cx-note" style="--d:1s;left:120px;top:560px">(Made-up example.)</div>
+ <div class="a cx-card" style="--d:3.60s;left:1000px;top:410px;width:770px;height:480px"><div style="font:800 36px Archivo">Honk's prompt</div><div class="muted" style="font:400 22px 'IBM Plex Mono';margin:6px 0 16px">Spotify, 2025, without code search</div>
+  <div class="cx-row a" style="--d:9.56s;font-size:32px;padding:14px 0"><span class="t-green">✓</span>&nbsp; The end state</div><div class="cx-row a" style="--d:10.55s;font-size:32px;padding:14px 0"><span class="t-green">✓</span>&nbsp; Examples</div><div class="cx-row a" style="--d:11.22s;font-size:32px;padding:14px 0"><span class="t-green">✓</span>&nbsp; A verifiable goal</div><div class="cx-row a" style="--d:13.07s;font-size:32px;padding:14px 0"><span class="t-green">✓</span>&nbsp; One change per prompt</div></div>
+ <div class="a cap" style="--d:14.60s;left:110px;right:1010px;bottom:190px;font-size:38px">Combined changes<br><span class="t-amber">exhaust context.</span></div>
+</section>
+
+<!-- 8 -->
+<section class="scene"><div class="kick">Step 8 of 11</div><h1>Bulky reading, in another window</h1>
+ <div class="a cx-win" style="--d:.5s;left:150px;top:330px;width:570px;height:470px"></div><div class="a label t-blue" style="--d:.5s;left:186px;top:354px">Main window</div>
+ <div class="a cx-blk" style="--d:.5s;left:210px;top:420px;width:320px"></div><div class="a cx-blk" style="--d:.5s;left:210px;top:484px;width:420px"></div>
+ <div class="a cx-win dash" style="--d:.9s;left:1160px;top:410px;width:570px;height:390px"></div><div class="a label t-blue" style="--d:.9s;left:1196px;top:432px">Subagent's own window</div>
+ <div class="a cx-blk" style="--d:1.3s;left:1196px;top:482px;width:240px"></div><div class="a cx-blk" style="--d:1.6s;left:1452px;top:482px;width:240px"></div><div class="a cx-blk" style="--d:1.9s;left:1196px;top:542px;width:240px"></div><div class="a cx-blk" style="--d:2.2s;left:1452px;top:542px;width:240px"></div><div class="a cx-blk" style="--d:2.5s;left:1196px;top:602px;width:240px"></div><div class="a cx-blk" style="--d:2.8s;left:1452px;top:602px;width:240px"></div><div class="a cx-blk" style="--d:3.1s;left:1196px;top:662px;width:240px"></div><div class="a cx-blk" style="--d:3.4s;left:1452px;top:662px;width:240px"></div><div class="a cx-blk" style="--d:3.7s;left:1196px;top:722px;width:240px"></div><div class="a cx-blk" style="--d:4s;left:1452px;top:722px;width:240px"></div>
+ <div class="a cx-pill cx-sum" style="--d:4.08s;--fx:4.78s;left:900px;top:570px;width:220px;border-color:var(--blue);background:#dff0d3">summary</div>
+ <div class="a cx-chipbox" style="--d:5.50s;left:770px;top:700px"><span class="chip" style="margin:0;font-size:22px">guard the context window</span></div>
+ <div class="a cap" style="--d:9.23s;bottom:90px">Subagent descriptions load at start too. <span class="a t-amber" style="--d:12.01s;display:inline-block">Claude Code warns past 15,000 tokens.</span></div>
+</section>
+
+<!-- 9 -->
+<section class="scene"><div class="kick">Step 9 of 11</div><h1>Every turn rereads the whole window</h1>
+ <div class="a label" style="--d:.6s;left:150px;top:425px;font-size:26px">Context window</div>
+ <div class="a label t-red" style="--d:.6s;left:1620px;top:425px;font-size:26px">limit</div>
+ <div class="a cx-bar" style="--d:.6s"><div class="cx-old" style="--fx:7.90s"><div class="cx-early">early instructions</div><div class="cx-tk a" style="left:232px;--d:1.00s"></div><div class="cx-tk a" style="left:257px;--d:1.11s"></div><div class="cx-tk a" style="left:282px;--d:1.22s"></div><div class="cx-tk a" style="left:307px;--d:1.34s"></div><div class="cx-tk a" style="left:332px;--d:1.45s"></div><div class="cx-tk a" style="left:357px;--d:1.56s"></div><div class="cx-tk a" style="left:382px;--d:1.67s"></div><div class="cx-tk a" style="left:407px;--d:1.79s"></div><div class="cx-tk a" style="left:432px;--d:1.90s"></div><div class="cx-tk a" style="left:457px;--d:2.01s"></div><div class="cx-tk a" style="left:482px;--d:2.12s"></div><div class="cx-tk a" style="left:507px;--d:2.24s"></div><div class="cx-tk a" style="left:532px;--d:2.35s"></div><div class="cx-tk a" style="left:557px;--d:2.46s"></div><div class="cx-tk a" style="left:582px;--d:2.57s"></div><div class="cx-tk a" style="left:607px;--d:2.68s"></div><div class="cx-tk a" style="left:632px;--d:2.80s"></div><div class="cx-tk a" style="left:657px;--d:2.91s"></div><div class="cx-tk a" style="left:682px;--d:3.02s"></div><div class="cx-tk a" style="left:707px;--d:3.13s"></div><div class="cx-tk a" style="left:732px;--d:3.25s"></div><div class="cx-tk a" style="left:757px;--d:3.36s"></div><div class="cx-tk a" style="left:782px;--d:3.47s"></div><div class="cx-tk a" style="left:807px;--d:3.58s"></div><div class="cx-tk a" style="left:832px;--d:3.70s"></div><div class="cx-tk a" style="left:857px;--d:3.81s"></div><div class="cx-tk a" style="left:882px;--d:3.92s"></div><div class="cx-tk a" style="left:907px;--d:4.03s"></div><div class="cx-tk a" style="left:932px;--d:4.15s"></div><div class="cx-tk a" style="left:957px;--d:4.26s"></div><div class="cx-tk a" style="left:982px;--d:4.37s"></div><div class="cx-tk a" style="left:1007px;--d:4.48s"></div><div class="cx-tk a" style="left:1032px;--d:4.59s"></div><div class="cx-tk a" style="left:1057px;--d:4.71s"></div><div class="cx-tk a" style="left:1082px;--d:4.82s"></div><div class="cx-tk a" style="left:1107px;--d:4.93s"></div><div class="cx-tk a" style="left:1132px;--d:5.04s"></div><div class="cx-tk a" style="left:1157px;--d:5.16s"></div><div class="cx-tk a" style="left:1182px;--d:5.27s"></div><div class="cx-tk a" style="left:1207px;--d:5.38s"></div><div class="cx-tk a" style="left:1232px;--d:5.49s"></div><div class="cx-tk a" style="left:1257px;--d:5.61s"></div><div class="cx-tk a" style="left:1282px;--d:5.72s"></div><div class="cx-tk a" style="left:1307px;--d:5.83s"></div><div class="cx-tk a" style="left:1332px;--d:5.94s"></div><div class="cx-tk a" style="left:1357px;--d:6.05s"></div><div class="cx-tk a" style="left:1382px;--d:6.17s"></div><div class="cx-tk a" style="left:1407px;--d:6.28s"></div><div class="cx-tk a" style="left:1432px;--d:6.39s"></div><div class="cx-tk a" style="left:1457px;--d:6.50s"></div></div><div class="cx-sumblk a" style="--d:8.50s">summary</div></div>
+ <svg><path class="line a" style="--d:.6s;stroke:var(--red);stroke-dasharray:8 8" d="M1650 460V590"/><path class="line a" style="--d:14.32s;stroke:var(--blue);stroke-width:4" d="M335 760V600"/><path class="a" style="--d:14.32s;fill:var(--blue)" d="M335 588l-13 22h26z"/></svg>
+ <div class="a cx-t" style="--d:3.13s;left:700px;top:610px"><span class="t-green">50 tool calls</span> in a median River session</div>
+ <div class="a cx-t t-amber" style="--d:11.06s;left:380px;top:680px;font-size:30px">Detailed early instructions may not survive.</div>
+ <div class="a" style="--d:14.32s"><div class="box green" style="left:150px;top:770px;width:370px;height:120px">Rules in files<small>reload</small></div></div>
+ <div class="a cx-t" style="--d:14.32s;left:600px;top:805px;font-size:38px">Persistent rules belong in files that reload.</div>
+</section>
+
+<!-- 10 -->
+<section class="scene"><div class="kick">Step 10 of 11</div><h1>Rules that must hold are not text</h1>
+ <div class="a label" style="--d:.8s;left:150px;top:330px;font-size:26px">A prompt rule</div>
+ <div class="a" style="--d:4.07s"><div class="box amber" style="left:150px;top:380px;width:730px;height:210px;border-style:dashed"><span class="mono" style="font-size:46px">"ask before running"</span></div></div>
+ <div class="a cx-t t-amber" style="--d:7.78s;left:150px;top:610px;width:730px;text-align:center">advice, not authorization</div>
+ <svg><path class="line a" style="--d:4.07s" d="M150 760H880"/><path class="line a" style="--d:4.07s;stroke:var(--amber);stroke-width:6;stroke-dasharray:8 10" d="M515 715V805"/><path class="line a" style="--d:9.93s" d="M1010 760H1770"/><path class="line a" style="--d:9.93s;stroke:var(--blue);stroke-width:12;stroke-linecap:round" d="M1392 715V805"/></svg>
+ <div class="dot" style="left:150px;top:751px;--dx:712px;--d:7.78s"></div>
+ <div class="a label" style="--d:9.93s;left:1010px;top:330px;font-size:26px">Structure</div>
+ <div class="a" style="--d:9.93s"><div class="box green" style="left:1010px;top:380px;width:230px;height:210px;font-size:40px">Hooks</div></div>
+ <div class="a" style="--d:10.33s"><div class="box green" style="left:1275px;top:380px;width:230px;height:210px;font-size:40px">Lint</div></div>
+ <div class="a" style="--d:10.73s"><div class="box green" style="left:1540px;top:380px;width:230px;height:210px;font-size:40px">CI</div></div>
+ <div class="a cx-t t-green" style="--d:11.36s;left:1010px;top:610px;width:760px;text-align:center">deterministic</div>
+ <div class="dot cx-stop" style="left:1010px;top:751px;--d:11.36s"></div>
+ <div class="a cap" style="--d:12.72s;bottom:90px;text-align:center">pstack calls it encoding lessons in structure.</div>
+</section>
+
+<!-- 11 -->
+<section class="scene" style="--egg:11.8s"><div class="kick">Step 11 of 11</div><h1>Close the loop across the fleet</h1>
+ <svg><defs><marker id="cx-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1f7a3a"/></marker></defs>
+  <path class="line a" style="--d:5.04s;stroke:var(--blue)" marker-end="url(#cx-arr)" d="M540 455H650"/><path class="line a" style="--d:7.42s;stroke:var(--blue)" marker-end="url(#cx-arr)" d="M950 455H1060"/>
+  <path class="line a" style="--d:9.02s;stroke:var(--blue);stroke-dasharray:10 10" marker-end="url(#cx-arr)" d="M1250 520C1250 640 345 640 345 528"/></svg>
+ <div class="a" style="--d:2.59s"><div class="box" style="left:150px;top:390px;width:390px;height:130px">Public Slack<small>where River answers</small></div></div>
+ <div class="a" style="--d:5.04s"><div class="box amber" style="left:650px;top:390px;width:300px;height:130px">Transcripts<small>Shopify mines them</small></div></div>
+ <div class="a" style="--d:7.42s"><div class="box blue" style="left:1060px;top:390px;width:380px;height:130px">Skills, prompts, defaults<small>tuned</small></div></div>
+ <div class="a cx-pill" style="--d:10.28s;left:150px;top:660px;width:1010px;height:84px;font-size:30px;border-color:var(--blue);border-radius:42px 42px 42px 10px">After a single run, ask the agent: what was the prompt missing?</div>
+ <div class="a cx-note" style="--d:10.28s;left:1190px;top:688px;font-size:24px">Spotify's advice</div>
+ <div class="a cap muted" style="--d:13.82s;bottom:76px;font-size:28px">SRE Lab · Agentic Engineering · Context engineering</div>
+ <div class="critter"><div id="critter"></div></div>
+</section>
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 4 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../agentic/#context">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Context engineering. Hundreds of repos carry their own rules files and tool lists. How does context reach an agent, and how does a platform keep it short and current? Everything the model knows arrives through one window. It starts with the task: a Slack thread, a ticket, a C I event or an alert. The platform decides what loads always, what loads on demand, and what should never be text.", "Org rules load every session from one managed place, because copies drift across hundreds of repos. Cursor team rules can be enforced from a dashboard. Claude Code has a managed Claude dot M D file for the whole org, plus managed settings. Keep these rules to what is true in every repo.", "Repo files keep repo commands. Agents dot M D is plain Markdown with build, test and style commands. Nested files apply to their own subtree, and the nearest one wins. The prompt overrides both. Monorepos nest them. The agents dot M D site says the main OpenAI repo has eighty-eight.", "Every always-on line is paid for every session, in every repo. Claude Code's docs say stay under two hundred lines. Let the doctor command cut what Claude can work out from the code, and run its prompt audit to flag lines written for older models. Cursor suggests rules under five hundred lines.", "Skills load on demand: a description at the start, and the body only when the task matches. DoorDash has more than three hundred YAML playbooks, which also declare their tools, permissions and validation. Skills are supply chain. Nubank vets them as dependencies. Ship them as versioned plugins, as Lauren Tan's P stack does, and review changes in pull requests.", "M C P tools load on call, and fleets curate them behind a gateway. Uber's M C P Gateway fronts more than eight hundred servers and more than five thousand tools. Stripe's Toolshed has nearly five hundred, yet each minion gets a small curated subset. Audit what loads at start like a hot path.", "Usually the agent greps and reads what it needs. In twenty twenty-five, without code search, Spotify's Honk carried context in the prompt: the end state, examples, a goal it could verify, and one change per prompt, since combined changes exhaust context.", "Subagents do the bulky reading in their own window and hand back a summary. P stack calls this principle guard the context window. Subagent descriptions load at start too. Claude Code warns once they pass fifteen thousand tokens.", "Every turn rereads the whole window, and a median River session makes fifty tool calls. Near the limit, Claude Code compacts the conversation into a summary, so detailed early instructions may not survive. Persistent rules belong in files that reload.", "Rules that must hold every time should not be text. Nubank counts a prompt rule like ask before running as advice, not authorization. Hooks, lint and C I are deterministic. P stack calls this encoding lessons in structure.", "Close the loop across the fleet. River answers only in public Slack, so Shopify mines those transcripts to tune its skills, prompts and defaults. For a single run, Spotify's advice is to ask the agent afterwards what the prompt was missing."], "seconds": [25.3, 19.26, 21.08, 19.56, 24.13, 20.01, 16.83, 15.53, 17.02, 15.87, 16.32]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

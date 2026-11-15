@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>What an agent actually is: the film</title>
+<meta name="description" content="A coding agent is a model, tools and a loop run by a harness. Eleven short scenes on what a platform team controls around it.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+/* agent-loop film: scene-specific classes, prefix al- */
+.al-abs{position:absolute}
+.al-chip{position:absolute;margin:0;white-space:nowrap}
+.scene.on .al-q{animation:in .7s var(--d) both,al-gone .6s var(--o) forwards}
+@keyframes al-gone{to{opacity:0}}
+.al-ring{position:absolute;border:4px dashed var(--blue);border-radius:60px 20px 60px 20px;background:rgba(255,255,255,.5)}
+.al-orb{position:absolute;left:0;top:0;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:var(--blue);opacity:0;offset-rotate:0deg}
+.scene.on .al-orb{animation:al-show .5s var(--d) forwards,al-orbit 3.6s linear var(--d) infinite}
+@keyframes al-show{to{opacity:1}}
+@keyframes al-orbit{from{offset-distance:0%}to{offset-distance:100%}}
+/* s2 context stack */
+.al-win{position:absolute;left:150px;top:300px;width:640px;height:650px;border:3px solid var(--rule);border-radius:44px 14px 44px 14px;background:rgba(255,255,255,.6);padding:64px 30px 30px;display:flex;flex-direction:column;gap:16px}
+.al-lay{position:static;width:100%;height:90px;flex:none}
+.scene.on .al-tools{animation:in .7s var(--d) both,al-slim 1s 14s forwards}
+.al-tools{height:230px}
+@keyframes al-slim{to{height:100px}}
+.al-tiles{position:absolute;left:960px;top:500px;display:grid;grid-template-columns:repeat(8,84px);gap:18px}
+.al-tiles i{display:block;width:84px;height:84px;border-radius:24px 8px 24px 8px;background:#fbefd0;border:2.5px solid var(--amber);opacity:0}
+.scene.on .al-tiles i{animation:al-show .4s var(--d) forwards}
+.scene.on .al-tiles i.al-cut{animation:al-show .4s var(--d) forwards,al-cut .8s 14s forwards}
+.scene.on .al-tiles i.al-keep{animation:al-show .4s var(--d) forwards,al-keep .8s 14s forwards}
+@keyframes al-cut{to{opacity:.32;background:transparent;border-style:dashed}}
+@keyframes al-keep{to{background:#e9f6dc;border-color:var(--green)}}
+/* s3 turns chart */
+.al-cols{position:absolute;left:150px;top:330px;width:720px;height:500px;display:flex;align-items:flex-end;gap:22px;border-bottom:3px solid var(--rule)}
+.al-cols i{display:block;flex:1;height:0;border-radius:18px 6px 0 0;background:linear-gradient(180deg,#6cbf6a,#1f7a3a)}
+.scene.on .al-cols i{animation:al-rise .9s cubic-bezier(.2,.7,.2,1) var(--d) forwards}
+@keyframes al-rise{to{height:var(--h)}}
+.al-dots{position:absolute;display:grid;grid-template-columns:repeat(32,16px);gap:8px}
+.al-dots i{display:block;width:16px;height:16px;border-radius:50%;background:var(--amber)}
+/* s4 */
+.al-draw{stroke-dasharray:1200;stroke-dashoffset:1200;stroke-width:5;stroke-linecap:round}
+.scene.on .al-draw{animation:al-draw 1.8s ease-out var(--d) forwards}
+@keyframes al-draw{to{stroke-dashoffset:0}}
+.al-num{position:absolute;font:900 150px/1 "Archivo";letter-spacing:-.03em;color:var(--blue)}
+.al-diff{position:absolute;width:150px;height:64px;border-radius:18px 6px 18px 6px;border:2.5px solid var(--rule);background:var(--panel);padding:12px 14px;display:flex;flex-direction:column;justify-content:space-between}
+.al-diff b{display:block;height:10px;border-radius:5px;background:var(--green)}
+.al-diff b.r{background:var(--red)}
+/* s5 */
+.al-blast{position:absolute;border-radius:50%;border:5px solid var(--red);background:rgba(217,72,30,.12);width:210px;height:210px;opacity:0}
+.scene.on .al-blast{animation:al-blast 2.6s cubic-bezier(.2,.7,.2,1) var(--d) forwards}
+@keyframes al-blast{0%{opacity:0;transform:scale(.15)}15%{opacity:1}100%{opacity:1;transform:scale(1)}}
+/* s6 */
+.al-run{position:absolute;width:64px;height:64px;border-radius:50%;background:#d6e6c8}
+.scene.on .al-run{animation:al-lit .45s var(--d) forwards}
+@keyframes al-lit{to{background:var(--green)}}
+.al-vm{position:absolute;width:74px;height:74px;border-radius:22px 8px 22px 8px;border:2.5px solid var(--blue);background:#dff0d3}
+/* s7 log */
+.al-row{position:absolute;left:150px;width:700px;height:74px;border-radius:22px 8px 22px 8px;border:2.5px solid var(--rule);background:var(--panel);display:flex;align-items:center;padding:0 30px;font:500 28px "IBM Plex Mono"}
+.scene.on .al-old{animation:in .7s var(--d) both,al-clear .7s 5.6s forwards}
+@keyframes al-clear{to{border-style:dashed;color:#a9bba6;background:#eef5e6}}
+.scene.on .al-flick{animation:in .7s 14.6s both,al-flick 2.2s 15.8s 1 both}
+@keyframes al-flick{0%{opacity:1}30%{opacity:0;transform:scale(.9)}55%{opacity:0;transform:scale(.9)}100%{opacity:1;transform:none}}
+/* s8 meters */
+.al-met{position:absolute;top:400px;width:170px;height:380px;border-radius:30px 10px 30px 10px;background:#d6e6c8;overflow:hidden;display:flex;flex-direction:column-reverse}
+.al-met i{display:block;height:0;background:linear-gradient(180deg,#f0c35a,#d9981e)}
+.scene.on .al-met i{animation:al-fillup var(--t,5s) linear var(--d) forwards}
+@keyframes al-fillup{to{height:100%}}
+.al-met.al-ci{background:none;gap:10px}
+.al-met.al-ci b{display:block;flex:1;border-radius:24px 8px 24px 8px;background:#d6e6c8}
+.scene.on .al-met.al-ci b{animation:al-amber .5s var(--d) forwards}
+@keyframes al-amber{to{background:var(--amber)}}
+.al-capline{position:absolute;top:392px;height:0;border-top:5px dashed var(--red)}
+/* s9 */
+.al-ver{position:absolute;width:210px;height:150px;border-radius:30px 10px 30px 10px;border:2.5px solid var(--blue);background:repeating-linear-gradient(135deg,#cfe3c0 0 14px,#dff0d3 14px 28px)}
+.scene.on .al-fail{animation:in .7s var(--d) both,al-fail .6s 13.2s forwards}
+@keyframes al-fail{to{border-color:var(--red);background:repeating-linear-gradient(135deg,#f6cdbd 0 14px,#fbe4d9 14px 28px)}}
+.scene.on .al-nopr{animation:in .7s var(--d) both,al-nopr .6s 14.6s forwards}
+@keyframes al-nopr{to{border-style:dashed;border-color:#b9c7b4;background:#e9eee4;color:#8ea08f}}
+/* s10 */
+.al-commit{position:absolute;width:44px;height:44px;border-radius:50%;background:var(--panel);border:5px solid var(--blue)}
+.scene.on .al-commit{animation:in .5s var(--d) both,al-signed .5s var(--s) forwards}
+@keyframes al-signed{to{background:var(--blue);box-shadow:0 0 0 8px rgba(31,122,58,.18)}}
+.al-btn{position:absolute;height:64px;border-radius:999px;background:var(--blue);color:#fff;font:700 26px "IBM Plex Sans";display:flex;align-items:center;justify-content:center}
+.scene.on .al-btn{animation:in .6s var(--d) both,al-off .5s var(--o) forwards}
+@keyframes al-off{to{background:#dfe7da;color:#93a592;text-decoration:line-through}}
+/* s11 */
+.al-node{position:absolute;width:44px;height:44px;border-radius:50%;background:var(--panel);border:4px solid var(--rule)}
+.al-node.on{background:var(--blue);border-color:var(--blue)}
+.al-node.pick{background:var(--amber);border-color:var(--amber)}
+.scene.on .al-code{animation:in .7s 7.6s both,al-tocode .6s var(--c) forwards}
+.scene.on .al-agent{animation:in .7s 7.6s both,al-toagent .6s var(--c) forwards}
+@keyframes al-tocode{to{border-color:var(--green);background:#e9f6dc}}
+@keyframes al-toagent{to{border-color:var(--amber);background:#fbefd0;border-radius:999px}}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../agentic/#agent-loop">Agentic Engineering</a> · film · recorded 15 Nov 2026</div>
+  <h1 class="page">What an agent actually is</h1>
+  <div id="viewport">
+    <div id="stage">
+<!-- 1 -->
+<section class="scene"><div class="kick">Agentic Engineering · chapter 1</div><h1>What an agent<br>actually is</h1>
+ <div class="a al-q cap" style="--d:2.4s;--o:9.4s;bottom:auto;top:420px;right:520px;font-size:50px;line-height:1.3">What is a coding agent mechanically, and what must a platform running thousands of them control around it?</div>
+ <div class="a" style="--d:14.9s"><div class="al-ring" style="left:150px;top:350px;width:1060px;height:500px"></div><div class="label t-blue" style="left:200px;top:376px;font-size:30px">Harness · runs the loop</div></div>
+ <div class="a" style="--d:11.4s"><div class="box blue" style="left:230px;top:520px;width:360px;height:180px;font-size:44px">Model<small>only emits text</small></div></div>
+ <div class="a" style="--d:13.6s"><div class="box amber" style="left:770px;top:520px;width:360px;height:180px;font-size:44px">Tools<small>act</small></div></div>
+ <svg><path class="line a" style="--d:14.9s" d="M590 560C650 480 710 480 770 560"/><path class="line a" style="--d:14.9s" d="M770 660C710 740 650 740 590 660"/></svg>
+ <div class="al-orb" style="--d:15.4s;offset-path:path('M590 560C650 480 710 480 770 560L770 660C710 740 650 740 590 660Z')"></div>
+ <div class="a label" style="--d:17.2s;left:1290px;top:440px;font-size:28px;color:var(--fg)">A platform team owns it,<br>for every team.</div>
+ <div class="a label" style="--d:19.8s;left:1290px;top:560px">Fleets fork or wrap a standard one</div>
+ <span class="chip al-chip a" style="--d:21.4s;left:1290px;top:610px">goose · Stripe</span>
+ <span class="chip al-chip a" style="--d:22.4s;left:1290px;top:690px">OpenCode · Ramp</span>
+ <span class="chip al-chip a" style="--d:23.4s;left:1290px;top:770px">Claude Agent SDK · Spotify</span>
+</section>
+
+<!-- 2 -->
+<section class="scene"><div class="kick">Step 2 of 11</div><h1>The harness builds the context</h1>
+ <div class="al-win a" style="--d:.6s">
+  <div class="label" style="left:40px;top:22px">Context window</div>
+  <div class="box al-lay a" style="--d:3.2s">System prompt</div>
+  <div class="box amber al-lay al-tools a" style="--d:4.8s">Tool definitions</div>
+  <div class="box green al-lay a" style="--d:6.4s">Rules files<small>AGENTS.md</small></div>
+  <div class="box blue al-lay a" style="--d:8.6s">The task</div>
+ </div>
+ <div class="a label" style="--d:10.4s;left:960px;top:440px;font-size:28px">Every tool definition costs context</div>
+ <div class="al-tiles"><i style="--d:10.5s" class="al-cut"></i><i style="--d:10.6s" class="al-keep"></i><i style="--d:10.7s" class="al-cut"></i><i style="--d:10.8s" class="al-cut"></i><i style="--d:10.9s" class="al-cut"></i><i style="--d:11s" class="al-keep"></i><i style="--d:11.1s" class="al-cut"></i><i style="--d:11.2s" class="al-cut"></i><i style="--d:11.3s" class="al-cut"></i><i style="--d:11.4s" class="al-cut"></i><i style="--d:11.5s" class="al-keep"></i><i style="--d:11.6s" class="al-cut"></i><i style="--d:11.7s" class="al-cut"></i><i style="--d:11.8s" class="al-keep"></i><i style="--d:11.9s" class="al-cut"></i><i style="--d:12s" class="al-cut"></i><i style="--d:12.1s" class="al-keep"></i><i style="--d:12.2s" class="al-cut"></i><i style="--d:12.3s" class="al-cut"></i><i style="--d:12.4s" class="al-cut"></i><i style="--d:12.5s" class="al-cut"></i><i style="--d:12.6s" class="al-cut"></i><i style="--d:12.7s" class="al-keep"></i><i style="--d:12.8s" class="al-cut"></i></div>
+ <div class="a cap" style="--d:14.2s;left:960px;bottom:auto;top:830px"><span class="t-green">Each run gets a curated subset.</span></div>
+</section>
+
+<!-- 3 -->
+<section class="scene"><div class="kick">Step 3 of 11</div><h1>Every turn pays for the whole context</h1>
+ <div class="al-cols"><i style="--d:1s;--h:70px"></i><i style="--d:1.6s;--h:125px"></i><i style="--d:2.2s;--h:180px"></i><i style="--d:2.8s;--h:235px"></i><i style="--d:3.4s;--h:290px"></i><i style="--d:4s;--h:345px"></i><i style="--d:4.6s;--h:400px"></i><i style="--d:5.2s;--h:455px"></i></div>
+ <div class="a label" style="--d:1s;left:150px;top:846px">turn 1</div><div class="a label" style="--d:5.2s;left:790px;top:846px">turn 8</div>
+ <div class="a label" style="--d:4s;left:150px;top:900px;font-size:28px;color:var(--fg)">Cost is per run, and grows with each result.</div>
+ <span class="chip al-chip a" style="--d:7.6s;left:980px;top:430px">Message threads (beta): stop resending it</span>
+ <span class="chip al-chip a" style="--d:9.8s;left:980px;top:510px;color:var(--amber)">"do not change pricing or rate limits"</span>
+ <div class="a label" style="--d:12.8s;left:980px;top:640px;font-size:28px">Bun · Zig to Rust port · 11 days</div>
+ <div class="a" style="--d:15.8s"><div class="al-dots" style="left:980px;top:880px"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="label" style="left:980px;top:940px">about 64 Claudes at peak</div></div>
+ <div class="big a" style="--d:18.6s;left:970px;top:680px;font-size:190px">$165K</div>
+ <div class="a label" style="--d:20.8s;left:1620px;top:800px;font-size:26px">at API prices</div>
+</section>
+
+<!-- 4 -->
+<section class="scene"><div class="kick">Step 4 of 11</div><h1>The choice is the judgement</h1>
+ <div class="a" style="--d:.6s"><div class="box blue" style="left:150px;top:400px;width:260px;height:130px;font-size:40px">Model</div></div>
+ <svg><path class="line a" style="--d:1.8s" d="M410 465C470 465 470 380 540 380"/><path class="line a" style="--d:3s" d="M410 465C470 465 470 550 540 550"/>
+  <path class="line al-draw" style="--d:8.6s;stroke:var(--green)" d="M1040 540C1130 420 1200 620 1290 500S1420 440 1560 440"/>
+  <path class="line al-draw" style="--d:9.4s;stroke:var(--amber)" d="M1040 540C1140 560 1200 500 1300 560S1440 560 1560 540"/>
+  <path class="line al-draw" style="--d:10.2s;stroke:var(--blue)" d="M1040 540C1100 680 1220 560 1300 650S1460 640 1560 640"/></svg>
+ <div class="a" style="--d:1.8s"><div class="box" style="left:540px;top:340px;width:260px;height:80px">Tool calls</div></div>
+ <div class="a" style="--d:3s"><div class="box" style="left:540px;top:510px;width:260px;height:80px">Final answer</div></div>
+ <div class="a label t-amber" style="--d:5.6s;left:150px;top:560px;font-size:28px">nondeterministic</div>
+ <div class="a" style="--d:8.2s"><div class="box" style="left:900px;top:505px;width:140px;height:70px;font-size:24px;border-radius:999px">Rerun</div></div>
+ <div class="al-diff a" style="--d:9.8s;left:1570px;top:408px"><b style="width:80%"></b><b class="r" style="width:35%"></b></div>
+ <div class="al-diff a" style="--d:10.6s;left:1570px;top:508px"><b style="width:45%"></b><b class="r" style="width:70%"></b></div>
+ <div class="a al-diff" style="--d:11.4s;left:1570px;top:608px"><b style="width:100%"></b><b class="r" style="width:15%"></b></div>
+ <div class="a label" style="--d:9.8s;left:1140px;top:700px;font-size:26px">the path and the diff can change</div>
+ <div class="a" style="--d:14.4s"><div class="al-num" style="left:150px;top:740px">~1,000</div><div class="label" style="left:160px;top:900px;font-size:28px">commits an hour at peak · Cursor's research harness</div></div>
+ <div class="a" style="--d:18s"><div class="al-num" style="left:1040px;top:740px">10M</div><div class="label" style="left:1050px;top:900px;font-size:28px">tool calls in one week</div></div>
+</section>
+
+<!-- 5 -->
+<section class="scene"><div class="kick">Step 5 of 11</div><h1>The boundary is the environment</h1>
+ <div class="a" style="--d:.6s"><div class="box blue" style="left:150px;top:300px;width:330px;height:100px">Runner<small>checks policy</small></div></div>
+ <svg><path class="line a" style="--d:2.6s" d="M480 350H560"/></svg>
+ <span class="chip al-chip a" style="--d:2.8s;left:560px;top:322px">edits files</span>
+ <span class="chip al-chip a" style="--d:3.8s;left:770px;top:322px">runs commands</span>
+ <span class="chip al-chip a" style="--d:4.9s;left:1050px;top:322px">calls MCP</span>
+ <div class="a" style="--d:9.8s"><div class="label" style="left:150px;top:470px;font-size:28px">Stripe · skips prompts</div>
+  <div class="al-ring" style="left:150px;top:520px;width:640px;height:340px;border-radius:50%"></div><div class="label t-blue" style="left:372px;top:880px;font-size:26px">one devbox</div></div>
+ <div class="al-blast" style="--d:11.8s;left:365px;top:585px"></div>
+ <div class="a label t-red" style="--d:12s;left:418px;top:676px;font-size:24px">mistake</div>
+ <div class="a cap" style="--d:13.6s;left:150px;right:auto;bottom:auto;top:930px;font-size:28px">"confined to the limited blast radius"</div>
+ <div class="a" style="--d:16.2s"><div class="label" style="left:960px;top:470px;font-size:28px">Monzo</div>
+  <div class="box green" style="left:960px;top:630px;width:220px;height:110px">Each job</div></div>
+ <svg><path class="line a" style="--d:17.6s;stroke-dasharray:6 16" d="M1200 685H1460"/></svg>
+ <div class="a label" style="--d:17.6s;left:1262px;top:640px;font-size:26px">"well away"</div>
+ <div class="a" style="--d:18.8s"><div class="box" style="left:1480px;top:540px;width:300px;height:78px;font-size:24px">service</div><div class="box" style="left:1480px;top:646px;width:300px;height:78px;font-size:24px">service</div><div class="box" style="left:1480px;top:752px;width:300px;height:78px;font-size:24px">service</div>
+  <div class="label" style="left:1480px;top:850px;font-size:24px">the services that run the bank</div></div>
+</section>
+
+<!-- 6 -->
+<section class="scene"><div class="kick">Step 6 of 11</div><h1>Determinism lives in the environment</h1>
+ <div class="a" style="--d:3s"><div class="label" style="left:150px;top:420px;font-size:32px;color:var(--fg)">Tests</div><div class="label" style="left:150px;top:530px;font-size:32px;color:var(--fg)">Builds</div><div class="label" style="left:150px;top:640px;font-size:32px;color:var(--fg)">Linters</div>
+  <div class="al-run" style="left:330px;top:408px;--d:3.4s"></div><div class="al-run" style="left:420px;top:408px;--d:5s"></div><div class="al-run" style="left:510px;top:408px;--d:5.5s"></div><div class="al-run" style="left:600px;top:408px;--d:6s"></div><div class="al-run" style="left:690px;top:408px;--d:6.5s"></div>
+  <div class="al-run" style="left:330px;top:518px;--d:3.9s"></div><div class="al-run" style="left:420px;top:518px;--d:5.1s"></div><div class="al-run" style="left:510px;top:518px;--d:5.6s"></div><div class="al-run" style="left:600px;top:518px;--d:6.1s"></div><div class="al-run" style="left:690px;top:518px;--d:6.6s"></div>
+  <div class="al-run" style="left:330px;top:628px;--d:4.4s"></div><div class="al-run" style="left:420px;top:628px;--d:5.2s"></div><div class="al-run" style="left:510px;top:628px;--d:5.7s"></div><div class="al-run" style="left:600px;top:628px;--d:6.2s"></div><div class="al-run" style="left:690px;top:628px;--d:6.7s"></div></div>
+ <div class="a cap" style="--d:5.4s;left:150px;right:auto;bottom:auto;top:740px;font-size:30px">Same code, same verdict.</div>
+ <div class="a" style="--d:8.2s"><div class="label" style="left:960px;top:420px;font-size:28px">Laptop · 1 to 2 sessions each (Ramp)</div>
+  <div class="proc" style="left:960px;top:470px">session</div><div class="proc" style="left:1130px;top:470px">session</div></div>
+ <div class="a" style="--d:12.2s"><div class="label" style="left:960px;top:600px;font-size:28px">Remote · a Firecracker microVM per run (DoorDash)</div></div>
+ <div class="al-vm a" style="--d:13.2s;left:960px;top:650px"></div><div class="al-vm a" style="--d:13.4s;left:1052px;top:650px"></div><div class="al-vm a" style="--d:13.6s;left:1144px;top:650px"></div><div class="al-vm a" style="--d:13.8s;left:1236px;top:650px"></div><div class="al-vm a" style="--d:14s;left:1328px;top:650px"></div><div class="al-vm a" style="--d:14.2s;left:1420px;top:650px"></div><div class="al-vm a" style="--d:14.4s;left:1512px;top:650px"></div><div class="al-vm a" style="--d:14.6s;left:1604px;top:650px"></div><div class="al-vm a" style="--d:14.8s;left:1696px;top:650px"></div>
+ <span class="chip al-chip a" style="--d:15.6s;left:960px;top:760px">repos</span><span class="chip al-chip a" style="--d:16.4s;left:1100px;top:760px">tools</span><span class="chip al-chip a" style="--d:17.2s;left:1232px;top:760px">scoped secrets</span>
+ <div class="a" style="--d:19.6s"><div class="label" style="left:960px;top:868px;font-size:26px">p95 setup</div><div class="track" style="left:1110px;top:860px;width:400px;height:44px"><div class="fill" style="background:var(--green);--w:100%;--d:20s"></div></div><div class="label t-green" style="left:1530px;top:862px;font-size:32px">under 5 seconds</div></div>
+</section>
+
+<!-- 7 -->
+<section class="scene"><div class="kick">Step 7 of 11</div><h1>The transcript is the state</h1>
+ <div class="al-row a" style="--d:.6s;top:300px">task</div>
+ <div class="al-row a al-old" style="--d:1.1s;top:390px">tool result</div>
+ <div class="al-row a al-old" style="--d:1.6s;top:480px">tool result</div>
+ <div class="al-row a" style="--d:2.1s;top:570px">tool result</div>
+ <div class="al-row a" style="--d:2.6s;top:660px">tool result</div>
+ <div class="al-row a" style="--d:3.4s;top:750px;border-color:var(--blue);background:#dff0d3">tool result <span class="t-blue" style="margin-left:auto;font-size:22px">appended</span></div>
+ <div class="a label" style="--d:5.6s;left:880px;top:412px;font-size:26px">cleared</div>
+ <div class="al-row a" style="--d:7.2s;top:390px;height:164px;border-color:var(--amber);background:#fbefd0">summary</div>
+ <div class="a label t-amber" style="--d:7.2s;left:880px;top:500px;font-size:26px">then summarized</div>
+ <div class="a" style="--d:10.6s"><div class="label" style="left:150px;top:850px;font-size:28px">Shopify · append-only Postgres log</div><div class="cap" style="left:150px;right:auto;bottom:auto;top:890px;font-size:40px"><span class="t-green">"the canonical truth"</span></div></div>
+ <div class="box blue a al-flick" style="left:1240px;top:520px;width:400px;height:180px;font-size:44px">Harness</div>
+ <div class="a cap" style="--d:15.2s;left:1140px;right:auto;bottom:auto;top:740px;font-size:40px;width:600px;text-align:center">"cheap to recreate,<br>disposable"</div>
+</section>
+
+<!-- 8 -->
+<section class="scene"><div class="kick">Step 8 of 11</div><h1>The harness caps the rest</h1>
+ <span class="chip al-chip a" style="--d:.8s;left:150px;top:290px;font-size:24px;padding:8px 22px">No tool call: the model thinks it is done</span>
+ <div class="a" style="--d:4.2s"><div class="al-capline" style="left:130px;width:1230px"></div><div class="label t-red" style="left:1380px;top:376px;font-size:26px">cap</div></div>
+ <div class="a" style="--d:4.6s"><div class="al-met" style="left:150px"><i style="--d:4.8s;--t:7s"></i></div><div class="label" style="left:150px;top:800px;font-size:32px;color:var(--fg)">Turns</div></div>
+ <div class="a" style="--d:5.2s"><div class="al-met" style="left:470px"><i style="--d:5.4s;--t:10s"></i></div><div class="label" style="left:470px;top:800px;font-size:32px;color:var(--fg)">Time</div></div>
+ <div class="a" style="--d:5.8s"><div class="al-met" style="left:790px"><i style="--d:6s;--t:8.5s"></i></div><div class="label" style="left:790px;top:800px;font-size:32px;color:var(--fg)">Tokens</div></div>
+ <div class="a" style="--d:6.5s"><div class="al-met al-ci" style="left:1110px"><b style="--d:13.8s"></b><b style="--d:14.6s"></b></div><div class="label" style="left:1110px;top:800px;font-size:32px;color:var(--fg)">CI rounds</div></div>
+ <div class="a label mono" style="--d:9s;left:150px;top:850px;font-size:22px">max_turns<br>maxTurns</div>
+ <div class="a label" style="--d:13s;left:1110px;top:850px;font-size:24px">Stripe allows two</div>
+ <svg><path class="line a" style="--d:15.4s" d="M1300 590H1440"/></svg>
+ <div class="a" style="--d:15.4s"><div class="box green" style="left:1440px;top:530px;width:340px;height:120px">A human<small>gets the branch</small></div></div>
+ <span class="chip al-chip a" style="--d:17.6s;left:1380px;top:850px">Alert on cap hits, fleet-wide</span>
+</section>
+
+<!-- 9 -->
+<section class="scene"><div class="kick">Step 9 of 11</div><h1>A stop check can refuse the stop</h1>
+ <div class="term" style="left:150px;top:300px;width:760px;padding:36px 44px;font-size:32px"><div class="a" style="--d:.8s"><span class="muted">agent:</span> done</div><div class="a muted" style="--d:3.2s">&gt; Stop hook runs</div><div class="a t-red" style="--d:4.8s">&nbsp; exit code 2</div><div class="a" style="--d:6s">&nbsp; stop blocked</div><div class="a" style="--d:7.2s">&nbsp; error returned to context</div></div>
+ <div class="a label" style="--d:.8s;left:150px;top:690px;font-size:22px">(Made-up example.)</div>
+ <div class="a label" style="--d:9s;left:1010px;top:430px;font-size:28px">Spotify · verifiers, opaque to the agent</div>
+ <div class="al-ver a" style="--d:9.4s;left:1010px;top:490px"></div>
+ <div class="al-ver a al-fail" style="--d:10s;left:1250px;top:490px"></div>
+ <div class="al-ver a" style="--d:10.6s;left:1490px;top:490px"></div>
+ <div class="a label t-red" style="--d:13.2s;left:1250px;top:655px;font-size:26px;width:210px;text-align:center">fails</div>
+ <svg><path class="line a" style="--d:14.2s;stroke:var(--red);stroke-dasharray:10 10" d="M1355 700V790"/></svg>
+ <div class="box a al-nopr" style="--d:12.4s;left:1180px;top:790px;width:350px;height:110px;font-size:36px">PR</div>
+ <div class="a label t-red" style="--d:14.8s;left:1560px;top:826px;font-size:30px">isn't opened</div>
+</section>
+
+<!-- 10 -->
+<section class="scene"><div class="kick">Step 10 of 11</div><h1>The run ends with evidence and a branch</h1>
+ <span class="chip al-chip a" style="--d:.8s;left:150px;top:300px;color:var(--green)">checks pass</span>
+ <svg><path class="line a" style="--d:1s;stroke-width:6" d="M150 520H1240"/><path class="line al-draw" style="--d:4.6s;stroke:var(--blue);stroke-width:6" d="M330 520C420 520 420 680 520 680H1240"/>
+  <path class="line a" style="--d:11.8s;stroke-dasharray:8 10" d="M620 702V800"/><path class="line a" style="--d:12.1s;stroke-dasharray:8 10" d="M840 702V800"/><path class="line a" style="--d:12.4s;stroke-dasharray:8 10" d="M1060 702V800"/></svg>
+ <div class="a label" style="--d:1s;left:150px;top:470px">main</div>
+ <div class="a label t-blue" style="--d:5s;left:540px;top:610px;font-size:28px">GitHub Copilot cloud agent · one branch</div>
+ <div class="al-commit a" style="--d:5.4s;--s:10.8s;left:598px;top:658px"></div><div class="al-commit a" style="--d:6s;--s:11.1s;left:818px;top:658px"></div><div class="al-commit a" style="--d:6.6s;--s:11.4s;left:1038px;top:658px"></div>
+ <div class="a label t-blue" style="--d:11s;left:1100px;top:720px;font-size:24px">signed commits</div>
+ <div class="a" style="--d:12s"><div class="box" style="left:560px;top:800px;width:560px;height:100px">Session log<small>linked from each commit</small></div></div>
+ <div class="a" style="--d:7.6s"><div class="box" style="left:1380px;top:440px;width:400px;height:380px;justify-content:flex-start;padding-top:36px;font-size:36px">Its own PR<small>can't approve or merge</small></div></div>
+ <div class="al-btn a" style="--d:8s;--o:8.8s;left:1440px;top:600px;width:280px">Approve</div>
+ <div class="al-btn a" style="--d:8.3s;--o:9.8s;left:1440px;top:690px;width:280px">Merge</div>
+</section>
+
+<!-- 11 -->
+<section class="scene" style="--egg:13.0s"><div class="kick">Step 11 of 11</div><h1>Workflow or agent: who picks the path?</h1>
+ <div class="a" style="--d:1.4s"><div class="label" style="left:150px;top:300px;font-size:30px;color:var(--fg)">Workflow · code fixes the path</div>
+  <div class="al-node on" style="left:150px;top:380px"></div><div class="al-node on" style="left:330px;top:380px"></div><div class="al-node on" style="left:510px;top:380px"></div><div class="al-node on" style="left:690px;top:380px"></div></div>
+ <svg><path class="line a" style="--d:1.4s;stroke:var(--blue);stroke-width:5" d="M194 402H690"/>
+  <path class="line a" style="--d:4.8s" d="M954 402L1090 342M954 402L1090 462M1134 342L1270 322M1134 342L1270 402M1134 462L1270 402M1134 462L1270 482"/>
+  <path class="line al-draw" style="--d:5.4s;stroke:var(--amber)" d="M954 402L1112 462L1292 402"/>
+  <path class="line a" style="--d:7.6s" d="M510 595H560M920 595H970M1330 595H1380"/></svg>
+ <div class="a" style="--d:4.8s"><div class="label" style="left:910px;top:270px;font-size:30px;color:var(--fg)">Agent · the model picks each step</div>
+  <div class="al-node pick" style="left:910px;top:380px"></div><div class="al-node" style="left:1090px;top:320px"></div><div class="al-node pick" style="left:1090px;top:440px"></div><div class="al-node" style="left:1270px;top:300px"></div><div class="al-node pick" style="left:1270px;top:380px"></div><div class="al-node" style="left:1270px;top:460px"></div></div>
+ <div class="a label" style="--d:7.6s;left:150px;top:500px;font-size:28px">Stripe's blueprints mix both</div>
+ <div class="box a al-agent" style="--c:14s;left:150px;top:540px;width:360px;height:110px;font-size:28px">Implement task</div>
+ <div class="box a al-code" style="--c:10.4s;left:560px;top:540px;width:360px;height:110px;font-size:28px">Run configured linters</div>
+ <div class="box a al-code" style="--c:11.8s;left:970px;top:540px;width:360px;height:110px;font-size:28px">Push changes</div>
+ <div class="box a al-agent" style="--c:15.4s;left:1380px;top:540px;width:360px;height:110px;font-size:28px">Fix CI failures</div>
+ <div class="a label t-green" style="--d:10.4s;left:560px;top:668px;font-size:24px">code nodes</div>
+ <div class="a label t-amber" style="--d:14s;left:150px;top:668px;font-size:24px">agent nodes</div>
+ <div class="a cap muted" style="--d:16s;bottom:76px;font-size:28px">SRE Lab · Agentic Engineering · What an agent actually is</div>
+ <div class="critter"><div id="critter"></div></div>
+</section>
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 4 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../agentic/#agent-loop">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["What an agent actually is. What is a coding agent mechanically, and what must a platform running thousands of them control around it? The whole machine is three parts: a model that only emits text, tools that act, and a harness that runs the loop. A platform team owns the harness for every team. Fleets fork or wrap a standard one: goose at Stripe, Open Code at Ramp, the Claude Agent S D K at Spotify.", "The harness builds the context. First the system prompt, then the tool definitions, then rules files such as agents dot M D, and then the task. Every tool definition costs context, so fleets give each run a curated subset.", "Every turn pays for the whole context, so cost is per run, and it grows with each result. Claude's message threads, in beta, stop resending it, but they do not change pricing or rate limits. Bun's eleven day port from Zig to Rust, with about sixty-four Claudes at peak, cost around a hundred and sixty-five thousand dollars at A P I prices.", "The model replies with tool calls or with a final answer. That choice is the judgement, and it is nondeterministic. Rerun a task and the path and the diff can change. Tool calls are the fleet's load. Cursor's research harness peaked at about a thousand commits an hour, across ten million tool calls in one week.", "The runner checks policy, then edits files, runs commands or calls M C P. Unattended, the boundary is the environment. Stripe skips prompts because a mistake is confined to the limited blast radius of one dev box. Monzo runs each job well away from all the services it uses to run the bank.", "Determinism lives in the environment. Tests, builds and linters give the same verdict for the same code. Laptops cap it at one to two sessions each, according to Ramp, so fleets run remote. DoorDash gives each run a Firecracker micro V M with repos, tools and scoped secrets, and targets a p ninety-five setup time under five seconds.", "Results are appended and the loop runs again. Near the limit, old tool output is cleared, then summarized. The transcript is the state. Shopify keeps an append-only Postgres log and calls it the canonical truth. The harness, it says, is cheap to recreate, disposable.", "No tool call means the model thinks it is done. So the harness caps the rest: turns, time, tokens and C I rounds. The Open A I Agents S D K and Claude Code subagents both have a max turns setting. Stripe allows two C I rounds, then a human gets the branch. Alert on cap hits across the fleet.", "A stop check can refuse the stop. A Claude Code Stop hook that exits with code two blocks it and returns the error to context. Spotify's stop hook runs verifiers that are opaque to the agent. If one of the verifiers fails, the P R isn't opened.", "When checks pass, the run ends with evidence and a branch. GitHub Copilot cloud agent pushes to one branch. It can't approve or merge its own P R. And it signs commits that link to its session log.", "In Anthropic's terms: in a workflow, code fixes the path. In an agent, the model picks each step. Stripe's blueprints mix both. Code nodes, like run configured linters and push changes, sit between agent nodes, like implement task and fix C I failures."], "seconds": [24.94, 16.04, 22.34, 20.57, 21.16, 23.53, 18.18, 20.82, 17.26, 13.59, 17.49]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

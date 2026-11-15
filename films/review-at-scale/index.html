@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reviewing agent output: the film</title>
+<meta name="description" content="How an org keeps code review meaningful when agents open more pull requests than reviewers can read.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.rv-pr{position:absolute;width:130px;height:60px;border-radius:999px;background:#fff;border:2.5px solid var(--rule);box-shadow:0 8px 20px rgba(20,70,35,.10);font:600 22px "IBM Plex Mono",monospace;display:flex;align-items:center;justify-content:center}
+.rv-pr.rv-wait{border-style:dashed;background:transparent;box-shadow:none;color:var(--muted)}
+.rv-gate{position:absolute;border:3px solid var(--blue);border-radius:60px;background:rgba(255,255,255,.55)}
+.rv-txt{position:absolute;font:400 36px/1.3 "IBM Plex Sans",sans-serif}
+.rv-num{position:absolute;font:900 180px/1 "Archivo",sans-serif;letter-spacing:-.03em;color:var(--blue)}
+.rv-who{position:absolute;display:flex;gap:12px}
+.rv-who i{width:44px;height:44px;border-radius:50%;background:var(--blue);display:block}
+.rv-tall{position:absolute;border:2.5px solid var(--rule);background:var(--panel);border-radius:30px 10px 30px 10px;box-shadow:0 10px 28px rgba(20,70,35,.10);display:flex;align-items:center;justify-content:center;font:600 32px "IBM Plex Sans",sans-serif;background-image:repeating-linear-gradient(180deg,transparent 0 22px,rgba(31,122,58,.10) 22px 26px)}
+.rv-badge{position:absolute;border-radius:999px;padding:8px 22px;font:700 24px "IBM Plex Sans",sans-serif;color:#fff;background:var(--red);white-space:nowrap}
+.rv-badge.rv-g2{background:var(--green)}
+.scene.on .rv-found{animation:in .7s var(--d) both,rv-found .5s var(--t) forwards}
+@keyframes rv-found{to{border-color:var(--red);background:#fbe4d9}}
+.rv-body{position:absolute;border-radius:32px 10px 32px 10px;background:#fff;padding:26px 36px;font:600 30px/1.9 "IBM Plex Sans",sans-serif;box-shadow:0 24px 60px rgba(20,70,35,.16)}
+.rv-body div::before{content:"";display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--blue);margin-right:16px;vertical-align:3px}
+.rv-chk{position:absolute;display:flex;align-items:center;gap:22px;font:600 30px "IBM Plex Sans",sans-serif}
+.rv-chk::before{content:"";width:46px;height:46px;border-radius:50%;background:var(--green);flex:none}
+.rv-chk::after{content:"";position:absolute;left:14px;top:50%;width:18px;height:9px;margin-top:-8px;border-left:4px solid #fff;border-bottom:4px solid #fff;transform:rotate(-45deg)}
+.rv-g{position:absolute;left:110px;top:340px}
+.rv-g div{display:flex;gap:10px;margin-bottom:10px}
+.rv-g i{width:44px;height:44px;border-radius:12px 4px 12px 4px;background:#d6e6c8;display:block}
+.scene.on .rv-g i{animation:lit .4s calc(6.4s + var(--r)*.45s) forwards}
+.scene.on .rv-g div:last-child i:nth-child(n+8){animation:none}
+.rv-donut{position:absolute;width:240px;height:240px;border-radius:50%;background:conic-gradient(var(--blue) calc(var(--p)*1%),#d6e6c8 0);display:flex;align-items:center;justify-content:center}
+.rv-donut b{width:164px;height:164px;border-radius:50%;background:var(--panel);display:flex;align-items:center;justify-content:center;font:800 52px "Archivo",sans-serif}
+.rv-row{position:absolute;left:110px}
+.rv-row .label{position:static;display:inline-block;margin-right:24px}
+.rv-tile{position:absolute;width:150px;height:84px;border-radius:24px 8px 24px 8px;border:2.5px solid var(--rule);background:var(--panel);font:600 24px "IBM Plex Mono",monospace;display:flex;align-items:center;justify-content:center}
+.scene.on .rv-low{animation:in .7s var(--d) both,rv-low .5s var(--t) forwards}
+@keyframes rv-low{to{border-color:var(--green);background:#cfeabd;color:var(--blue)}}
+.rv-col{position:absolute;width:150px;height:0;border-radius:26px 8px 0 0;background:var(--blue)}
+.scene.on .rv-col{animation:rv-rise 1.2s cubic-bezier(.2,.7,.2,1) var(--d) forwards}
+@keyframes rv-rise{to{height:var(--h)}}
+.rv-base{position:absolute;height:3px;background:#9fbf8f;border-radius:2px}
+.rv-find{position:absolute;border-radius:999px;padding:8px 22px;font:700 24px "IBM Plex Sans",sans-serif;color:#fff;background:var(--amber);white-space:nowrap;opacity:0}
+.scene.on .rv-find{animation:rv-fall 2.4s cubic-bezier(.3,.6,.2,1) var(--d) both}
+@keyframes rv-fall{0%{opacity:0;transform:translateY(0)}15%{opacity:1;transform:translateY(0)}100%{opacity:1;transform:translateY(var(--dy))}}
+.scene.on .rv-own{animation:in .7s var(--d) both,rv-own .5s var(--t) forwards}
+@keyframes rv-own{to{border-color:var(--amber);background:#fbefd0}}
+.rv-stat{position:absolute;border:2.5px solid var(--rule);background:var(--panel);border-radius:30px 10px 30px 10px;box-shadow:0 10px 28px rgba(20,70,35,.10);padding:28px 36px}
+.rv-stat b{display:block;font:900 120px/1 "Archivo",sans-serif;letter-spacing:-.03em;color:var(--blue);margin:14px 0 12px}
+.rv-stat span{font:400 26px/1.35 "IBM Plex Sans",sans-serif;color:var(--muted);display:block}
+.rv-stat .label{position:static;display:block}
+.rv-person{position:absolute;width:200px;text-align:center;font:700 28px "IBM Plex Sans",sans-serif}
+.rv-person::before{content:"";display:block;width:76px;height:76px;border-radius:50%;margin:0 auto 8px;background:var(--c)}
+.rv-person i{display:block;width:150px;height:86px;border-radius:75px 75px 18px 18px;margin:0 auto 14px;background:var(--c)}
+.rv-card{position:absolute;width:395px;height:190px;border:2.5px solid var(--rule);background:var(--panel);border-radius:30px 10px 30px 10px;box-shadow:0 10px 28px rgba(20,70,35,.10);padding:24px 28px;font:400 25px/1.35 "IBM Plex Sans",sans-serif;color:var(--muted)}
+.rv-card b{display:block;font:800 32px "Archivo",sans-serif;color:var(--fg);margin-bottom:8px}
+.scene.on .rv-pass{animation:in .7s var(--d) both,rv-low .5s var(--t) forwards}
+.scene.on .rv-drop{animation:in .7s var(--d) both,rv-found .5s var(--t) forwards,rv-drop 1s var(--o) forwards}
+@keyframes rv-drop{to{transform:translateY(90px) rotate(8deg);opacity:.25}}
+.rv-day{position:absolute;height:56px;border-radius:28px;background:#d6e6c8}
+.rv-band{position:absolute;height:56px;background:#a9d79a;border-left:3px solid var(--blue);border-right:3px solid var(--blue)}
+.rv-chg{position:absolute;width:32px;height:32px;border-radius:50%;background:var(--blue)}
+.scene.on .rv-chg{animation:in .5s var(--d) both,rv-slide 1.6s cubic-bezier(.3,.6,.2,1) var(--t) forwards}
+@keyframes rv-slide{to{transform:translateX(var(--dx))}}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../agentic/#review-at-scale">Agentic Engineering</a> · film · recorded 15 Nov 2026</div>
+  <h1 class="page">Reviewing agent output</h1>
+  <div id="viewport">
+    <div id="stage">
+<!-- 1 -->
+<section class="scene"><div class="kick">Agentic Engineering · chapter 5</div><h1>Reviewing agent output</h1>
+ <div class="rv-num a" style="--d:2.4s;left:110px;top:300px;font-size:220px">+76%</div>
+ <div class="rv-txt a" style="--d:3.6s;left:790px;top:350px;font-size:46px">more PRs to review<br><span class="muted" style="font-size:32px">Spotify engineers</span></div>
+ <div class="rv-txt a" style="--d:12.2s;left:110px;top:570px;font-size:46px;font-weight:700">Review, not generation, is the constraint.</div>
+ <div class="rv-txt a muted" style="--d:15s;left:110px;top:642px;font-size:30px">Google capped its weekly AI migration changes at reviewer capacity.</div>
+ <svg><path class="line a" style="--d:21.6s" d="M470 835H530"/><path class="line a" style="--d:23.1s" d="M890 835H950"/><path class="line a" style="--d:24.4s" d="M1310 835H1370"/></svg>
+ <div class="a" style="--d:19.5s"><div class="box" style="left:110px;top:770px;width:360px;height:130px">Machines<small>take the first pass</small></div></div>
+ <div class="a" style="--d:21.6s"><div class="box amber" style="left:530px;top:770px;width:360px;height:130px">Rules<small>pick the lane</small></div></div>
+ <div class="a" style="--d:23.1s"><div class="box blue" style="left:950px;top:770px;width:360px;height:130px">A human<small>approves</small></div></div>
+ <div class="a" style="--d:24.4s"><div class="box green" style="left:1370px;top:770px;width:360px;height:130px">Merge queue<small>proves the change</small></div></div>
+</section>
+
+<!-- 2 -->
+<section class="scene"><div class="kick">Step 2 of 11</div><h1>Admit only what reviewers can absorb</h1>
+ <div class="a" style="--d:.8s"><div class="rv-gate" style="left:640px;top:330px;width:800px;height:110px"></div><div class="label t-blue" style="left:668px;top:290px">Open agent PRs per team · capped at review throughput</div></div>
+ <div class="rv-pr a" style="--d:3.4s;left:665px;top:355px">PR</div><div class="rv-pr a" style="--d:3.7s;left:817px;top:355px">PR</div><div class="rv-pr a" style="--d:4s;left:969px;top:355px">PR</div><div class="rv-pr a" style="--d:4.3s;left:1121px;top:355px">PR</div><div class="rv-pr a" style="--d:4.6s;left:1273px;top:355px">PR</div>
+ <div class="rv-pr rv-wait a" style="--d:5.4s;left:414px;top:355px">PR</div><div class="rv-pr rv-wait a" style="--d:5.8s;left:262px;top:355px">PR</div><div class="rv-pr rv-wait a" style="--d:6.2s;left:110px;top:355px">PR</div>
+ <svg><path class="line a" style="--d:5.4s;stroke-dasharray:8 8" d="M556 385H632"/></svg>
+ <div class="rv-num a" style="--d:13.2s;left:110px;top:525px">61%</div>
+ <div class="rv-who a" style="--d:11.6s;left:560px;top:560px"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+ <div class="rv-txt a" style="--d:11.6s;left:1140px;top:558px;font-weight:600">top 10 reviewers</div>
+ <div class="rv-txt a muted" style="--d:13.6s;left:560px;top:628px">of comments on agent PRs, in dotnet/runtime</div>
+ <div class="a" style="--d:16.4s"><div class="label" style="left:110px;top:800px">Monzo's bottleneck moved</div><div class="box" style="left:110px;top:840px;width:600px;height:90px"><span class="strike muted">find an engineer with capacity</span></div></div>
+ <svg><path class="line a" style="--d:20.4s" d="M710 885H800"/></svg>
+ <div class="a" style="--d:20.4s"><div class="box blue" style="left:800px;top:840px;width:380px;height:90px">find a reviewer</div></div>
+</section>
+
+<!-- 3 -->
+<section class="scene"><div class="kick">Step 3 of 11</div><h1>Size is a safety control</h1>
+ <div class="rv-tall a" style="--d:5.2s;left:170px;top:300px;width:330px;height:500px">6K-line PR</div>
+ <div class="rv-badge rv-g2 a" style="--d:7.6s;left:215px;top:726px">passed AI review</div>
+ <svg><path class="line a" style="--d:9s" d="M520 550H760"/></svg>
+ <div class="label a" style="--d:9s;left:545px;top:505px">split into a stack</div>
+ <div class="rv-tall rv-found a" style="--d:9.2s;--t:12.2s;left:780px;top:300px;width:330px;height:84px"></div>
+ <div class="rv-tall a" style="--d:9.4s;left:780px;top:404px;width:330px;height:84px"></div>
+ <div class="rv-tall rv-found a" style="--d:9.6s;--t:12.7s;left:780px;top:508px;width:330px;height:84px"></div>
+ <div class="rv-tall a" style="--d:9.8s;left:780px;top:612px;width:330px;height:84px"></div>
+ <div class="rv-tall a" style="--d:10s;left:780px;top:716px;width:330px;height:84px"></div>
+ <div class="rv-badge a" style="--d:12.2s;left:1070px;top:280px">real issue</div>
+ <div class="rv-badge a" style="--d:12.7s;left:1070px;top:488px">real issue</div>
+ <div class="a" style="--d:13.2s"><div class="label" style="left:1300px;top:430px">The PR body names</div>
+  <div class="rv-body" style="left:1300px;top:470px;width:490px"><div class="a" style="--d:14.8s">Why</div><div class="a" style="--d:15.8s">Scope</div><div class="a" style="--d:16.6s">Blast radius</div><div class="a" style="--d:17.8s">A real verification run</div></div></div>
+ <div class="a cap muted" style="--d:10.4s;bottom:84px;font-size:30px">Same change, same AI reviewer.</div>
+</section>
+
+<!-- 4 -->
+<section class="scene"><div class="kick">Step 4 of 11</div><h1>CI runs the required checks</h1>
+ <div class="a" style="--d:.6s"><div class="box" style="left:110px;top:330px;width:470px;height:400px"></div><div class="label t-blue" style="left:150px;top:360px">CI</div></div>
+ <div class="rv-chk a" style="--d:1.2s;left:150px;top:430px">required check</div>
+ <div class="rv-chk a" style="--d:1.8s;left:150px;top:530px">required check</div>
+ <div class="rv-chk a" style="--d:2.4s;left:150px;top:630px">required check</div>
+ <div class="a" style="--d:5.6s"><div class="label" style="left:700px;top:330px;font-size:26px">dotnet/runtime · merge rate</div></div>
+ <div class="a" style="--d:7.4s"><div class="label" style="left:700px;top:430px;font-size:28px;color:var(--fg)">Agent PRs</div><div class="track" style="left:700px;width:900px;top:475px"><div class="fill" style="background:var(--amber);--w:67.9%;--d:8s"></div></div><div class="label t-amber" style="left:1625px;top:482px;font-size:44px">67.9%</div></div>
+ <div class="a" style="--d:10.4s"><div class="label" style="left:700px;top:590px;font-size:28px;color:var(--fg)">Microsoft staff PRs</div><div class="track" style="left:700px;width:900px;top:635px"><div class="fill" style="background:var(--green);--w:87.1%;--d:10.9s"></div></div><div class="label t-green" style="left:1625px;top:642px;font-size:44px">87.1%</div></div>
+ <div class="a cap" style="--d:3.4s">Agent PRs need that bar.</div>
+</section>
+
+<!-- 5 -->
+<section class="scene"><div class="kick">Step 5 of 11</div><h1>An AI first pass, tuned for precision</h1>
+ <div class="rv-g a" style="--d:5.6s">
+  <div style="--r:0"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div style="--r:1"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div style="--r:2"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div style="--r:3"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div style="--r:4"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+ </div>
+ <div class="rv-txt a" style="--d:7s;left:110px;top:628px"><b class="t-blue">Over 90%</b> of ~65K weekly diffs<br><span class="muted" style="font-size:28px">Uber's uReview</span></div>
+ <div class="a" style="--d:12.8s"><div class="rv-donut" style="--p:67;left:960px;top:410px"><b>67%</b></div><div class="rv-txt" style="left:930px;top:670px;width:300px;text-align:center;font-size:30px">of its comments addressed</div></div>
+ <div class="a" style="--d:15.2s"><div class="rv-donut" style="--p:74;left:1350px;top:410px"><b>74%</b></div><div class="rv-txt" style="left:1320px;top:670px;width:300px;text-align:center;font-size:30px">of high-severity ones</div></div>
+ <div class="rv-row a" style="--d:17.8s;top:860px"><span class="label">Pruned</span><span class="chip strike a" style="--d:20.8s">readability nits</span><span class="chip strike a" style="--d:22s">logging tweaks</span><span class="chip strike a" style="--d:23.2s">style</span></div>
+</section>
+
+<!-- 6 -->
+<section class="scene"><div class="kick">Step 6 of 11</div><h1>The diff sets the risk tier</h1>
+ <div class="rv-row a" style="--d:.8s;top:300px"><span class="label">Risk tier set by</span><span class="chip">rules on the diff</span><span class="chip strike a" style="--d:4s;color:var(--muted)">the author</span></div>
+ <div class="a" style="--d:5.4s"><div class="label" style="left:110px;top:430px">Zalando · rules mined from incidents</div></div>
+ <div class="rv-tile rv-low a" style="--d:6s;--t:11s;left:110px;top:480px">PR</div><div class="rv-tile a" style="--d:6.2s;left:280px;top:480px">PR</div><div class="rv-tile a" style="--d:6.4s;left:450px;top:480px">PR</div>
+ <div class="rv-tile a" style="--d:6.6s;left:110px;top:584px">PR</div><div class="rv-tile a" style="--d:6.8s;left:280px;top:584px">PR</div><div class="rv-tile rv-low a" style="--d:7s;--t:11.2s;left:450px;top:584px">PR</div>
+ <div class="rv-tile a" style="--d:7.2s;left:110px;top:688px">PR</div><div class="rv-tile rv-low a" style="--d:7.4s;--t:11.4s;left:280px;top:688px">PR</div><div class="rv-tile a" style="--d:7.6s;left:450px;top:688px">PR</div>
+ <div class="rv-txt a" style="--d:11s;left:650px;top:575px;font-size:34px"><b class="t-blue" style="font-size:60px">33%</b><br>rated low,<br>auto-approved</div>
+ <div class="a" style="--d:15.8s"><div class="label" style="left:1040px;top:430px">Intercom · PRs auto-approved</div><div class="rv-base" style="left:1040px;top:740px;width:560px"></div>
+  <div class="rv-txt muted" style="left:1080px;top:752px;font-size:26px;width:190px;text-align:center">April 2026</div><div class="rv-txt muted" style="left:1340px;top:752px;font-size:26px;width:190px;text-align:center">July</div></div>
+ <div class="rv-col" style="--d:16.6s;--h:84px;left:1100px;bottom:340px"></div>
+ <div class="rv-txt a" style="--d:16.8s;left:1080px;top:596px;font-size:40px;font-weight:700;width:190px;text-align:center">19.2%</div>
+ <div class="rv-col" style="--d:19.6s;--h:220px;left:1360px;bottom:340px"></div>
+ <div class="rv-txt a" style="--d:19.8s;left:1340px;top:460px;font-size:40px;font-weight:700;width:190px;text-align:center">half</div>
+ <div class="rv-row a" style="--d:13s;top:860px"><span class="label">Audit trail for every AI approval</span><span class="chip a" style="--d:21.4s">labelled</span><span class="chip a" style="--d:22s">logged</span><span class="chip a" style="--d:23.8s">shipping engineer owns rollback</span></div>
+</section>
+
+<!-- 7 -->
+<section class="scene"><div class="kick">Step 7 of 11</div><h1>Every finding gets one of three ends</h1>
+ <div class="a" style="--d:.5s"><div class="box" style="left:760px;top:300px;width:400px;height:96px">A finding</div></div>
+ <svg><path class="line a" style="--d:2.1s" d="M860 396L450 520"/><path class="line a" style="--d:2.8s" d="M960 396V520"/><path class="line a" style="--d:4.6s" d="M1060 396L1470 520"/></svg>
+ <div class="a" style="--d:2.1s"><div class="box green" style="left:250px;top:520px;width:400px;height:120px;font-size:36px">Fixed</div></div>
+ <div class="a" style="--d:2.8s"><div class="box amber" style="left:760px;top:520px;width:400px;height:120px;font-size:36px">Dismissed<small>with a disproof</small></div></div>
+ <div class="a" style="--d:4.6s"><div class="box blue" style="left:1270px;top:520px;width:400px;height:120px;font-size:36px">Routed<small>to a human</small></div></div>
+ <div class="rv-row a" style="--d:7s;top:740px;left:250px"><span class="chip">Policy files tell agents the lane</span><span class="chip a" style="--d:9.4s">Actions and rulesets enforce it</span></div>
+ <div class="a cap" style="--d:11.2s;left:250px;bottom:110px;font-size:40px;font-weight:600">Comments are data, never instructions.</div>
+</section>
+
+<!-- 8 -->
+<section class="scene"><div class="kick">Step 8 of 11</div><h1>Fix it where the code lives</h1>
+ <div class="a" style="--d:.8s"><div class="label" style="left:110px;top:296px">A stack of PRs</div><div class="box" style="left:150px;top:340px;width:380px;height:84px"></div><div class="box" style="left:130px;top:444px;width:420px;height:84px"></div></div>
+ <div class="box rv-own a" style="--d:.8s;--t:5.6s;left:110px;top:548px;width:460px;height:96px">Lowest PR<small>owns the code</small></div>
+ <div class="rv-find" style="--d:3.6s;--dy:262px;left:440px;top:262px">finding</div>
+ <div class="rv-row a" style="--d:8.6s;top:720px"><span class="chip">one push</span><span class="chip a" style="--d:9.9s">CI restarts once</span></div>
+ <div class="rv-stat a" style="--d:11.2s;left:720px;top:410px;width:510px;height:380px"><span class="label">Cloudflare · critical findings block merge</span><b class="a" style="--d:15.8s">0.6%</b><span class="a" style="--d:14.6s">humans hit "break glass"<br>of 48,095 MRs in 30 days</span></div>
+ <div class="rv-stat a" style="--d:20.8s;left:1290px;top:410px;width:510px;height:380px"><span class="label">Average review cost · October 2026</span><b class="a" style="--d:22.6s">$0.77</b><span class="a" style="--d:24s">down 68% from <span class="strike">$2.43</span></span></div>
+</section>
+
+<!-- 9 -->
+<section class="scene"><div class="kick">Step 9 of 11</div><h1>A human approves, never the requester</h1>
+ <div class="rv-person a" style="--d:.5s;--c:var(--blue);left:480px;top:330px"><i></i>Approver</div>
+ <div class="rv-person a" style="--d:7.6s;--c:#b9c7b4;left:110px;top:330px"><i></i>Requester</div>
+ <div class="rv-txt a t-red" style="--d:7.6s;left:356px;top:390px;font-size:80px;font-weight:700">≠</div>
+ <div class="a" style="--d:1.6s"><div class="label" style="left:800px;top:420px">Judges</div></div>
+ <div class="a" style="--d:2s;position:absolute;left:800px;top:462px"><span class="chip">intent</span><span class="chip a" style="--d:2.7s">interfaces</span><span class="chip a" style="--d:3.3s">blast radius</span></div>
+ <div class="a" style="--d:4.4s;position:absolute;left:800px;top:548px"><span class="chip">whether tests could fail</span></div>
+ <div class="rv-card a" style="--d:8.9s;left:110px;top:700px"><b>Ramp</b>opens agent PRs with the requester's token</div>
+ <div class="rv-card a" style="--d:12.7s;left:545px;top:700px"><b>GitHub</b>can require approval of the most recent push</div>
+ <div class="rv-card a" style="--d:16.6s;left:980px;top:700px"><b>DORA's RTS</b>separates approving a change from requesting it</div>
+ <div class="rv-card a" style="--d:21.0s;left:1415px;top:700px"><b>BaFin</b>"the same rules" for human and machine code</div>
+</section>
+
+<!-- 10 -->
+<section class="scene"><div class="kick">Step 10 of 11</div><h1>The merge queue proves it on latest main</h1>
+ <div class="a" style="--d:1s"><div class="rv-gate" style="left:110px;top:330px;width:900px;height:120px;border-style:dashed"></div><div class="label t-blue" style="left:140px;top:290px">Merge queue</div></div>
+ <div class="rv-pr rv-pass a" style="--d:2s;--t:5s;left:840px;top:360px">PR</div>
+ <div class="rv-pr rv-pass a" style="--d:2.4s;--t:5.6s;left:660px;top:360px">PR</div>
+ <div class="rv-pr rv-drop a" style="--d:2.8s;--t:6.6s;--o:7.4s;left:480px;top:360px">PR</div>
+ <div class="rv-pr rv-pass a" style="--d:3.2s;--t:8.2s;left:300px;top:360px">PR</div>
+ <svg><path class="line a" style="--d:4.2s" d="M1010 390H1110"/></svg>
+ <div class="a" style="--d:4.2s"><div class="box blue" style="left:1110px;top:335px;width:260px;height:110px;font-size:38px">main<small>latest</small></div></div>
+ <div class="a cap t-red" style="--d:7.4s;left:430px;right:auto;bottom:auto;top:478px;font-size:28px;margin-left:190px">fails, dropped</div>
+ <div class="big a" style="--d:12s;left:110px;top:610px">44%</div>
+ <div class="rv-txt a" style="--d:13.4s;left:900px;top:680px;font-size:44px">of 268 sampled merged agent PRs<br>in significant public repos<br><b>had any human reviewer.</b></div>
+</section>
+
+<!-- 11 -->
+<section class="scene" style="--egg:15.7s"><div class="kick">Step 11 of 11</div><h1>Volume can outrun verification anyway</h1>
+ <div class="rv-row a" style="--d:3s;top:296px"><span class="label">Spotify's incident reviews</span><span class="chip">no material direct contribution from AI-authored code</span></div>
+ <div class="a" style="--d:9.7s"><div class="label" style="left:110px;top:412px">But one automated upgrade</div></div>
+ <div class="a" style="--d:11.4s"><div class="box green" style="left:110px;top:452px;width:460px;height:96px">"passed our checks"</div></div>
+ <svg><path class="line a" style="--d:13.3s" d="M570 500H650"/></svg>
+ <div class="a" style="--d:13.3s"><div class="box red" style="left:650px;top:452px;width:600px;height:96px">"still failed in production"</div></div>
+ <div class="a" style="--d:15.4s"><div class="label" style="left:110px;top:610px">The fix · automated changes in owners' working hours</div><div class="rv-day" style="left:110px;top:654px;width:1140px"></div><div class="rv-band" style="left:480px;top:654px;width:420px"></div></div>
+ <div class="rv-chg a" style="--d:15.8s;--t:17.5s;--dx:400px;left:150px;top:666px"></div>
+ <div class="rv-chg a" style="--d:16.0s;--t:17.7s;--dx:320px;left:300px;top:666px"></div>
+ <div class="rv-chg a" style="--d:16.2s;--t:17.9s;--dx:-290px;left:1010px;top:666px"></div>
+ <div class="rv-chg a" style="--d:16.5s;--t:18.1s;--dx:-330px;left:1150px;top:666px"></div>
+ <div class="a" style="--d:19.2s"><div class="box blue" style="left:1340px;top:620px;width:440px;height:110px">More rollback capacity</div></div>
+ <div class="a cap muted" style="--d:17.9s;bottom:76px;font-size:28px">SRE Lab · Agentic Engineering · Reviewing agent output</div>
+ <div class="critter"><div id="critter"></div></div>
+</section>
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 4 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../agentic/#review-at-scale">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Reviewing agent output. Spotify engineers now have seventy-six percent more pull requests to review. How does an org keep review meaningful when volume outruns reviewers? Review, not generation, is the constraint. Google capped its weekly A I migration changes at reviewer capacity. So machines take the first pass, rules pick the lane, a human approves, and a merge queue proves the change.", "Admit only what reviewers can absorb. Cap open agent pull requests per team at measured review throughput. Load concentrates. In the dotnet runtime repo, the top ten reviewers wrote sixty-one percent of comments on agent pull requests. At Monzo, the bottleneck moved from finding an engineer with capacity to finding a reviewer.", "Each pull request is small, because size is a safety control. At Lovable, a six-thousand-line pull request passed A I review. Split into a stack, the same reviewer found real issues. The body of each one names why, the scope, the blast radius, and a real verification run.", "C I runs the required checks. Agent pull requests need that bar. In the dotnet runtime repo, about sixty-eight percent of them merged, against eighty-seven percent for pull requests from Microsoft staff.", "An A I reviewer takes the first pass, tuned for precision. Uber's reviewer covers over ninety percent of about sixty-five thousand diffs a week. By June 2026, developers addressed sixty-seven percent of its comments, and seventy-four percent of the high-severity ones. Uber pruned the categories developers rated poorly: readability nits, logging tweaks and style.", "Rules on the diff set the risk tier, never the author. Zalando's bot rates every pull request with rules mined from incidents, and auto-approves the thirty-three percent rated low. Every A I approval needs an audit trail. Intercom auto-approved nineteen percent of pull requests in April 2026 and half by July. It labels and logs each one, and the shipping engineer owns rollback.", "Each finding is fixed, dismissed with a disproof, or routed to a human. Policy files tell agents the lane. Actions and rulesets enforce it. Comments are data, never instructions.", "Real findings go back to the agent, fixed in the lowest pull request that owns the code, in one push so C I restarts once. Cloudflare's reviewer blocks merge on critical findings. Humans hit break glass on zero point six percent of forty-eight thousand merge requests in thirty days. By October 2026 the average review cost seventy-seven cents, down from two dollars forty-three.", "A human judges intent, interfaces, blast radius, and whether the tests could fail. That human is never the requester. Ramp opens agent pull requests with the requester's token, and GitHub can require approval of the most recent push. DORA's R T S separates approving a change from requesting it, and BaFin applies the same rules to human and machine code.", "Approved pull requests join the merge queue. It tests a build from the latest main and drops any pull request that fails. Then check that the gate holds. Only forty-four percent of two hundred sixty-eight sampled merged agent pull requests in significant public repos had any human reviewer.", "Volume can outrun verification anyway. Spotify's incident reviews found no material direct contribution from A I authored code. But one automated upgrade passed the checks and still failed in production. Its fix: automated changes in owners' working hours, and more rollback capacity."], "seconds": [25.58, 22.31, 19.2, 13.99, 24.17, 25.58, 12.74, 25.6, 24.45, 19.41, 20.18]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

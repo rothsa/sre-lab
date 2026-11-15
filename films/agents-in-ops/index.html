@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agents in SRE operations: the film</title>
+<meta name="description" content="What an incident agent may do alone, and how an alert class earns autonomy: read-only identity, dry runs, approvals, traces and replays.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.ops-st{justify-content:flex-start;padding-top:20px;font-size:27px;line-height:1.15}
+.ops-num{position:absolute;font:900 190px/1 "Archivo";letter-spacing:-.03em;color:var(--blue)}
+.ops-ping{position:absolute;border-radius:50%;border:4px solid var(--amber);opacity:0}
+.scene.on .ops-ping{animation:ops-ping 1.6s ease-out var(--d) 8}
+@keyframes ops-ping{0%{opacity:.9;transform:scale(.5)}100%{opacity:0;transform:scale(1.5)}}
+.ops-frame{position:absolute;border:4px dashed var(--blue);border-radius:44px;background:rgba(255,255,255,.55)}
+.ops-card{position:absolute;background:#fff;border-radius:32px 10px 32px 10px;box-shadow:0 20px 50px rgba(20,70,35,.14);padding:34px 44px;font:400 30px/1.3 "IBM Plex Sans"}
+.ops-card b{font:800 34px "Archivo"}
+.ops-kv{display:flex;justify-content:space-between;align-items:center;border-top:2px solid #e3eedb;padding:16px 0;font:500 27px "IBM Plex Mono"}
+.ops-kv span:first-child{color:var(--muted)}
+.ops-seal{position:absolute;right:36px;top:26px;width:110px;height:110px;border-radius:50%;border:4px solid var(--green);color:var(--green);font:700 22px "IBM Plex Sans";display:flex;align-items:center;justify-content:center;transform:rotate(-10deg)}
+.ops-tick{display:inline-block;width:13px;height:25px;border:solid var(--green);border-width:0 5px 5px 0;transform:rotate(40deg);margin:0 16px 3px 6px;vertical-align:middle}
+.ops-sweep{position:absolute;left:880px;width:860px;height:66px;display:flex;align-items:center;justify-content:space-between;border-radius:999px;background:var(--panel);border:2px solid var(--rule);padding:0 30px;font:500 25px "IBM Plex Mono"}
+.ops-sweep em{font:700 25px "IBM Plex Sans";font-style:normal;color:var(--green)}
+.ops-z{position:absolute;width:70px;height:70px;border-radius:50%;background:#3f9a4f;opacity:0}
+.scene.on .ops-z{animation:in .5s var(--d) both,ops-stop .35s var(--k) forwards}
+@keyframes ops-stop{to{background:#fbe4d9;box-shadow:inset 0 0 0 4px var(--red)}}
+.ops-r{position:absolute;width:90px;height:80px;border-radius:22px 8px 22px 8px;background:#e9f6dc;border:2.5px solid var(--green);opacity:0}
+.scene.on .ops-r{animation:in .5s var(--d) both,ops-gone .4s var(--k) forwards}
+@keyframes ops-gone{to{background:#fbe4d9;border-color:var(--red);border-style:dashed}}
+.scene.on .ops-slow{animation:grow var(--t) linear var(--d) forwards}
+.ops-thin{position:absolute;height:26px;border-radius:13px;background:#d6e6c8;overflow:hidden}
+.ops-cell{position:absolute;width:64px;height:64px;border-radius:18px 6px 18px 6px;background:#d6e6c8}
+.scene.on .ops-cell{animation:lit .4s var(--k) forwards}
+.ops-sw{position:absolute;width:300px;height:120px;border-radius:60px;background:#fbefd0;border:3px solid var(--amber)}
+.ops-sw i{position:absolute;left:10px;top:10px;width:94px;height:94px;border-radius:50%;background:var(--amber)}
+.scene.on .ops-sw{animation:in .7s var(--d) both,ops-swg .6s var(--k) forwards}
+@keyframes ops-swg{to{background:#e9f6dc;border-color:var(--green)}}
+.scene.on .ops-sw i{animation:ops-kn .6s var(--k) forwards}
+@keyframes ops-kn{to{transform:translateX(180px);background:var(--green)}}
+.ops-lo{position:absolute;font:700 30px "IBM Plex Sans"}
+.scene.on .ops-dim{animation:in .7s var(--d) both,ops-dim .6s var(--k) forwards}
+@keyframes ops-dim{to{opacity:.55;color:var(--muted)}}
+.scene.on .ops-lift{animation:ops-lift .6s var(--k) both}
+@keyframes ops-lift{from{opacity:.35}to{opacity:1;color:var(--green)}}
+.ops-rep{position:absolute;width:22px;height:22px;border-radius:50%;background:var(--red);opacity:0}
+.scene.on .ops-rep{animation:ops-pop .3s var(--k) forwards}
+@keyframes ops-pop{from{opacity:0;transform:scale(.3)}to{opacity:.85;transform:none}}
+.ops-span{position:absolute;height:44px;border-radius:22px;background:#dff0d3;border:2px solid var(--blue);font:500 21px/40px "IBM Plex Mono";padding-left:18px;white-space:nowrap}
+.ops-btn{position:absolute;width:190px;height:190px;border-radius:50%;background:var(--red);color:#fff;font:800 30px/1.1 "IBM Plex Sans";display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 12px 0 #a8340f,0 26px 40px rgba(217,72,30,.3)}
+.scene.on .ops-btn{animation:in .6s var(--d) both,ops-press .5s calc(var(--d) + 1.2s) 2 alternate}
+@keyframes ops-press{to{transform:translateY(9px);box-shadow:0 3px 0 #a8340f,0 10px 20px rgba(217,72,30,.3)}}
+.ops-q{position:absolute;border-radius:32px 10px 32px 10px;background:#fbefd0;border:2.5px solid var(--amber);padding:30px 36px;font:600 34px/1.3 "IBM Plex Sans"}
+.ops-seg{position:absolute;height:60px;display:flex;align-items:center;justify-content:center;font:600 24px "IBM Plex Sans"}
+.ops-mark{position:absolute;width:4px;background:var(--fg);border-radius:2px}
+.ops-hatch{background:repeating-linear-gradient(45deg,#c9d6c1 0 10px,#e1eadb 10px 20px)}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../agentic/#agents-in-ops">Agentic Engineering</a> · film · recorded 15 Nov 2026</div>
+  <h1 class="page">Agents in SRE operations</h1>
+  <div id="viewport">
+    <div id="stage">
+<!-- 1 -->
+<section class="scene"><div class="kick">Agentic Engineering · chapter 7</div><h1>Agents in SRE operations</h1>
+ <div class="a" style="--d:10.86s;position:absolute;left:110px;top:320px"><span class="chip">An investigation agent, run for many teams</span></div>
+ <div class="a" style="--d:18.77s;position:absolute;left:110px;top:440px"><span class="chip">5,400+ SRE agents</span><span class="chip a" style="--d:21.4s">2,500+ teams</span></div>
+ <div class="ops-num a" style="--d:25.25s;left:104px;top:560px">1.47M</div>
+ <div class="label a" style="--d:25.75s;left:112px;top:770px;font-size:32px">incidents processed at Microsoft</div>
+ <div class="label a" style="--d:28.1s;left:900px;top:440px;font-size:28px">Autonomy is a ladder</div>
+ <div class="box ops-st a" style="--d:29.66s;left:900px;top:810px;width:212px;height:110px">Investigate</div>
+ <div class="box ops-st a" style="--d:30.59s;left:1122px;top:710px;width:212px;height:210px">Suggest</div>
+ <div class="box ops-st amber a" style="--d:31.23s;left:1344px;top:610px;width:212px;height:310px">Act with approval</div>
+ <div class="box ops-st blue a" style="--d:32.87s;left:1566px;top:510px;width:212px;height:410px">Act alone<small style="margin-top:14px">only listed reversible actions, per alert class</small></div>
+</section>
+<!-- 2 -->
+<section class="scene"><div class="kick">Step 2 of 10</div><h1>The agent works inside the incident</h1>
+ <div class="ops-ping" style="--d:.7s;left:170px;top:520px;width:200px;height:200px"></div>
+ <div class="a" style="--d:.5s"><div class="box amber" style="left:130px;top:560px;width:280px;height:120px">Alert<small>pages a human</small></div></div>
+ <svg><path class="line a" style="--d:1.4s" d="M410 620H620"/></svg>
+ <div class="dot" style="left:420px;top:611px;--dx:180px;--d:1.4s"></div>
+ <div class="a" style="--d:2.6s"><div class="ops-frame" style="left:560px;top:420px;width:1220px;height:490px"></div><div class="label t-blue" style="left:600px;top:446px;font-size:26px">Incident state · owned by the incident commander</div></div>
+ <div class="a" style="--d:2.3s"><div class="box blue" style="left:620px;top:560px;width:400px;height:120px">Incident commander<small>human</small></div></div>
+ <div class="a" style="--d:7.74s"><div class="box green" style="left:1180px;top:560px;width:400px;height:120px">Agent<small>works inside it</small></div></div>
+ <div class="a" style="--d:10.92s;position:absolute;left:1180px;top:720px"><span class="chip">auto-investigates paging alerts</span></div>
+ <div class="a" style="--d:14.1s;position:absolute;left:1180px;top:800px"><span class="chip">drafts fixes</span></div>
+ <div class="a" style="--d:15.01s;position:absolute;left:620px;top:720px"><span class="chip">humans coordinate</span></div>
+</section>
+<!-- 3 -->
+<section class="scene"><div class="kick">Step 3 of 10</div><h1>Read-only lives in the identity</h1>
+ <div class="ops-card a" style="--d:3.45s;left:130px;top:330px;width:640px"><b>Agent token</b>
+  <div class="ops-seal a" style="--d:9.82s">signed</div>
+  <div class="ops-kv" style="margin-top:84px"><span>access</span><span class="t-blue">read-only</span></div>
+  <div class="ops-kv a" style="--d:11.25s"><span>agent</span><span>named</span></div>
+  <div class="ops-kv a" style="--d:12.53s"><span>delegating human</span><span>named</span></div>
+ </div>
+ <div class="label a" style="--d:6.02s;left:880px;top:330px;font-size:26px">Guardrails keyed on</div>
+ <div class="a" style="--d:7.92s;position:absolute;left:880px;top:376px"><span class="chip">identity</span><span class="chip a" style="--d:8.6s">action</span><span class="chip a" style="--d:9.35s">asset</span></div>
+ <div class="label a" style="--d:14.5s;left:880px;top:500px;font-size:26px">Regular sweeps</div>
+ <div class="ops-sweep a" style="--d:14.90s;top:546px"><span>forbidden action</span><em><i class="ops-tick"></i>still fails</em></div>
+ <div class="ops-sweep a" style="--d:15.80s;top:630px"><span>forbidden action</span><em><i class="ops-tick"></i>still fails</em></div>
+ <div class="ops-sweep a" style="--d:16.70s;top:714px"><span>forbidden action</span><em><i class="ops-tick"></i>still fails</em></div>
+ <div class="a cap" style="--d:18.71s;bottom:90px">Azure SRE Agent, Reader level: <span class="t-amber" style="font-weight:700">each write needs an admin's approval.</span></div>
+</section>
+<!-- 4 -->
+<section class="scene"><div class="kick">Step 4 of 10</div><h1>Evidence from your system,<br>not model priors</h1>
+ <svg>
+  <path class="line a" style="--d:5.42s;stroke:var(--blue);stroke-width:5" d="M340 372h150l40-8 50 10 60-6 70 6 60-4 80 4 60-6 60 4 60 2 50-40 40-34 60 20 50-26 60 14 60-10"/>
+  <g class="a" style="--d:6.01s" fill="#9fbf8f"><rect x="350" y="418" width="10" height="34" rx="5"/><rect x="430" y="418" width="10" height="34" rx="5"/><rect x="540" y="418" width="10" height="34" rx="5"/><rect x="610" y="418" width="10" height="34" rx="5"/><rect x="720" y="418" width="10" height="34" rx="5"/><rect x="800" y="418" width="10" height="34" rx="5"/><rect x="905" y="418" width="10" height="34" rx="5"/><rect x="990" y="418" width="10" height="34" rx="5"/><rect x="1070" y="418" width="10" height="34" rx="5"/><rect x="1130" y="418" width="10" height="34" rx="5"/><rect x="1168" y="418" width="10" height="34" rx="5" fill="#d9481e"/><rect x="1190" y="418" width="10" height="34" rx="5" fill="#d9481e"/><rect x="1212" y="418" width="10" height="34" rx="5" fill="#d9481e"/><rect x="1234" y="418" width="10" height="34" rx="5" fill="#d9481e"/><rect x="1256" y="418" width="10" height="34" rx="5" fill="#d9481e"/><rect x="1278" y="418" width="10" height="34" rx="5" fill="#d9481e"/><rect x="1300" y="418" width="10" height="34" rx="5" fill="#d9481e"/><rect x="1322" y="418" width="10" height="34" rx="5" fill="#d9481e"/><rect x="1344" y="418" width="10" height="34" rx="5" fill="#d9481e"/><rect x="1366" y="418" width="10" height="34" rx="5" fill="#d9481e"/><rect x="1388" y="418" width="10" height="34" rx="5" fill="#d9481e"/></g>
+  <g class="a" style="--d:6.6s"><rect x="360" y="490" width="120" height="26" rx="13" fill="#bfe0b0"/><rect x="560" y="490" width="140" height="26" rx="13" fill="#bfe0b0"/><rect x="800" y="490" width="110" height="26" rx="13" fill="#bfe0b0"/><rect x="1000" y="490" width="130" height="26" rx="13" fill="#bfe0b0"/><rect x="1170" y="490" width="230" height="26" rx="13" fill="#f0c9a8"/></g>
+  <path class="line a" style="--d:7.13s" d="M340 560H1400"/>
+  <path class="line a" style="--d:9.24s;stroke:var(--red);stroke-dasharray:10 10" d="M1150 320V590"/>
+  <g class="a" style="--d:7.13s"><rect x="707" y="547" width="26" height="26" rx="6" transform="rotate(45 720 560)" fill="#1f7a3a"/></g>
+  <g class="a" style="--d:8.52s"><rect x="947" y="547" width="26" height="26" rx="6" transform="rotate(45 960 560)" fill="#d9981e"/></g>
+ </svg>
+ <div class="label a" style="--d:5.42s;left:130px;top:356px;font-size:26px">Metrics</div>
+ <div class="label a" style="--d:6.01s;left:130px;top:420px;font-size:26px">Logs</div>
+ <div class="label a" style="--d:6.6s;left:130px;top:486px;font-size:26px">Traces</div>
+ <div class="label a" style="--d:7.13s;left:130px;top:544px;font-size:26px">Changes</div>
+ <div class="label t-blue a" style="--d:7.13s;left:680px;top:588px">deploy</div>
+ <div class="label t-amber a" style="--d:8.52s;left:916px;top:588px">flag flip</div>
+ <div class="label t-red a" style="--d:9.24s;left:1118px;top:600px">onset</div>
+ <div class="label a" style="--d:10.17s;left:130px;top:680px;font-size:26px">Meta's agent · 1,000+ incidents · median detection to mitigation, with engineers</div>
+ <div class="a" style="--d:17.88s"><div class="track" style="left:130px;width:1400px;top:740px"><div class="fill" style="background:var(--amber);--w:100%;--d:18.18s"></div></div><div class="label t-amber" style="left:1560px;top:746px;font-size:44px">9.5 h</div></div>
+ <div class="a" style="--d:19.99s"><div class="track" style="left:130px;width:1400px;top:840px"><div class="fill" style="background:var(--green);--w:40%;--d:20.29s"></div></div><div class="label t-green" style="left:1560px;top:846px;font-size:44px">3.8 h</div></div>
+</section>
+<!-- 5 -->
+<section class="scene"><div class="kick">Step 5 of 10</div><h1>Runbooks become typed tools</h1>
+ <div class="label a" style="--d:4.03s;left:130px;top:320px;font-size:26px">Google's Actus gateway</div>
+ <div class="term" style="left:130px;top:370px;width:980px;font-size:29px;padding:36px 44px">
+  <div class="a" style="--d:5.88s"><span class="muted">agent &gt;</span> <span class="t-red strike">./runbook-script.sh</span></div>
+  <div class="a muted" style="--d:7.08s">&nbsp; agents never run scripts directly</div>
+  <div class="a" style="--d:8.29s"><span class="muted">agent &gt;</span> runbook_tool(dry_run=true)</div>
+  <div class="a" style="--d:11.3s"><span class="muted">pre-flight &gt;</span> bound to an open incident</div>
+ </div>
+ <div class="a cap muted" style="--d:5.88s;left:130px;right:auto;bottom:auto;top:738px;font-size:24px">(Made-up example.)</div>
+ <div class="label a" style="--d:15.15s;left:1210px;top:420px;font-size:26px">Google adds</div>
+ <div class="a" style="--d:15.97s"><div class="box" style="left:1210px;top:466px;width:560px;height:80px">Agent rate limits</div></div>
+ <div class="a" style="--d:17.62s"><div class="box" style="left:1210px;top:562px;width:560px;height:80px">Circuit breakers</div></div>
+ <div class="a" style="--d:18.85s"><div class="box" style="left:1210px;top:658px;width:560px;height:80px">Auto-downgrade of risky requests</div></div>
+ <div class="ops-btn a" style="--d:21.53s;left:1240px;top:776px">Red<br>Button</div>
+ <div class="label a" style="--d:21.93s;left:1470px;top:856px;font-size:30px">fleet-wide</div>
+</section>
+<!-- 6 -->
+<section class="scene"><div class="kick">Step 6 of 10</div><h1>Automation can fail everywhere in one step</h1>
+ <div class="label a" style="--d:6.19s;left:150px;top:336px;font-size:26px">Google Cloud, 2024 · a maintenance job ignored its zone parameter</div>
+ <i class="ops-z" style="left:150px;top:392px;--d:6.19s;--k:11.55s"></i><i class="ops-z" style="left:242px;top:392px;--d:6.27s;--k:11.55s"></i><i class="ops-z" style="left:334px;top:392px;--d:6.35s;--k:11.55s"></i><i class="ops-z" style="left:426px;top:392px;--d:6.43s;--k:11.55s"></i><i class="ops-z" style="left:518px;top:392px;--d:6.51s;--k:11.55s"></i><i class="ops-z" style="left:610px;top:392px;--d:6.59s;--k:11.55s"></i><i class="ops-z" style="left:702px;top:392px;--d:6.67s;--k:11.55s"></i><i class="ops-z" style="left:794px;top:392px;--d:6.75s;--k:11.55s"></i><i class="ops-z" style="left:886px;top:392px;--d:6.83s;--k:11.55s"></i><i class="ops-z" style="left:978px;top:392px;--d:6.91s;--k:11.55s"></i><i class="ops-z" style="left:1070px;top:392px;--d:6.99s;--k:11.55s"></i><i class="ops-z" style="left:1162px;top:392px;--d:7.07s;--k:11.55s"></i>
+ <div class="a cap t-red" style="--d:11.65s;left:150px;bottom:auto;top:482px;font-size:32px">VPC controllers stopped in every zone</div>
+ <div class="label a" style="--d:14.31s;left:150px;top:634px;font-size:26px">Azure · one automation change</div>
+ <i class="ops-r" style="left:150px;top:690px;--d:14.31s;--k:16.27s"></i><i class="ops-r" style="left:258px;top:690px;--d:14.36s;--k:16.53s"></i><i class="ops-r" style="left:366px;top:690px;--d:14.41s;--k:16.79s"></i><i class="ops-r" style="left:474px;top:690px;--d:14.46s;--k:17.05s"></i><i class="ops-r" style="left:582px;top:690px;--d:14.51s;--k:17.31s"></i><i class="ops-r" style="left:690px;top:690px;--d:14.56s;--k:17.57s"></i><i class="ops-r" style="left:798px;top:690px;--d:14.61s;--k:17.83s"></i><i class="ops-r" style="left:906px;top:690px;--d:14.66s;--k:18.09s"></i><i class="ops-r" style="left:1014px;top:690px;--d:14.71s;--k:18.34s"></i><i class="ops-r" style="left:1122px;top:690px;--d:14.76s;--k:18.60s"></i><i class="ops-r" style="left:1230px;top:690px;--d:14.81s;--k:18.86s"></i><i class="ops-r" style="left:1338px;top:690px;--d:14.86s;--k:19.12s"></i><i class="ops-r" style="left:1446px;top:690px;--d:14.91s;--k:19.38s"></i><i class="ops-r" style="left:1554px;top:690px;--d:14.96s;--k:19.64s"></i>
+ <div class="a" style="--d:16.27s"><div class="ops-thin" style="left:150px;top:806px;width:1494px"><div class="fill ops-slow" style="background:var(--red);--w:100%;--d:16.27s;--t:3.63s;border-radius:13px"></div></div></div>
+ <div class="a cap t-red" style="--d:16.27s;left:150px;bottom:auto;top:850px;font-size:32px">Resources deleted in 14 regions in about 40 minutes</div>
+</section>
+<!-- 7 -->
+<section class="scene"><div class="kick">Step 7 of 10</div><h1>Fixes ship through review and canary</h1>
+ <svg><path class="line a" style="--d:2.18s" d="M410 355H470"/><path class="line a" style="--d:3.76s" d="M820 355H880"/><path class="line a" style="--d:5.61s" d="M1050 355H1110"/><path class="line a" style="--d:6.21s" d="M1280 355H1340"/></svg>
+ <div class="a" style="--d:.6s"><div class="box green" style="left:130px;top:310px;width:280px;height:90px">Agent drafts a fix</div></div>
+ <div class="a" style="--d:2.18s"><div class="box blue" style="left:470px;top:310px;width:350px;height:90px">Commander approves</div></div>
+ <div class="a" style="--d:3.76s"><div class="box" style="left:880px;top:310px;width:170px;height:90px">Review</div></div>
+ <div class="a" style="--d:5.61s"><div class="box" style="left:1110px;top:310px;width:170px;height:90px">Canary</div></div>
+ <div class="a" style="--d:6.21s"><div class="box" style="left:1340px;top:310px;width:110px;height:90px">Ships</div></div>
+ <div class="ops-card a" style="--d:6.4s;left:130px;top:490px;width:1000px"><b>Cursor's Rollouts bot</b>
+  <div class="a" style="--d:7.85s;margin-top:30px"><i class="ops-tick"></i>Writes a monitoring plan per PR</div>
+  <div class="a" style="--d:11.02s;margin-top:26px"><i class="ops-tick"></i>Checks each environment as it deploys</div>
+  <div class="a" style="--d:13.59s;margin-top:26px"><i class="ops-tick"></i>Can open a revert PR</div>
+ </div>
+ <div class="ops-q a" style="--d:15.96s;left:1220px;top:560px;width:560px">“does not merge or roll back on its own today”</div>
+</section>
+<!-- 8 -->
+<section class="scene"><div class="kick">Step 8 of 10</div><h1>Autonomy is granted per alert class</h1>
+ <div class="label a" style="--d:8.36s;left:150px;top:340px;font-size:26px">Consistently approved recommendations · 2 to 4 weeks first</div>
+ <div class="a" style="--d:8.36s"><div class="label" style="left:150px;top:418px">Week 1</div><div class="label" style="left:150px;top:494px">Week 2</div><div class="label" style="left:150px;top:570px">Week 3</div><div class="label" style="left:150px;top:646px">Week 4</div><i class="ops-cell" style="left:290px;top:400px;--k:9.85s"></i><i class="ops-cell" style="left:366px;top:400px;--k:9.97s"></i><i class="ops-cell" style="left:442px;top:400px;--k:10.08s"></i><i class="ops-cell" style="left:518px;top:400px;--k:10.20s"></i><i class="ops-cell" style="left:594px;top:400px;--k:10.32s"></i><i class="ops-cell" style="left:670px;top:400px;--k:10.44s"></i><i class="ops-cell" style="left:746px;top:400px;--k:10.55s"></i><i class="ops-cell" style="left:290px;top:476px;--k:10.67s"></i><i class="ops-cell" style="left:366px;top:476px;--k:10.79s"></i><i class="ops-cell" style="left:442px;top:476px;--k:10.91s"></i><i class="ops-cell" style="left:518px;top:476px;--k:11.03s"></i><i class="ops-cell" style="left:594px;top:476px;--k:11.14s"></i><i class="ops-cell" style="left:670px;top:476px;--k:11.26s"></i><i class="ops-cell" style="left:746px;top:476px;--k:11.38s"></i><i class="ops-cell" style="left:290px;top:552px;--k:11.50s"></i><i class="ops-cell" style="left:366px;top:552px;--k:11.61s"></i><i class="ops-cell" style="left:442px;top:552px;--k:11.73s"></i><i class="ops-cell" style="left:518px;top:552px;--k:11.85s"></i><i class="ops-cell" style="left:594px;top:552px;--k:11.96s"></i><i class="ops-cell" style="left:670px;top:552px;--k:12.08s"></i><i class="ops-cell" style="left:746px;top:552px;--k:12.20s"></i><i class="ops-cell" style="left:290px;top:628px;--k:12.32s"></i><i class="ops-cell" style="left:366px;top:628px;--k:12.44s"></i><i class="ops-cell" style="left:442px;top:628px;--k:12.55s"></i><i class="ops-cell" style="left:518px;top:628px;--k:12.67s"></i><i class="ops-cell" style="left:594px;top:628px;--k:12.79s"></i><i class="ops-cell" style="left:670px;top:628px;--k:12.91s"></i><i class="ops-cell" style="left:746px;top:628px;--k:13.02s"></i></div>
+ <div class="label a" style="--d:3.73s;left:1060px;top:430px;font-size:26px">Azure SRE Agent · per response plan</div>
+ <div class="ops-sw a" style="--d:4.95s;--k:13.14s;left:1210px;top:486px"><i></i></div>
+ <div class="ops-lo ops-dim t-amber a" style="--d:4.95s;--k:13.14s;left:1060px;top:526px">Review</div>
+ <div class="ops-lo ops-lift" style="--k:13.14s;left:1540px;top:526px;opacity:.35">Autonomous</div>
+ <i class="ops-rep" style="left:150px;top:760px;--k:14.64s"></i><i class="ops-rep" style="left:184px;top:760px;--k:14.70s"></i><i class="ops-rep" style="left:218px;top:760px;--k:14.76s"></i><i class="ops-rep" style="left:252px;top:760px;--k:14.82s"></i><i class="ops-rep" style="left:286px;top:760px;--k:14.88s"></i><i class="ops-rep" style="left:320px;top:760px;--k:14.94s"></i><i class="ops-rep" style="left:354px;top:760px;--k:15.00s"></i><i class="ops-rep" style="left:388px;top:760px;--k:15.06s"></i><i class="ops-rep" style="left:422px;top:760px;--k:15.12s"></i><i class="ops-rep" style="left:456px;top:760px;--k:15.18s"></i><i class="ops-rep" style="left:490px;top:760px;--k:15.24s"></i><i class="ops-rep" style="left:524px;top:760px;--k:15.30s"></i><i class="ops-rep" style="left:558px;top:760px;--k:15.36s"></i><i class="ops-rep" style="left:592px;top:760px;--k:15.42s"></i><i class="ops-rep" style="left:626px;top:760px;--k:15.48s"></i><i class="ops-rep" style="left:660px;top:760px;--k:15.54s"></i><i class="ops-rep" style="left:694px;top:760px;--k:15.60s"></i><i class="ops-rep" style="left:728px;top:760px;--k:15.66s"></i><i class="ops-rep" style="left:762px;top:760px;--k:15.72s"></i><i class="ops-rep" style="left:796px;top:760px;--k:15.78s"></i><i class="ops-rep" style="left:830px;top:760px;--k:15.84s"></i><i class="ops-rep" style="left:864px;top:760px;--k:15.90s"></i><i class="ops-rep" style="left:898px;top:760px;--k:15.96s"></i><i class="ops-rep" style="left:932px;top:760px;--k:16.02s"></i><i class="ops-rep" style="left:966px;top:760px;--k:16.08s"></i><i class="ops-rep" style="left:1000px;top:760px;--k:16.14s"></i><i class="ops-rep" style="left:1034px;top:760px;--k:16.20s"></i><i class="ops-rep" style="left:1068px;top:760px;--k:16.26s"></i><i class="ops-rep" style="left:1102px;top:760px;--k:16.32s"></i><i class="ops-rep" style="left:1136px;top:760px;--k:16.38s"></i><i class="ops-rep" style="left:1170px;top:760px;--k:16.44s"></i><i class="ops-rep" style="left:1204px;top:760px;--k:16.50s"></i><i class="ops-rep" style="left:1238px;top:760px;--k:16.56s"></i><i class="ops-rep" style="left:1272px;top:760px;--k:16.62s"></i><i class="ops-rep" style="left:1306px;top:760px;--k:16.68s"></i><i class="ops-rep" style="left:1340px;top:760px;--k:16.74s"></i><i class="ops-rep" style="left:1374px;top:760px;--k:16.80s"></i><i class="ops-rep" style="left:1408px;top:760px;--k:16.86s"></i><i class="ops-rep" style="left:1442px;top:760px;--k:16.92s"></i><i class="ops-rep" style="left:1476px;top:760px;--k:16.98s"></i><i class="ops-rep" style="left:1510px;top:760px;--k:17.04s"></i><i class="ops-rep" style="left:1544px;top:760px;--k:17.10s"></i><i class="ops-rep" style="left:1578px;top:760px;--k:17.16s"></i><i class="ops-rep" style="left:1612px;top:760px;--k:17.22s"></i><i class="ops-rep" style="left:1646px;top:760px;--k:17.28s"></i><i class="ops-rep" style="left:1680px;top:760px;--k:17.34s"></i>
+ <div class="a cap" style="--d:14.34s;bottom:150px;font-size:32px"><span class="t-red">A bad rule repeats thousands of times before anyone looks.</span></div>
+ <div class="a cap" style="--d:18.36s;bottom:90px;font-size:32px">No one publishes a harmful-action rate. <span class="t-green" style="font-weight:700">Track your own.</span></div>
+</section>
+<!-- 9 -->
+<section class="scene"><div class="kick">Step 9 of 10</div><h1>Every tool call is traced</h1>
+ <div class="ops-card a" style="--d:.5s;left:130px;top:310px;width:900px;height:500px"></div>
+ <div class="ops-span a" style="--d:.9s;left:180px;top:350px;width:330px">execute_tool</div>
+ <div class="ops-span a" style="--d:1.5s;left:420px;top:408px;width:260px">execute_tool</div>
+ <div class="ops-span a" style="--d:2.1s;left:610px;top:466px;width:370px">execute_tool</div>
+ <div class="a" style="--d:4.87s;position:absolute;left:180px;top:560px;width:800px">
+  <div class="ops-kv"><span class="t-blue" style="color:var(--blue)">gen_ai.tool.name</span><span>always</span></div>
+  <div class="ops-kv a" style="--d:6.3s"><span>tool call id</span><span>when the model sent one</span></div>
+  <div class="ops-kv a" style="--d:9.55s"><span>arguments, results</span><span class="t-amber">opt-in</span></div>
+ </div>
+ <div class="label a" style="--d:11.86s;left:1130px;top:430px;font-size:26px">Also keep for postmortems</div>
+ <div class="a" style="--d:13.69s"><div class="box" style="left:1130px;top:478px;width:640px;height:84px">Tool results the agent saw</div></div>
+ <div class="a" style="--d:15.86s"><div class="box" style="left:1130px;top:578px;width:640px;height:84px">Model and deployment IDs</div></div>
+ <div class="a" style="--d:17.97s"><div class="box" style="left:1130px;top:678px;width:640px;height:84px">Tool schema and instruction versions</div></div>
+ <div class="a" style="--d:20.81s"><div class="box" style="left:1130px;top:778px;width:640px;height:84px">Effective permissions</div></div>
+</section>
+<!-- 10 -->
+<section class="scene" style="--egg:20.3s"><div class="kick">Step 10 of 10</div><h1>Trust is earned on replays</h1>
+ <div class="a" style="--d:2.64s;position:absolute;left:130px;top:300px;display:flex;align-items:center"><span class="label" style="position:static;font-size:26px;margin-right:22px">Rerun on every</span><span class="chip a" style="--d:3.73s">model</span><span class="chip a" style="--d:4.24s">prompt</span><span class="chip a" style="--d:4.75s">tool change</span></div>
+ <div class="a" style="--d:5.92s"><div class="ops-seg" style="left:130px;top:410px;width:700px;background:#dff0d3;border:2.5px solid var(--blue);border-radius:30px 0 0 10px">Frozen incident</div></div>
+ <div class="a" style="--d:9.12s"><div class="ops-seg ops-hatch muted" style="left:830px;top:410px;width:520px;border:2.5px dashed #9fb39a;border-left:0;border-radius:0 10px 30px 0">future data excluded</div><div class="ops-mark" style="left:828px;top:396px;height:88px"></div></div>
+ <div class="label a" style="--d:12.47s;left:130px;top:540px;font-size:26px">ITBench-AA · 59 Kubernetes incidents</div>
+ <div class="a" style="--d:12.47s"><div class="track" style="left:130px;width:1240px;top:590px"><div class="fill" style="background:var(--green);--w:56.2%;--d:21.21s"></div></div></div>
+ <div class="a" style="--d:15.96s"><div class="ops-mark" style="left:748px;top:576px;height:92px"></div><div class="label" style="left:500px;top:676px;font-size:24px;width:500px;text-align:center">50% · every frontier model<br>scored below, May 2026</div></div>
+ <div class="ops-num a" style="--d:22.44s;left:1410px;top:572px;font-size:104px">56.2%</div>
+ <div class="label a" style="--d:21.21s;left:1416px;top:684px;font-size:24px">the best, by late October</div>
+ <div class="a cap muted" style="--d:24.44s;bottom:76px;font-size:28px">SRE Lab · Agentic Engineering · Agents in SRE operations</div>
+ <div class="critter"><div id="critter"></div></div>
+</section>
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 4 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../agentic/#agents-in-ops">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Agents in S R E operations. Agents now work incidents for hundreds of teams. What may they do alone, and how does an alert class earn autonomy? Picture an investigation agent inside a normal incident process, run for many teams. Microsoft's S R E agents, more than fifty-four hundred of them across more than twenty-five hundred teams, processed one point four seven million incidents. Autonomy is a ladder: investigate, suggest, act with approval, and act alone only on listed reversible actions for each alert class.", "An alert pages a human. The incident commander owns the incident state, as in the Google S R E book, and the agent works inside it. Monzo's agent investigates paging alerts automatically and drafts fixes while humans coordinate.", "The commander asks a narrow question, and the agent holds a read-only identity. Meta keys its guardrails on identity, action and asset. It signs tokens that name the agent and the human who delegated, and it runs regular sweeps to prove forbidden actions still fail. At the Reader level, Azure S R E Agent needs an admin's approval for each write.", "Evidence comes from your system, not from the model's priors. That means metrics, logs and traces, plus the deploys and flag flips before onset. Meta's agent has worked more than a thousand incidents. With engineers, the median time from detection to mitigation fell from nine and a half hours to three point eight.", "Runbooks become typed tools that read or dry-run. In Google's Actus gateway, agents never run scripts directly. Every exposed A P I supports a dry run, and pre-flight checks bind each action to an open incident. Google adds rate limits for agents, circuit breakers, automatic downgrade of risky requests, and a fleet-wide Red Button.", "Fleet-wide brakes matter because automation can fail everywhere in one step. In 2024, a Google Cloud maintenance job ignored its zone parameter and stopped V P C controllers in every zone. An Azure automation change deleted resources in fourteen regions in about forty minutes.", "The agent drafts a fix, the commander approves, and it ships through review and canary. Cursor's Rollouts bot writes a monitoring plan for each pull request, checks each environment as it deploys, and can open a revert pull request. But it does not merge or roll back on its own today.", "Unattended action is granted per alert class. Azure S R E Agent sets Review or Autonomous for each response plan, and Microsoft advises two to four weeks of consistently approved recommendations first. A bad rule repeats thousands of times before anyone looks. None of these organizations publishes a harmful-action rate, so track your own.", "Every tool call is traced. Open Telemetry's execute tool spans carry the tool name, and the model's tool call I D when it sent one. Arguments and results are opt-in. For postmortems, also keep the tool results the agent saw, the model and deployment I Ds, the tool schema and instruction versions, and its effective permissions.", "Trust is earned on replays, rerun on every model, prompt or tool change. Incident dot I O backtests frozen incidents with future data excluded. Expect low scores. On I T Bench's fifty-nine Kubernetes incidents, every frontier model scored below fifty percent at launch, in May 2026. By late October, the best had fifty-six point two percent."], "seconds": [36.9, 16.11, 23.53, 20.78, 22.85, 20.1, 18.79, 23.13, 22.25, 24.83]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

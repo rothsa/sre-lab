@@ -148,7 +148,7 @@ function chapterHTML(ch) {
   return `<section class="chapter" id="${ch.id}" aria-labelledby="h-${ch.id}">
     <h2 id="h-${ch.id}"><span class="n">${ch.n}.</span>${esc(ch.title)}</h2>
     <p class="q">${fmt(ch.question)}</p>
-    ${ch.film ? `<p class="film-link"><a href="${esc(ch.film)}">▶ Watch this chapter as a short film</a> <span>about 4 min, with sound</span></p>` : ""}
+    ${ch.film ? `<p class="film-link"><a href="${esc(ch.film)}">▶ Watch this chapter as a short film</a> <span>3 to 4 min, with sound</span></p>` : ""}
     <figure class="diagram" tabindex="0" aria-label="${esc(ch.title)} diagram. Use the left and right arrow keys to step through.">
       <div class="frame"></div>
       <div class="controls">

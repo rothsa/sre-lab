@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Verification first: go deep, then prove it: the film</title>
+<meta name="description" content="A narrated walk through the trust loop for coding agents: reproduce, prove the cause, fix small, then show evidence a check the agent can&#x27;t edit accepts.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.vf-row{position:absolute;left:110px;display:flex;align-items:center;gap:14px}
+.vf-pill{height:70px;padding:0 26px;border-radius:999px;border:2.5px solid var(--rule);background:var(--panel);font:600 25px "IBM Plex Sans";display:flex;align-items:center;gap:10px;white-space:nowrap;box-shadow:0 8px 20px rgba(20,70,35,.10)}
+.vf-b{border-color:var(--blue);background:#dff0d3}.vf-g{border-color:var(--green);background:#e9f6dc}.vf-r{border-color:var(--red);background:#fbe4d9}.vf-am{border-color:var(--amber);background:#fbefd0}
+.vf-arrow{font:700 30px "IBM Plex Sans";color:#9fbf8f}
+.vf-tag{width:170px;font:700 20px "IBM Plex Sans";letter-spacing:.1em;text-transform:uppercase;color:var(--blue)}
+.vf-panel{position:absolute;border:2.5px solid var(--rule);background:var(--panel);border-radius:30px 10px 30px 10px;box-shadow:0 10px 28px rgba(20,70,35,.10);padding:30px 40px}
+.vf-panel b{display:block;font:800 36px "Archivo",sans-serif;margin-bottom:14px}
+.vf-frame{position:absolute;border:4px dashed var(--blue);border-radius:44px;background:rgba(255,255,255,.55)}
+.vf-layer{position:absolute;left:720px;width:560px;height:38px;border-radius:12px;background:#cfe3c0;border:2px solid #b7d4a6}
+.scene.on .vf-elim{animation:in .7s var(--d) both,vf-elim .5s var(--e) forwards}
+@keyframes vf-elim{to{opacity:.38;text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:3px}}
+.scene.on .vf-ok{animation:in .7s var(--d) both,vf-ok .5s var(--e) forwards}
+@keyframes vf-ok{to{border-color:var(--green);background:#e9f6dc;color:#236b31}}
+.scene.on .vf-bad{animation:in .7s var(--d) both,vf-bad .5s var(--e) forwards}
+@keyframes vf-bad{to{border-color:var(--red);background:#fbe4d9;color:var(--red)}}
+.scene.on .vf-rev{animation:in .7s var(--d) both,vf-rev .5s var(--e) forwards}
+@keyframes vf-rev{to{opacity:.45;border-style:dashed;text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:3px}}
+.vf-ring{position:absolute;border-radius:50%;border:5px dashed var(--blue);background:rgba(31,122,58,.07);opacity:0}
+.scene.on .vf-ring{animation:vf-fade .7s var(--d) both,vf-spin 9s linear var(--d) infinite}
+@keyframes vf-fade{from{opacity:0}to{opacity:1}}
+@keyframes vf-spin{to{transform:rotate(360deg)}}
+.scene.on .vf-pulse{animation:in .7s var(--d) both,vf-pulse .7s var(--e) 4 alternate}
+@keyframes vf-pulse{to{transform:scale(1.05);box-shadow:0 0 0 12px rgba(217,152,30,.22)}}
+.vf-commit{position:absolute;width:56px;height:56px;border-radius:50%;border:6px solid var(--red);background:var(--panel)}
+.vf-commit.vf-g{border-color:var(--green);background:#e9f6dc}
+.vf-bar{height:16px;border-radius:8px;background:#d9981e;opacity:.75;margin:14px 0 14px 40px}
+.vf-quote{position:absolute;font:700 46px/1.22 "Archivo",sans-serif;letter-spacing:-.005em}
+.vf-check{display:flex;align-items:center;gap:20px;font:600 34px "IBM Plex Sans";margin-top:22px}
+.vf-check::before{content:"";width:34px;height:34px;border-radius:50%;background:var(--green);flex:none;box-shadow:inset 0 0 0 9px #e9f6dc,inset 0 0 0 20px var(--green)}
+.vf-shot{position:relative;display:inline-block;width:300px;height:190px;border-radius:18px;border:2.5px solid var(--blue);background:#fff;margin:14px 26px 0 0;overflow:hidden;vertical-align:top}
+.vf-shot i{position:absolute;display:block;border-radius:8px;background:#cfe3c0}
+.vf-shot .vf-top{left:0;top:0;right:0;height:30px;border-radius:0;background:#dff0d3}
+.vf-live{position:absolute;right:12px;top:8px;width:14px;height:14px;border-radius:50%;background:var(--green)}
+.scene.on .vf-live{animation:beat 1s 1s infinite}
+.vf-sq{display:inline-block;width:44px;height:44px;border-radius:10px;background:#cfe3c0;margin-right:10px;vertical-align:middle}
+.vf-sq.vf-x{background:var(--red)}
+.vf-dark{position:absolute;border-radius:32px 10px 32px 10px;background:#0d2016;color:#e3f0de;box-shadow:0 24px 60px rgba(20,70,35,.22)}
+.vf-ver{position:absolute;top:120px;width:160px;height:160px;border-radius:24px 8px 24px 8px;border:3px solid #3c6b4c;background:repeating-linear-gradient(45deg,#1c3a28 0 14px,#234a33 14px 28px)}
+.scene.on .vf-fail{animation:vf-fail .5s var(--e) forwards}
+@keyframes vf-fail{to{border-color:#ff8a5c;background:#d9481e}}
+.scene.on .vf-dash{animation:in .7s var(--d) both,vf-dashred .5s var(--e) forwards}
+@keyframes vf-dashred{to{stroke:var(--red)}}
+.vf-dots{position:absolute;left:110px;top:500px;display:grid;grid-template-columns:repeat(32,30px);gap:8px}
+.vf-dots i{width:30px;height:30px;border-radius:50%;background:#d6e6c8;display:block}
+.scene.on .vf-dots i.g{animation:lit .4s var(--d) forwards}
+.vf-agents{position:absolute;display:grid;grid-template-columns:repeat(16,44px);gap:16px 18px}
+.vf-agents i{display:block;width:44px;height:44px;border-radius:50%;background:#dff0d3;border:2.5px solid var(--blue)}
+.vf-agents u{display:block;width:30px;height:30px;margin:0 7px;border-radius:8px;background:#fbe4d9;border:2.5px solid var(--red)}
+.vf-unit{position:absolute;top:312px;width:170px;height:64px;border-radius:999px;border:2.5px solid var(--green);background:#e9f6dc;font:600 22px "IBM Plex Mono";display:flex;align-items:center;justify-content:center}
+.vf-thin{height:48px;border-radius:24px}.vf-thin .fill{border-radius:24px}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../agentic/#verification-first">Agentic Engineering</a> · film · recorded 15 Nov 2026</div>
+  <h1 class="page">Verification first: go deep, then prove it</h1>
+  <div id="viewport">
+    <div id="stage">
+<!-- 1 -->
+<section class="scene"><div class="kick">Agentic Engineering · chapter 3</div><h1>Verification first:<br>go deep, then prove it</h1>
+ <div class="a label" style="--d:11.94s;left:110px;top:322px;font-size:26px">The trust loop, from pstack</div>
+ <div class="vf-row a" style="--d:16.99s;top:372px"><span class="vf-tag">Understand</span><span class="vf-pill vf-b">Reproduce</span><span class="vf-arrow">→</span><span class="vf-pill vf-b">Cause proven at runtime?</span><span class="vf-arrow">→</span><span class="vf-pill vf-b">Failing repro</span><span class="vf-arrow">→</span><span class="vf-pill vf-b">Smallest fix</span></div>
+ <div class="vf-row a" style="--d:18.63s;top:468px"><span class="vf-tag">Prove</span><span class="vf-pill vf-g">Original repro passes?</span><span class="vf-arrow">→</span><span class="vf-pill vf-g">Evidence</span><span class="vf-arrow">→</span><span class="vf-pill vf-g">Blind review</span><span class="vf-arrow">→</span><span class="vf-pill vf-g">CI guards</span><span class="vf-arrow">→</span><span class="vf-pill vf-g">Merge</span></div>
+ <div class="a cap" style="--d:22.43s;bottom:auto;top:600px">The oracle sets the yield. <span class="muted" style="font-size:26px">&nbsp;Agent PRs that succeeded in dotnet/runtime:</span></div>
+ <div class="a" style="--d:27.11s"><div class="label" style="left:110px;top:697px;font-size:28px">Cleanup PRs</div><div class="track" style="top:680px"><div class="fill" style="background:var(--green);--w:84.7%;--d:27.51s"></div></div><div class="label t-green" style="left:1650px;top:688px;font-size:40px">84.7%</div></div>
+ <div class="a" style="--d:32.19s"><div class="label" style="left:110px;top:797px;font-size:28px">Performance PRs</div><div class="track" style="top:780px"><div class="fill" style="background:var(--amber);--w:54.5%;--d:32.59s"></div></div><div class="label t-amber" style="left:1650px;top:788px;font-size:40px">54.5%</div></div>
+</section>
+
+<!-- 2 -->
+<section class="scene"><div class="kick">Step 2 of 12</div><h1>Reproduce where the user hit it</h1>
+ <div class="a" style="--d:.4s"><div class="box" style="left:130px;top:440px;width:290px;height:130px">Bug report<small>symptom</small></div></div>
+ <svg><path class="line a" style="--d:1.82s" d="M420 505H720"/></svg>
+ <div class="a" style="--d:3.79s"><div class="vf-frame" style="left:620px;top:310px;width:760px;height:440px"></div></div>
+ <div class="a label t-blue" style="--d:6.84s;left:656px;top:334px">Ramp: a sandboxed VM for each agent session</div>
+ <div class="a" style="--d:2.12s"><div class="box blue" style="left:720px;top:390px;width:560px;height:130px;font-size:36px">Reproduce<small>on the surface the user hit</small></div></div>
+ <div class="a" style="--d:10.77s"><div class="vf-layer" style="top:556px"></div><div class="vf-layer" style="top:604px"></div><div class="vf-layer" style="top:652px"></div><div class="label" style="left:720px;top:702px">Full local dev stack</div></div>
+ <div class="a label" style="--d:12.87s;left:130px;top:812px;font-size:24px">pstack's bug-fix playbook</div>
+ <div class="vf-row" style="left:130px;top:856px"><span class="vf-pill vf-b a" style="--d:15.25s">Synthesize the trigger</span><span class="vf-pill vf-b a" style="--d:16.87s">or add instrumentation</span><span class="vf-arrow a" style="--d:18.50s">→</span><span class="vf-pill a" style="--d:18.50s">only then ask the user</span></div>
+</section>
+
+<!-- 3 -->
+<section class="scene"><div class="kick">Step 3 of 12</div><h1>Find the cause by elimination</h1>
+ <div class="a label" style="--d:.4s;left:110px;top:316px">Hypotheses</div>
+ <div class="vf-row" style="top:356px;flex-direction:column;align-items:stretch;width:500px;gap:18px">
+  <span class="vf-pill vf-elim a" style="--d:.5s;--e:1.57s">Hypothesis 1</span>
+  <span class="vf-pill vf-elim a" style="--d:.7s;--e:2.17s">Hypothesis 2</span>
+  <span class="vf-pill vf-ok a" style="--d:.9s;--e:2.60s">Hypothesis 3 <span class="a" style="--d:2.60s;font:400 19px 'IBM Plex Mono'">confirmed at runtime</span></span>
+  <span class="vf-pill vf-elim a" style="--d:1.1s;--e:2.77s">Hypothesis 4</span></div>
+ <div class="a" style="--d:4.35s"><div class="box amber" style="left:110px;top:760px;width:500px;height:120px">An oracle<small>outside the agents</small></div></div>
+ <div class="a label" style="--d:7.39s;left:660px;top:404px;font-size:26px">Bun's port · about 64 Claudes</div>
+ <div class="big a" style="--d:10.17s;left:652px;top:440px;font-size:170px">535,496</div>
+ <div class="a cap" style="--d:12.17s;left:1400px;right:110px;bottom:auto;top:478px;font-size:36px">lines of Zig to Rust<br><span class="t-blue" style="font-weight:700">in 11 days</span></div>
+ <div class="a" style="--d:14.56s"><div class="box green" style="left:660px;top:640px;width:560px;height:110px;font-size:34px">60,624 Linux tests<small>the oracle it ran against</small></div></div>
+ <div class="a label" style="--d:17.15s;left:660px;top:790px;font-size:24px">Anthropic's 16 compiler agents, each on a different failing test</div>
+ <div class="vf-agents a" style="--d:17.55s;left:660px;top:834px"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u></div>
+</section>
+
+<!-- 4 -->
+<section class="scene"><div class="kick">Step 4 of 12</div><h1>Not proven yet? Go round again</h1>
+ <div class="vf-ring" style="--d:1.65s;left:230px;top:400px;width:400px;height:400px"></div>
+ <div class="a" style="--d:.4s"><div class="box blue" style="left:300px;top:350px;width:260px;height:90px">Reproduce</div><div class="box amber" style="left:230px;top:760px;width:400px;height:100px">Cause proven?<small>not yet</small></div></div>
+ <div class="a cap" style="--d:1.65s;left:230px;right:auto;width:400px;bottom:auto;top:572px;text-align:center;font-weight:700;color:var(--blue)">Add logging</div>
+ <div class="a label" style="--d:3.76s;left:900px;top:420px;font-size:26px">pstack's rule: attack the premise</div>
+ <div class="a" style="--d:6.78s"><div class="box red" style="left:900px;top:476px;width:380px;height:120px">Fix 1<small>failed</small></div></div>
+ <div class="a" style="--d:7.28s"><div class="box red" style="left:1320px;top:476px;width:380px;height:120px">Fix 2<small>failed</small></div></div>
+ <div class="box amber vf-pulse a" style="--d:8.29s;--e:9.74s;left:900px;top:626px;width:800px;height:110px">The premise they share</div>
+ <div class="a cap t-green" style="--d:9.74s;left:900px;right:110px;bottom:auto;top:776px;font-weight:600">Test the premise before another fix.</div>
+</section>
+
+<!-- 5 -->
+<section class="scene"><div class="kick">Step 5 of 12</div><h1>Commit the failing repro first</h1>
+ <svg><path class="line a" style="--d:.3s;stroke-width:6" d="M150 458H1500"/></svg>
+ <div class="a label mono" style="--d:.3s;left:150px;top:366px;font-size:24px">git history</div>
+ <div class="a" style="--d:.6s"><div class="vf-commit" style="left:402px;top:430px"></div><div class="box red" style="left:260px;top:520px;width:340px;height:110px">Failing repro<small>committed first</small></div></div>
+ <div class="a" style="--d:2.39s"><div class="vf-commit vf-g" style="left:1002px;top:430px"></div><div class="box green" style="left:860px;top:520px;width:340px;height:110px">The fix<small>the repro now passes</small></div></div>
+ <div class="a label t-blue" style="--d:3.54s;left:660px;top:366px;font-size:24px">pstack: sequence-verifiable-units</div>
+ <div class="a" style="--d:7.41s"><div class="box amber" style="left:1300px;top:520px;width:340px;height:110px">Pins the oracle</div></div>
+ <div class="a label" style="--d:9.20s;left:130px;top:762px;font-size:24px">InfoQ reported, of Spotify's agents</div>
+ <div class="vf-row" style="left:130px;top:806px"><span class="vf-pill vf-r a" style="--d:11.49s">Failing tests commented out</span><span class="vf-pill vf-r a" style="--d:13.64s">Java versions downgraded</span><span class="vf-arrow a" style="--d:15.86s">→</span><span class="vf-pill vf-g a" style="--d:15.86s">Build turns green</span></div>
+</section>
+
+<!-- 6 -->
+<section class="scene"><div class="kick">Step 6 of 12</div><h1>The smallest fix, and no stubs</h1>
+ <div class="vf-row a" style="--d:.4s;top:310px"><span class="vf-pill vf-g">The smallest fix the evidence supports</span></div>
+ <div class="term" style="left:110px;top:420px;width:800px;font-size:27px;line-height:1.6;padding:34px 42px"><div class="a" style="--d:5.86s">fn convert() {</div><div class="a" style="--d:12.46s"><div class="vf-bar" style="width:600px"></div><div class="vf-bar" style="width:560px"></div><div class="vf-bar" style="width:610px"></div><div class="vf-bar" style="width:520px"></div><div class="vf-bar" style="width:330px"></div></div><div class="a t-red" style="--d:5.86s">&nbsp;&nbsp;todo!() <span class="muted">// stub</span></div><div class="a" style="--d:5.86s">}</div></div>
+ <div class="a label" style="--d:5.86s;left:110px;top:800px;font-size:22px">(Made-up example.)</div>
+ <div class="a label" style="--d:9.26s;left:1010px;top:420px;font-size:26px">The rule Bun's reviewers got</div>
+ <div class="vf-quote a" style="--d:11.53s;left:1010px;top:470px;width:760px">If you need a paragraph-long comment to justify why the workaround is OK, <span class="a t-red" style="--d:16.59s">the code is wrong.</span></div>
+</section>
+
+<!-- 7 -->
+<section class="scene"><div class="kick">Step 7 of 12</div><h1>Re-run the original repro</h1>
+ <div class="a" style="--d:.5s"><div class="box green" style="left:130px;top:330px;width:400px;height:140px;font-size:36px">Passes<small>on the same surface</small></div></div>
+ <div class="a" style="--d:3.95s"><div class="box amber" style="left:570px;top:330px;width:400px;height:140px;font-size:36px">Inconclusive<small>not a pass</small></div></div>
+ <div class="a" style="--d:6.59s"><div class="box red" style="left:1010px;top:330px;width:400px;height:140px;font-size:36px">Still failing</div></div>
+ <svg><path class="line a" style="--d:7.66s" d="M1210 470V620H570"/><path class="line a" style="--d:7.66s" d="M592 604L570 620L592 636"/></svg>
+ <div class="a" style="--d:7.66s"><div class="box blue" style="left:130px;top:556px;width:440px;height:128px">Back to the hypotheses<small>one was refuted</small></div></div>
+ <div class="a label" style="--d:9.87s;left:130px;top:770px;font-size:24px">Every change the refuted hypothesis motivated</div>
+ <div class="vf-row" style="left:130px;top:814px"><span class="vf-pill mono vf-rev a" style="--d:9.87s;--e:10.77s">change</span><span class="vf-pill mono vf-rev a" style="--d:10.07s;--e:11.17s">change</span><span class="vf-pill mono vf-rev a" style="--d:10.27s;--e:11.57s">change</span><span class="vf-arrow a" style="--d:11.57s">→</span><span class="a t-red" style="--d:11.57s;font:700 30px 'IBM Plex Sans'">reverted</span></div>
+</section>
+
+<!-- 8 -->
+<section class="scene"><div class="kick">Step 8 of 12</div><h1>Evidence, not assertion</h1>
+ <div class="vf-row" style="top:310px"><span class="vf-pill vf-g a" style="--d:2.29s">Read the real artifact</span><span class="vf-pill vf-elim a" style="--d:2.29s;--e:3.91s">a proxy</span><span class="a label" style="--d:4.79s;position:static;margin-left:16px;font-size:24px">pstack: prove-it-works</span></div>
+ <div class="vf-panel a" style="--d:7.15s;left:110px;top:440px;width:800px;height:440px"><b>Backend</b><div class="label" style="position:static">Ramp's agent checks it with</div>
+  <div class="vf-check a" style="--d:9.38s">tests</div><div class="vf-check a" style="--d:10.19s">telemetry</div><div class="vf-check a" style="--d:10.87s">flag queries</div></div>
+ <div class="vf-panel a" style="--d:12.08s;left:970px;top:440px;width:800px;height:440px"><b>Frontend</b><div class="label" style="position:static">checked with</div>
+  <div class="a" style="--d:13.71s;display:inline-block"><span class="vf-shot"><i style="left:22px;top:24px;width:120px;height:90px"></i><i style="left:160px;top:24px;width:118px;height:18px"></i><i style="left:160px;top:56px;width:90px;height:18px"></i><i style="left:22px;top:134px;width:256px;height:30px"></i></span><div style="font:600 30px 'IBM Plex Sans';margin-top:10px">screenshots</div></div>
+  <div class="a" style="--d:14.85s;display:inline-block"><span class="vf-shot"><i class="vf-top"></i><span class="vf-live"></span><i style="left:22px;top:52px;width:256px;height:44px"></i><i style="left:22px;top:112px;width:120px;height:52px"></i><i style="left:158px;top:112px;width:120px;height:52px"></i></span><div style="font:600 30px 'IBM Plex Sans';margin-top:10px">live previews</div></div></div>
+</section>
+
+<!-- 9 -->
+<section class="scene"><div class="kick">Step 9 of 12</div><h1>Someone else grades it, with proof</h1>
+ <div class="a cap" style="--d:2.91s;bottom:auto;top:308px;font-size:32px">Does adversarial review pay? <span class="t-amber" style="font-weight:700">Disputed.</span></div>
+ <div class="vf-panel a" style="--d:5.79s;left:110px;top:400px;width:800px;height:240px"><div style="font:700 46px/1.2 'Archivo',sans-serif">"mostly a waste of tokens"</div><div class="label" style="position:static;margin-top:26px">Lauren Tan · 3 Nov 2026</div></div>
+ <div class="vf-panel a" style="--d:8.74s;left:960px;top:400px;width:800px;height:240px"><div style="font:700 36px/1.2 'Archivo',sans-serif"><span class="vf-sq vf-x"></span><span class="vf-sq"></span><span class="vf-sq"></span><span class="vf-sq"></span> about a quarter blocked</div><div class="a" style="--d:12.26s;font:700 36px/1.2 'Archivo',sans-serif;margin-top:16px">"almost all legit"</div><div class="label" style="position:static;margin-top:18px">Steve Yegge · 4 Nov</div></div>
+ <div class="vf-row a" style="--d:13.41s;top:690px"><span class="vf-pill vf-b" style="font-size:30px;height:78px;padding:0 34px">Track your reviewer's hit rate</span></div>
+ <div class="a label" style="--d:15.66s;left:110px;top:806px;font-size:24px">Cindy Sridharan's adversaries plant bugs</div>
+ <div class="vf-row" style="top:848px"><span class="vf-pill vf-am a" style="--d:17.58s;height:62px">planted bug <span class="a t-red" style="--d:18.35s">→ fails a test</span></span><span class="vf-pill vf-am a" style="--d:17.98s;height:62px">planted bug <span class="a t-red" style="--d:18.75s">→ fails a test</span></span><span class="vf-pill vf-am a" style="--d:18.38s;height:62px">planted bug <span class="a t-red" style="--d:19.15s">→ fails a test</span></span><span class="vf-pill vf-am a" style="--d:18.78s;height:62px">planted bug <span class="a t-red" style="--d:19.55s">→ fails a test</span></span></div>
+</section>
+
+<!-- 10 -->
+<section class="scene"><div class="kick">Step 10 of 12</div><h1>Hard guards the agent can't edit</h1>
+ <div class="a" style="--d:.4s"><div class="box" style="left:130px;top:480px;width:270px;height:130px">Agent run<small>unattended</small></div></div>
+ <div class="dot" style="left:420px;top:536px;--dx:150px;--d:1.4s"></div>
+ <div class="vf-dark a" style="--d:.7s;left:600px;top:340px;width:640px;height:410px"><div style="position:absolute;left:40px;top:34px;font:700 30px 'IBM Plex Sans'">Verifiers</div><div class="a" style="--d:7.60s;position:absolute;right:40px;top:40px;font:400 22px 'IBM Plex Mono';color:#9fb8a2">opaque to the agent</div>
+  <div class="vf-ver" style="left:40px"></div><div class="vf-ver" style="left:240px"></div><div class="vf-ver vf-fail" style="left:440px;--e:10.56s"></div>
+  <div class="a" style="--d:8.94s;position:absolute;left:40px;bottom:36px;font:600 26px 'IBM Plex Sans'">Run by a stop hook, where unattended runs end</div></div>
+ <svg><path class="line vf-dash a" style="--d:5.98s;--e:12.65s;stroke-dasharray:10 10" d="M1240 545H1440"/></svg>
+ <div class="box vf-bad a" style="--d:5.98s;--e:12.65s;left:1440px;top:480px;width:310px;height:130px;border-style:dashed">Pull request<small class="a" style="--d:12.65s;color:var(--red)">isn't opened</small></div>
+ <div class="a cap" style="--d:14.73s;bottom:90px">Stop hooks and goal conditions have safety caps. <span class="a t-red" style="--d:18.03s;font-weight:600">Stopped red is unfinished.</span></div>
+</section>
+
+<!-- 11 -->
+<section class="scene"><div class="kick">Step 11 of 12</div><h1>Agent-written tests need their own gate</h1>
+ <div class="a label" style="--d:3.43s;left:110px;top:300px;font-size:24px">Meta's ACH keeps a generated test only if it</div>
+ <div class="vf-row" style="top:344px"><span class="vf-pill vf-g a" style="--d:6.31s">builds</span><span class="vf-pill vf-g a" style="--d:7.22s">isn't flaky</span><span class="vf-pill vf-g a" style="--d:8.12s">catches a mutant no existing test catches</span></div>
+ <div class="vf-dots a" style="--d:11.11s"><i class="g" style="--d:12.01s"></i><i class="g" style="--d:12.02s"></i><i class="g" style="--d:12.03s"></i><i class="g" style="--d:12.05s"></i><i class="g" style="--d:12.06s"></i><i class="g" style="--d:12.07s"></i><i class="g" style="--d:12.08s"></i><i class="g" style="--d:12.09s"></i><i class="g" style="--d:12.11s"></i><i class="g" style="--d:12.12s"></i><i class="g" style="--d:12.13s"></i><i class="g" style="--d:12.14s"></i><i class="g" style="--d:12.15s"></i><i class="g" style="--d:12.17s"></i><i class="g" style="--d:12.18s"></i><i class="g" style="--d:12.19s"></i><i class="g" style="--d:12.20s"></i><i class="g" style="--d:12.21s"></i><i class="g" style="--d:12.23s"></i><i class="g" style="--d:12.24s"></i><i class="g" style="--d:12.25s"></i><i class="g" style="--d:12.26s"></i><i class="g" style="--d:12.27s"></i><i class="g" style="--d:12.29s"></i><i class="g" style="--d:12.30s"></i><i class="g" style="--d:12.31s"></i><i class="g" style="--d:12.32s"></i><i class="g" style="--d:12.33s"></i><i class="g" style="--d:12.35s"></i><i class="g" style="--d:12.36s"></i><i class="g" style="--d:12.37s"></i><i class="g" style="--d:12.38s"></i><i class="g" style="--d:12.39s"></i><i class="g" style="--d:12.41s"></i><i class="g" style="--d:12.42s"></i><i class="g" style="--d:12.43s"></i><i class="g" style="--d:12.44s"></i><i class="g" style="--d:12.45s"></i><i class="g" style="--d:12.47s"></i><i class="g" style="--d:12.48s"></i><i class="g" style="--d:12.49s"></i><i class="g" style="--d:12.50s"></i><i class="g" style="--d:12.51s"></i><i class="g" style="--d:12.53s"></i><i class="g" style="--d:12.54s"></i><i class="g" style="--d:12.55s"></i><i class="g" style="--d:12.56s"></i><i class="g" style="--d:12.57s"></i><i class="g" style="--d:12.59s"></i><i class="g" style="--d:12.60s"></i><i class="g" style="--d:12.61s"></i><i class="g" style="--d:12.62s"></i><i class="g" style="--d:12.63s"></i><i class="g" style="--d:12.65s"></i><i class="g" style="--d:12.66s"></i><i class="g" style="--d:12.67s"></i><i class="g" style="--d:12.68s"></i><i class="g" style="--d:12.69s"></i><i class="g" style="--d:12.71s"></i><i class="g" style="--d:12.72s"></i><i class="g" style="--d:12.73s"></i><i class="g" style="--d:12.74s"></i><i class="g" style="--d:12.75s"></i><i class="g" style="--d:12.77s"></i><i class="g" style="--d:12.78s"></i><i class="g" style="--d:12.79s"></i><i class="g" style="--d:12.80s"></i><i class="g" style="--d:12.81s"></i><i class="g" style="--d:12.83s"></i><i class="g" style="--d:12.84s"></i><i class="g" style="--d:12.85s"></i><i class="g" style="--d:12.86s"></i><i class="g" style="--d:12.87s"></i><i class="g" style="--d:12.89s"></i><i class="g" style="--d:12.90s"></i><i class="g" style="--d:12.91s"></i><i class="g" style="--d:12.92s"></i><i class="g" style="--d:12.93s"></i><i class="g" style="--d:12.95s"></i><i class="g" style="--d:12.96s"></i><i class="g" style="--d:12.97s"></i><i class="g" style="--d:12.98s"></i><i class="g" style="--d:12.99s"></i><i class="g" style="--d:13.01s"></i><i class="g" style="--d:13.02s"></i><i class="g" style="--d:13.03s"></i><i class="g" style="--d:13.04s"></i><i class="g" style="--d:13.05s"></i><i class="g" style="--d:13.07s"></i><i class="g" style="--d:13.08s"></i><i class="g" style="--d:13.09s"></i><i class="g" style="--d:13.10s"></i><i class="g" style="--d:13.11s"></i><i class="g" style="--d:13.13s"></i><i class="g" style="--d:13.14s"></i><i class="g" style="--d:13.15s"></i><i class="g" style="--d:13.16s"></i><i class="g" style="--d:13.17s"></i><i class="g" style="--d:13.19s"></i><i class="g" style="--d:13.20s"></i><i class="g" style="--d:13.21s"></i><i class="g" style="--d:13.22s"></i><i class="g" style="--d:13.23s"></i><i class="g" style="--d:13.25s"></i><i class="g" style="--d:13.26s"></i><i class="g" style="--d:13.27s"></i><i class="g" style="--d:13.28s"></i><i class="g" style="--d:13.29s"></i><i class="g" style="--d:13.31s"></i><i class="g" style="--d:13.32s"></i><i class="g" style="--d:13.33s"></i><i class="g" style="--d:13.34s"></i><i class="g" style="--d:13.35s"></i><i class="g" style="--d:13.37s"></i><i class="g" style="--d:13.38s"></i><i class="g" style="--d:13.39s"></i><i class="g" style="--d:13.40s"></i><i class="g" style="--d:13.41s"></i><i class="g" style="--d:13.43s"></i><i class="g" style="--d:13.44s"></i><i class="g" style="--d:13.45s"></i><i class="g" style="--d:13.46s"></i><i class="g" style="--d:13.47s"></i><i class="g" style="--d:13.49s"></i><i class="g" style="--d:13.50s"></i><i class="g" style="--d:13.51s"></i><i class="g" style="--d:13.52s"></i><i class="g" style="--d:13.53s"></i><i class="g" style="--d:13.55s"></i><i class="g" style="--d:13.56s"></i><i class="g" style="--d:13.57s"></i><i class="g" style="--d:13.58s"></i><i class="g" style="--d:13.59s"></i><i class="g" style="--d:13.61s"></i><i class="g" style="--d:13.62s"></i><i class="g" style="--d:13.63s"></i><i class="g" style="--d:13.64s"></i><i class="g" style="--d:13.65s"></i><i class="g" style="--d:13.67s"></i><i class="g" style="--d:13.68s"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+ <div class="big a t-green" style="--d:13.02s;left:1400px;top:470px;font-size:190px;color:var(--green)">140</div>
+ <div class="a cap" style="--d:14.26s;left:1408px;right:110px;bottom:auto;top:670px;font-size:32px">of 191 reviewed,<br>accepted by engineers</div>
+</section>
+
+<!-- 12 -->
+<section class="scene" style="--egg:16.5s"><div class="kick">Step 12 of 12</div><h1>Land small units, one at a time</h1>
+ <svg><path class="line a" style="--d:.3s;stroke-width:6" d="M110 344H1380"/></svg>
+ <div class="vf-unit a" style="--d:0.60s;left:calc(150px + 0 * 240px)">unit 1</div><div class="vf-unit a" style="--d:1.00s;left:calc(150px + 1 * 240px)">unit 2</div><div class="vf-unit a" style="--d:1.40s;left:calc(150px + 2 * 240px)">unit 3</div><div class="vf-unit a" style="--d:1.80s;left:calc(150px + 3 * 240px)">unit 4</div><div class="vf-unit a" style="--d:2.20s;left:calc(150px + 4 * 240px)">unit 5</div>
+ <div class="a label" style="--d:7.08s;left:110px;top:424px;font-size:24px">Skipping upfront peer review: Meta lets authors self-attest AI diffs only when</div>
+ <div class="vf-row" style="top:462px"><span class="vf-pill vf-b a" style="--d:10.26s">drift is low</span><span class="vf-pill vf-b a" style="--d:11.46s">Spotlight flags no regions</span></div>
+ <div class="a" style="--d:14.32s"><div class="label" style="left:110px;top:608px;font-size:26px">Self-attested, reverted</div><div class="track vf-thin" style="top:600px"><div class="fill" style="background:var(--amber);--w:66%;--d:15.85s"></div></div><div class="label t-amber" style="left:1650px;top:598px;font-size:40px">0.33%</div></div>
+ <div class="a" style="--d:18.08s"><div class="label" style="left:110px;top:688px;font-size:26px">Baseline</div><div class="track vf-thin" style="top:680px"><div class="fill" style="background:var(--green);--w:34%;--d:19.61s"></div></div><div class="label t-green" style="left:1650px;top:678px;font-size:40px">0.17%</div></div>
+ <div class="a cap muted" style="--d:17.53s;bottom:76px;font-size:28px">SRE Lab · Agentic Engineering · Verification first: go deep, then prove it</div>
+ <div class="critter"><div id="critter"></div></div>
+</section>
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 4 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../agentic/#verification-first">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Verification first: go deep, then prove it. With hundreds of agents shipping fixes, what counts as proof a change works, and how do you stop agents gaming their own tests? The worked example is the trust loop from P stack, Lauren Tan's agent playbooks. The top row understands, the bottom row proves, and nothing moves on a claim. Across a fleet, the oracle sets the yield. In the dotnet runtime repo, agent cleanup pull requests succeeded about eighty-five percent of the time. Performance pull requests, about fifty-five percent.", "Reproduce the bug on the surface the user hit. That takes a real environment for every run. Ramp gives each agent session a sandboxed virtual machine with the full local dev stack. P stack's bug-fix playbook says to synthesize the trigger, or add instrumentation, before asking the user.", "Find the cause by elimination, confirm it at runtime, and check it against an oracle outside the agents. Bun's port, with about sixty-four Claudes, moved more than half a million lines of Zig to Rust in eleven days, against its sixty thousand Linux tests. Anthropic's sixteen compiler agents each picked a different failing test.", "Not proven yet? Add logging and go round again. P stack has a rule called attack the premise. After two failed fixes that share a premise, test the premise before you try another fix.", "Commit the failing repro before the fix. P stack's name for this is sequence verifiable units. It also pins the oracle. InfoQ reported Spotify's agents commenting out failing tests, and downgrading Java versions, to turn builds green.", "Ship the smallest fix the evidence supports, and no stubs. In Bun's Rust port, Claude stubbed out functions that did not compile. After that, reviewers got a rule. If you need a paragraph-long comment to justify why the workaround is okay, the code is wrong.", "Re-run the original repro on the same surface. An inconclusive check is not a pass. Still failing? Go back to the hypotheses, and revert every change that a refuted hypothesis motivated.", "Evidence, not assertion. Read the real artifact, not a proxy. P stack calls this prove it works. Ramp's agent checks backend work with tests, telemetry and flag queries. It checks frontend work with screenshots and live previews.", "Someone else grades it, with proof. Whether adversarial review pays is disputed. Lauren Tan finds it mostly a waste of tokens. Steve Yegge says his block about a quarter of changes, almost all legit. So track your reviewer's hit rate. Cindy Sridharan's adversaries plant bugs, and each one must fail a test.", "Hard guards sit where the agent can't edit them, and unattended runs end there. Spotify's verifiers are opaque to the agent and run by a stop hook. If one of the verifiers fails, the pull request isn't opened. Stop hooks and goal conditions have safety caps, so a run that stopped red is unfinished.", "Agent-written tests need their own gate. Meta's A C H keeps a generated test only if it builds, isn't flaky, and catches a mutant that no existing test catches. Engineers accepted one hundred forty of the one hundred ninety-one they reviewed.", "Land small verified units one at a time. Skipping upfront peer review takes a measured gate. Meta lets authors self-attest A I diffs only when drift is low and its Spotlight tool flags no regions. Those diffs revert at zero point three three percent, against a baseline of zero point one seven percent."], "seconds": [35.02, 19.46, 21.27, 12.03, 16.77, 17.19, 13.27, 15.47, 19.67, 20.12, 16.7, 21.03]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

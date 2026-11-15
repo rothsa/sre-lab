@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Upgrading models safely: the film</title>
+<meta name="description" content="A short narrated film: how to move hundreds of services off a retiring model with evals, a shadow run, a canary, and a pin you can move back.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.up-dots{position:absolute;left:170px;top:345px;width:864px;height:180px;background:radial-gradient(circle,#3f9a4f 12px,transparent 13px) 0 0/36px 36px}
+.up-num{display:block;font:700 20px "IBM Plex Mono";color:var(--muted);margin-bottom:4px}
+.up-track{position:absolute;height:48px;border-radius:24px;background:#d6e6c8;overflow:hidden}
+.up-tbl{position:absolute;left:150px;top:300px;width:1130px;border-radius:32px 10px 32px 10px;background:#fff;box-shadow:0 24px 60px rgba(20,70,35,.16);padding:30px 50px 36px}
+.up-row{display:grid;grid-template-columns:440px 300px 1fr;align-items:center;height:84px;border-top:2px solid #e3eeda;font:500 28px "IBM Plex Mono"}
+.up-row.up-head{border-top:0;height:60px;font:700 22px "IBM Plex Sans";color:var(--muted);letter-spacing:.04em}
+.up-own{display:inline-block;justify-self:start;border-radius:999px;background:#dff0d3;border:2px solid var(--blue);color:var(--blue);font:700 24px "IBM Plex Sans";padding:6px 22px}
+.up-card{position:absolute;border-radius:32px 10px 32px 10px;background:#fff;box-shadow:0 24px 60px rgba(20,70,35,.14);padding:36px 48px}
+.up-card h3{margin:0 0 18px;font:700 26px "IBM Plex Sans";color:var(--muted);letter-spacing:.02em}
+.up-set{font:500 38px/1.9 "IBM Plex Mono";display:block}
+.scene.on .up-rej{animation:in .7s var(--d) both,up-rej .6s var(--r) forwards}
+@keyframes up-rej{to{color:var(--red);text-decoration:line-through;text-decoration-thickness:4px}}
+.up-stop{position:absolute;top:668px;width:28px;height:28px;border-radius:50%;background:#d6e6c8;border:3px solid #9fbf8f}
+.up-knob{position:absolute;left:968px;top:656px;width:52px;height:52px;border-radius:50%;background:var(--blue);box-shadow:0 8px 18px rgba(20,70,35,.25)}
+.scene.on .up-knob{animation:in .5s var(--d) both,up-sweep 2.4s ease-in-out var(--s) forwards}
+@keyframes up-sweep{0%{transform:translateX(0)}22%,28%{transform:translateX(187px)}47%,53%{transform:translateX(374px)}72%,78%{transform:translateX(561px)}100%{transform:translateX(748px)}}
+.up-wall{position:absolute;border:3px dashed var(--red);background:rgba(217,72,30,.06);border-radius:30px 10px 30px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font:600 30px "IBM Plex Sans";color:var(--red)}
+.up-tile{position:absolute;top:310px;width:200px;height:84px;border-radius:999px;border:2.5px solid var(--rule);background:var(--panel);display:flex;align-items:center;justify-content:center;font:600 26px "IBM Plex Sans";color:var(--muted)}
+.scene.on .up-can{animation:in .7s var(--d) both,up-can .6s 2.2s forwards}
+@keyframes up-can{to{border-color:var(--blue);background:#dff0d3;color:var(--blue)}}
+.up-bars{display:flex;align-items:flex-end;gap:26px;height:110px;margin-top:8px}
+.up-bars i{display:block;width:90px;border-radius:14px 14px 4px 4px}
+.up-bars span{font:600 22px "IBM Plex Sans";color:var(--muted);align-self:center}
+.scene.on .up-dim{animation:in .7s var(--d) both,fadeout .6s var(--o) forwards}
+.up-lane{position:absolute;height:96px;border-radius:48px;display:flex;align-items:center;padding-left:36px;font:700 26px "IBM Plex Sans"}
+.up-lane.up-old{left:110px;top:400px;width:1640px;background:#fbefd0;border:2.5px solid var(--amber);color:#8a6410}
+.up-lane.up-new{left:900px;top:560px;width:850px;background:#e9f6dc;border:2.5px solid var(--green);color:var(--blue);transform-origin:left center}
+.scene.on .up-lane.up-new{animation:up-open 1.2s cubic-bezier(.2,.7,.2,1) var(--d) both}
+@keyframes up-open{from{opacity:0;clip-path:inset(0 100% 0 0 round 48px)}to{opacity:1;clip-path:inset(0 0 0 0 round 48px)}}
+.up-cut{position:absolute;left:898px;top:350px;height:340px;border-left:4px dashed var(--muted)}
+.up-ag{position:absolute;width:130px;height:56px;border-radius:999px;background:#fff;border:2px solid var(--rule);box-shadow:0 8px 20px rgba(20,70,35,.12);font:600 22px "IBM Plex Mono";display:flex;align-items:center;justify-content:center;opacity:0}
+.scene.on .up-ag{animation:up-go var(--t,9s) linear var(--d) both}
+@keyframes up-go{0%{opacity:0;transform:translateX(0)}6%{opacity:1}90%{opacity:1}100%{opacity:0;transform:translateX(var(--dx))}}
+.up-pill{display:inline-block;border-radius:999px;border:2.5px solid var(--blue);background:#dff0d3;font:600 30px "IBM Plex Mono";padding:10px 30px}
+.up-pin{position:absolute;left:1160px;top:330px;width:200px;height:120px;display:flex;flex-direction:column;align-items:center;font:700 28px "IBM Plex Sans";color:#fff}
+.up-pin b{display:flex;align-items:center;justify-content:center;width:200px;height:72px;border-radius:999px;background:var(--blue);box-shadow:0 10px 24px rgba(20,70,35,.28)}
+.up-pin i{display:block;width:6px;height:48px;background:var(--blue);border-radius:0 0 4px 4px}
+.scene.on .up-pin{animation:in .7s var(--d) both,up-back 1.6s cubic-bezier(.4,0,.2,1) var(--m) forwards}
+@keyframes up-back{to{transform:translateX(-800px)}}
+.scene.on .up-drain{animation:up-drain var(--t) linear var(--d) forwards}
+@keyframes up-drain{to{width:8%}}
+.up-layer{position:absolute;left:150px;width:600px;height:84px;border-radius:30px 10px 30px 10px;border:2.5px solid var(--rule);background:var(--panel);box-shadow:0 10px 28px rgba(20,70,35,.10);display:flex;align-items:center;justify-content:space-between;padding:0 34px;font:600 30px "IBM Plex Sans"}
+.up-layer small{font:400 20px "IBM Plex Mono";color:var(--muted)}
+.scene.on .up-wob{animation:in .7s var(--d) both,up-wob .5s var(--w) 3 alternate,up-amb .6s var(--w) forwards}
+@keyframes up-wob{from{transform:translateX(0)}to{transform:translateX(14px)}}
+@keyframes up-amb{to{border-color:var(--amber);background:#fbefd0}}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../next-agent/#upgrades">Engineering for the Next Agent</a> · film · recorded 15 Nov 2026</div>
+  <h1 class="page">Upgrading models safely</h1>
+  <div id="viewport">
+    <div id="stage">
+<!-- 1 -->
+<section class="scene"><div class="kick">Engineering for the Next Agent · chapter 6</div><h1>Upgrading models safely</h1>
+ <div class="a" style="--d:5s"><div class="label" style="left:170px;top:300px">Hundreds of services</div><div class="up-dots"></div></div>
+ <svg><path class="line a" style="--d:3.3s" d="M1050 435H1150"/></svg>
+ <div class="a" style="--d:3.3s"><div class="box amber" style="left:1150px;top:400px;width:340px;height:120px">One model<small>retirement date set</small></div></div>
+ <div class="a label t-amber" style="--d:15.3s;left:1150px;top:545px;font-size:26px">A deadline you don't control</div>
+ <div class="a" style="--d:18.8s"><div class="box" style="left:110px;top:700px;width:380px;height:130px"><span class="up-num">1</span>Test offline</div></div>
+ <div class="a" style="--d:19.6s"><div class="box" style="left:530px;top:700px;width:380px;height:130px"><span class="up-num">2</span>Compare on real inputs</div></div>
+ <div class="a" style="--d:21s"><div class="box" style="left:950px;top:700px;width:380px;height:130px"><span class="up-num">3</span>Expose a little traffic</div></div>
+ <div class="a" style="--d:22.3s"><div class="box green" style="left:1370px;top:700px;width:380px;height:130px"><span class="up-num">4</span>Keep a way back</div></div>
+</section>
+
+<!-- 2 -->
+<section class="scene"><div class="kick">Step 2 of 10</div><h1>The vendor sets the deadline</h1>
+ <div class="a" style="--d:2.8s"><div class="label" style="left:110px;top:425px;font-size:28px;color:var(--fg)">Anthropic<br><span class="muted" style="font-size:22px">at least</span></div><div class="track" style="top:420px"><div class="fill" style="background:var(--green);--w:33.3%;--d:3.8s"></div></div><div class="label t-green" style="left:1650px;top:430px;font-size:36px">60 days</div></div>
+ <div class="a" style="--d:5.3s"><div class="label" style="left:110px;top:565px;font-size:28px;color:var(--fg)">OpenAI, generally available<br><span class="muted" style="font-size:22px">at least</span></div><div class="track" style="top:560px"><div class="fill" style="background:var(--green);--w:100%;--d:6.6s"></div></div><div class="label t-green" style="left:1650px;top:570px;font-size:36px">6 months</div></div>
+ <div class="a" style="--d:10.2s"><div class="label" style="left:110px;top:705px;font-size:28px;color:var(--fg)">OpenAI, previews<br><span class="muted" style="font-size:22px">such as</span></div><div class="track" style="top:700px"><div class="fill" style="background:var(--amber);--w:7.8%;--d:13.8s"></div></div><div class="label t-amber" style="left:1650px;top:710px;font-size:36px">2 weeks</div></div>
+ <div class="a cap" style="--d:15.6s">GPT-4o and GPT-4.1 shut down on <span class="t-red">14 January 2027</span>.</div>
+</section>
+
+<!-- 3 -->
+<section class="scene"><div class="kick">Step 3 of 10</div><h1>Find every caller. Give each an owner.</h1>
+ <div class="up-tbl a" style="--d:2.6s">
+  <div class="up-row up-head"><span>MODEL ID</span><span>CALLER</span><span>OWNER</span></div>
+  <div class="up-row a" style="--d:3.1s"><span>model-x-2026-03-05</span><span>service-a</span><span class="up-own a" style="--d:11s">team one</span></div>
+  <div class="up-row a" style="--d:3.5s"><span>model-x-2026-03-05</span><span>service-b</span><span class="up-own a" style="--d:11.2s">team two</span></div>
+  <div class="up-row a" style="--d:3.9s"><span>model-x-2026-03-05</span><span>service-c</span><span class="up-own a" style="--d:11.4s">team two</span></div>
+  <div class="up-row a" style="--d:4.3s"><span>model-w-2025-11-24</span><span>service-d</span><span class="up-own a" style="--d:11.6s">team three</span></div>
+ </div>
+ <div class="a" style="--d:7.4s"><div class="label" style="left:1400px;top:440px">Inventory from</div><div class="box blue" style="left:1400px;top:480px;width:380px;height:110px">Console usage export</div></div>
+ <div class="a" style="--d:9.6s"><div class="box blue" style="left:1400px;top:620px;width:380px;height:110px">Gateway logs</div></div>
+ <div class="a cap muted" style="--d:3.1s;font-size:24px;bottom:110px;left:150px">(Made-up example.)</div>
+</section>
+
+<!-- 4 -->
+<section class="scene"><div class="kick">Step 4 of 10</div><h1>A new model can change the API</h1>
+ <div class="up-card a" style="--d:4.2s;left:130px;top:310px;width:720px;height:470px"><h3>Opus 5.5 guide: now rejected with an error</h3>
+  <span class="up-set a up-rej" style="--d:9s;--r:10.5s">prefill</span>
+  <span class="up-set a up-rej" style="--d:9.3s;--r:11.6s">manual thinking budgets</span>
+  <h3 class="a" style="--d:12.6s;margin-top:30px">And a new default</h3>
+  <span class="up-set a t-amber" style="--d:12.6s">effort level</span></div>
+ <div class="a" style="--d:14.3s"><div class="label" style="left:980px;top:420px;font-size:26px">Full eval suite, on the candidate</div><div class="up-track" style="left:980px;top:470px;width:800px"><div class="fill" style="background:var(--green);--w:100%;--d:14.6s"></div></div></div>
+ <div class="a" style="--d:17.2s"><div class="label" style="left:980px;top:590px;font-size:26px">Fresh effort sweep</div>
+  <div style="position:absolute;left:994px;top:680px;width:748px;height:4px;background:#9fbf8f"></div>
+  <div class="up-stop" style="left:980px"></div><div class="up-stop" style="left:1167px"></div><div class="up-stop" style="left:1354px"></div><div class="up-stop" style="left:1541px"></div><div class="up-stop" style="left:1728px"></div></div>
+ <div class="up-knob a" style="--d:17.2s;--s:17.7s"></div>
+ <div class="a cap" style="--d:19.2s">Defaults shift between models.</div>
+</section>
+
+<!-- 5 -->
+<section class="scene"><div class="kick">Step 5 of 10</div><h1>Shadow it on real inputs</h1>
+ <div class="a" style="--d:.4s"><div class="box" style="left:130px;top:510px;width:270px;height:110px">Real input</div></div>
+ <svg><path class="line a" style="--d:.8s" d="M400 545L600 445"/><path class="line a" style="--d:.8s" d="M940 445H1400"/>
+  <path class="line a" style="--d:3.2s;stroke-dasharray:10 10" d="M400 585L600 685"/><path class="line a" style="--d:8.8s;stroke-dasharray:10 10" d="M940 685H1400"/>
+  <path class="line a" style="--d:5.8s" d="M1160 445V525"/><path class="line a" style="--d:5.8s" d="M1160 605V685"/></svg>
+ <div class="a" style="--d:.8s"><div class="box" style="left:600px;top:390px;width:340px;height:110px">Current model</div><div class="box green" style="left:1400px;top:400px;width:360px;height:100px">Takes effect</div></div>
+ <div class="a" style="--d:3.2s"><div class="box blue" style="left:600px;top:630px;width:340px;height:110px">New model<small>gets a copy</small></div></div>
+ <div class="a" style="--d:5.8s"><div class="box amber" style="left:1010px;top:525px;width:300px;height:80px;font-size:26px">Compare<small>outputs, tool calls</small></div></div>
+ <div class="a" style="--d:8.8s"><div class="up-wall" style="left:1400px;top:630px;width:360px;height:110px">Nothing takes effect</div></div>
+ <div class="a" style="--d:11s;position:absolute;left:600px;top:850px"><span class="label" style="position:static;margin-right:24px">Shadow runs need</span><span class="chip">read-only tools</span><span class="chip a" style="--d:12.6s">dry-run modes</span></div>
+</section>
+
+<!-- 6 -->
+<section class="scene"><div class="kick">Step 6 of 10</div><h1>Canary per workload, the rest as control</h1>
+ <div class="up-tile a up-can" style="--d:.6s;left:110px"><span>Canary</span></div>
+ <div class="up-tile a" style="--d:3.8s;left:330px">Control</div><div class="up-tile a" style="--d:4s;left:550px">Control</div><div class="up-tile a" style="--d:4.2s;left:770px">Control</div><div class="up-tile a" style="--d:4.4s;left:990px">Control</div><div class="up-tile a" style="--d:4.6s;left:1210px">Control</div>
+ <div class="up-card a" style="--d:8.4s;left:110px;top:470px;width:800px;height:250px;border:3px solid var(--green)"><h3 class="t-green" style="font-size:32px">Canary against control</h3>
+  <div class="up-bars"><i style="height:96px;background:var(--blue)"></i><i style="height:84px;background:#9fbf8f"></i><span>Google's SRE Workbook</span></div></div>
+ <div class="up-card a" style="--d:12.6s;left:1000px;top:470px;width:800px;height:250px"><h3 class="strike" style="font-size:32px">Before against after</h3>
+  <div class="up-bars"><i style="height:70px;background:#c9d6c0"></i><i style="height:100px;background:#c9d6c0"></i><span class="a t-amber" style="--d:14.8s">Time is a confounder</span></div></div>
+ <div class="a" style="--d:16.6s;position:absolute;left:110px;top:820px"><span class="label" style="position:static;margin-right:24px">Split by model ID</span><span class="chip">error rates</span><span class="chip a" style="--d:17.6s">cost</span></div>
+</section>
+
+<!-- 7 -->
+<section class="scene"><div class="kick">Step 7 of 10</div><h1>Long-running agents need care at cutover</h1>
+ <div class="up-lane up-old a" style="--d:.6s">Old version</div>
+ <div class="a" style="--d:2.4s"><div class="up-cut"></div><div class="label" style="left:918px;top:340px;font-size:26px">Cutover</div></div>
+ <div class="up-lane up-new" style="--d:7.6s">New version</div>
+ <div class="up-ag" style="left:330px;top:420px;--d:1s;--Dx:1250px;--t:11s">agent</div>
+ <div class="up-ag" style="left:330px;top:420px;--d:2.8s;--Dx:1250px;--t:9.5s">agent</div>
+ <div class="up-ag" style="left:330px;top:420px;--d:4.6s;--Dx:1250px;--t:8s">agent</div>
+ <div class="up-ag" style="left:1130px;top:580px;--d:9s;--Dx:460px;--t:3.6s">agent</div>
+ <div class="up-ag" style="left:1130px;top:580px;--d:10.4s;--Dx:460px;--t:2.4s">agent</div>
+ <div class="a cap" style="--d:5.2s;bottom:230px"><span class="t-blue">Rainbow deployments:</span> old and new versions both stay up.</div>
+ <div class="a cap muted" style="--d:10.8s;bottom:150px;font-size:30px">In-flight agents aren't disrupted.</div>
+</section>
+
+<!-- 8 -->
+<section class="scene"><div class="kick">Step 8 of 10</div><h1>Pin model IDs in one gateway</h1>
+ <div class="a" style="--d:.6s"><div class="box" style="left:110px;top:400px;width:200px;height:76px;font-size:26px">Caller</div><div class="box" style="left:110px;top:506px;width:200px;height:76px;font-size:26px">Caller</div><div class="box" style="left:110px;top:612px;width:200px;height:76px;font-size:26px">Caller</div></div>
+ <svg><path class="line a" style="--d:1.2s" d="M310 438L440 520"/><path class="line a" style="--d:1.2s" d="M310 544H440"/><path class="line a" style="--d:1.2s" d="M310 650L440 568"/></svg>
+ <div class="a" style="--d:1.6s"><div class="box blue" style="left:440px;top:440px;width:380px;height:210px;font-size:40px">Gateway<small>pinned model IDs</small></div></div>
+ <div class="a label t-blue" style="--d:4.6s;left:440px;top:680px;font-size:26px">A move is one config change</div>
+ <div class="a label" style="--d:7.2s;left:440px;top:730px;font-size:24px">Logs model and provider per request</div>
+ <div class="a" style="--d:10s"><div class="label" style="left:960px;top:400px;font-size:28px;color:var(--fg)">Aliases move</div>
+  <div style="position:absolute;left:960px;top:450px;font-size:34px;white-space:nowrap"><span class="up-pill">latest</span> <span class="a t-blue" style="--d:14.8s;display:inline-block;margin:0 14px">→</span> <span class="up-pill a" style="--d:14.8s;border-color:var(--amber);background:#fbefd0">GPT-6.1 Terra</span></div>
+  <div class="label a" style="--d:11.2s;left:960px;top:530px">OpenRouter, 26 Oct</div></div>
+ <div class="a" style="--d:17.8s"><div class="label" style="left:960px;top:630px;font-size:28px;color:var(--fg)">Routers move <span class="muted" style="font-size:22px">&nbsp;since 28 Oct, provider picked by live</span></div>
+  <div style="position:absolute;left:960px;top:690px;white-space:nowrap"><span class="chip a" style="--d:22.5s;margin-right:10px;padding:10px 20px">price</span><span class="chip a" style="--d:22.9s;margin-right:10px;padding:10px 20px">speed</span><span class="chip a" style="--d:23.4s;margin-right:10px;padding:10px 20px">errors</span><span class="chip a" style="--d:24s;margin-right:0;padding:10px 20px">tool-call quality</span></div>
+  <div class="label a t-amber" style="--d:24.9s;left:960px;top:780px;font-size:26px">unless you set an order</div></div>
+</section>
+
+<!-- 9 -->
+<section class="scene"><div class="kick">Step 9 of 10</div><h1>Roll back by moving the pin</h1>
+ <div class="a" style="--d:.4s"><div class="box amber" style="left:250px;top:450px;width:420px;height:130px">Old snapshot<small>fallback</small></div><div class="box green" style="left:1050px;top:450px;width:420px;height:130px">New snapshot</div></div>
+ <div class="up-pin a" style="--d:.7s;--m:1.8s"><b>Pin</b><i></i></div>
+ <div class="a label" style="--d:3.6s;left:760px;top:495px;font-size:26px">No redeploy</div>
+ <div class="a cap" style="--d:5.2s;bottom:auto;top:630px;font-size:30px;left:250px">OpenAI's April 2025 GPT-4o rollback took <span class="t-amber">about 24 hours</span>.</div>
+ <div class="a" style="--d:10.8s"><div class="label" style="left:250px;top:740px;font-size:26px">Old snapshot: a fallback only until</div><div class="label t-red" style="left:1340px;top:740px;width:280px;text-align:right;font-size:26px">Retirement date</div>
+  <div class="up-track" style="left:250px;top:790px;width:1370px;height:36px"><div class="up-drain" style="height:100%;width:100%;background:var(--amber);border-radius:18px;--d:11.3s;--t:4s"></div></div>
+  <div style="position:absolute;left:1616px;top:770px;width:5px;height:76px;background:var(--red);border-radius:3px"></div></div>
+ <div class="a cap" style="--d:15.4s"><span class="t-green">Finish the move well before it.</span></div>
+</section>
+
+<!-- 10 -->
+<section class="scene" style="--egg:21.5s"><div class="kick">Step 10 of 10</div><h1>Pinning doesn't freeze everything</h1>
+ <div class="up-layer a" style="--d:.6s;top:290px;border-color:var(--green);background:#e9f6dc">Model ID<small>pinned</small></div>
+ <div class="up-layer a up-wob" style="--d:2.9s;--w:7.2s;top:394px">Routing</div>
+ <div class="up-layer a up-wob" style="--d:3.1s;--w:8s;top:498px">Compiler</div>
+ <div class="up-layer a up-wob" style="--d:9.2s;--w:12.8s;top:602px">Harness<small>lower default effort</small></div>
+ <div class="a label t-amber" style="--d:3.2s;left:780px;top:476px">Sept 2025<br>postmortem</div>
+ <div class="a label t-amber" style="--d:9.4s;left:780px;top:616px">April 2026<br>postmortem</div>
+ <svg><path class="line a" style="--d:23.4s" d="M1460 500V580"/></svg>
+ <div class="a" style="--d:18.2s"><div class="box blue" style="left:1180px;top:390px;width:560px;height:110px">SLIs<small>per model ID and harness version</small></div></div>
+ <div class="a" style="--d:23.4s"><div class="box green" style="left:1180px;top:580px;width:560px;height:110px">Regressions<small>fed back as eval cases</small></div></div>
+ <div class="a cap muted" style="--d:24.5s;bottom:76px;font-size:28px">SRE Lab · Engineering for the Next Agent · Upgrading models safely</div>
+ <div class="critter"><div id="critter"></div></div>
+</section>
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 3 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../next-agent/#upgrades">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Upgrading models safely. Your provider just set a retirement date for a model hundreds of services call. How do you move them all without a quality regression, and roll back? A model retirement is a fleet-wide production change with a deadline you don't control. Treat it like any risky rollout. Test offline, compare on real inputs, expose a little traffic, and keep a way back.", "The vendor sets the deadline. Anthropic gives at least sixty days' notice. OpenAI gives at least six months for generally available models, but says previews may be retired with much shorter notice, such as two weeks. Its G P T four oh and G P T four point one shut down on the fourteenth of January, 2027.", "The day a notice lands, find every caller. Inventory usage by model I D, from Anthropic's console usage export or from your gateway logs. Then give each caller an owner.", "A new model can change the A P I too. Anthropic's Opus five point five guide lists settings that are now rejected with an error, prefill and manual thinking budgets, and a new default effort level. Run the full eval suite on the candidate, with a fresh effort sweep, because defaults shift between models.", "Next, shadow it. Send copies of real inputs to the new model. Compare its outputs and tool calls, and let nothing it does take effect. Shadow runs need read-only tools or dry-run modes.", "Canary one workload at a time, and keep the rest as control, so one bad workload stays visible. Google's S R E Workbook says to compare canary against control, rather than before against after, because time is a confounder. Split error rates and cost by model I D.", "Long-running agents need care at cutover. Anthropic runs its research agent with rainbow deployments. It keeps old and new versions up, so agents that are in flight aren't disrupted.", "Pin every model I D in one gateway, so a move is one config change, and log the model and provider behind each request. Aliases move. On the twenty-sixth of October, OpenRouter's Terra latest alias became G P T six point one Terra. Routers move too. Since the twenty-eighth, OpenRouter picks the provider by live price, speed, errors and tool-call quality, unless you set an order.", "Roll back by moving the pin, not by redeploying. OpenAI's G P T four oh rollback in April 2025 took about twenty-four hours. The old snapshot is only a fallback until its retirement date, so finish the move well before it.", "Pinning doesn't freeze everything. Anthropic's September 2025 postmortem traced degraded answers to routing and compiler bugs. Its April 2026 one traced Claude Code's to harness changes, including a lower default effort, with the A P I untouched. Keep service level indicators per model I D and harness version, and feed regressions back as eval cases."], "seconds": [23.34, 22.12, 12.1, 19.8, 13.1, 18.47, 12.22, 25.88, 17.71, 26.01]}</script>
+<script src="../film.js"></script>
+</body>
+</html>
