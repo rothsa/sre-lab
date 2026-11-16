@@ -61,7 +61,7 @@ export const CHAPTERS = [
     incidents: ["aws-2017-s3-us-east-1-typo", "cloudflare-2024-pdx01-power-failover"],
     sources: [
       { title: "AWS: Why you should develop a correction of error (Feb 2022)", url: "https://aws.amazon.com/blogs/mt/why-you-should-develop-a-correction-of-error-coe/" },
-      { title: "PagerDuty Incident Response: The Postmortem Process", url: "https://response.pagerduty.com/after/post_mortem_process/" },
+      { title: "PagerDuty Incident Response: The Postmortem Process", url: "https://docs.pagerduty.com/ops-guides/incident-response-guide/postmortem-process" },
       { title: "incident.io: Follow-up policies", url: "https://docs.incident.io/post-incident/follow-up-policies.md" },
       WB_EB,
       AWS_ORR,

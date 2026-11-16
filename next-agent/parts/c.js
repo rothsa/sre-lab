@@ -65,7 +65,7 @@ export const CHAPTERS = [
     codeNote: "Pseudocode, not a product's API. The point is where the check runs: in the harness, keyed on what the session has already touched, not on what the model says it intends.",
     incidents: [],
     sources: [
-      { title: "NIST CAISI: Insights from a large-scale AI agent red-teaming competition (23 Mar 2026)", url: "https://www.nist.gov/blogs/caisi-research-blog/insights-ai-agent-security-large-scale-red-teaming-competition" },
+      { title: "NIST CAISI: Insights from a large-scale AI agent red-teaming competition (23 Mar 2026)", url: "https://www.nist.gov/blogs/caissi-research-blog/insights-ai-agent-security-large-scale-red-teaming-competition" },
       { title: "Simon Willison: The lethal trifecta for AI agents (2025-06-16)", url: "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" },
       { title: "Meta: Agents Rule of Two (2025-10-31)", url: "https://ai.meta.com/blog/practical-ai-agent-security/" },
       { title: "NIST CAISI: Strengthening AI agent hijacking evaluations (2025-01-17)", url: "https://www.nist.gov/news-events/news/2025/01/technical-blog-strengthening-ai-agent-hijacking-evaluations" },

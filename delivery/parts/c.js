@@ -156,7 +156,7 @@ export const CHAPTERS = [
       { title: "Intercom: AI is approving our pull requests. Here's how we made it safe (21 Apr 2026)", url: "https://www.intercom.com/blog/ai-is-approving-our-pull-requests-heres-how-we-made-it-safe" },
       { title: "Sourcegraph: Keeping code moving with clearer review expectations (10 Nov 2026)", url: "https://sourcegraph.com/blog/what-we-learned-building-a-pr-approval-bot" },
       { title: "Fin (Intercom): How eight people hold the bar for 1.4 million lines of AI-written code (9 Jul 2026)", url: "https://ideas.fin.ai/p/how-eight-people-hold-the-bar-for" },
-      { title: "Anthropic: Redesigning source control at Anthropic (13 Oct 2026)", url: "https://www.anthropic.com/engineering/redesigning-source-control" },
+      { title: "Anthropic: Redesigning source control at Anthropic (13 Oct 2026)", url: "https://www.anthropic.com/research/redesigning-source-control" },
       { title: "John Allspaw: There is more to code review than automatable detection (24 Aug 2026)", url: "https://www.adaptivecapacitylabs.com/2026/08/24/there-is-more-to-code-review-than-automatable-detection/" },
       { title: "Amp: That's not SOC 2 compliant (13 Aug 2026)", url: "https://ampcode.com/notes/thats-not-soc-2-compliant" },
     ],

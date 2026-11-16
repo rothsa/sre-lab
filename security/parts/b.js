@@ -93,7 +93,7 @@ export const CHAPTERS = [
       { title: "OPSSHIELD: cPGuard update channel compromise (3 Nov 2026)", url: "https://opsshield.com/notice/cpguard-update-channel-compromise.html" },
       { title: "OpenAI on X: autonomous kernel vulnerability pipeline (4 Nov 2026)", url: "https://x.com/OpenAI/status/2118119451401048497" },
       { title: "Xen: XSA-523 grant copy validation, CVE-2026-102703/102704 (3 Nov 2026)", url: "https://xenbits.xen.org/xsa/advisory-523.html" },
-      { title: "CISA: KEV catalog JSON feed (catalog 2026.11.10)", url: "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json" },
+      { title: "CISA: KEV catalog JSON feed (catalog 2026.11.13)", url: "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json" },
       { title: "Rapid7: Additional Ivanti Connect Secure zero-days exploited in the wild (2 Nov 2026)", url: "https://www.rapid7.com/blog/post/etr-additional-ivanti-connect-secure-zero-days-exploited-in-the-wild-cve-2026-111357-cve-2026-118527" },
       { title: "Barracuda: Pre-authentication authorization bypass and command injection (updated 5 Nov 2026)", url: "https://trust.barracuda.com/security/pre-authentication-authorization-bypass-command-injection" },
       { title: "Ubuntu: CVE-2026-112816 (LXD)", url: "https://ubuntu.com/security/CVE-2026-112816" },
@@ -155,7 +155,7 @@ export const CHAPTERS = [
     agentic: [
       "Agents are good at the first hour: pulling logs across sources and building a timeline. Keep containment actions behind a person and an incident.",
       "Agent tool calls need their own logs with the agent's identity, or an investigation can't tell an agent's change from an attacker's.",
-      "AI-assisted attackers get from non-production to production fast. CERT-In (4 Nov 2026) describes a crew that enters through exposed UAT and staging, moves to production \"using shared credentials, tokens or network paths\", and hit banks again \"after incomplete remediation\". Microsoft (5 Nov 2026) saw an agent go from client secrets found in GitHub to \"exfiltrating data from Azure Key Vault\" in five minutes. Give non-production its own credentials and network paths, and assume persistence after cleanup.",
+      "Attack agents are now routine traffic, and they run on credentials you left in reach. Cloudflare (13 Nov 2026) saw \"over 50 framework families\" scan its customers in three days and traced its incidents to \"static, non-expiring tokens running inside CI/CD pipelines\". Datadog (9 Nov) watched one search CloudWatch logs for long-lived access keys. Microsoft (5 Nov) saw an agent go from client secrets found in GitHub to \"exfiltrating data from Azure Key Vault\" in five minutes, and CERT-In (4 Nov) describes entry through UAT and staging, then production \"using shared credentials, tokens or network paths\". Expire CI tokens, scope them per environment, and keep secrets out of logs.",
     ],
     quiz: [
       { q: "Why send audit logs to a separate security account in real time?", a: "Admins and attackers in the source account can delete or alter local logs. A separate account they can't reach keeps the evidence, and real-time delivery leaves no window to tamper." },
@@ -164,6 +164,8 @@ export const CHAPTERS = [
     ],
     incidents: ["circleci-2022-session-cookie-theft-secrets-exfil", "cloudflare-2025-salesloft-drift-salesforce-breach", "circleci-2013-mongohq-database-breach"],
     sources: [
+      { title: "Cloudflare: Adapting to AI penetration testing orchestrators (13 Nov 2026)", url: "https://blog.cloudflare.com/adapting-to-ai-penetration-testing-orchestrators/" },
+      { title: "Datadog Security Labs: On the hunt for ARTEX, agentic attacks in AWS environments (9 Nov 2026)", url: "https://securitylabs.datadoghq.com/articles/artex-agentic-attacks-aws-environments/" },
       { title: "CERT-In: CIAD-2026-0058 AI-driven attacks on BFSI entities (4 Nov 2026)", url: "https://www.cert-in.org.in/s2cMainServlet?pageid=PUBVLNOTES02&VLCODE=CIAD-2026-0058" },
       { title: "Chainstack: Security incident, November 2026", url: "https://chainstack.com/security-incident-nov-2026/" },
       { title: "WorkOS: Update for October 30th, 2026 data security incident (6 Nov 2026)", url: "https://workos.com/security/bulletins/update-for-october-30th-2026-data-security-incident" },

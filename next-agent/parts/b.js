@@ -225,7 +225,7 @@ export const CHAPTERS = [
       { title: "Claude docs: Fast mode (Opus 4.8 fast mode deprecated, removal 30 Nov 2026)", url: "https://platform.claude.com/docs/en/build-with-claude/fast-mode" },
       { title: "Google: Gemini API models (stable, preview, latest)", url: "https://ai.google.dev/gemini-api/docs/models" },
       { title: "Google: Gemini API changelog (8 Oct 2026, gemini-3.7-flash routed to 3.8)", url: "https://ai.google.dev/gemini-api/docs/changelog" },
-      { title: "Google: Gemini API deprecations", url: "https://ai.google.dev/gemini-api/docs/deprecations" },
+      { title: "Google: Gemini API deprecations", url: "https://aistudio.google.com/docs/deprecations" },
       { title: "AWS: Amazon Bedrock model lifecycle", url: "https://docs.aws.amazon.com/bedrock/latest/userguide/model-lifecycle.html" },
       { title: "AWS: Bedrock model lifecycle (models launched before 2026-09-07)", url: "https://docs.aws.amazon.com/bedrock/latest/userguide/model-lifecycle-legacy.html" },
       { title: "Google SRE Workbook: Canarying releases", url: "https://sre.google/workbook/canarying-releases/" },

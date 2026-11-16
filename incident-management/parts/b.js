@@ -69,7 +69,7 @@ export const CHAPTERS = [
     ],
     incidents: ["aws-2020-kinesis-thread-limit", "atlassian-2022-site-deletion-script"],
     sources: [
-      { title: "PagerDuty Incident Response: External communication guidelines", url: "https://response.pagerduty.com/during/external_communication_guidelines/" },
+      { title: "PagerDuty Incident Response: External communication guidelines", url: "https://docs.pagerduty.com/ops-guides/incident-response-guide/external-comms" },
       IIO_STATUS,
       { title: "NIS2 Directive (EU) 2022/2555, Article 23", url: "https://www.springlex.eu/en/packages/nis2/nis2-directive/article-23/" },
       { title: "Commission Delegated Regulation (EU) 2025/301, Article 5 (DORA incident reporting time limits)", url: "https://www.springlex.eu/en/packages/dora/rts-ir-regulation/article-5/" },

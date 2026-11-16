@@ -59,7 +59,7 @@ export const CHAPTERS = [
     ],
     say30: "Across thousands of states I treat drift as a routed signal. A scheduled `-refresh-only` plan runs for every state, staggered so it doesn't eat API quota, and a lock it can't get is a skipped check, not drift. Each finding opens a ticket for the team that owns that state, and I alert only on new drift so known perpetual diffs don't train people to ignore it. The owner decides: revert by applying the code, or adopt by changing the code or importing. I also watch for gaps: workspaces whose checks stopped, and resources in no state at all, found by diffing an inventory. Prevention is a read-only console with break-glass.",
     gotchas: [
-      "`ignore_changes` hides drift on those attributes forever, including a malicious or mistaken edit. List only attributes another system owns, comment why, and avoid `all`, which stops Terraform from ever proposing updates.",
+      "`ignore_changes` stops Terraform proposing updates for those attributes, so a normal plan stays empty after a mistaken or malicious edit. Refresh still reads the new value, and a `-refresh-only` plan reports it, so alert from that. List only attributes another system owns, comment why, and avoid `all`.",
       "A continuous reconciler undoes break-glass fixes. Pause it first (`crossplane.io/paused: \"true\"` in Crossplane). Reddit stopped an autoscaler by hand and Puppet, seeing drift, turned it back on mid-migration.",
       "Exit code 2 on a normal plan is any pending change, including merged code never applied. Apply on merge so a deploy gap and real drift don't mix.",
     ],
@@ -365,7 +365,7 @@ export const CHAPTERS = [
       { title: "Pulumi Neo", url: "https://www.pulumi.com/docs/ai/concepts/neo/" },
       { title: "HashiCorp: Terraform MCP server is generally available", url: "https://www.hashicorp.com/en/blog/terraform-mcp-server-is-now-generally-available" },
       { title: "Terraform MCP server overview", url: "https://developer.hashicorp.com/terraform/mcp-server" },
-      { title: "Terraform MCP server: deploy", url: "https://developer.hashicorp.com/terraform/mcp-server/deploy" },
+      { title: "Terraform MCP server: self-hosted deployment", url: "https://developer.hashicorp.com/terraform/mcp-server/deploy/self-hosted" },
       { title: "Terraform MCP server: reference", url: "https://developer.hashicorp.com/terraform/mcp-server/reference" },
       { title: "Terraform MCP server CHANGELOG (1.4.0 and 1.4.1, 23 Oct 2026)", url: "https://github.com/hashicorp/terraform-mcp-server/blob/main/CHANGELOG.md" },
       { title: "AWS IaC MCP server (awslabs)", url: "https://awslabs.github.io/mcp/servers/aws-iac-mcp-server" },

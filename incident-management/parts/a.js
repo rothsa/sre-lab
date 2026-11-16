@@ -2,7 +2,7 @@
 // Spec format: see ../../k8s/README.md. Sources fetched and checked 2026-10-20.
 const SRE_MI = { title: "SRE book: Managing Incidents", url: "https://sre.google/sre-book/managing-incidents/" };
 const WB_IR = { title: "SRE Workbook: Incident Response", url: "https://sre.google/workbook/incident-response/" };
-const PD_SEV = { title: "PagerDuty Incident Response: Severity levels", url: "https://response.pagerduty.com/before/severity_levels/" };
+const PD_SEV = { title: "PagerDuty Incident Response: Severity levels", url: "https://docs.pagerduty.com/ops-guides/incident-response-guide/severity-levels" };
 const MS_LLM = { title: "Microsoft Research: Large-language models for automatic cloud incident management (May 2023)", url: "https://www.microsoft.com/en-us/research/blog/large-language-models-for-automatic-cloud-incident-management/" };
 const AWS_ORR = { title: "AWS: Operational Readiness Reviews (June 2022)", url: "https://docs.aws.amazon.com/wellarchitected/latest/operational-readiness-reviews/wa-operational-readiness-reviews.html" };
 const G_AI = { title: "Google SRE: AI in SRE", url: "https://sre.google/resources/practices-and-processes/ai-engineering-reliable-operations/" };
@@ -236,9 +236,9 @@ export const CHAPTERS = [
     incidents: ["incidentio-2025-aws-us-east-1-dependencies"],
     sources: [
       { title: "incident.io: Workflow triggers", url: "https://docs.incident.io/workflows/triggers.md" },
-      { title: "PagerDuty Incident Response: Different roles", url: "https://response.pagerduty.com/before/different_roles/" },
-      { title: "PagerDuty Incident Response: Incident Commander training", url: "https://response.pagerduty.com/training/incident_commander/" },
-      { title: "PagerDuty Incident Response: Complex incidents", url: "https://response.pagerduty.com/before/complex_incidents/" },
+      { title: "PagerDuty Incident Response: Different roles", url: "https://docs.pagerduty.com/ops-guides/incident-response-guide/different-roles" },
+      { title: "PagerDuty Incident Response: Incident Commander training", url: "https://docs.pagerduty.com/ops-guides/incident-response-guide/incident-commander" },
+      { title: "PagerDuty Incident Response: Complex incidents", url: "https://docs.pagerduty.com/ops-guides/incident-response-guide/complex-incidents" },
       WB_IR,
       SRE_MI,
       { title: "Chen et al.: Identifying Linked Incidents in Large-Scale Online Service Systems (FSE 2020)", url: "https://www.microsoft.com/en-us/research/publication/identifying-linked-incidents-in-large-scale-online-service-systems/" },

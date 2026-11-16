@@ -56,7 +56,7 @@ footer a { color: var(--accent); }
 <body>
 <nav class="site-nav" aria-label="Site" style="max-width:920px"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
 <div class="wrap">
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · uptime<span class="updated"> · updated <time datetime="2026-11-12">12 Nov 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · uptime<span class="updated"> · updated <time datetime="2026-11-16">16 Nov 2026</time></span></div>
   <h1>Down or Me</h1>
   <p class="lede">Checks these services every 5 minutes. When something looks wrong, an AI classifier (Jev) decides whether it's a real outage, degraded, planned maintenance, a blip, or a problem on the monitor's side, and how confident it reports being. Verdicts under 80% confidence are marked for a human look.</p>
   <div class="summary" id="summary">Loading…</div>
@@ -97,7 +97,13 @@ async function load() {
     const data = await res.json();
     const t = data.targets;
     const bad = t.filter((x) => x.status === "down" || x.status === "slow").length;
-    document.getElementById("summary").textContent = bad === 0 ? `All ${t.length} services look fine · updated ${new Date(data.generatedAt).toLocaleTimeString()}` : `${bad} of ${t.length} services need attention · updated ${new Date(data.generatedAt).toLocaleTimeString()}`;
+    const up = t.filter((x) => x.status === "up").length;
+    const noData = t.length - bad - up;
+    const head = t.length === 0 ? "No check results in the last hour"
+      : bad > 0 ? `${bad} of ${t.length} services need attention`
+      : noData > 0 ? `${up} of ${t.length} services look fine, ${noData} with no result yet`
+      : `All ${t.length} services look fine`;
+    document.getElementById("summary").textContent = `${head} · updated ${new Date(data.generatedAt).toLocaleTimeString()}`;
     document.getElementById("list").innerHTML = t.map((x) => {
       const v = x.verdict;
       const verdict = v ? `<div class="verdict">Jev: <b>${esc(causeText[v.cause] || v.cause)}</b> (${Math.round(v.confidence * 100)}% sure)${v.confidence < 0.8 ? ` <span class="human">· needs a human look</span>` : ""}</div>` : "";
