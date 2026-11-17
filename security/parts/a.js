@@ -150,7 +150,7 @@ export const CHAPTERS = [
     sources: [
       { title: "Organizing your AWS environment: recommended OUs and accounts", url: "https://docs.aws.amazon.com/whitepapers/latest/organizing-your-aws-environment/recommended-ous-and-accounts.html" },
       { title: "AWS Organizations quotas", url: "https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html" },
-      { title: "Declarative policies in AWS Organizations", url: "https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_declarative.html" },
+      { title: "Declarative policies in AWS Organizations", url: "https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_declarative_policies.html" },
       { title: "Security best practices in IAM (permissions guardrails)", url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html" },
       { title: "AWS account root user: centrally manage root access", url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_root-user.html" },
       { title: "Building a data perimeter on AWS", url: "https://docs.aws.amazon.com/whitepapers/latest/building-a-data-perimeter-on-aws/building-a-data-perimeter-on-aws.html" },
@@ -284,7 +284,7 @@ export const CHAPTERS = [
     agentic: [
       "Anything that enters an agent's context can end up in transcripts and logs. Give agents tools that use a credential instead of the credential itself.",
       "Agents copy secrets into commits and config as readily as people do. Keep push protection on for agent PRs and rotate any secret an agent saw.",
-      "Stolen cloud credentials get spent on model time. In its LLMjacking investigations Google's threat intelligence team (2 Nov 2026) says the main way in is \"exposed or stolen cloud identity tokens\". Anthropic's IP allowlist (beta, 5 Nov 2026) \"limits where a leaked API key can be used\". Allowlist your gateway's egress and alert on model spend per key and project.",
+      "Stolen credentials get spent on model time, and the model gateway is where attackers look. In its LLMjacking investigations Google's threat intelligence team (2 Nov 2026) says the main way in is \"exposed or stolen cloud identity tokens\". AWS (13 Nov 2026) watched attack agents pull provider keys from exposed LLM gateways, where \"stolen keys paid for the LLM inference powering further credential hunting\". Anthropic's IP allowlist (beta, 5 Nov 2026) \"limits where a leaked API key can be used\". Run gateways under production controls, allowlist their egress, and alert on model spend per key and project.",
     ],
     quiz: [
       { q: "What fields does a secret inventory need to be useful in an incident?", a: "Type, owner, what it grants access to, every location it's stored or copied, and when it was last rotated. That lets you answer what was exposed and who has to act." },
@@ -296,12 +296,13 @@ export const CHAPTERS = [
       { title: "Aikido: wfx-loot campaign pushes CI secret stealer to tens of thousands of repositories (12 Nov 2026)", url: "https://www.aikido.dev/blog/compromised-github-accounts-push-ci-secret-stealer-to-tens-of-thousands-of-repositories" },
       { title: "Fly.io: GitHub tokens exposed by apps deployed from GitHub (12 Nov 2026)", url: "https://community.fly.io/t/security-github-tokens-exposed-by-apps-deployed-from-github/29070" },
       { title: "SafeDep: wfx GitHub Actions credential stealer hits 8,000 repos (12 Nov 2026)", url: "https://safedep.io/blog/github-actions-wfx-credential-stealer" },
+      { title: "AWS Threat Intelligence: cybercrime campaigns run with ARTEX AI agents (13 Nov 2026)", url: "https://aws.amazon.com/blogs/security/amazon-threat-intelligence-observes-threat-actors-running-cybercrime-campaigns-with-artex-ai-agents/" },
       { title: "Claude Platform release notes: IP allowlisting (5 Nov 2026)", url: "https://platform.claude.com/docs/en/release-notes/overview#ip-allowlisting" },
       { title: "OpenAI: Daybreak guide, IP allowlisting for GPT-6-Cyber (Nov 2026)", url: "https://developers.openai.com/api/docs/guides/daybreak" },
       { title: "Google Threat Intelligence: LLMjacking, monetizing compromised cloud models (2 Nov 2026)", url: "https://cloud.google.com/blog/topics/threat-intelligence/llmjacking-monetizing-compromised-cloud-models" },
       { title: "Cloudflare: eMudhra intermediate certificate compromise (Oct 2026)", url: "https://blog.cloudflare.com/emudhra-certificate-compromise/" },
       { title: "GitGuardian: State of Secrets Sprawl 2025", url: "https://www.gitguardian.com/state-of-secrets-sprawl-report-2025" },
-      { title: "GitHub: About push protection", url: "https://docs.github.com/en/code-security/secret-scanning/introduction/about-push-protection" },
+      { title: "GitHub: About push protection", url: "https://docs.github.com/en/code-security/concepts/secret-security/push-protection" },
       { title: "Cloudflare: response to the Salesloft Drift incident", url: "https://blog.cloudflare.com/response-to-salesloft-drift-incident/" },
       { title: "CISA: CSRB review of the Summer 2023 Microsoft Exchange Online intrusion", url: "https://www.cisa.gov/resources-tools/resources/CSRB-Review-Summer-2023-MEO-Intrusion" },
       { title: "The Record: DHS board cites cascade of security failures at Microsoft", url: "https://therecord.media/dhs-cascade-of-security-failures-microsoft-china-hack" },

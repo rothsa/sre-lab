@@ -340,7 +340,7 @@ export const CHAPTERS = [
       { title: "Specifying a Disruption Budget for your application", url: "https://kubernetes.io/docs/tasks/run-application/configure-pdb/" },
       { title: "kube-state-metrics: PodDisruptionBudget metrics", url: "https://github.com/kubernetes/kube-state-metrics/blob/main/docs/metrics/policy/poddisruptionbudget-metrics.md" },
       { title: "Kubernetes metrics reference", url: "https://kubernetes.io/docs/reference/instrumentation/metrics/" },
-      { title: "Kubernetes deprecation policy (deprecated API requests set a gauge and an audit annotation)", url: "https://kubernetes.io/docs/reference/using-api/deprecation-policy/" },
+      { title: "Kubernetes deprecation policy (deprecated API requests set a gauge and an audit annotation)", url: "https://kubernetes.io/docs/reference/deprecation-policy/" },
       { title: "Deprecated API migration guide", url: "https://kubernetes.io/docs/reference/using-api/deprecation-guide/" },
       { title: "Warning: Helpful Warnings Ahead (blog)", url: "https://kubernetes.io/blog/2020/09/03/warnings/" },
       { title: "Karpenter: disruption", url: "https://karpenter.sh/docs/concepts/disruption/" },
