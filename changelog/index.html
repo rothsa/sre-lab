@@ -104,11 +104,19 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
 <body>
 <div class="wrap">
   <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
-  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-11-17">17 Nov 2026</time></span></div>
+  <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-11-18">18 Nov 2026</time></span></div>
   <h1 id="changelog-h">Changelog</h1>
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
     <p>What each daily research pass changed, newest first. Every change is checked against its source, primary where one exists. The lab landing page shows the latest three.</p>
-    <details open><summary><time datetime="2026-11-17">17 Nov 2026</time></summary><ul>
+    <details open><summary><time datetime="2026-11-18">18 Nov 2026</time></summary><ul>
+      <li>Agentic Engineering: editing a conversation's history now costs the model its reasoning. Both big APIs check the prefix: Claude Fable 5.2 (9 Nov) returns an error when code edits the system prompt, tools or an earlier message and sends back later thinking, and from GPT-6.2 (17 Nov) the Responses API drops reasoning after prefix edits and some model changes. Test any harness that compacts, swaps tools or changes model mid-thread.</li>
+      <li>Security: attackers now publish through the victim's own release workflow, so signed provenance verifies. Red Hat's npm packages (1 Jun), bee-js (9 Nov) and wppconnect (15 Nov) all shipped that way. Put the release job behind a protected environment with a reviewer.</li>
+      <li>Security: finding a serious bug with AI no longer takes a lab. Calif (17 Nov) pointed Codex at the Java runtime and found a Base64 decoder bug in three hours for under $200 of tokens, by its own count. CISA says it can allow unauthenticated remote code execution and to patch immediately.</li>
+      <li>Agentic Engineering, Delivery: a change can't edit the check that judges it. Claude Code's review (16 Nov) reads its rules from the base branch, never from the pull request, and after three failed fix rounds Claude stops and brings in a person.</li>
+      <li>One Agent to Hundreds: a new top model did not move the default. Amp kept its Staff Pick on Opus 5.5 when GPT-6.2 Astra shipped (17 Nov).</li>
+      <li class="minor">Smaller: CISA's exploited list is at 1,782 (Security); the sandbox step names the setting that stops an agent retrying outside it (Agentic Engineering); Stripe now merges more than 1,300 agent-written PRs a week (One Agent to Hundreds); Gemini API docs links moved (One Agent to Hundreds, Agentic Engineering, Did the Agent Do It Right?, Engineering for the Next Agent, Engineering on an Exponential).</li>
+    </ul></details>
+    <details><summary><time datetime="2026-11-17">17 Nov 2026</time></summary><ul>
       <li>Agentic Engineering: agent config in a repo is now a way in. Google's threat team (16 Nov) saw a suspected North Korean group edit <code>.claude/settings.json</code> in a victim's internal repos so that starting Claude Code pulled down a backdoor. GitHub (16 Nov) added a managed setting that blocks hooks and MCP servers from project config. Review agent config like code.</li>
       <li>Security: disclosure clocks keep shrinking. Anthropic (16 Nov) cuts its deadline from 90 days to 30 for high and critical bugs from January 2027, because the same bug now gets found twice. Project Zero made the same move on 13 Nov. Size patch SLAs to fit inside 30 days.</li>
       <li>Security: the model gateway is a target. AWS (13 Nov) watched attack agents pull provider keys out of exposed LLM gateways and spend them on more key hunting. Run gateways under production controls.</li>

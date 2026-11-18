@@ -66,7 +66,7 @@ export const CHAPTERS = [
     sources: [
       { title: "Claude Platform release notes (model launches)", url: "https://platform.claude.com/docs/en/release-notes/overview" },
       { title: "OpenAI API changelog (model launches)", url: "https://developers.openai.com/api/docs/changelog" },
-      { title: "Gemini API changelog (model launches)", url: "https://ai.google.dev/gemini-api/docs/changelog" },
+      { title: "Gemini API changelog (model launches)", url: "https://aistudio.google.com/docs/changelog" },
       { title: "Rich Sutton: The Bitter Lesson (2019-03-13)", url: "http://www.incompleteideas.net/IncIdeas/BitterLesson.html" },
       { title: "Anthropic: Harness design for long-running application development (2026-03-24)", url: "https://www.anthropic.com/research/harness-design-long-running-apps" },
       { title: "Anthropic: Demystifying evals for AI agents (2026-01-09)", url: "https://www.anthropic.com/research/demystifying-evals-for-ai-agents" },
@@ -134,7 +134,7 @@ export const CHAPTERS = [
       { title: "METR: Frontier risk report (2026-05-19)", url: "https://metr.org/blog/2026-05-19-frontier-risk-report/" },
       { title: "Claude Platform release notes (model launches)", url: "https://platform.claude.com/docs/en/release-notes/overview" },
       { title: "OpenAI API changelog (model launches)", url: "https://developers.openai.com/api/docs/changelog" },
-      { title: "Gemini API changelog (model launches)", url: "https://ai.google.dev/gemini-api/docs/changelog" },
+      { title: "Gemini API changelog (model launches)", url: "https://aistudio.google.com/docs/changelog" },
       { title: "Epoch AI: GPT-6 Astra leads on math benchmarks, but not on software engineering (2026-09-16)", url: "https://epoch.ai/data-insights/astra-eci-breakdown" },
       { title: "METR: Measuring AI ability to complete long tasks (2025-03-19)", url: "https://metr.org/blog/2025-03-19-measuring-ai-ability-to-complete-long-tasks/" },
       { title: "METR et al.: Measuring AI Ability to Complete Long Software Tasks (arXiv 2503.14499)", url: "https://arxiv.org/abs/2503.14499" },
