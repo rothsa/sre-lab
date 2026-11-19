@@ -254,7 +254,7 @@ export const CHAPTERS = [
       { title: "Claude Code: Monitoring usage", url: "https://code.claude.com/docs/en/monitoring-usage" },
       { title: "Claude Code: Agent teams", url: "https://code.claude.com/docs/en/agent-teams" },
       { title: "GitHub changelog: Local sandboxing for GitHub Copilot GA (7 Oct 2026)", url: "https://github.blog/changelog/2026-10-07-local-sandboxing-for-github-copilot-now-generally-available/" },
-      { title: "GitHub Docs: About cloud and local sandboxes", url: "https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/about-cloud-and-local-sandboxes" },
+      { title: "GitHub Docs: About local sandboxing for GitHub Copilot", url: "https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/about-cloud-and-local-sandboxes" },
     ],
   },
   {

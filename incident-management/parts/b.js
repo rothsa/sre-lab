@@ -197,8 +197,8 @@ export const CHAPTERS = [
     sources: [
       SRE_PM,
       { title: "AWS: Operational Readiness Reviews (June 2022)", url: "https://docs.aws.amazon.com/wellarchitected/latest/operational-readiness-reviews/wa-operational-readiness-reviews.html" },
-      { title: "Howie guide: Assign", url: "https://howie-guide.pagerduty.com/assign/" },
-      { title: "Howie guide: Distribute", url: "https://howie-guide.pagerduty.com/distribute/" },
+      { title: "Howie guide: Assign", url: "https://docs.pagerduty.com/ops-guides/howie-guide/assign" },
+      { title: "Howie guide: Distribute", url: "https://docs.pagerduty.com/ops-guides/howie-guide/distribute" },
       { title: "John Allspaw: The Infinite Hows", url: "https://www.kitchensoap.com/2014/11/14/the-infinite-hows-or-the-dangers-of-the-five-whys/" },
       { title: "SRE Workbook: Results of Postmortem Analysis", url: "https://sre.google/workbook/postmortem-analysis/" },
       { title: "Cloudflare: Code Orange, Fail Small (Dec 2025)", url: "https://blog.cloudflare.com/fail-small-resilience-plan/" },
