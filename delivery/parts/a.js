@@ -109,7 +109,7 @@ publish:
       "Blanket auto-retry turns flaky tests green and hides real failures too. Quarantine the test and give it an owner instead.",
       "A required check is only a name until you pin who may post it. GitHub: \"Any person or integration with write permissions to a repository can set the state of any status check\". The wfx-loot CI stealer (Nov 2026) carries code that posts passing statuses under a repo's required check names. Set the expected source app on every required check, through org rulesets.",
       "CI evidence expires. Since October 2026 GitHub's Actions retention setting also deletes checks, workflow runs and statuses, and raising it later won't restore them. Copy release evidence somewhere you control.",
-      "`runs-on: ubuntu-latest` is a moving dependency. GitHub moves it from Ubuntu 24.04 to 26.04 between 19 October and 19 November 2026, and some preinstalled tools change, so the same commit can fail with no change in your repo. Pin `ubuntu-24.04` until you have tested `ubuntu-26.04`.",
+      "`runs-on: ubuntu-latest` is a moving dependency. GitHub moved it from Ubuntu 24.04 to 26.04 in a rollout due to finish on 19 November 2026, and some preinstalled tools changed, so the same commit can fail with no change in your repo. Pin `ubuntu-24.04` until you have tested `ubuntu-26.04`.",
     ],
     agentic: [
       "Coding agents multiply pull requests, and every agent PR queues the same jobs on the same runner fleet, so queue time and CI minutes become the limit before human review does. Budget agent runs like any workload: the Claude Code GitHub Actions docs suggest `--max-turns`, workflow timeouts and concurrency limits, and the queue-time dashboard should split agent and human jobs.",
