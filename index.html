@@ -4,12 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>SRE Lab · Sally Roth: working reliability tools and explainers</title>
-<meta name="description" content="A reliability-first lab by Sally Roth: working SRE tools (SLO burn simulator, uptime triage, AI failover, postmortem search, agent evals) and illustrated explainers on incident management, observability, Kubernetes, Linux, infrastructure as code and agentic engineering.">
+<meta name="description" content="Working reliability tools (SLO burn simulator, uptime triage, postmortem search, agent evals) and step-through explainers on incident management, observability, Kubernetes, Linux, infrastructure as code, security and agentic engineering.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="SRE Lab · Sally Roth">
-<meta property="og:description" content="A reliability-first lab by Sally Roth: working SRE tools (SLO burn simulator, uptime triage, AI failover, postmortem search, agent evals) and illustrated explainers on incident management, observability, Kubernetes, Linux, infrastructure as code and agentic engineering.">
+<meta property="og:description" content="Working reliability tools (SLO burn simulator, uptime triage, postmortem search, agent evals) and step-through explainers on incident management, observability, Kubernetes, Linux, infrastructure as code, security and agentic engineering.">
 <meta property="og:url" content="https://lab.sallyroth.dev/">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://lab.sallyroth.dev/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SRE Lab · Sally Roth">
+<meta name="twitter:description" content="Working reliability tools (SLO burn simulator, uptime triage, postmortem search, agent evals) and step-through explainers on incident management, observability, Kubernetes, Linux, infrastructure as code, security and agentic engineering.">
+<meta name="twitter:image" content="https://lab.sallyroth.dev/og-image.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
 <style>
 /* Jungle theme: a sunlit canopy in light mode, the jungle at night (with fireflies) in dark mode.
@@ -163,10 +169,10 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
   <i style="left:92%;top:84%;animation-delay:5.2s,-11s"></i>
 </div>
 <div class="wrap">
-  <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="./" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/hire</a></nav>
+  <nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="./" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/coffee</a></nav>
   <div class="kicker">Sally Roth</div>
   <h1>SRE <span class="leafy">Lab</span></h1>
-  <p class="lede">A living collection of Sally&rsquo;s tool demos, thoughts and opinions, revised every day with fresh research from the frontier. All of it is written for running systems across many teams. The tools cover error budgets and burn-rate alerts, telling real outages from blips, searching real postmortems by failure mode, and judging an agent's incident work by its evidence. The explainers cover incident management, observability and cardinality, Kubernetes, Linux, delivery, infrastructure as code and Terraform, security, and code and service ownership. Engineering with AI agents has its own section further down.</p>
+  <p class="lede">Step-through explainers and working tools for engineers who run systems across many teams, revised every day with fresh research from the frontier. Each chapter gives the mental model, the org-level control, the number to watch and the ways it fails, with primary sources. Start with the exponential curve below, or jump straight to the tools, reliability explainers and AI engineering section.</p>
   <div class="tools">
     <div class="featured"><a class="tool" href="exponential/"><em class="feat">Start here</em><strong>Engineering on an Exponential</strong><span>How an engineer's work and mindset change when frontier models ship most weeks and capability compounds over months: planning for the curve, not the next release; separating what can change from what must last when models write a growing share of the system; what the trend lines say and don't; task sizes in human terms; engineering from 3 months to 10 years; the operating-model shift; the bottlenecks that don't double; holding both futures; and what compounds in an engineering org.</span><em class="upd">updated <time datetime="2026-11-22">22 Nov 2026</time></em></a></div>
   </div>
