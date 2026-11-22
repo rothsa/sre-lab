@@ -66,7 +66,7 @@ export const CHAPTERS = [
     agentic: [
       "An agent can turn a drift ticket into a draft fix: a revert PR, or an adopt PR with code edits and `import` blocks. Revert or adopt depends on why someone clicked, which the plan doesn't show, so the owning team decides. The failure modes are adopting a mistaken or malicious console change into code, and adding `ignore_changes` to quiet the report.",
       "Drift output carries text written by whoever changed the cloud: tags, descriptions, rule names. An agent that reads it and can open PRs is acting on untrusted input, so keep it read-only plus PR-only with no secrets in reach, and let plan policy check whatever it proposes.",
-      "An agent that applies its own drift fixes on a schedule becomes a Crossplane-style reconciler with no pause annotation, and will undo break-glass fixes mid-incident. Have it hand changes off as PRs, so branch protection and reviewers still gate them. Pulumi Neo is one example: its scheduled automations usually open PRs with a preview summary, and `pulumi neo --permission-mode read-only` blocks state-mutating operations.",
+      "An agent that applies its own drift fixes on a schedule becomes a Crossplane-style reconciler with no pause annotation, and will undo break-glass fixes mid-incident. Have it hand changes off as PRs, so branch protection and reviewers still gate them. Pulumi Neo is one example: it hands code changes off as pull requests, and its read-only mode blocks writes to Pulumi Cloud but \"does not restrict credentials used by connected tools\" (docs, Nov 2026).",
     ],
     quiz: [
       { q: "What do the three exit codes of `terraform plan -detailed-exitcode` mean, and why is 2 not the same as drift?", a: "0: no changes. 1: error. 2: changes present. Exit 2 also happens when merged code has not been applied yet, so you need a `-refresh-only` plan (or apply-on-merge) to tell outside changes from a deploy backlog." },
@@ -88,7 +88,7 @@ export const CHAPTERS = [
       { title: "AWS Config: how it works", url: "https://docs.aws.amazon.com/config/latest/developerguide/how-does-config-work.html" },
       { title: "Crossplane: managed resources", url: "https://docs.crossplane.io/latest/managed-resources/managed-resources/" },
       { title: "Pulumi: state and backends", url: "https://www.pulumi.com/docs/iac/concepts/state-and-backends/" },
-      { title: "Pulumi Neo", url: "https://www.pulumi.com/docs/ai/concepts/neo/" },
+      { title: "Pulumi Agents docs: Permissions and approvals", url: "https://www.pulumi.com/docs/ai/agents/permissions/" },
       { title: "Pulumi CLI: pulumi neo", url: "https://www.pulumi.com/docs/iac/cli/commands/pulumi_neo/" },
       { title: "Simon Willison: the lethal trifecta", url: "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" },
     ],
@@ -362,7 +362,7 @@ export const CHAPTERS = [
       { title: "Pulumi: how Pulumi works", url: "https://www.pulumi.com/docs/iac/guides/basics/how-pulumi-works/" },
       { title: "AWS CDK v2 developer guide", url: "https://docs.aws.amazon.com/cdk/v2/guide/home.html" },
       { title: "Google Cloud: announcing the 2025 DORA report", url: "https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report" },
-      { title: "Pulumi Neo", url: "https://www.pulumi.com/docs/ai/concepts/neo/" },
+      { title: "Pulumi Agents docs: Permissions and approvals", url: "https://www.pulumi.com/docs/ai/agents/permissions/" },
       { title: "HashiCorp: Terraform MCP server is generally available", url: "https://www.hashicorp.com/en/blog/terraform-mcp-server-is-now-generally-available" },
       { title: "Terraform MCP server overview", url: "https://developer.hashicorp.com/terraform/mcp-server" },
       { title: "Terraform MCP server: self-hosted deployment", url: "https://developer.hashicorp.com/terraform/mcp-server/deploy/self-hosted" },

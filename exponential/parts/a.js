@@ -110,7 +110,7 @@ export const CHAPTERS = [
     steps: [
       { text: "Five trend lines behind \"capability is exponential\", each with the caveat its own source gives. Hundreds of teams planning off one headline number repeat one error everywhere, so read them as a range." },
       { text: "METR's task horizon: the length of task (in skilled-human time) an agent finishes half the time. Doubling about every 7 months since 2019 (2025 paper); about 89 days since 2024 on METR's larger 2026 suite, 105 in its May 2026 fit, about 110 with harder tasks (Nov 2026). Claude Opus 4.6 measured about 12 hours (February 2026).", on: ["metr"] },
-      { text: "METR's caveats: self-contained software, ML and security tasks; measurements above 16 hours are unreliable; the tracker is no longer actively updated (since September 2026). Scoring is algorithmic, which METR's August 2025 study found overstates mergeable work (chapter 3).", on: ["metr", "c-metr"], flow: ["e-m"] },
+      { text: "METR's caveats: self-contained software, ML and security tasks; on the tracker's suite, measurements above 16 hours are unreliable; the tracker is no longer actively updated (since September 2026). Scoring is algorithmic, which METR's August 2025 study found overstates mergeable work (chapter 3).", on: ["metr", "c-metr"], flow: ["e-m"] },
       { text: "On SWE-bench Verified, OpenAI reported 33.2% for GPT-4o (August 2024); Google's Gemini 3.1 Pro model card reports 80.6% (February 2026). Then OpenAI stopped reporting it as contaminated, with flawed tests in most of the problems it audited. As a procurement gate, a public benchmark goes stale; use your own evals.", on: ["swe", "c-swe"], flow: ["e-s"] },
       { text: "Epoch AI (September 2026): since 2023 the cost of a given level of AI performance has fallen about 47% a quarter, or 13x a year: 7-10x on game puzzles, 16-19x on math. The decline tends to slow over time. Epoch's March 2025 estimate was wider: 9x to 900x a year.", on: ["price", "c-price"], flow: ["e-p"] },
       { text: "Training compute for frontier language models has grown about 5x a year since 2020 (Epoch, 2026). Epoch's 2030 analysis (August 2024) expects power to be the first constraint to bind. So agent demand forecasts belong in the same long-lead planning cycle as data-center capacity.", on: ["compute", "c-compute"], flow: ["e-c"] },
@@ -169,7 +169,7 @@ export const CHAPTERS = [
       { id: "y2", label: "+2 years", sub: "129-3,600 h\n(3 weeks-2 years)", x: 790, y: 40, w: 160, h: 70 },
       { id: "r80", label: "At 80% reliability", sub: "~70 min today;\n~4-20 h in a year", x: 10, y: 200, w: 220, h: 64 },
       { id: "done", label: "Passing is not done", sub: "38% pass tests,\n0 of 15 mergeable", x: 300, y: 200, w: 220, h: 64 },
-      { id: "yard", label: "Past the yardstick", sub: "suite unreliable\nover 16 hours", x: 590, y: 200, w: 220, h: 64 },
+      { id: "yard", label: "Past the yardstick", sub: "tracker suite unreliable\nover 16 hours", x: 590, y: 200, w: 220, h: 64 },
       { id: "fleet", label: "Fleet load", sub: "time held,\nspend per task", x: 835, y: 200, w: 115, h: 64 },
     ],
     edges: [
@@ -188,7 +188,7 @@ export const CHAPTERS = [
       { text: "Reliability lags: at 80% success, Opus 4.6 measured about 70 minutes, about 4 to 20 hours a year later on the same arithmetic. Autonomy should follow the reliable size, not the headline.", on: ["now", "r80"], flow: ["e-80"] },
       { text: "Passing is not done: in METR's August 2025 study, 38% of Claude 3.7 Sonnet's fixes passed the maintainers' tests, yet none of 15 reviewed by hand were mergeable. A fleet making week-sized changes needs review capacity and deterministic checks sized for them.", on: ["done"] },
       { text: "Long tasks hold sandboxes, CI runners and databases longer, so capacity-plan on task duration, not request count. Cost per task grows with task size even as token prices fall: budget per task type and alert when one doubles.", on: ["y1", "fleet"] },
-      { text: "Past the yardstick: METR's suite is unreliable above 16 hours, and the +3 month column already reaches 16 to 24. Every projection here is at or beyond what it can measure.", on: ["m3", "m6", "y1", "y2", "yard"], flow: ["e-yard"] },
+      { text: "Past the yardstick: the suite on METR's tracker is unreliable above 16 hours, and the +3 month column already reaches 16 to 24. The harder tasks METR added in November 2026 go up to 200 hours, but human baselines back only 9% of its task-length estimates. Read every projection here as beyond what has been measured well.", on: ["m3", "m6", "y1", "y2", "yard"], flow: ["e-yard"] },
     ],
     say30: "I translate doubling times into task sizes. Claude Opus 4.6 measured about 12 hours at 50% success in February 2026. If the trend held, a year later that's one to five work-weeks, depending on whether you use METR's 7-month or 89-day doubling. The 80% size is about 70 minutes, and passing tests isn't mergeable, so autonomy follows the reliable size. Then I size the fleet for bigger tasks: review and checks for week-sized diffs, sandboxes and runners held longer, and a budget per task type.",
     gotchas: [
@@ -198,12 +198,12 @@ export const CHAPTERS = [
     quiz: [
       { q: "Opus 4.6 measured about 12 hours at 50%. What does the 89-day doubling give one year later, and what does the 7-month rate give?", a: "About 209 hours (five work-weeks) versus about 39 hours (one work-week), roughly a 17x versus 3.3x multiplier." },
       { q: "Why should autonomy follow the 80% task size rather than the 50% one?", a: "At 50% half the attempts fail. The 80% horizon is several times shorter (about 70 minutes for Opus 4.6), and even passing tests isn't mergeable work, so higher-stakes autonomy needs the reliable size plus verification." },
-      { q: "Why can't METR's suite confirm the one-year projection?", a: "METR says measurements above 16 hours are unreliable with its current task suite, and its tracker is no longer updated." },
+      { q: "Why can't METR's suite confirm the one-year projection?", a: "The suite on METR's tracker is unreliable above 16 hours, and the tracker is no longer updated. The harder tasks added in November 2026 reach 200 hours, but human baselines back only 9% of the task-length estimates." },
     ],
     code: [
       { lang: "text", label: "task size at 50% success, from Opus 4.6 (~12 h, Feb 2026)", src: "horizon   multiplier       task size (7-month .. 89-day rate)\n+3 mo     1.35x .. 2x      16 h .. 24 h     (2 .. 3 workdays)\n+6 mo     1.8x  .. 4.2x    22 h .. 50 h     (3 days .. 1.2 weeks)\n+1 yr     3.3x  .. 17x     39 h .. 209 h    (1 .. 5 work-weeks)\n+2 yr     11x   .. 300x    129 h .. 3,600 h (3 weeks .. ~2 years)\n\nat 80% success: ~70 min today; +1 yr ~4 h .. 20 h\nmultiplier = 2 ^ (horizon_days / doubling_days)\n8 h workday, 40 h week, 160 h work-month" },
     ],
-    codeNote: "Arithmetic if the trend held, not a forecast. It compounds METR's measured doubling times (about 7 months since 2019, about 89 days since 2024) from the February 2026 measurement. METR's tasks are self-contained software, ML and security work, its suite is unreliable above 16 hours, and its tracker is no longer updated.",
+    codeNote: "Arithmetic if the trend held, not a forecast. It compounds METR's measured doubling times (about 7 months since 2019, about 89 days since 2024) from the February 2026 measurement. METR's tasks are self-contained software, ML and security work, the suite on its tracker is unreliable above 16 hours, and the tracker is no longer updated.",
     incidents: [],
     sources: [
       { title: "METR: Time Horizon 1.1 (2026-01-29)", url: "https://metr.org/blog/2026-01-29-time-horizon-1-1/" },
@@ -211,6 +211,7 @@ export const CHAPTERS = [
       { title: "METR: Time horizons tracker (no longer updated after 2026-09-08)", url: "https://metr.org/time-horizons/" },
       { title: "METR: Measuring AI ability to complete long tasks (2025-03-19)", url: "https://metr.org/blog/2025-03-19-measuring-ai-ability-to-complete-long-tasks/" },
       { title: "METR: Research Update: Algorithmic vs. Holistic Evaluation (13 Aug 2025)", url: "https://metr.org/blog/2025-08-12-research-update-towards-reconciling-slowdown-with-time-horizons/" },
+      { title: "METR: AI R&D-relevant model capabilities are improving rapidly and are getting harder to measure (2026-11-20)", url: "https://metr.org/blog/2026-11-20-q4-2026-capability-update/" },
     ],
   },
   {
