@@ -136,3 +136,18 @@ svg{position:absolute;inset:0;width:1920px;height:1080px;overflow:visible}
 .fb-foot a{color:var(--blue)}
 .fb-status.ok{color:var(--green);font-weight:600}
 .fb-status.err{color:var(--red);font-weight:600}
+.film-playlist{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-top:16px;padding:12px 14px;background:var(--panel);border:1px solid var(--rule);border-radius:12px;font-size:14px}
+.film-playlist a{color:#1f7a3a;text-decoration:none;font-weight:600}
+.film-playlist a:hover{text-decoration:underline}
+.film-playlist .fp-mid{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--muted)}
+.film-playlist .fp-dim{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--muted)}
+.film-upnext{margin-top:12px;padding:10px 14px;border-radius:12px;background:#dff0d3;border:1.5px solid #1f7a3a;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;font-size:14.5px;font-weight:600;color:#14261a}
+.film-upnext[hidden]{display:none}
+.film-upnext a{color:#fff;background:#1f7a3a;padding:6px 14px;border-radius:999px;text-decoration:none}
+:root[data-theme="dark"] body,:root[data-theme="dark"] html{background:#08130d;color:#e3f0de}
+:root[data-theme="dark"] .film-wrap .kicker,:root[data-theme="dark"] .film-note a,:root[data-theme="dark"] .film-playlist a,:root[data-theme="dark"] .fb-foot a{color:#8fdc7a}
+:root[data-theme="dark"] .film-controls button,:root[data-theme="dark"] .film-playlist,:root[data-theme="dark"] .fb-box{background:#102318;border-color:#21402c;color:#e3f0de}
+:root[data-theme="dark"] .film-controls .count,:root[data-theme="dark"] .film-note,:root[data-theme="dark"] .film-playlist .fp-mid,:root[data-theme="dark"] .film-playlist .fp-dim,:root[data-theme="dark"] .fb-box summary,:root[data-theme="dark"] .fb-foot{color:#9fb8a2}
+:root[data-theme="dark"] .fb-form textarea,:root[data-theme="dark"] .fb-form input[type="text"]{background:#08130d;border-color:#21402c;color:#e3f0de}
+:root[data-theme="dark"] .fb-tags span{background:#0d2016;border-color:#21402c;color:#e3f0de}
+:root[data-theme="dark"] #caption{color:#e3f0de}

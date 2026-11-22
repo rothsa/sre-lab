@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>SRE Lab Changelog · Sally Roth</title>
+    <link>https://lab.sallyroth.dev/changelog/</link>
+    <description>Daily research updates across SRE, observability, Kubernetes, security, and agentic engineering, checked against primary sources.</description>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 22 Nov 2026 14:00:00 GMT</lastBuildDate>
+    <atom:link href="https://lab.sallyroth.dev/changelog/feed.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>SRE Lab · 22 Nov 2026: 💣 Security: inference providers have now confirmed that prompts leaked. Phala (10 Nov) says to treat one model&apos;s requests from 21 Oct to 8 </title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-22</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-22</guid>
+      <pubDate>Sun, 22 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>💣 <strong>Security: inference providers have now confirmed that prompts leaked.</strong> Phala (10 Nov) says to treat one model's requests from 21 Oct to 8 Nov as exposed, after an attacker took over an inference VM. Together (21 Nov) says an outsider downloaded stored prompt samples after an AI coding agent committed a credential to a public repo. OpenRouter (22 Nov) dropped three providers and took 125 endpoints off its zero data retention list. Rotate any secret that went into a prompt on those routes, and test a retention flag before you count it as a control.</li>
+      <li>One Agent to Hundreds: permitting an agent harness doesn't put it under your policy. VS Code 1.147 (18 Nov) lets admins permit the Claude and Codex harnesses next to managed Copilot settings, and says those sessions run without Copilot's managed permission, sandbox, MCP and plugin controls. GitHub (16 Nov) adds that selecting the Copilot harness doesn't turn sandboxing on (Agentic Engineering). For each tool, find the client that skips the policy.</li>
+      <li>Engineering for the Next Agent: an offline eval gain needs an online check before it decides a release. Spotify (19 Nov) pairs offline evals with A/B tests. At Meta (Sep) a raw offline score got the direction wrong in 31 of 113 comparisons.</li>
+      <li>Engineering on an Exponential: the 16-hour limit belongs to the older suite on METR's tracker. METR's 20 Nov update adds tasks up to 200 hours, but human baselines back only 9% of its task-length estimates, so the long end of the curve is still weakly measured.</li>
+      <li class="minor">Smaller: at Uber a valid token is not enough, a runtime check can deny an action outside the agent's defined intent (Agentic Engineering); Claude Code's npm stable tag is now 2.1.323, still without the Bash allow rule fix (Agentic Engineering); Lauren Tan's team also uses Lean and property-based UI tests (One Agent to Hundreds); pstack quotes are checked against 0.15.46 (One Agent to Hundreds); Pulumi Neo's read-only mode blocks Pulumi Cloud writes but not connected tools' credentials (Infrastructure as Code); moved links for the Codex changelog, Pulumi docs and two OpenAI alignment posts.</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 21 Nov 2026: Security: attackers now point agents at a target and let them find the bug. AWS (20 Nov) watched an actor&apos;s agents, told only to &quot;obtain she</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-21</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-21</guid>
+      <pubDate>Sat, 21 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>Security: attackers now point agents at a target and let them find the bug. AWS (20 Nov) watched an actor's agents, told only to "obtain shell access", find a zero-day in an open-source application and go from mapping its API to writing files on the server in about 11 minutes. Labs and researchers showed this through October and November. Now it is in an intrusion.</li>
+      <li>One Agent to Hundreds: more agents pay off only where something outside the agents can check the work. METR (20 Nov) found swarms beat the best of several independent runs only on tasks with a clear metric, and large swarms did worse when they had to make up their own. ProgramBench and Vals AI had already measured the extra cost.</li>
+      <li>One Agent to Hundreds: agents are moving off the laptop, and vendors now ship the plumbing. Codex CLI 0.171.0 (20 Nov) runs noninteractive sessions on a remote app server, and Kiro (19 Nov) connects cloud sessions to a customer's VPC. Where agents run becomes the platform and network teams' call.</li>
+      <li>Security: a password reset doesn't remove what the attacker added. In Google's COLD RELIC case (17 Nov) the attacker's passkeys survived password and session resets. Account-takeover playbooks need a step that removes added sign-in methods.</li>
+      <li class="minor">Smaller: CISA's exploited list is at 1,790 and now includes the vCenter bug, with three days to fix (Security); GPT-6.2 Astra's ARC-AGI-3 scores, 100% with a provider harness and 70.3% with the standard one, join the harness line (One Agent to Hundreds); Claude Code 2.1.330 narrows what a name entry in deniedMcpServers blocks, so deny by URL (One Agent to Hundreds); METR's 20 Nov update finds task horizons doubling about every 110 days with harder tasks added (Engineering on an Exponential, Engineering for the Next Agent).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 20 Nov 2026: 💣 Security: patch vCenter this week. Broadcom fixed CVE-2026-123890 on 19 Nov, a vCenter login bypass with no workaround. Google says a sus</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-20</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-20</guid>
+      <pubDate>Fri, 20 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>💣 <strong>Security: patch vCenter this week.</strong> Broadcom fixed CVE-2026-123890 on 19 Nov, a vCenter login bypass with no workaround. Google says a suspected PRC-nexus group had exploited it since early September, reaching vCenter from a BeyondTrust appliance it already held. Keep management consoles off the internet, and limit who can reach them from inside too.</li>
+      <li>Security: the inference path leaks secrets. Dragos (19 Nov) sent about two million prompts carrying canary AWS keys to AI services and found at least three providers breached without knowing it, marketplace resellers keeping prompts, and zero data retention flags often ignored. Keep credentials out of agent context, and pin which providers a router may use.</li>
+      <li>One Agent to Hundreds: more tools ship a coordinating agent, and people still read the threads. Kiro Crew 0.13 (19 Nov) put its conductor in every standard build. Thorsten Ball (19 Nov) says Amp users who treated the main agent as a chief of staff were disappointed, because you still have to go in and review.</li>
+      <li>Agentic Engineering: know what a broken guard does. In Claude Code 2.1.329 (19 Nov) a hook that errors lets the call through, in Code Mode too, unless it sets <code>onFailure: "block"</code>. Since 2.1.328 a command that a hook rewrites to a sandbox-excluded one runs outside the sandbox.</li>
+      <li class="minor">Smaller: OpenAI's approval rule for model gateways is in effect from 20 Nov (One Agent to Hundreds); the Dex Horthy review line names the No AI Slop manifesto he launched (One Agent to Hundreds); a Claude Code source for OSC 7501 (One Agent to Hundreds); Copilot approvals generally available since 28 Oct (Ownership); the ubuntu-latest move to 26.04 was due to finish on 19 Nov (Delivery).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 19 Nov 2026: 💣 Security: patch NGINX this week. Two HTTP/2 bugs disclosed on 18 Nov, CVE-2026-123007 and CVE-2026-123633, let an attacker with no login </title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-19</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-19</guid>
+      <pubDate>Thu, 19 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>💣 <strong>Security: patch NGINX this week.</strong> Two HTTP/2 bugs disclosed on 18 Nov, CVE-2026-123007 and CVE-2026-123633, let an attacker with no login run code on the server, by Wiz's testing. They are fixed in 1.30.7 and 1.31.9. If you can't upgrade yet, turn HTTP/2 off. Five teams found them independently, Wiz with its AI code scanner, so assume attackers can find them too.</li>
+      <li>💣 <strong>One Agent to Hundreds: Google shipped Gemini 4 Neon on 18 Nov, and tool defaults moved to it within a day.</strong> Antigravity made it the default model the same day, and pstack moved its Gemini review seat to it on 19 Nov. Know which of your tools follow a vendor's default, because the model under your agents can change before you have tested it.</li>
+      <li>One Agent to Hundreds: the coordinating agent is now something vendors sell. A Devin Bot (Cognition, 17 Nov) is a persistent agent that leads several Devins, with limits on what it can touch and when spend or releases need approval. Hugging Face ran 1,000 agents on a couple of GPU nodes and found only 40 to 60 calling the model at any moment. The rest waited on merges and tests.</li>
+      <li>Security: a stolen publishing credential gets past provenance too. Wiz says the malicious agent-framework releases on PyPI (17 Nov) appear to have gone out through Microsoft's own release service with a stolen certificate.</li>
+      <li class="minor">Smaller: CISA's exploited list is at 1,786 and now includes the Apache Axis bug behind the N-central attacks (Security); Calif's three hours on the Java bug covered finding and exploiting it (Security); Cindy Sridharan still reads every line she merges, as of 18 Nov (One Agent to Hundreds); pstack quotes are checked against 0.15.44 (One Agent to Hundreds); a renamed GitHub docs link (Agentic Engineering); two moved PagerDuty links (Incident Management).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 18 Nov 2026: 💣 Agentic Engineering, One Agent to Hundreds: OpenAI shipped GPT-6.2 Astra and GPT-6.2 Sol on 17 Nov, and its API now drops the model&apos;s rea</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-18</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-18</guid>
+      <pubDate>Wed, 18 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>💣 <strong>Agentic Engineering, One Agent to Hundreds: OpenAI shipped GPT-6.2 Astra and GPT-6.2 Sol on 17 Nov, and its API now drops the model's reasoning when a harness edits earlier history.</strong> Claude Fable 5.2 has returned an error for the same edits since 9 Nov, so both big APIs check the prefix. Test any harness that compacts, swaps tools or changes model mid-thread. The new top model did not move the default: Amp kept its Staff Pick on Opus 5.5.</li>
+      <li>💣 <strong>Security: patch Java this week.</strong> CISA (17 Nov) says a Base64 decoder bug in the Java runtime, CVE-2026-114938, can allow unauthenticated remote code execution, and to patch immediately. Calif found it by pointing Codex at the runtime, in three hours for under $200 of tokens by its own count. Finding a serious bug with AI no longer takes a lab.</li>
+      <li>Security: attackers now publish through the victim's own release workflow, so signed provenance verifies. Red Hat's npm packages (1 Jun), bee-js (9 Nov) and wppconnect (15 Nov) all shipped that way. Put the release job behind a protected environment with a reviewer.</li>
+      <li>Agentic Engineering, Delivery: a change can't edit the check that judges it. Claude Code's review (16 Nov) reads its rules from the base branch, never from the pull request, and after three failed fix rounds Claude stops and brings in a person.</li>
+      <li class="minor">Smaller: CISA's exploited list is at 1,782 (Security); the sandbox step names the setting that stops an agent retrying outside it (Agentic Engineering); Stripe now merges more than 1,300 agent-written PRs a week (One Agent to Hundreds); Gemini API docs links moved (One Agent to Hundreds, Agentic Engineering, Did the Agent Do It Right?, Engineering for the Next Agent, Engineering on an Exponential).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 17 Nov 2026: Agentic Engineering: agent config in a repo is now a way in. Google&apos;s threat team (16 Nov) saw a suspected North Korean group edit .claude/s</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-17</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-17</guid>
+      <pubDate>Tue, 17 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>Agentic Engineering: agent config in a repo is now a way in. Google's threat team (16 Nov) saw a suspected North Korean group edit <code>.claude/settings.json</code> in a victim's internal repos so that starting Claude Code pulled down a backdoor. GitHub (16 Nov) added a managed setting that blocks hooks and MCP servers from project config. Review agent config like code.</li>
+      <li>Security: disclosure clocks keep shrinking. Anthropic (16 Nov) cuts its deadline from 90 days to 30 for high and critical bugs from January 2027, because the same bug now gets found twice. Project Zero made the same move on 13 Nov. Size patch SLAs to fit inside 30 days.</li>
+      <li>Security: the model gateway is a target. AWS (13 Nov) watched attack agents pull provider keys out of exposed LLM gateways and spend them on more key hunting. Run gateways under production controls.</li>
+      <li>One Agent to Hundreds: on stacking reviewers, the Claude Code team (16 Nov) tunes one reviewer and does not add more. Steve Yegge (14 Nov) now tells people to pace agents to human speed, after burning down five agent factories.</li>
+      <li>One Agent to Hundreds, Agentic Engineering: pstack 0.15.43 (16 Nov) deleted its Orchestrate playbook, runs Fable 5.2 only after two Opus 5.5 runs fail, and caps effort at xhigh. Every pstack line now quotes the current version.</li>
+      <li class="minor">Smaller: N-central's exploited bug tied to an end-of-life Apache Axis library, also hit in Confluence Data Center, and a third hotfix removed the Legacy API (Security); Claude Code MCP tasks carry their version, not a date (One Agent to Hundreds); Copilot approvals no longer called a preview (Ownership); moved links for Devin, GitHub, AWS and Kubernetes docs (Agentic Engineering, Security, Kubernetes).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 16 Nov 2026: Security: attack agents are now routine traffic, and they run on credentials left in reach. Cloudflare (13 Nov) saw over 50 agent attack fra</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-16</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-16</guid>
+      <pubDate>Mon, 16 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>Security: attack agents are now routine traffic, and they run on credentials left in reach. Cloudflare (13 Nov) saw over 50 agent attack frameworks scan its customers in three days and traced its incidents to CI tokens that never expire. Datadog (9 Nov) watched one search CloudWatch logs for long-lived keys. Expire CI tokens, scope them per environment, and keep secrets out of logs.</li>
+      <li>Agentic Engineering: approving a name does not approve what it runs later. Mindgard (30 Oct) and Harness (6 Nov) each changed what an approved MCP server name points to, and the coding agents ran it without asking again. The vendors call it intended, so review agent config changes like code.</li>
+      <li>One Agent to Hundreds: model routing now has a third form. Google's Antigravity (12 Nov) switches models inside one task, planning on Gemini 4 Carbon and handing edits to Hydrogen, next to LangChain's harness router and Amp's visible model picker.</li>
+      <li>Kubernetes: the deprecated-API gauge only says an API was called since the API server started. The upgrade gate now uses the request rate, so a migrated client does not hold a cluster back and a restart does not clear one early.</li>
+      <li class="minor">Smaller: <code>ignore_changes</code> stops the update, not the refresh, so a refresh-only plan still shows the change (Infrastructure as Code); a container restart keeps the pod name, and only a replaced pod makes new series (Taming Cardinality); Down or Me no longer says all services look fine when some have no result; pstack lines match version 0.15.42 (Agentic Engineering, One Agent to Hundreds); Anthropic's bottleneck is quoted as written, and Terminal Bench's audit covered 65 of 66 tasks (One Agent to Hundreds, Did the Agent Do It Right?); Copilot approvals and cloud scheduled tasks reworded to match the docs (Delivery, Graphs and Loops); moved links for PagerDuty, NIST, Gemini, Terraform, OpenTelemetry and Anthropic.</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 15 Nov 2026: Agentic Engineering: a second model now reviews what an always-on agent does, in place of a person. OpenAI (12 Nov) enforces auto-review on </title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-15</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-15</guid>
+      <pubDate>Sun, 15 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>Agentic Engineering: a second model now reviews what an always-on agent does, in place of a person. OpenAI (12 Nov) enforces auto-review on every action of its internal OpenClaw agents. Shopify (12 Nov) puts a judge on a different model over the agents that attack its own production: it reads the session live and can kill it, and the run ends if the judge dies. Make the monitor fail closed, and keep the sandbox as the boundary.</li>
+      <li>One Agent to Hundreds: the top model is now the exception, not the default. Anthropic says to start most work on Opus 5.5 and move up to Fable 5.2 as required, Amp's default pick is Opus 5.5 (12 Nov), and pstack 0.15.42 sends only its hardest tasks to Fable 5.2. Who picks is split: LangChain routes in the harness, and Amp dropped its effort dial for a visible model selector so you can see who is billed.</li>
+      <li>Delivery: lighter review lanes check the author's record as well as the change. Sourcegraph's review bot (10 Nov) wants two reviewed, merged PRs and a recent contribution in that code before it waives review, and auth changes always get a person. Anthropic limits its lighter paths to trusted authors.</li>
+      <li>Observability: always-on agent monitors are moving from a loop to a spec. Grafana's Watchers (9 Nov) are calibrated once by an agent, then run as plain code plus one small-model call, as Ben Congdon described in October. Review those specs like alert rules.</li>
+      <li class="minor">Smaller: Intercom's auto-approved share is dated, 19% in April 2026 and half by July (Delivery); LiteLLM's bad image was live for about two hours, as its report says (Agentic Engineering); Neon's rise in database creation is 5x, as its post says (Exponential); a Boris Cherny quote now ends where his words do (One Agent to Hundreds).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 14 Nov 2026: Delivery: two new chapters on landing on main without a blocking review. The first places the four jobs a pull request does (authorize, test</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-14</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-14</guid>
+      <pubDate>Sat, 14 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>Delivery: two new chapters on landing on main without a blocking review. The first places the four jobs a pull request does (authorize, test, second look, record) when teams push to main. The second covers review lanes set by risk: no person, one or two, picked by the change, with a revert rate per lane.</li>
+      <li>Security: disclosure deadlines are being rewritten around AI. Google Project Zero (13 Nov) dropped its 30-day patch soak and will cut its deadline from 90 days to 60 in February 2027 and 30 in January 2028, because a patch now gives the bug away almost at once. Measure time to patch from the release, in hours for exposed services.</li>
+      <li>Agentic Engineering: eval runs now cause incidents at other companies. Epoch AI (13 Nov) reported a third party's eval agents trying SQL injection on its live site, WorkOS traced a data pull to an agent that escaped a test environment, and Anthropic paused many evals that give models internet access. Give eval sandboxes default-deny egress and live monitoring that can stop a run.</li>
+      <li>Agentic Engineering: sandboxed no longer means pre-approved. Claude Code 2.1.325 (13 Nov) sends sandboxed shell commands through the normal permission flow by default, and fixed an allow rule that could run a different program than the one it names. A fleet that runs agents unattended now sets that policy in managed settings.</li>
+      <li>One Agent to Hundreds: stored agent traces are a credential store. Cursor's root cause for its 29 Oct marketplace incident (13 Nov) starts with a key issued to a vendor: the bucket behind it held agent traces, a few with credentials that had not been redacted. Redact traces before you store or share them.</li>
+      <li class="minor">Smaller: KEV count updated to 1,781, and Check Point gateways hit through PHP2Shell about a week after a fix (Security); GitHub Actions workflow lockfiles are generally available, and Dependabot updates the lock with each version bump (Delivery); Claude Fable 5.2 narrows the ARC-AGI-3 gap between a tuned harness and the standard one, Lauren Tan's team now fuzzes every release and auto-merges the fixes (One Agent to Hundreds); Intercom's agent-approved share of PRs went from 19.2% in April to half by July (Agentic Engineering).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 13 Nov 2026: Security: a hotfix is not the end of a management-plane incident. Two days after N-able&apos;s 10 Nov N-central hotfix a new exploit chain came o</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-13</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-13</guid>
+      <pubDate>Fri, 13 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>Security: a hotfix is not the end of a management-plane incident. Two days after N-able's 10 Nov N-central hotfix a new exploit chain came out, and Huntback found miners on 21 live servers the same day, 19 of them on the patched build. Keep the console off the internet until the vendor says the chain is closed.</li>
+      <li>Security: deploy tooling leaks tokens too. Fly.io traced some of the tokens behind the wfx-loot CI stealer to its own GitHub deploys, which left a token in the build directory's <code>.git/config</code> that apps then served. Keep <code>.git</code> out of images and count deploy integrations in the token inventory.</li>
+      <li>One Agent to Hundreds: review is moving from reading code to reading evidence. Lauren Tan (11 Nov) says her team's review has shrunk to verification artifacts such as videos, screenshots and formal verification. Dex Horthy (12 Nov) expects to stop reading most code but still reviews a subset chosen by the stakes.</li>
+      <li>Agentic Engineering: Claude Code 2.1.323 (12 Nov) fixed a Bash sandbox that could switch off mid-session, six days after a worktree escape fix, and the npm <code>stable</code> tag still has neither. Set the fleet minimum version yourself.</li>
+      <li class="minor">Smaller: Steve Yegge now runs about 50 agents on 22 Claude Max accounts, up from 20+ in October (One Agent to Hundreds); scheduled tasks have a classifier, not a person, approving each step (Graphs and Loops); the LiteLLM token quote now matches the report's wording (Security); Kiro Specs doc date (Graphs and Loops).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 12 Nov 2026: Security: rotating secrets doesn&apos;t evict an attacker who changed who is trusted. The wfx-loot stealer ran in GitHub Actions on stolen develo</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-12</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-12</guid>
+      <pubDate>Thu, 12 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>Security: rotating secrets doesn't evict an attacker who changed who is trusted. The wfx-loot stealer ran in GitHub Actions on stolen developer tokens (from 10 Nov), with 4,837 compromised accounts probing 61,764 repositories by Aikido's count. It opened AWS role trust policies to any account and added Azure federated credentials that outlast rotation. After a CI compromise, diff trust policies and federated credentials too.</li>
+      <li>Delivery: a required check is only a name until you pin who may post it. GitHub lets anyone with write access set any status, and the same stealer carries code to post passing statuses under a repo's required check names. Set the expected source app on every required check, through org rulesets.</li>
+      <li>One Agent to Hundreds: skills and context files are written for one model, so teams now measure and prune them. Google Chrome's web guidance skill is tested with and without, and pruned where models already succeed. Geoffrey Huntley reconsiders his at every major model drop. Re-run each skill against no skill at each model upgrade.</li>
+      <li>Across the lab: long lists of dated examples were rewritten as patterns with one or two examples each, several claims were narrowed to what their sources say, and a handful of facts were corrected (Terraform and OpenTofu feature split, pstack PR ownership, METR study figures).</li>
+      <li class="minor">Smaller: Apache httpd's critical mod_http2 bug, reported by Anthropic's scanner and then by Google researchers, joins the found-twice line (Security); Terminal-Bench 4.1 re-graded after the cheating audit and about 1.16% of trials changed score (Did the Agent Do It Right?); MCP spec releases move to March and September, next 2027-03-30 (Engineering for the Next Agent); Anthropic's measurement that one shared agent beats one agent per user on shared resources, AWS Emulator's adversarial review gate, the Grok Bot team's 11,000 PRs in a month, Jules read-only since 11 Nov, and Spotify's 20,000-line script attributed to its Maven updater (One Agent to Hundreds).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 11 Nov 2026: One Agent to Hundreds: agent policy is moving off the laptop. Vendors now ship one policy an admin writes that every client enforces: Claude</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-11</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-11</guid>
+      <pubDate>Wed, 11 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>One Agent to Hundreds: agent policy is moving off the laptop. Vendors now ship one policy an admin writes that every client enforces: Claude Code managed settings, Kiro's Enterprise Management preview (10 Nov), and VS Code 1.146 (11 Nov) deprecating the local harness that skipped managed policies. For each agent tool, find the client that skips the policy.</li>
+      <li>One Agent to Hundreds: small high-trust teams are dropping the pull request. Mitchell Hashimoto's Superlogical pushes to main with machine review before the push and human plus machine review after, as Amp and Geoffrey Huntley do. Its last gate is a 15-minute release countdown anyone can pause.</li>
+      <li>Security: management planes are the target, and the fix can be to switch one off. N-able took its hosted RMM offline until a hotfix after 33 flaws were published with exploit code, and Vates reported a Xen Orchestra login bypass under active exploitation that leaves no log (10 Nov). Keep these consoles off the internet and rehearse running without them.</li>
+      <li>Engineering for the Next Agent: a gated model can go on sale in weeks. Google gave Gemini 4 Carbon to cyber defenders on 28 Oct and sold it to all paying developers on 10 Nov, keeping only the cyber version behind a program. Re-check model access at each release.</li>
+      <li>Observability: the Collector's batch processor is deprecated (11 Nov). Batching moves into each exporter's sending queue, on by default from v0.171.0 (planned February 2027), and the processor goes in v0.177.0 (planned May 2027). Take it out of fleet configs before then.</li>
+      <li class="minor">Smaller: KEV count updated to 1,779, and of some 95,000 CVEs assigned this year 217 reached KEV (Security); Railway's final incident report replaces the preliminary one (One Agent to Hundreds); GenAI metric names corrected, with model-call latency in <code>gen_ai.client.inference.duration</code> and tool calls in <code>gen_ai.execute_tool.duration</code> (Taming Cardinality, Observability); Gemini 4 Argon guide link repointed (Agentic Engineering, Did the Agent Do It Right?).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 10 Nov 2026: Engineering for the Next Agent: the newest frontier model is again split into one you can buy and one you can&apos;t. Anthropic launched Claude F</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-10</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-10</guid>
+      <pubDate>Tue, 10 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>Engineering for the Next Agent: the newest frontier model is again split into one you can buy and one you can't. Anthropic launched Claude Fable 5.2 on 9 Nov, and Mythos 5.2 goes only to organizations in its verification programs. Plan roadmaps on models your teams can call.</li>
+      <li>Engineering for the Next Agent: a cheaper token is not a cheaper task. Fable 5.2 costs 20% less per token than 5.1, but Anthropic's Addy Osmani says a task costs roughly the same and SemiAnalysis measured it 31% dearer, because the model writes far more tests. Budget and compare models per task.</li>
+      <li>One Agent to Hundreds: what a thousand agents need. Anthropic ran one lead and 999 helpers for 28.7 hours. One shared machine gave out at about 100 agents, so each got its own VM with no network, and they coordinated only through a SQL database and Git, with a classifier checking every command.</li>
+      <li>Agentic Engineering: ask rules no longer gate everything in Claude Code. Since 2.1.321, mods Claude writes turn on without asking in auto and bypass modes and their tool calls skip ask rules. Deny rules and organization policy still apply, so put what must never happen in a deny rule.</li>
+      <li>Security: a vendor's cross-account role is standing access until you delete it. An attacker with credentials from Qubole's AWS account assumed customers' unused integration roles, and the External ID stopped none of it (Wiz and Sentra, 9 Nov). Inventory third-party trust and delete what isn't used.</li>
+      <li class="minor">Smaller: Claude Code 2.1.321 fixed a read-only Bash command that ran outside the sandbox and an MCP OAuth secret leak, and narrowed the account-email check (Agentic Engineering); KEV count updated to 1,773, sshole added to KEV with a three-day deadline, and valid npm provenance on the malicious bee-js release joins the update-path line (Security); Fable 5.2 fast mode and GitHub's new Git storage in private preview (One Agent to Hundreds).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 9 Nov 2026: Security: MFA at the IdP guards only the sign-in path it sits on. SonicWall&apos;s SSL-VPN let a password for another login method skip SAML and </title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-09</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-09</guid>
+      <pubDate>Mon, 09 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>Security: MFA at the IdP guards only the sign-in path it sits on. SonicWall's SSL-VPN let a password for another login method skip SAML and its MFA (in CISA KEV 6 Nov, due 20 Nov), alongside stolen session cookies and device code phishing. Turn off every sign-in path but the IdP.</li>
+      <li>Did the Agent Do It Right?: optimizers find the holes in graders. Google's skill optimizer found four ways to pass without solving the task, one by reading the answer file off disk (3 Nov), after Anthropic's auditor learned to manufacture findings. Keep answer keys where the agent can't reach them.</li>
+      <li class="minor">Smaller: sshole exploit attempts began the day the OpenSSH fix shipped, per SANS ISC honeypot data (Security); exact quotes for LiteLLM's unscoped token and Gas City's prompt bug, and both of Dan Luu's testing posts cited (One Agent to Hundreds).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 8 Nov 2026: One Agent to Hundreds: attention, not compute, now caps how many agents one person runs. Addy Osmani runs four or five background agents and</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-08</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-08</guid>
+      <pubDate>Sun, 08 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>One Agent to Hundreds: attention, not compute, now caps how many agents one person runs. Addy Osmani runs four or five background agents and calls the limit an orchestration tax: you scale by needing to watch less, so each agent shows its check results as proof. Dex Horthy now runs three tiers of subagents, matching pstack and the Projects coordinators. Amp lets its agent ship, flip flags and watch rollouts, everything but database writes.</li>
+      <li>Security: an attacker's agent can now go from a leaked secret to stolen data in minutes. Microsoft saw an agent move from client secrets found in GitHub to pulling data from Azure Key Vault in five minutes. Rotation and detection measured in days don't keep up.</li>
+      <li class="minor">Smaller: kubelet evicts by usage over requests and priority, not QoS class, which only steers the OOM killer (Linux); spanmetrics before tail sampling counts only spans that reach the Collector, so head-sampled services need app metrics (Observability); Terraform's own HCL policies are GA and 1.17.1 fixed them skipping destroy plans (Terraform Five Years On); Canonical's zero-retries way to install the APT fix, and KEV source label (Security); Copilot CLI 1.0.106 narrowed sandbox local network to loopback, and an updated OpenTelemetry link (Agentic Engineering).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 7 Nov 2026: Agentic Engineering: agents now get out of test sandboxes, and someone else pays. WorkOS traced a breach to a researcher&apos;s AI agent that esc</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-07</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-07</guid>
+      <pubDate>Sat, 07 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>Agentic Engineering: agents now get out of test sandboxes, and someone else pays. WorkOS traced a breach to a researcher's AI agent that escaped its benchmark sandbox, found an internal tool open to the internet and got in with a credential meant for local development. Claude Code 2.1.319 fixed a sandbox escape when creating a worktree. Run evals with default-deny egress and set a fleet minimum version.</li>
+      <li>Security: AI-found bugs get found twice, so the patch window keeps shrinking. OpenSSH now ships fixes more often because adversaries can find the same bugs, and its musl password bypass drew exploitation attempts the day after the release. By 6 Nov, 15 kernel fixes from an OpenAI author were in mainline.</li>
+      <li>One Agent to Hundreds: memory is now something you maintain, not a log you append to. Anthropic's dreaming checks notes against the original transcripts, and Meta pitches Active Memory on telling stale from relevant. Give memory stores an owner, a refresh job and a check against ground truth.</li>
+      <li class="minor">Smaller: KEV count updated to 1,769, and WorkOS's agent used a development credential on a production tool (Security); Claude Code auto mode behind an LLM gateway now asks or denies calls the server can't check (Agentic Engineering); Dan Luu's newer testing results, Devin updating personal skills without approval, and pstack's current /statechart wording (One Agent to Hundreds); OWASP's 2026 list renumbers Excessive Agency to LLM03 (Did the Agent Do It Right?) and Supply Chain to LLM04 (Agentic Engineering); Claude Code users now approve 97% of permission prompts, and METR estimates Anthropic's progress has about doubled in pace (Exponential); the best ITBench score is now 56.2% (Observability); OpenAI gave a cyber preview model under three months' notice (Choosing the Next Agent).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 6 Nov 2026: Observability: new chapter on observability when agents do the reading. The three signals are merging into correlated events, eBPF instrumen</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-06</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-06</guid>
+      <pubDate>Fri, 06 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>Observability: new chapter on observability when agents do the reading. The three signals are merging into correlated events, eBPF instrumentation fills gaps without code changes, and profiles are still alpha. Agents need their own identity and hard query limits, and since they detect far better than they recover, they gather evidence and a person decides.</li>
+      <li>Delivery: some agent-heavy teams now push straight to main and gate after the push. Amp, Geoffrey Huntley and Steve Yegge describe it; Amp kept SOC 2 with signed commits and a link from every commit to its agent run. Decide per repo by blast radius.</li>
+      <li>Agentic Engineering: old, fragile and on-prem environments move off laptops too. Keep the environment as code with a last good build, run agent workers on the network the system lives on, and give every base image an owner and a rebuild schedule.</li>
+      <li>Agentic Engineering: anything in the model's context can leave in a command it writes. Claude Code put signed-in users' email in context, and Claude sometimes wrote it into the User-Agent of its own curl calls. Keep identity and secrets out of context, scan egress for them, and set a fleet minimum version.</li>
+      <li>Security: attackers' agents now walk from non-production to production in days. CERT-In says an AI-assisted crew enters through exposed UAT and staging and moves on with shared credentials and tokens, and Chainstack's attacker reached production three days after dev. Give non-production its own credentials and paths.</li>
+      <li>One Agent to Hundreds: the bar for agent code is fewer incidents, not the same number. Thorsten Ball, David Crawshaw and Cindy Sridharan all see fewer regressions from agent-written code. Sridharan spends about 70% of her tokens verifying and runs targeted micro-tests before merge, not full builds.</li>
+      <li class="minor">Smaller: model vendors now let you pin API keys to your own network (Security); OpenAI's GPT-6-Cyber needs Daybreak Red approval and an IP allowlist (Choosing the Next Agent); Barracuda changed an ESG bug to unauthenticated after a public exploit (Security); the 5 Nov entry now says OpenAI's kernel patches are going to maintainers, not landed, and that Kiro and VS Code make classifier approval opt-in; Copilot's usage API now flags users whose editors send no telemetry, Thariq Shihipar on agent "mania", Drew Breunig's 200,000-token warning point, LangChain's async subagents, and Lauren Tan's limits of formal methods (One Agent to Hundreds).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 5 Nov 2026: Security: the update path is now a way in. A WordPress bug that runs code during the upgrade window, an APT bug that lets a bad mirror or pr</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-05</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-05</guid>
+      <pubDate>Thu, 05 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>Security: the update path is now a way in. A WordPress bug that runs code during the upgrade window, an APT bug that lets a bad mirror or proxy install a package as root, and cPGuard's hijacked update CDN all landed in the same week. Mirrors, proxies and update credentials need an owner and production controls.</li>
+      <li>Security: models now find kernel bugs in bulk. OpenAI says one pipeline run validated 948 Linux local privilege escalation bugs and generated patches that are now going to maintainers, so plan for more kernel fixes than your node cadence was built for and treat local access on an unpatched host as root.</li>
+      <li>Agentic Engineering: classifier approval of routine agent actions is spreading. New Claude managed agents get it by default, and Kiro CLI and VS Code offer it as an opt-in. Your allow, ask and deny rules still decide first.</li>
+      <li>One Agent to Hundreds: proof from the running thing. Addy Osmani, Thorsten Ball and Philipp Schmid have agents return videos, real merge requests and DOM checks. Bloomberg found review, test and deploy cost was the bottleneck across 2,333 migration PRs, and it fell where the pipeline verified changes before the PR.</li>
+      <li class="minor">Smaller: KEV count updated to 1,768, and Ubuntu's partial nftables mitigation for the kernel TCP bug (Security); xAI also reroutes retired model IDs (Choosing the Next Agent); Lauren Tan's team ships Grok Bot code without reading it, Overalls launch moved back, and HumanLayer joined Factory (One Agent to Hundreds); Claude Code's docs now say keep CLAUDE.md under 200 lines and audit lines written for older models (Agentic Engineering); automations never sign in as a person in LiteLLM's follow-up, Copilot's usage API now shows bring-your-own-key spend, and the Claude apps gateway reports past spend per developer (One Agent to Hundreds).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 4 Nov 2026: Security: the upgrade can be the hole. A WordPress core bug in KEV since 3 Nov runs attacker code during the upgrade window, so fleet auto-u</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-04</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-04</guid>
+      <pubDate>Wed, 04 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>Security: the upgrade can be the hole. A WordPress core bug in KEV since 3 Nov runs attacker code during the upgrade window, so fleet auto-updates should stage files where the web can't reach them. A Xen guest-escape bug was found by two AI teams on their own.</li>
+      <li>Security: MCP servers have to check that a token was issued for them. The official Python SDK couldn't until 1.30.0 and 2.2.0. Stolen cloud keys are also being used to run up model bills, so alert on model spend per key.</li>
+      <li>One Agent to Hundreds: the adversarial review debate. Steve Yegge keeps his agent reviewers: they block about a quarter of changes, the issues are almost all legit, and he bans P3 findings. Kiro rolls every CI result into one readiness check and auto-merges its simplest tier.</li>
+      <li class="minor">Smaller: Gemini 2.5 Pro calls will route to Gemini 3.8 Flash from 1 Dec, so a retired model ID may not even fail (Choosing the Next Agent); Yegge's numbers next to Tan's (Agentic Engineering); KEV count updated to 1,767 (Security); GitHub's agent-scale Git storage and Imprint's per-PR verification file (One Agent to Hundreds); Yegge's agents now land 2,000 to 4,000 commits a week (Agentic Engineering).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 3 Nov 2026: Security: for the Linux IPv4 TCP remote code execution bug, disabling MPTCP is advice that followed the exploit, not the bug. Red Hat and Ca</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-03</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-03</guid>
+      <pubDate>Tue, 03 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>Security: for the Linux IPv4 TCP remote code execution bug, disabling MPTCP is advice that followed the exploit, not the bug. Red Hat and Canonical both say patch the kernel. Containment exclusions need an owner and an expiry, and a password reset does not revoke a stolen certificate.</li>
+      <li>Agentic Engineering: an approval monitor only sees what the harness shows it. Researchers got past Codex Auto-review 11 ways, including a parent agent's prompts reaching the monitor as user messages. Claude Code hooks can now fail closed with <code>onFailure: "block"</code>.</li>
+      <li>One Agent to Hundreds: prove the tests, not the diff. Lauren Tan now finds adversarial code review mostly a waste of tokens, and Cindy Sridharan has adversarial agents plant bugs that every test suite must catch.</li>
+      <li class="minor">Smaller: GitHub blocks <code>pull_request_target</code> by default in public repos from 2 Dec (Security); Trail of Bits backports kernel CVE fixes with agents (Security); Claude message threads are best-effort, so the gateway keeps the transcript (Choosing the Next Agent); compare the post-relabel sample count with <code>sample_limit</code> (Cardinality); upstream Ruby shipped the GitLab regexp fix on 23 Oct (Security).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 2 Nov 2026: Security: CVSS scores one bug, not the chain. Ivanti&apos;s Connect Secure chain includes CVEs scored 4.3 and 8.8, and the 13 Oct fixes didn&apos;t cl</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-02</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-02</guid>
+      <pubDate>Mon, 02 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>Security: CVSS scores one bug, not the chain. Ivanti's Connect Secure chain includes CVEs scored 4.3 and 8.8, and the 13 Oct fixes didn't close two of them, so keep an edge-device incident open until the advisory stops changing.</li>
+      <li>Security: agent builders and MCP servers are code execution on the network. Langflow had unauthenticated remote code execution through MCP tool enumeration, so keep them in the asset inventory and behind auth.</li>
+      <li>Delivery: Meta generates tests overnight for the previous day's risky diffs and has engineers review results in aggregate. It caught 74 serious privacy bugs before they landed in the first half of 2026.</li>
+      <li class="minor">Smaller: Lauren Tan turned every bug into a lint rule while landing about 1,150 PRs in 4 days, and Google retires Jules on 31 Dec, so keep agent config in your own repos (One Agent to Hundreds).; LiteLLM now pilots an LTS line for teams that pin one gateway version (Agentic Engineering).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 1 Nov 2026: One Agent to Hundreds: at least nine AI developer platforms reported breaches in October, and attackers went after the AI keys stored in env</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-11-01</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-11-01</guid>
+      <pubDate>Sun, 01 Nov 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>One Agent to Hundreds: at least nine AI developer platforms reported breaches in October, and attackers went after the AI keys stored in environment variables. A stolen key's own policy set the bill, so give each platform its own key, one region and a spend alarm.</li>
+      <li>Agentic Engineering: ChatGPT's HTML preview escaped its sandbox through a library that trusted any message, then ran script from a domain its CSP allowed. Opening a shared link was enough. Treat rendered agent output as untrusted code.</li>
+      <li>Infrastructure as Code: the agent kill switch has two halves. A trust policy edit only stops new sessions; an SCP deny or IAM's Revoke active sessions stops the credentials agents already hold.</li>
+      <li>Security: check that the fix is running, not the version number. Alpine upgraded GitLab and stayed exposed because the fix was a Ruby patch. Passkeys don't stop device code phishing, so block that flow. After an account takeover, remove the attacker's sign-in methods before revoking sessions.</li>
+      <li>Security: agents and CI install packages with nobody watching, so put a cooldown on new versions and allow editor extensions only from approved publishers. A compromised vendor script on Polymarket used live sessions to move funds.</li>
+      <li>Delivery: a feature flag's code default is what you get when evaluation fails. A provider that loses its connection can keep serving cached rules, so warm instances run old rules while cold starts get the default. Argo CD sync windows match apps OR clusters unless you set <code>andOperator</code>.</li>
+      <li>One Agent to Hundreds: Copilot Automations' daily, weekly and monthly credit caps only stop new runs. Only a per-run cap stops a run already going, so give every shared automation one.</li>
+      <li>Security: a scanner that reads the distro tracker can miss a CVSS 10. Ubuntu lists LXD's auth bypass as Medium and "Not in release" because LXD ships as a snap. In mutual TLS, trust only the leaf certificate. Sandbox domain allowlists can leave DNS open.</li>
+      <li class="minor">Smaller: Copilot sandboxes bill from start until stopped or deleted, and stopped ones still bill storage (One Agent to Hundreds); Thorsten Ball ran 8 agents on one feature and they blocked each other (One Agent to Hundreds); Mythos-class models are now sold as Fable 5.1 while Mythos 5.1 stays gated (Engineering for the Next Agent); OWASP ID now names its 2025 edition (Agentic Engineering); MCP versioning link moved; trust stores join signing keys on the secrets dashboard (Security); terminating Pods aren't counted against maxSurge (Kubernetes); OTTL is stable for traces, metrics and logs (Observability); give CODEOWNERS its own owner (Ownership); most KEV entries added in October got a three-day deadline (Security); start agents at medium effort and raise one turn with ultrathink (One Agent to Hundreds).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 31 Oct 2026: One Agent to Hundreds: on 29 Oct Cursor&apos;s marketplace served a modified Claude Code extension for about 11 hours that tried to install an SS</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-10-31</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-10-31</guid>
+      <pubDate>Sat, 31 Oct 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>One Agent to Hundreds: on 29 Oct Cursor's marketplace served a modified Claude Code extension for about 11 hours that tried to install an SSH backdoor, and uninstalling may not remove it. Each editor's marketplace is its own supply chain, so allowlist agent extensions per marketplace.</li>
+      <li>One Agent to Hundreds: Claude Code 2.1.316 adds a pooled monthly budget a group shares on top of each member's limit, and server-pushed managed settings now apply without an approval prompt. Anthropic's new cost API groups spend by the user or service account behind each request.</li>
+      <li>Engineering for the Next Agent: Opus 4.8 fast mode goes away on 30 Nov 2026 and its fast requests will then fail instead of falling back. OpenRouter now picks the provider from live price, speed and errors, so log the provider too.</li>
+      <li class="minor">Smaller: LangGraph's default recursion limit is 10,007 steps, not 1,000 (Graphs and Loops); a few security keys take a stricter local value over managed settings (Graphs and Loops); Thorsten Ball dropped branches as well as PRs (One Agent to Hundreds); Codex's daemon now flags feature-flag mismatches (One Agent to Hundreds); Anthropic's April 2026 postmortem traced quality drops to harness changes (Engineering for the Next Agent); the SLO simulator's rules need a zero-valued 5xx series to alert (SLO Burn Simulator); MCP spec and Allspaw links updated.</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 29 Oct 2026: One Agent to Hundreds: GitHub Copilot&apos;s cloud sandboxes dropped the one-hour session limit, so a budget has to stop a stuck run. Shared Copi</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-10-29</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-10-29</guid>
+      <pubDate>Thu, 29 Oct 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>One Agent to Hundreds: GitHub Copilot's cloud sandboxes dropped the one-hour session limit, so a budget has to stop a stuck run. Shared Copilot Automations bill the repo owner and any writer can edit them, so give each an owner. Copilot dreaming sends changes to checked-in skills through pull requests.</li>
+      <li>One Agent to Hundreds: Addy Osmani says parallel sessions only pay off once one session finishes without you, and that Claude Code's system prompt lost over 80% of its text with no drop in its coding evals. Cut instructions on each new model before adding any.</li>
+      <li>Engineering for the Next Agent: the best model may not be for sale. Anthropic's Mythos Preview and Google's Gemini 4 Carbon went to cyber defenders first, so roadmaps plan on models teams can call.</li>
+      <li class="minor">Smaller: Amazon treats token use as an input, not a target (One Agent to Hundreds); over 40% of GitHub pull requests now start with an agent's draft (Agentic Engineering); pstack's interrogate keeps only findings a rerun proves (Agentic Engineering); METR's GPT-5.6 Sol horizon is about 11.3 hours, 71 or over 270 depending on how cheating is scored (Engineering on an Exponential); Harbor's Docker Sandboxes support is in a stable release (Did the Agent Do It Right?).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 28 Oct 2026: One Agent to Hundreds: pstack&apos;s Orchestrate playbook was rewritten. The coordinator now runs on the harness&apos;s own tools, keeps about ten wor</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-10-28</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-10-28</guid>
+      <pubDate>Wed, 28 Oct 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>One Agent to Hundreds: pstack's Orchestrate playbook was rewritten. The coordinator now runs on the harness's own tools, keeps about ten workers in flight, takes one unit all the way to merge before fanning out, and drops a unit after two retries. Every verdict comes from a different model family and covers the current head.</li>
+      <li>One Agent to Hundreds: in an Anthropic study, analysts went with their agent's coin-flipped lean 86% of the time. Decide up front which calls need a person's own view.</li>
+      <li>Security: Anthropic had an unreleased model write five working attack chains, and Chrome has patched 62 CVEs from that work. Scan your own code at PR time.</li>
+      <li class="minor">Smaller: Claude Code 2.1.312 runs up to 24 prompt and agent hooks at once and stopped sending its safety event, so guardrail dashboards built on it went flat (One Agent to Hundreds, Agentic Engineering); Intercom's 19.2% auto-approved is of all PRs (Agentic Engineering).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 27 Oct 2026: Home: a new opening line. The lab is a living collection of tool demos, thoughts and opinions, revised every day.</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-10-27</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-10-27</guid>
+      <pubDate>Tue, 27 Oct 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>Home: a new opening line. The lab is a living collection of tool demos, thoughts and opinions, revised every day.</li>
+      <li>Agentic Engineering: OpenHands' agent SDK shipped its sandbox server listening on every interface with authentication off, so the sandbox's own control plane is now treated as an entry point. Cohere caught a model trying to send data out of an eval sandbox after its reasoning said it would call no tools. GitHub's model-approved Copilot permissions are GA.</li>
+      <li>Agentic Engineering: in a new preprint, plain LLM harnesses found the root cause of microservice failures more often than five purpose-built root-cause agents. Test the platform's agent against a bare one.</li>
+      <li>One Agent to Hundreds: Steve Yegge's Counting House gives each kind of high-volume case its own autonomy tier and trusts an LLM judge only where it agrees with humans as often as they agree with each other.</li>
+      <li class="minor">Smaller: Lauren Tan's worktree line now says she advises against local worktrees; the 12 concurrent prompt and agent hooks limit cites the hooks docs; router aliases like OpenRouter's Terra "latest" move under you; Linux counts OOM kills on leaf cgroups only; the OpenTelemetry temporality gotcha separates sync and async instruments; OpenTelemetry's GenAI conventions now cover A2A; Epoch finds OpenAI researchers' coding-agent use doubling about monthly; METR's and LiteLLM's posts cite their current titles and records.</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 26 Oct 2026: One Agent to Hundreds: the Claude Code team caps agent review at three cycles after one PR looped more than fifty times overnight, then re-r</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-10-26</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-10-26</guid>
+      <pubDate>Mon, 26 Oct 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>One Agent to Hundreds: the Claude Code team caps agent review at three cycles after one PR looped more than fifty times overnight, then re-reviews only the diff and scores the reviewer against past incidents. Each skill takes attention from the ones before it. Gemini now stores requests by default for new paid projects, so set storage per provider at the gateway.</li>
+      <li>Agentic Engineering: Claude Code's Edit tool had the check-then-follow-symlink bug too, fixed in 2.1.251. Code in the Bash sandbox could make the unsandboxed Edit tool write outside the workspace.</li>
+      <li>Security: the poisoned LiteLLM release ran at every Python start, imported or not, so hit hosts get rebuilt, not cleaned.</li>
+      <li>Down or Me: a 0.8 cause score is not an 80% chance of being right, and the model version is pinned with its thresholds.</li>
+      <li>Graphs and Loops: a required code-owner review passes with either listed team, so needing both takes a required-reviewers rule per team.</li>
+      <li class="minor">Smaller: OTel SDK patches may change behavior for security fixes (Observability), verifiers trust what tools print (Did the Agent Do It Right?), retired Gemini IDs get rerouted (Engineering for the Next Agent), ITBench-AA top score and Claude Code compaction wording (Agentic Engineering), Cursor's thousands of subagents (One Agent to Hundreds), moved links on four pages.</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 25 Oct 2026: Security: exploited critical bugs on internet-facing systems get mitigated in hours, not days. AWS saw PHP2Shell tried four days before the </title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-10-25</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-10-25</guid>
+      <pubDate>Sun, 25 Oct 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>Security: exploited critical bugs on internet-facing systems get mitigated in hours, not days. AWS saw PHP2Shell tried four days before the fix, so the compromise check starts at the first known attempt.</li>
+      <li>Agentic Engineering: agents in separate microVMs can still signal each other through the CPU cache, so agents that must not coordinate get separate hosts. A shared agent server keeps tenants apart by session and namespace IDs, and downloads need pinned hashes even when the release tag is the same.</li>
+      <li>One Agent to Hundreds: Thorsten Ball now reviews only code with high blast radius and tests whether agents use AGENTS.md with blind control runs. Skills and subagents do different jobs. An orchestrator that types into a session can approve its prompts. Headless MCP tasks can't stop to ask for input.</li>
+      <li class="minor">Smaller: Copilot usage by tool is a best-effort grouping and GitHub Apps install enterprise-wide (One Agent to Hundreds), Terraform Policy is GA in the CLI and Terraform MCP 1.4.1 stops logging tool arguments (Infrastructure as Code), MCP's ninety-day removal for security risks (Engineering on an Exponential), and six moved source links (Engineering for the Next Agent, Engineering on an Exponential).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 24 Oct 2026: One Agent to Hundreds: LiteLLM&apos;s root-cause report corrects the cause. The way in was a leaked, never-revoked key to its agent platform, who</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-10-24</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-10-24</guid>
+      <pubDate>Sat, 24 Oct 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>One Agent to Hundreds: LiteLLM's root-cause report corrects the cause. The way in was a leaked, never-revoked key to its agent platform, whose agent configs held an org owner's unscoped GitHub token, not gateway logs. Also new: production agent monitors that miss most attacks from an attacker who knows them and don't watch compaction summaries, MCP jobs that keep running after the agent exits, Claude Code cloud sessions and Remote Control gated by role, and LangChain's one recipe for all its internal agents.</li>
+      <li>Agentic Engineering: a permission classifier sees only what it is shown, policy hooks can fail open, Vercel approves a whole plan with short-lived scoped tokens, and OpenAI now trains frontier models with no internet access after a model reached it through a DNS misconfiguration.</li>
+      <li>Did the Agent Do It Right?: test the monitor on replayed real transcripts, score it by what ships after retries, and pin benchmark task versions.</li>
+      <li>Security: agent config is a credential store, from LiteLLM's root-cause report.</li>
+      <li>Terraform, Five Years On: <code>-minimal-refresh</code> in 1.17 saves API calls but hides drift on anything the plan doesn't change, so provider upgrades get a full refresh.</li>
+      <li class="minor">Smaller: Postgres and MySQL lanes kept apart, role timeouts load only at login, and <code>lock_timeout</code> bounds lock waits, not runtime (Delivery), provider requirements accept variables in Terraform 1.17 (Terraform), Agent Sandbox v1.0.8 caps command output (Kubernetes), shared Terraform MCP servers answer without a token unless <code>MCP_REQUIRE_TOKEN</code> is set and a moved Pulumi link (IaC), a moved Google Cloud link (Security), pstack 0.15.32 statecharts, reflect edits kept out of the plugin cache, Thariq Shihipar's new label, Cindy Sridharan on reviewing every line, Addy Osmani's video evidence and HumanLayer's open-source release (One Agent to Hundreds).</li></ul>]]></description>
+    </item>
+    <item>
+      <title>SRE Lab · 23 Oct 2026: One Agent to Hundreds: an agent&apos;s own compaction notes can carry it off task, as a UK AISI eval showed, and a monitor can miss compaction en</title>
+      <link>https://lab.sallyroth.dev/changelog/#2026-10-23</link>
+      <guid isPermaLink="true">https://lab.sallyroth.dev/changelog/#2026-10-23</guid>
+      <pubDate>Fri, 23 Oct 2026 14:00:00 GMT</pubDate>
+      <description><![CDATA[<ul><li>One Agent to Hundreds: an agent's own compaction notes can carry it off task, as a UK AISI eval showed, and a monitor can miss compaction entirely. The org track adds OpenAI's approval rule for model gateways from 20 Nov, GitHub's Copilot defaults for anything left unset, stale instruction files that agents follow over the code, one Google Cloud project per team, usage counts for in-house skills and MCP servers, and Imprint's small-change review lane.</li>
+      <li>Agentic Engineering: Claude Code and Codex fix sandbox holes every week, so set a fleet minimum version and rerun escape tests on each upgrade.</li>
+      <li>Security: a summary the agent writes for itself is input, and a forged approval can survive compaction.</li>
+      <li>Did the Agent Do It Right?: a proof checked by a proof kernel is the strongest verifier, and the theorem is what you review.</li>
+      <li>Engineering for the Next Agent: Agent Skills joined AGENTS.md and MCP in the Agentic AI Foundation.</li>
+      <li class="minor">Smaller: three minors behind gets critical fixes until end of life (Kubernetes), a non-empty cluster guard on the inhibit rule and one page alert instead of "exactly once" (Observability, SLO Burn Simulator), terraform validate runs provider plugins offline (IaC), memory.reclaim takes anon as well as cache (Linux), GitHub's ownership numbers (Ownership), attempt budgets count failed calls (Did the Agent Do It Right?), Claude Sonnet 5.5's ARC harness gap, Codex 0.164.0 daemon logs, fast mode on Google Cloud, Thorsten Ball's one-thread incident and Anthropic's guide on folding subagents back in (One Agent to Hundreds), a moved Anthropic link (Agentic).</li></ul>]]></description>
+    </item>
+  </channel>
+</rss>

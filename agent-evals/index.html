@@ -9,8 +9,8 @@
 <style>
 /* Layout: pick a synthetic incident, compare three simulated runs (explanation, trace, checks); then how it's checked, its limits, and the autonomy policy an org builds on it. */
 :root {
-  --bg: #f4f6f8; --panel: #ffffff; --fg: #141c24; --muted: #5b6875; --rule: #d7dee5;
-  --accent: #1f5fbf; --ok: #15803d; --warn: #a16207; --bad: #c2410c; --soft: #e8eef6;
+  --bg: #eef5e6; --bg2: #dcebcf; --panel: #fbfdf6; --fg: #14261a; --muted: #4a6250; --rule: #c4d9b3;
+  --accent: #1f7a3a; --ok: #15803d; --warn: #b45309; --bad: #d9481e; --soft: #e3efd8;
   --ok-soft: #e3f4e8; --bad-soft: #fdebe1; --warn-soft: #fbf1d9;
   --font-display: "Archivo", "Segoe UI", system-ui, sans-serif;
   --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -18,11 +18,11 @@
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c; --accent: #6ea8ff; --ok: #4ade80; --warn: #e0b44c; --bad: #fb8a4c; --soft: #1c2733; --ok-soft: #13291c; --bad-soft: #35200f; --warn-soft: #2f2712; color-scheme: dark; }
+  :root:not([data-theme="light"]) { --bg: #08130d; --bg2: #0d2016; --panel: #102318; --fg: #e3f0de; --muted: #9fb8a2; --rule: #21402c; --accent: #8fdc7a; --ok: #4ade80; --warn: #f0a24c; --bad: #ff7a4d; --soft: #0d2016; --ok-soft: #13291c; --bad-soft: #35200f; --warn-soft: #2f2712; color-scheme: dark; }
 }
-:root[data-theme="dark"] { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c; --accent: #6ea8ff; --ok: #4ade80; --warn: #e0b44c; --bad: #fb8a4c; --soft: #1c2733; --ok-soft: #13291c; --bad-soft: #35200f; --warn-soft: #2f2712; color-scheme: dark; }
+:root[data-theme="dark"] { --bg: #08130d; --bg2: #0d2016; --panel: #102318; --fg: #e3f0de; --muted: #9fb8a2; --rule: #21402c; --accent: #8fdc7a; --ok: #4ade80; --warn: #f0a24c; --bad: #ff7a4d; --soft: #0d2016; --ok-soft: #13291c; --bad-soft: #35200f; --warn-soft: #2f2712; color-scheme: dark; }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.5; }
+body { margin: 0; background: radial-gradient(ellipse 80% 35% at 50% -5%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 70%), linear-gradient(180deg, var(--bg2) 0%, var(--bg) 32%, var(--bg) 100%); background-attachment: fixed; color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.5; min-height: 100vh; }
 .wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 32px 56px; }
 .kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
 h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 5vw, 44px); margin: 6px 0 10px; line-height: 1.05; }
@@ -391,5 +391,6 @@ fetch("data/results.json", { cache: "no-cache" })
     $("cards").replaceChildren(el("p", { class: "load-error", role: "alert" }, `Couldn't load the run data (${err.message}).`));
   });
 </script>
+<script src="/site-chrome.js" defer></script>
 </body>
 </html>

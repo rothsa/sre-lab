@@ -99,6 +99,7 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
 .changelog li.minor { color: var(--muted); }
 </style>
 <link rel="stylesheet" href="../site-nav.css">
+<link rel="alternate" type="application/rss+xml" title="SRE Lab Changelog" href="/changelog/feed.xml">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 </head>
 <body>
@@ -107,7 +108,7 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
   <div class="kicker"><a href="../" style="color:inherit">SRE Lab</a> · changelog<span class="updated"> · updated <time datetime="2026-11-22">22 Nov 2026</time></span></div>
   <h1 id="changelog-h">Changelog</h1>
   <section class="changelog" aria-labelledby="changelog-h" style="margin-top:12px">
-    <p>What each daily research pass changed, newest first. Every change is checked against its source, primary where one exists. The lab landing page shows the latest three.</p>
+    <p>What each daily research pass changed, newest first. Every change is checked against its source, primary where one exists. The lab landing page shows the latest three. <a href="feed.xml">Subscribe via RSS →</a></p>
     <details open><summary><time datetime="2026-11-22">22 Nov 2026</time></summary><ul>
       <li>💣 <strong>Security: inference providers have now confirmed that prompts leaked.</strong> Phala (10 Nov) says to treat one model's requests from 21 Oct to 8 Nov as exposed, after an attacker took over an inference VM. Together (21 Nov) says an outsider downloaded stored prompt samples after an AI coding agent committed a credential to a public repo. OpenRouter (22 Nov) dropped three providers and took 125 endpoints off its zero data retention list. Rotate any secret that went into a prompt on those routes, and test a retention flag before you count it as a control.</li>
       <li>One Agent to Hundreds: permitting an agent harness doesn't put it under your policy. VS Code 1.147 (18 Nov) lets admins permit the Claude and Codex harnesses next to managed Copilot settings, and says those sessions run without Copilot's managed permission, sandbox, MCP and plugin controls. GitHub (16 Nov) adds that selecting the Copilot harness doesn't turn sandboxing on (Agentic Engineering). For each tool, find the client that skips the policy.</li>
@@ -413,7 +414,9 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
       <li class="minor">Smaller: moved links and accuracy fixes in the ownership essay.</li>
     </ul></details>
   </section>
-  <footer><a href="../">SRE Lab</a> · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab">source</a></footer>
+  <div data-lab-feedback="Feedback on the Changelog" data-lab-title="SRE Lab Changelog"></div>
+  <footer><a href="../">SRE Lab</a> · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab">source</a> · <a href="feed.xml">RSS</a></footer>
 </div>
+<script src="/site-chrome.js" defer></script>
 </body>
 </html>

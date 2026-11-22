@@ -8,19 +8,19 @@
 <style>
 /* Layout: a summary line, then one row per service with status, 24h uptime, a 4-hour strip, and Jev's verdict when something's wrong. */
 :root {
-  --bg: #f4f6f8; --panel: #ffffff; --fg: #141c24; --muted: #5b6875; --rule: #d7dee5;
-  --accent: #1f5fbf; --up: #15803d; --slow: #a16207; --down: #c2410c; --unknown: #8a96a3;
+  --bg: #eef5e6; --bg2: #dcebcf; --panel: #fbfdf6; --fg: #14261a; --muted: #4a6250; --rule: #c4d9b3;
+  --accent: #1f7a3a; --up: #15803d; --slow: #b45309; --down: #d9481e; --unknown: #758a7a;
   --font-display: "Archivo", "Segoe UI", system-ui, sans-serif;
   --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c; --accent: #6ea8ff; --up: #4ade80; --slow: #e0b44c; --down: #fb8a4c; --unknown: #6b7785; color-scheme: dark; }
+  :root:not([data-theme="light"]) { --bg: #08130d; --bg2: #0d2016; --panel: #102318; --fg: #e3f0de; --muted: #9fb8a2; --rule: #21402c; --accent: #8fdc7a; --up: #4ade80; --slow: #f0a24c; --down: #ff7a4d; --unknown: #6b8070; color-scheme: dark; }
 }
-:root[data-theme="dark"] { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c; --accent: #6ea8ff; --up: #4ade80; --slow: #e0b44c; --down: #fb8a4c; --unknown: #6b7785; color-scheme: dark; }
+:root[data-theme="dark"] { --bg: #08130d; --bg2: #0d2016; --panel: #102318; --fg: #e3f0de; --muted: #9fb8a2; --rule: #21402c; --accent: #8fdc7a; --up: #4ade80; --slow: #f0a24c; --down: #ff7a4d; --unknown: #6b8070; color-scheme: dark; }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.5; }
+body { margin: 0; background: radial-gradient(ellipse 80% 35% at 50% -5%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 70%), linear-gradient(180deg, var(--bg2) 0%, var(--bg) 32%, var(--bg) 100%); background-attachment: fixed; color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.5; min-height: 100vh; }
 .wrap { max-width: 920px; margin: 0 auto; padding-inline: 16px; padding-block: 32px 56px; }
 .kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
 h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 5vw, 44px); margin: 6px 0 8px; line-height: 1.05; }
@@ -46,6 +46,14 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
 .agentic .sources { gap: 4px; font-size: 13.5px; }
 .agentic a { color: var(--accent); }
 .agentic code { font-family: var(--font-mono); font-size: .92em; }
+.self-obs { margin-top: 22px; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; }
+.self-obs h2 { font-family: var(--font-display); font-weight: 700; font-size: 20px; margin: 0 0 6px; }
+.self-obs p { margin: 0 0 12px; color: var(--muted); font-size: 14.5px; }
+.obs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.obs-card { background: var(--bg); border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; display: grid; gap: 2px; }
+.obs-card .k { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.obs-card .v { font-family: var(--font-display); font-weight: 800; font-size: 21px; font-variant-numeric: tabular-nums; }
+.obs-pipe { margin-top: 12px; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); background: var(--bg); border: 1px dashed var(--rule); border-radius: 8px; padding: 8px 12px; }
 footer { margin-top: 26px; color: var(--muted); font-size: 14px; }
 footer a { color: var(--accent); }
 @media (max-width: 520px) { .row { grid-template-columns: 1fr; } .meta { text-align: left; } }
@@ -61,6 +69,12 @@ footer a { color: var(--accent); }
   <p class="lede">Checks these services every 5 minutes. When something looks wrong, an AI classifier (Jev) decides whether it's a real outage, degraded, planned maintenance, a blip, or a problem on the monitor's side, and how confident it reports being. Verdicts under 80% confidence are marked for a human look.</p>
   <div class="summary" id="summary">Loading…</div>
   <div class="list" id="list"></div>
+  <section class="self-obs" aria-labelledby="self-obs-h">
+    <h2 id="self-obs-h">How this site observes itself</h2>
+    <p>Live telemetry from this board's own Pages Functions, D1 check history, and 5-minute <code>down-or-me</code> cron Worker.</p>
+    <div class="obs-grid" id="obsGrid"></div>
+    <div class="obs-pipe">Pages Functions + Cron Worker (wide-event spans) → Cloudflare Workers Logs &amp; Traces → OTLP export path (Grafana / Collector)</div>
+  </section>
   <section class="agentic" aria-labelledby="agentic-h">
     <h2 id="agentic-h">AI alert triage as a fleet policy</h2>
     <ul>
@@ -80,8 +94,10 @@ footer a { color: var(--accent); }
       <li><a href="https://genai.owasp.org/llm-top-10/">OWASP LLM01: Prompt Injection</a></li>
     </ul>
   </section>
+  <div data-lab-feedback="Feedback on Down or Me" data-lab-title="Down or Me"></div>
   <footer>Part of <a href="../">SRE Lab</a> by Sally Roth · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a></footer>
 </div>
+<script src="/site-chrome.js" defer></script>
 <script>
 const isPrivate = location.pathname.startsWith("/private/");
 const api = isPrivate ? "/private/api/status" : "/api/status";
@@ -92,9 +108,25 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 
 async function load() {
   try {
+    const t0 = performance.now();
     const res = await fetch(api, { credentials: "same-origin" });
+    const apiMs = Math.round(performance.now() - t0);
+    const cacheState = res.headers.get("X-Lab-Cache") || "DIRECT";
     if (!res.ok) throw new Error(res.status === 403 ? "This board is private." : `Status API returned ${res.status}.`);
     const data = await res.json();
+    const tel = data.telemetry;
+    const obsGrid = document.getElementById("obsGrid");
+    if (obsGrid && tel) {
+      const age = tel.lastCycleAgeSec == null ? "—" : tel.lastCycleAgeSec < 120 ? `${tel.lastCycleAgeSec}s ago` : `${Math.round(tel.lastCycleAgeSec / 60)}m ago`;
+      obsGrid.innerHTML = [
+        ["Edge cache", `${esc(cacheState)} · ${apiMs} ms`],
+        ["Cron freshness", age],
+        ["Checks (24h)", String(tel.checks24h)],
+        ["Probe p50 / p95", `${tel.p50LatencyMs ?? "—"} / ${tel.p95LatencyMs ?? "—"} ms`],
+        ["24h pass rate", pct(tel.okRate24h)],
+        ["Jev verdicts (30d)", String(tel.verdicts30d)],
+      ].map(([k, v]) => `<div class="obs-card"><span class="k">${k}</span><span class="v">${v}</span></div>`).join("");
+    }
     const t = data.targets;
     const bad = t.filter((x) => x.status === "down" || x.status === "slow").length;
     const up = t.filter((x) => x.status === "up").length;

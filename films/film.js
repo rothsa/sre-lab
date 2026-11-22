@@ -58,7 +58,11 @@ jaguar:'<svg viewBox="0 0 120 120"><path d="M18 90 Q0 84 6 64" fill="none" strok
     stopAudio(); show(n); playing = true; stage.classList.remove("paused"); poster.hidden = true; label();
     audio[i].currentTime = 0; phase = "pre"; timer = setTimeout(speak, LEAD);
   }
-  function finish() { playing = false; done = true; phase = "idle"; label(); }
+  function finish() {
+    playing = false; done = true; phase = "idle"; label();
+    const banner = document.getElementById("film-next-banner");
+    if (banner) banner.hidden = false;
+  }
   function pause() { playing = false; clearTimeout(timer); audio[i].pause(); stage.classList.add("paused"); label(); }
   function resume() {
     if (done || phase === "idle") return start(done ? 0 : i);
@@ -84,7 +88,39 @@ jaguar:'<svg viewBox="0 0 120 120"><path d="M18 90 Q0 84 6 64" fill="none" strok
   show(0); stage.classList.add("paused"); label();
 
   const wrap = document.querySelector(".film-wrap");
+  if (!window.__sreLabChrome) {
+    const sc = document.createElement("script");
+    sc.src = "/site-chrome.js";
+    document.head.appendChild(sc);
+  }
   if (wrap) {
+    const slug = location.pathname.replace(/\/index\.html$/, "").replace(/\/$/, "").split("/").pop();
+    fetch("../playlist.json").then((r) => (r.ok ? r.json() : null)).then((pl) => {
+      const info = pl?.bySlug?.[slug];
+      if (!info) return;
+      const navEl = document.createElement("nav");
+      navEl.className = "film-playlist";
+      navEl.setAttribute("aria-label", "Film playlist");
+      const prevHtml = info.prev
+        ? `<a class="fp-link" href="../${info.prev.slug}/">← ${info.prev.title}</a>`
+        : `<span class="fp-dim">Start of track</span>`;
+      const midHtml = `<a class="fp-mid" href="../#${info.trackId}">${info.trackTitle} · ${info.index} / ${info.total}</a>`;
+      const nextHtml = info.next
+        ? `<a class="fp-link fp-next" href="../${info.next.slug}/">Next: ${info.next.title} →</a>`
+        : `<a class="fp-link" href="../">All films →</a>`;
+      navEl.innerHTML = `${prevHtml}${midHtml}${nextHtml}`;
+      const noteEl = wrap.querySelector(".film-note");
+      if (noteEl) wrap.insertBefore(navEl, noteEl);
+      else wrap.appendChild(navEl);
+      if (info.next) {
+        const upNext = document.createElement("div");
+        upNext.id = "film-next-banner";
+        upNext.className = "film-upnext";
+        upNext.hidden = true;
+        upNext.innerHTML = `<span>Up next in ${info.trackTitle}:</span> <a href="../${info.next.slug}/">▶ ${info.next.title} →</a>`;
+        wrap.insertBefore(upNext, navEl);
+      }
+    }).catch(() => {});
     const loadedAt = Date.now();
     const title = (document.querySelector(".film-wrap h1.page")?.textContent || document.title || "SRE Lab film").trim();
     const page = location.pathname;

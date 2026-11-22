@@ -9,11 +9,15 @@ export async function onRequestGet({ request, env, waitUntil }) {
     const hit = await cache.match(key);
     if (hit) {
       span.setAttributes({ cache_hit: true, http_status: hit.status });
-      return hit;
+      const cached = new Response(hit.body, hit);
+      cached.headers.set("X-Lab-Cache", "HIT");
+      return cached;
     }
     const res = await statusApi(request, env, false);
     span.setAttributes({ cache_hit: false, http_status: res.status });
     if (res.ok) waitUntil(cache.put(key, res.clone()));
-    return res;
+    const fresh = new Response(res.body, res);
+    fresh.headers.set("X-Lab-Cache", "MISS");
+    return fresh;
   });
 }

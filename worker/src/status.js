@@ -74,6 +74,25 @@ export async function statusApi(req, env, wantPrivate) {
       recent: spark.results.map((r) => r.ok).reverse(),
     });
   }
+  const { results: latRows } = await env.DB.prepare(
+    "SELECT latency_ms FROM checks WHERE ts > ? AND ok = 1 AND latency_ms IS NOT NULL ORDER BY latency_ms"
+  ).bind(dayAgo).all();
+  const lats = (latRows || []).map((r) => r.latency_ms);
+  const pctAt = (arr, q) => (arr.length ? Math.round(arr[Math.min(arr.length - 1, Math.floor(arr.length * q))]) : null);
+  const summary24 = await env.DB.prepare(
+    "SELECT COUNT(*) AS n, SUM(ok) AS good, MAX(ts) AS last_ts FROM checks WHERE ts > ?"
+  ).bind(dayAgo).first();
+  const vCount = await env.DB.prepare(
+    "SELECT COUNT(*) AS n FROM verdicts WHERE ts > ?"
+  ).bind(Date.now() - 30 * 86_400_000).first();
+  const telemetry = {
+    checks24h: summary24?.n ?? 0,
+    okRate24h: summary24?.n ? summary24.good / summary24.n : null,
+    p50LatencyMs: pctAt(lats, 0.5),
+    p95LatencyMs: pctAt(lats, 0.95),
+    verdicts30d: vCount?.n ?? 0,
+    lastCycleAgeSec: summary24?.last_ts ? Math.max(0, Math.round((Date.now() - summary24.last_ts) / 1000)) : null,
+  };
   const cache = wantPrivate ? "private, no-store" : "public, max-age=60";
-  return Response.json({ generatedAt: new Date().toISOString(), targets: out }, { headers: { "Cache-Control": cache } });
+  return Response.json({ generatedAt: new Date().toISOString(), targets: out, telemetry }, { headers: { "Cache-Control": cache } });
 }

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Films · SRE Lab</title>
+<meta name="description" content="Short narrated, animated chapter films across Observability, Delivery, and AI Engineering from Sally Roth's SRE Lab.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<style>
+:root {
+  --bg: #eef5e6; --bg2: #dcebcf; --panel: #fbfdf6; --fg: #14261a; --muted: #4a6250; --rule: #c4d9b3;
+  --accent: #1f7a3a; --leaf: #3f9a4f; --leaf2: #2d7a3c; --flower: #d9481e;
+  --font-display: "Archivo", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #08130d; --bg2: #0d2016; --panel: #102318; --fg: #e3f0de; --muted: #9fb8a2; --rule: #21402c; --accent: #8fdc7a; --leaf: #2e6b3d; --leaf2: #1f4f2c; --flower: #ff7a4d; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #08130d; --bg2: #0d2016; --panel: #102318; --fg: #e3f0de; --muted: #9fb8a2; --rule: #21402c; --accent: #8fdc7a; --leaf: #2e6b3d; --leaf2: #1f4f2c; --flower: #ff7a4d; color-scheme: dark; }
+* { box-sizing: border-box; }
+body {
+  margin: 0; color: var(--fg); font-family: var(--font-body); line-height: 1.55; min-height: 100vh;
+  background: radial-gradient(ellipse 80% 40% at 50% -5%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
+    linear-gradient(180deg, var(--bg2) 0%, var(--bg) 38%, var(--bg) 100%);
+  background-attachment: fixed;
+}
+.wrap { max-width: 960px; margin: 0 auto; padding: 24px 16px 56px; }
+.kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin-top: 12px; }
+.kicker a { color: inherit; }
+h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(34px, 6vw, 54px); margin: 6px 0 10px; line-height: 1.02; }
+.lede { color: var(--muted); max-width: 66ch; margin: 0 0 18px; font-size: 16.5px; }
+.stats-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 26px; font-family: var(--font-mono); font-size: 13px; }
+.stat-pill { padding: 4px 12px; border-radius: 999px; border: 1px solid var(--rule); background: var(--panel); color: var(--fg); }
+.track { margin-top: 30px; }
+.track-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--rule); padding-bottom: 8px; margin-bottom: 14px; }
+.track-head h2 { font-family: var(--font-display); font-weight: 800; font-size: 24px; margin: 0; }
+.track-meta { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); display: flex; gap: 14px; align-items: center; }
+.track-meta a { color: var(--accent); text-decoration: none; }
+.track-meta a:hover { text-decoration: underline; }
+.film-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+a.film-card {
+  display: grid; gap: 6px; padding: 15px 16px; text-decoration: none; color: inherit;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 16px 6px 16px 6px;
+  transition: transform .18s, border-color .18s, box-shadow .18s;
+}
+a.film-card:hover, a.film-card:focus-visible {
+  border-color: var(--accent); outline: none; transform: translateY(-2px);
+  box-shadow: 0 8px 20px -12px color-mix(in srgb, var(--accent) 65%, transparent);
+}
+.fc-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
+.fc-play { font-weight: 600; }
+.film-card strong { font-family: var(--font-display); font-weight: 800; font-size: 18px; line-height: 1.2; }
+.film-card p { margin: 0; font-size: 13.5px; color: var(--muted); line-height: 1.45; }
+footer { margin-top: 36px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--rule); padding-top: 14px; }
+footer a { color: var(--accent); }
+</style>
+<link rel="stylesheet" href="../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+<nav class="site-nav" aria-label="Site" style="max-width:960px"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/coffee</a></nav>
+<div class="wrap">
+  <div class="kicker"><a href="../">SRE Lab</a> · narrated chapter films</div>
+  <h1>Chapter Films</h1>
+  <p class="lede">Each film turns a written chapter into a 3-minute animated walk-through with voice narration and synced captions. Play any track in order or jump straight to the topic you need.</p>
+  <div class="stats-bar" id="stats"></div>
+  <div id="tracks">Loading films...</div>
+  <div data-lab-feedback="Feedback on the films" data-lab-title="SRE Lab Chapter Films"></div>
+  <footer>Part of <a href="../">SRE Lab</a> by Sally Roth · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab">source</a></footer>
+</div>
+<script src="/site-chrome.js" defer></script>
+<script>
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+fetch("./playlist.json").then((r) => r.json()).then(({ tracks }) => {
+  const totalFilms = tracks.reduce((a, t) => a + t.films.length, 0);
+  const totalMins = Math.round(tracks.reduce((a, t) => a + t.totalSeconds, 0) / 60);
+  document.getElementById("stats").innerHTML =
+    `<span class="stat-pill">${totalFilms} films</span><span class="stat-pill">${tracks.length} tracks</span><span class="stat-pill">~${totalMins} min total</span>`;
+  document.getElementById("tracks").innerHTML = tracks.map((t) => {
+    const mins = Math.round(t.totalSeconds / 60);
+    const cards = t.films.map((f) => `<a class="film-card" href="./${esc(f.slug)}/">
+      <div class="fc-top"><span class="fc-play">▶ Ch ${f.n}</span><span>${esc(f.duration)} · ${f.scenes} scenes</span></div>
+      <strong>${esc(f.title)}</strong>
+      <p>${esc(f.description)}</p>
+    </a>`).join("");
+    return `<section class="track" id="${esc(t.id)}">
+      <div class="track-head">
+        <h2>${esc(t.title)}</h2>
+        <div class="track-meta"><span>${t.films.length} films · ~${mins} min</span><a href="${esc(t.explainerUrl)}">Read full explainer →</a></div>
+      </div>
+      <div class="film-grid">${cards}</div>
+    </section>`;
+  }).join("");
+}).catch(() => {
+  document.getElementById("tracks").textContent = "Could not load film list.";
+});
+</script>
+</body>
+</html>

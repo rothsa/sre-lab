@@ -2,21 +2,21 @@
 /* Layout: a chapter list (sidebar on wide screens, collapsible on phones) and one long column of
    chapters. Each chapter is a diagram you step through, then study aids underneath. */
 :root {
-  --bg: #f4f6f8; --panel: #ffffff; --fg: #141c24; --muted: #5b6875; --rule: #d7dee5; --soft: #eef2f6;
-  --accent: #1f5fbf; --accent-soft: #dde8fa; --store: #f3ecdc; --warn: #b45309; --good: #15803d;
+  --bg: #eef5e6; --bg2: #dcebcf; --panel: #fbfdf6; --fg: #14261a; --muted: #4a6250; --rule: #c4d9b3; --soft: #e3efd8;
+  --accent: #1f7a3a; --accent-soft: #d7ebd0; --store: #f4ecd7; --warn: #b45309; --good: #15803d;
   --font-display: "Archivo", "Segoe UI", system-ui, sans-serif;
   --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #2a3440; --soft: #1b232d; --accent: #6ea8ff; --accent-soft: #1d2e47; --store: #2b2618; --warn: #f0a24c; --good: #4ade80; color-scheme: dark; }
+  :root:not([data-theme="light"]) { --bg: #08130d; --bg2: #0d2016; --panel: #102318; --fg: #e3f0de; --muted: #9fb8a2; --rule: #21402c; --soft: #0d2016; --accent: #8fdc7a; --accent-soft: #1a3b26; --store: #252014; --warn: #f0a24c; --good: #4ade80; color-scheme: dark; }
 }
-:root[data-theme="dark"] { --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #2a3440; --soft: #1b232d; --accent: #6ea8ff; --accent-soft: #1d2e47; --store: #2b2618; --warn: #f0a24c; --good: #4ade80; color-scheme: dark; }
+:root[data-theme="dark"] { --bg: #08130d; --bg2: #0d2016; --panel: #102318; --fg: #e3f0de; --muted: #9fb8a2; --rule: #21402c; --soft: #0d2016; --accent: #8fdc7a; --accent-soft: #1a3b26; --store: #252014; --warn: #f0a24c; --good: #4ade80; color-scheme: dark; }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55; }
+body { margin: 0; background: radial-gradient(ellipse 80% 35% at 50% -5%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 70%), linear-gradient(180deg, var(--bg2) 0%, var(--bg) 32%, var(--bg) 100%); background-attachment: fixed; color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55; min-height: 100vh; }
 a { color: var(--accent); }
 .shell { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 32px 64px; display: grid; gap: 28px; }
 .shell > * { min-width: 0; } /* let wide diagrams and tables scroll inside their frames instead of widening the page on phones */
@@ -150,3 +150,5 @@ nav.site-nav { max-width: 1180px; }
 .fb-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--muted); }
 .fb-status.ok { color: var(--good); font-weight: 600; }
 .fb-status.err { color: var(--warn); font-weight: 600; }
+.toc-fb { margin-top: 10px; width: 100%; font-family: var(--font-mono); font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--accent); background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 8px 12px; cursor: pointer; text-align: left; }
+.toc-fb:hover, .toc-fb:focus-visible { border-color: var(--accent); outline: none; }

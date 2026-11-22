@@ -110,6 +110,7 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
 .changelog li.minor { color: var(--muted); }
 </style>
 <link rel="stylesheet" href="site-nav.css">
+<link rel="alternate" type="application/rss+xml" title="SRE Lab Changelog" href="/changelog/feed.xml">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 </head>
 <body>
@@ -179,7 +180,9 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
   <h2 class="section-head">Tools</h2>
   <div class="tools">
     <a class="tool" href="slo/"><strong>SLO Burn Simulator</strong><span>See how fast an error budget drains, which burn-rate alerts fire and when, matching Prometheus rules, and how to run SLOs across thousands of services.</span><em class="upd">updated <time datetime="2026-11-11">11 Nov 2026</time></em></a>
-    <a class="tool" href="status/"><strong>Down or Me</strong><span>Uptime checks with an AI classifier that sorts each failure into one of five causes, and emails only when its cause score and its notify probability both reach 0.8.</span><em class="upd">updated <time datetime="2026-11-16">16 Nov 2026</time></em></a>
+    <a class="tool" href="telemetry-sim/"><strong>Cardinality &amp; Sampling Explorer</strong><span>Test how one high-cardinality label explodes active metric series, compare head vs. tail sampling and wide events, and check what share of outage errors survive.</span><em class="upd">updated <time datetime="2026-11-22">22 Nov 2026</time></em></a>
+    <a class="tool" href="films/"><strong>Chapter Films</strong><span>29 short narrated, animated walk-throughs across Observability, Delivery, and AI Engineering, playable in order with synced captions.</span><em class="upd">updated <time datetime="2026-11-22">22 Nov 2026</time></em></a>
+    <a class="tool" href="status/"><strong>Down or Me</strong><span>Uptime checks with an AI classifier that sorts each failure into one of five causes, and emails only when its cause score and its notify probability both reach 0.8.</span><em class="upd">updated <time datetime="2026-11-22">22 Nov 2026</time></em></a>
     <a class="tool" href="incidents/"><strong>The Incident Files</strong><span>318 real postmortems, searchable by failure mode, plus the nine failure patterns that keep coming back and the controls that retire them.</span><em class="upd">updated <time datetime="2026-11-11">11 Nov 2026</time></em></a>
     <a class="tool" href="agent-evals/"><strong>Did the Agent Do It Right?</strong><span>Three simulated agent runs on the same incident: one checks the evidence, one confidently blames the wrong service, one gets stuck retrying. Pydantic Evals judges each by its tool-call trace, not its explanation.</span><em class="upd">updated <time datetime="2026-11-22">22 Nov 2026</time></em></a>
   </div>
@@ -228,10 +231,12 @@ a.tool .upd.fresh { background: var(--accent); border-color: var(--accent); colo
       <li>Agentic Engineering: know what a broken guard does. In Claude Code 2.1.329 (19 Nov) a hook that errors lets the call through, in Code Mode too, unless it sets <code>onFailure: "block"</code>. Since 2.1.328 a command that a hook rewrites to a sandbox-excluded one runs outside the sandbox.</li>
       <li class="minor">Smaller: OpenAI's approval rule for model gateways is in effect from 20 Nov (One Agent to Hundreds); the Dex Horthy review line names the No AI Slop manifesto he launched (One Agent to Hundreds); a Claude Code source for OSC 7501 (One Agent to Hundreds); Copilot approvals generally available since 28 Oct (Ownership); the ubuntu-latest move to 26.04 was due to finish on 19 Nov (Delivery).</li>
     </ul></details>
-    <p class="all"><a href="changelog/">Full changelog →</a></p>
+    <p class="all"><a href="changelog/">Full changelog →</a> · <a href="changelog/feed.xml">RSS feed</a></p>
   </section>
-  <footer><a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab">source</a></footer>
+  <div data-lab-feedback="Feedback on SRE Lab" data-lab-title="SRE Lab"></div>
+  <footer><a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab">source</a> · <a href="changelog/feed.xml">RSS</a></footer>
 </div>
+<script src="/site-chrome.js" defer></script>
 <script>
 // Tiles updated in the last 3 days get a filled "updated" pill.
 for (const t of document.querySelectorAll("a.tool .upd time")) {

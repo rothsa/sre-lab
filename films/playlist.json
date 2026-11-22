@@ -1,0 +1,743 @@
+{
+  "tracks": [
+    {
+      "id": "observability",
+      "title": "Observability",
+      "group": "Reliability",
+      "explainerUrl": "/observability/",
+      "totalSeconds": 1667,
+      "films": [
+        {
+          "slug": "three-signals",
+          "n": 1,
+          "title": "Telemetry strategy and budget",
+          "description": "A short narrated film on telemetry strategy and budget across hundreds of teams: three-store stacks vs observability 2.0 wide events, limits per team and cost attribution.",
+          "seconds": 223,
+          "duration": "3:43",
+          "scenes": 9,
+          "chapterUrl": "/observability/#three-signals"
+        },
+        {
+          "slug": "otel-collector",
+          "n": 2,
+          "title": "Telemetry pipeline as a platform",
+          "description": "A short narrated film on running OpenTelemetry Collectors as a tier-0 platform service: processor order, queue loss, SLOs and OpAMP.",
+          "seconds": 180,
+          "duration": "3:00",
+          "scenes": 9,
+          "chapterUrl": "/observability/#otel-collector"
+        },
+        {
+          "slug": "prometheus-scrape",
+          "n": 3,
+          "title": "Prometheus topology: shards, HA and remote write",
+          "description": "A short narrated film on scaling Prometheus across hundreds of clusters: discovery, relabeling, WAL, HA pairs, remote write and fleet SLIs.",
+          "seconds": 174,
+          "duration": "2:54",
+          "scenes": 9,
+          "chapterUrl": "/observability/#prometheus-scrape"
+        },
+        {
+          "slug": "promql-essentials",
+          "n": 4,
+          "title": "Query and rule standards for the fleet",
+          "description": "A short narrated film on fleet PromQL standards: rate before sum, histograms, recording-rule libraries, Sloth SLO generation and promtool CI tests.",
+          "seconds": 153,
+          "duration": "2:33",
+          "scenes": 8,
+          "chapterUrl": "/observability/#promql-essentials"
+        },
+        {
+          "slug": "tracing",
+          "n": 5,
+          "title": "Trace propagation as a fleet standard",
+          "description": "A short narrated film on distributed trace propagation across hundreds of services: W3C traceparent, queues, broken proxies, OTel Operator defaults and completeness.",
+          "seconds": 182,
+          "duration": "3:02",
+          "scenes": 9,
+          "chapterUrl": "/observability/#tracing"
+        },
+        {
+          "slug": "sampling",
+          "n": 6,
+          "title": "Org sampling policy: head and tail",
+          "description": "Who sets the org sampling policy, how head and tail sampling fit together, and how to prove cost and fidelity per team.",
+          "seconds": 182,
+          "duration": "3:02",
+          "scenes": 9,
+          "chapterUrl": "/observability/#sampling"
+        },
+        {
+          "slug": "logs-pipeline",
+          "n": 7,
+          "title": "Log standards: schema, labels and retention tiers",
+          "description": "Canonical structured logs, Loki label allowlists vs structured metadata, node-agent drops, retention tiers, and per-tenant billing.",
+          "seconds": 190,
+          "duration": "3:10",
+          "scenes": 9,
+          "chapterUrl": "/observability/#logs-pipeline"
+        },
+        {
+          "slug": "alerting",
+          "n": 8,
+          "title": "Paging as an org control loop",
+          "description": "Multi-window SLO burn rates, HA Alertmanager deduplication, routing and inhibition, pager budgets, and org responses when a team goes over.",
+          "seconds": 175,
+          "duration": "2:55",
+          "scenes": 9,
+          "chapterUrl": "/observability/#alerting"
+        },
+        {
+          "slug": "next-five-years",
+          "n": 9,
+          "title": "Observability when agents do the reading",
+          "description": "Wide correlated events, OBI eBPF v1.0, OTel profiles alpha, owned Collector pipelines, read-only MCP identities, hard query limits, and GenAI spans.",
+          "seconds": 208,
+          "duration": "3:28",
+          "scenes": 10,
+          "chapterUrl": "/observability/#next-five-years"
+        }
+      ]
+    },
+    {
+      "id": "delivery",
+      "title": "Delivery",
+      "group": "Reliability",
+      "explainerUrl": "/delivery/",
+      "totalSeconds": 1840,
+      "films": [
+        {
+          "slug": "ci-pipeline",
+          "n": 1,
+          "title": "CI as a shared service",
+          "description": "One pull request's path through a CI shared by 2,000 engineers: queue time, runners, cache, parallel tests, OIDC, flaky checks and the merge queue.",
+          "seconds": 175,
+          "duration": "2:55",
+          "scenes": 8,
+          "chapterUrl": "/delivery/#ci-pipeline"
+        },
+        {
+          "slug": "artifacts-promotion",
+          "n": 2,
+          "title": "Build once, promote everywhere",
+          "description": "A short narrated film: build one image, deploy the same digest to dev, staging and production, and keep the previous digest for rollback.",
+          "seconds": 175,
+          "duration": "2:55",
+          "scenes": 9,
+          "chapterUrl": "/delivery/#artifacts-promotion"
+        },
+        {
+          "slug": "gitops",
+          "n": 3,
+          "title": "Desired-state control across hundreds of clusters",
+          "description": "A short narrated film on running Argo CD across hundreds of clusters: sync, drift as a fleet metric, and a written break-glass policy.",
+          "seconds": 176,
+          "duration": "2:56",
+          "scenes": 9,
+          "chapterUrl": "/delivery/#gitops"
+        },
+        {
+          "slug": "progressive-delivery",
+          "n": 4,
+          "title": "Rollout policy as a platform default",
+          "description": "How a platform makes metric-gated canary rollout the default for every service, and measures how much of the fleet uses it.",
+          "seconds": 198,
+          "duration": "3:18",
+          "scenes": 11,
+          "chapterUrl": "/delivery/#progressive-delivery"
+        },
+        {
+          "slug": "feature-flags",
+          "n": 5,
+          "title": "Flag governance",
+          "description": "A short narrated film on running thousands of feature flags: staged flips, a tier 0 flag service, safe defaults, expiry dates and a per-team scorecard.",
+          "seconds": 161,
+          "duration": "2:41",
+          "scenes": 9,
+          "chapterUrl": "/delivery/#feature-flags"
+        },
+        {
+          "slug": "rollback-migrations",
+          "n": 6,
+          "title": "Schema-change safety",
+          "description": "How expand and contract, migration lint, role timeouts, a queue and a drop gate keep shared schema changes safe and rollback possible.",
+          "seconds": 166,
+          "duration": "2:46",
+          "scenes": 9,
+          "chapterUrl": "/delivery/#rollback-migrations"
+        },
+        {
+          "slug": "supply-chain",
+          "n": 7,
+          "title": "Supply chain: provenance, signing and SBOMs",
+          "description": "How to prove every image running in production was built by your CI from a reviewed commit, and keep everything else out.",
+          "seconds": 193,
+          "duration": "3:13",
+          "scenes": 9,
+          "chapterUrl": "/delivery/#supply-chain"
+        },
+        {
+          "slug": "merge-queues-and-dora",
+          "n": 8,
+          "title": "Merge queues, monorepos and DORA",
+          "description": "How a merge queue keeps one busy main branch green and deployable, and how DORA metrics show whether delivery is improving.",
+          "seconds": 194,
+          "duration": "3:14",
+          "scenes": 11,
+          "chapterUrl": "/delivery/#delivery-at-scale"
+        },
+        {
+          "slug": "trunk-without-blocking-review",
+          "n": 9,
+          "title": "Trunk-based delivery without a blocking review",
+          "description": "When review stops blocking the merge, where each job the pull request did goes: authorization, test gates, the second look and the record.",
+          "seconds": 209,
+          "duration": "3:29",
+          "scenes": 11,
+          "chapterUrl": "/delivery/#trunk-without-blocking-review"
+        },
+        {
+          "slug": "review-lanes",
+          "n": 10,
+          "title": "Review lanes set by risk",
+          "description": "A short narrated film on how a lane policy sends each change to no, one or two human reviewers by risk, and how each lane is measured.",
+          "seconds": 193,
+          "duration": "3:13",
+          "scenes": 10,
+          "chapterUrl": "/delivery/#review-lanes"
+        }
+      ]
+    },
+    {
+      "id": "agentic",
+      "title": "Agentic Engineering",
+      "group": "AI Engineering",
+      "explainerUrl": "/agentic/",
+      "totalSeconds": 1988,
+      "films": [
+        {
+          "slug": "agent-loop",
+          "n": 1,
+          "title": "What an agent actually is",
+          "description": "A coding agent is a model, tools and a loop run by a harness. Eleven short scenes on what a platform team controls around it.",
+          "seconds": 237,
+          "duration": "3:57",
+          "scenes": 11,
+          "chapterUrl": "/agentic/#agent-loop"
+        },
+        {
+          "slug": "context-engineering",
+          "n": 2,
+          "title": "Context engineering",
+          "description": "How rules, skills, tools and code reach a coding agent's context window, and how a platform keeps that context short and current.",
+          "seconds": 232,
+          "duration": "3:52",
+          "scenes": 11,
+          "chapterUrl": "/agentic/#context"
+        },
+        {
+          "slug": "verification-first",
+          "n": 3,
+          "title": "Verification first: go deep, then prove it",
+          "description": "A narrated walk through the trust loop for coding agents: reproduce, prove the cause, fix small, then show evidence a check the agent can't edit accepts.",
+          "seconds": 251,
+          "duration": "4:11",
+          "scenes": 12,
+          "chapterUrl": "/agentic/#verification-first"
+        },
+        {
+          "slug": "orchestration",
+          "n": 4,
+          "title": "Orchestrating many agents",
+          "description": "How to split work across many coding agents, keep them from overwriting each other, and bound what lands on main.",
+          "seconds": 273,
+          "duration": "4:33",
+          "scenes": 12,
+          "chapterUrl": "/agentic/#orchestration"
+        },
+        {
+          "slug": "review-at-scale",
+          "n": 5,
+          "title": "Reviewing agent output",
+          "description": "How an org keeps code review meaningful when agents open more pull requests than reviewers can read.",
+          "seconds": 254,
+          "duration": "4:14",
+          "scenes": 11,
+          "chapterUrl": "/agentic/#review-at-scale"
+        },
+        {
+          "slug": "agent-safety",
+          "n": 6,
+          "title": "Permissions and safety for coding agents",
+          "description": "A four-minute narrated film of the Agentic Engineering chapter on permissions and safety for coding agents: sandboxes, egress, scoped credentials and a second model that reviews each action.",
+          "seconds": 237,
+          "duration": "3:57",
+          "scenes": 11,
+          "chapterUrl": "/agentic/#agent-safety"
+        },
+        {
+          "slug": "agents-in-ops",
+          "n": 7,
+          "title": "Agents in SRE operations",
+          "description": "What an incident agent may do alone, and how an alert class earns autonomy: read-only identity, dry runs, approvals, traces and replays.",
+          "seconds": 248,
+          "duration": "4:08",
+          "scenes": 10,
+          "chapterUrl": "/agentic/#agents-in-ops"
+        },
+        {
+          "slug": "org-at-scale",
+          "n": 8,
+          "title": "Running agentic development across an org",
+          "description": "A narrated walk through rolling out coding agents to 2,000 engineers: platform, eval gates, managed config, labels, spend and outcomes.",
+          "seconds": 256,
+          "duration": "4:16",
+          "scenes": 11,
+          "chapterUrl": "/agentic/#org-at-scale"
+        }
+      ]
+    },
+    {
+      "id": "next-agent",
+      "title": "Engineering for the Next Agent",
+      "group": "AI Engineering",
+      "explainerUrl": "/next-agent/",
+      "totalSeconds": 399,
+      "films": [
+        {
+          "slug": "evals-that-compound",
+          "n": 5,
+          "title": "Evals: the asset that compounds most",
+          "description": "Why an eval suite of your own real tasks gains value with every model release, and how it decides upgrades.",
+          "seconds": 189,
+          "duration": "3:09",
+          "scenes": 10,
+          "chapterUrl": "/next-agent/#evals"
+        },
+        {
+          "slug": "model-upgrades",
+          "n": 6,
+          "title": "Upgrading models safely",
+          "description": "A short narrated film: how to move hundreds of services off a retiring model with evals, a shadow run, a canary, and a pin you can move back.",
+          "seconds": 210,
+          "duration": "3:30",
+          "scenes": 10,
+          "chapterUrl": "/next-agent/#upgrades"
+        }
+      ]
+    }
+  ],
+  "bySlug": {
+    "three-signals": {
+      "trackId": "observability",
+      "trackTitle": "Observability",
+      "explainerUrl": "/observability/",
+      "index": 1,
+      "total": 9,
+      "prev": null,
+      "next": {
+        "slug": "otel-collector",
+        "title": "Telemetry pipeline as a platform"
+      }
+    },
+    "otel-collector": {
+      "trackId": "observability",
+      "trackTitle": "Observability",
+      "explainerUrl": "/observability/",
+      "index": 2,
+      "total": 9,
+      "prev": {
+        "slug": "three-signals",
+        "title": "Telemetry strategy and budget"
+      },
+      "next": {
+        "slug": "prometheus-scrape",
+        "title": "Prometheus topology: shards, HA and remote write"
+      }
+    },
+    "prometheus-scrape": {
+      "trackId": "observability",
+      "trackTitle": "Observability",
+      "explainerUrl": "/observability/",
+      "index": 3,
+      "total": 9,
+      "prev": {
+        "slug": "otel-collector",
+        "title": "Telemetry pipeline as a platform"
+      },
+      "next": {
+        "slug": "promql-essentials",
+        "title": "Query and rule standards for the fleet"
+      }
+    },
+    "promql-essentials": {
+      "trackId": "observability",
+      "trackTitle": "Observability",
+      "explainerUrl": "/observability/",
+      "index": 4,
+      "total": 9,
+      "prev": {
+        "slug": "prometheus-scrape",
+        "title": "Prometheus topology: shards, HA and remote write"
+      },
+      "next": {
+        "slug": "tracing",
+        "title": "Trace propagation as a fleet standard"
+      }
+    },
+    "tracing": {
+      "trackId": "observability",
+      "trackTitle": "Observability",
+      "explainerUrl": "/observability/",
+      "index": 5,
+      "total": 9,
+      "prev": {
+        "slug": "promql-essentials",
+        "title": "Query and rule standards for the fleet"
+      },
+      "next": {
+        "slug": "sampling",
+        "title": "Org sampling policy: head and tail"
+      }
+    },
+    "sampling": {
+      "trackId": "observability",
+      "trackTitle": "Observability",
+      "explainerUrl": "/observability/",
+      "index": 6,
+      "total": 9,
+      "prev": {
+        "slug": "tracing",
+        "title": "Trace propagation as a fleet standard"
+      },
+      "next": {
+        "slug": "logs-pipeline",
+        "title": "Log standards: schema, labels and retention tiers"
+      }
+    },
+    "logs-pipeline": {
+      "trackId": "observability",
+      "trackTitle": "Observability",
+      "explainerUrl": "/observability/",
+      "index": 7,
+      "total": 9,
+      "prev": {
+        "slug": "sampling",
+        "title": "Org sampling policy: head and tail"
+      },
+      "next": {
+        "slug": "alerting",
+        "title": "Paging as an org control loop"
+      }
+    },
+    "alerting": {
+      "trackId": "observability",
+      "trackTitle": "Observability",
+      "explainerUrl": "/observability/",
+      "index": 8,
+      "total": 9,
+      "prev": {
+        "slug": "logs-pipeline",
+        "title": "Log standards: schema, labels and retention tiers"
+      },
+      "next": {
+        "slug": "next-five-years",
+        "title": "Observability when agents do the reading"
+      }
+    },
+    "next-five-years": {
+      "trackId": "observability",
+      "trackTitle": "Observability",
+      "explainerUrl": "/observability/",
+      "index": 9,
+      "total": 9,
+      "prev": {
+        "slug": "alerting",
+        "title": "Paging as an org control loop"
+      },
+      "next": null
+    },
+    "ci-pipeline": {
+      "trackId": "delivery",
+      "trackTitle": "Delivery",
+      "explainerUrl": "/delivery/",
+      "index": 1,
+      "total": 10,
+      "prev": null,
+      "next": {
+        "slug": "artifacts-promotion",
+        "title": "Build once, promote everywhere"
+      }
+    },
+    "artifacts-promotion": {
+      "trackId": "delivery",
+      "trackTitle": "Delivery",
+      "explainerUrl": "/delivery/",
+      "index": 2,
+      "total": 10,
+      "prev": {
+        "slug": "ci-pipeline",
+        "title": "CI as a shared service"
+      },
+      "next": {
+        "slug": "gitops",
+        "title": "Desired-state control across hundreds of clusters"
+      }
+    },
+    "gitops": {
+      "trackId": "delivery",
+      "trackTitle": "Delivery",
+      "explainerUrl": "/delivery/",
+      "index": 3,
+      "total": 10,
+      "prev": {
+        "slug": "artifacts-promotion",
+        "title": "Build once, promote everywhere"
+      },
+      "next": {
+        "slug": "progressive-delivery",
+        "title": "Rollout policy as a platform default"
+      }
+    },
+    "progressive-delivery": {
+      "trackId": "delivery",
+      "trackTitle": "Delivery",
+      "explainerUrl": "/delivery/",
+      "index": 4,
+      "total": 10,
+      "prev": {
+        "slug": "gitops",
+        "title": "Desired-state control across hundreds of clusters"
+      },
+      "next": {
+        "slug": "feature-flags",
+        "title": "Flag governance"
+      }
+    },
+    "feature-flags": {
+      "trackId": "delivery",
+      "trackTitle": "Delivery",
+      "explainerUrl": "/delivery/",
+      "index": 5,
+      "total": 10,
+      "prev": {
+        "slug": "progressive-delivery",
+        "title": "Rollout policy as a platform default"
+      },
+      "next": {
+        "slug": "rollback-migrations",
+        "title": "Schema-change safety"
+      }
+    },
+    "rollback-migrations": {
+      "trackId": "delivery",
+      "trackTitle": "Delivery",
+      "explainerUrl": "/delivery/",
+      "index": 6,
+      "total": 10,
+      "prev": {
+        "slug": "feature-flags",
+        "title": "Flag governance"
+      },
+      "next": {
+        "slug": "supply-chain",
+        "title": "Supply chain: provenance, signing and SBOMs"
+      }
+    },
+    "supply-chain": {
+      "trackId": "delivery",
+      "trackTitle": "Delivery",
+      "explainerUrl": "/delivery/",
+      "index": 7,
+      "total": 10,
+      "prev": {
+        "slug": "rollback-migrations",
+        "title": "Schema-change safety"
+      },
+      "next": {
+        "slug": "merge-queues-and-dora",
+        "title": "Merge queues, monorepos and DORA"
+      }
+    },
+    "merge-queues-and-dora": {
+      "trackId": "delivery",
+      "trackTitle": "Delivery",
+      "explainerUrl": "/delivery/",
+      "index": 8,
+      "total": 10,
+      "prev": {
+        "slug": "supply-chain",
+        "title": "Supply chain: provenance, signing and SBOMs"
+      },
+      "next": {
+        "slug": "trunk-without-blocking-review",
+        "title": "Trunk-based delivery without a blocking review"
+      }
+    },
+    "trunk-without-blocking-review": {
+      "trackId": "delivery",
+      "trackTitle": "Delivery",
+      "explainerUrl": "/delivery/",
+      "index": 9,
+      "total": 10,
+      "prev": {
+        "slug": "merge-queues-and-dora",
+        "title": "Merge queues, monorepos and DORA"
+      },
+      "next": {
+        "slug": "review-lanes",
+        "title": "Review lanes set by risk"
+      }
+    },
+    "review-lanes": {
+      "trackId": "delivery",
+      "trackTitle": "Delivery",
+      "explainerUrl": "/delivery/",
+      "index": 10,
+      "total": 10,
+      "prev": {
+        "slug": "trunk-without-blocking-review",
+        "title": "Trunk-based delivery without a blocking review"
+      },
+      "next": null
+    },
+    "agent-loop": {
+      "trackId": "agentic",
+      "trackTitle": "Agentic Engineering",
+      "explainerUrl": "/agentic/",
+      "index": 1,
+      "total": 8,
+      "prev": null,
+      "next": {
+        "slug": "context-engineering",
+        "title": "Context engineering"
+      }
+    },
+    "context-engineering": {
+      "trackId": "agentic",
+      "trackTitle": "Agentic Engineering",
+      "explainerUrl": "/agentic/",
+      "index": 2,
+      "total": 8,
+      "prev": {
+        "slug": "agent-loop",
+        "title": "What an agent actually is"
+      },
+      "next": {
+        "slug": "verification-first",
+        "title": "Verification first: go deep, then prove it"
+      }
+    },
+    "verification-first": {
+      "trackId": "agentic",
+      "trackTitle": "Agentic Engineering",
+      "explainerUrl": "/agentic/",
+      "index": 3,
+      "total": 8,
+      "prev": {
+        "slug": "context-engineering",
+        "title": "Context engineering"
+      },
+      "next": {
+        "slug": "orchestration",
+        "title": "Orchestrating many agents"
+      }
+    },
+    "orchestration": {
+      "trackId": "agentic",
+      "trackTitle": "Agentic Engineering",
+      "explainerUrl": "/agentic/",
+      "index": 4,
+      "total": 8,
+      "prev": {
+        "slug": "verification-first",
+        "title": "Verification first: go deep, then prove it"
+      },
+      "next": {
+        "slug": "review-at-scale",
+        "title": "Reviewing agent output"
+      }
+    },
+    "review-at-scale": {
+      "trackId": "agentic",
+      "trackTitle": "Agentic Engineering",
+      "explainerUrl": "/agentic/",
+      "index": 5,
+      "total": 8,
+      "prev": {
+        "slug": "orchestration",
+        "title": "Orchestrating many agents"
+      },
+      "next": {
+        "slug": "agent-safety",
+        "title": "Permissions and safety for coding agents"
+      }
+    },
+    "agent-safety": {
+      "trackId": "agentic",
+      "trackTitle": "Agentic Engineering",
+      "explainerUrl": "/agentic/",
+      "index": 6,
+      "total": 8,
+      "prev": {
+        "slug": "review-at-scale",
+        "title": "Reviewing agent output"
+      },
+      "next": {
+        "slug": "agents-in-ops",
+        "title": "Agents in SRE operations"
+      }
+    },
+    "agents-in-ops": {
+      "trackId": "agentic",
+      "trackTitle": "Agentic Engineering",
+      "explainerUrl": "/agentic/",
+      "index": 7,
+      "total": 8,
+      "prev": {
+        "slug": "agent-safety",
+        "title": "Permissions and safety for coding agents"
+      },
+      "next": {
+        "slug": "org-at-scale",
+        "title": "Running agentic development across an org"
+      }
+    },
+    "org-at-scale": {
+      "trackId": "agentic",
+      "trackTitle": "Agentic Engineering",
+      "explainerUrl": "/agentic/",
+      "index": 8,
+      "total": 8,
+      "prev": {
+        "slug": "agents-in-ops",
+        "title": "Agents in SRE operations"
+      },
+      "next": null
+    },
+    "evals-that-compound": {
+      "trackId": "next-agent",
+      "trackTitle": "Engineering for the Next Agent",
+      "explainerUrl": "/next-agent/",
+      "index": 1,
+      "total": 2,
+      "prev": null,
+      "next": {
+        "slug": "model-upgrades",
+        "title": "Upgrading models safely"
+      }
+    },
+    "model-upgrades": {
+      "trackId": "next-agent",
+      "trackTitle": "Engineering for the Next Agent",
+      "explainerUrl": "/next-agent/",
+      "index": 2,
+      "total": 2,
+      "prev": {
+        "slug": "evals-that-compound",
+        "title": "Evals: the asset that compounds most"
+      },
+      "next": null
+    }
+  }
+}

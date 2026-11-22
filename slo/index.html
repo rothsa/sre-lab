@@ -8,15 +8,16 @@
 <style>
 /* Layout: controls left, results right on desktop; one column on phones. The budget chart is the centerpiece. */
 :root {
-  --bg: #f4f6f8;
-  --panel: #ffffff;
-  --fg: #141c24;
-  --muted: #5b6875;
-  --rule: #d7dee5;
-  --accent: #1f5fbf;
-  --budget: #1f5fbf;
-  --page: #c2410c;
-  --ticket: #a16207;
+  --bg: #eef5e6;
+  --bg2: #dcebcf;
+  --panel: #fbfdf6;
+  --fg: #14261a;
+  --muted: #4a6250;
+  --rule: #c4d9b3;
+  --accent: #1f7a3a;
+  --budget: #1f7a3a;
+  --page: #d9481e;
+  --ticket: #b45309;
   --ok: #15803d;
   --font-display: "Archivo", "Segoe UI", system-ui, sans-serif;
   --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -24,16 +25,16 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c;
-    --accent: #6ea8ff; --budget: #6ea8ff; --page: #fb8a4c; --ticket: #e0b44c; --ok: #4ade80; color-scheme: dark;
+    --bg: #08130d; --bg2: #0d2016; --panel: #102318; --fg: #e3f0de; --muted: #9fb8a2; --rule: #21402c;
+    --accent: #8fdc7a; --budget: #8fdc7a; --page: #ff7a4d; --ticket: #f0a24c; --ok: #4ade80; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0f141a; --panel: #161d25; --fg: #e3e9ef; --muted: #98a6b3; --rule: #27313c;
-  --accent: #6ea8ff; --budget: #6ea8ff; --page: #fb8a4c; --ticket: #e0b44c; --ok: #4ade80; color-scheme: dark;
+  --bg: #08130d; --bg2: #0d2016; --panel: #102318; --fg: #e3f0de; --muted: #9fb8a2; --rule: #21402c;
+  --accent: #8fdc7a; --budget: #8fdc7a; --page: #ff7a4d; --ticket: #f0a24c; --ok: #4ade80; color-scheme: dark;
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.5; }
+body { margin: 0; background: radial-gradient(ellipse 80% 35% at 50% -5%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 70%), linear-gradient(180deg, var(--bg2) 0%, var(--bg) 32%, var(--bg) 100%); background-attachment: fixed; color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.5; min-height: 100vh; }
 .wrap { max-width: 1080px; margin: 0 auto; padding-inline: 16px; padding-block: 32px 56px; }
 header { display: grid; gap: 6px; margin-bottom: 22px; }
 .kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
@@ -378,5 +379,6 @@ $("burn").value = burnToSlider(burn);
 update();
 </script>
 
+<script src="/site-chrome.js" defer></script>
 </body>
 </html>

@@ -281,6 +281,11 @@ function mount(ch) {
 
 
 export async function mountExplainer(CHAPTERS, { key = "drawn", collapseSourcesOver = Infinity } = {}) {
+  if (!window.__sreLabChrome) {
+    const sc = document.createElement("script");
+    sc.src = "/site-chrome.js";
+    document.head.appendChild(sc);
+  }
   KEY = key;
   COLLAPSE_OVER = collapseSourcesOver;
   // ?only=<chapter id> renders a single chapter (handy for sharing one diagram, and for screenshots).
@@ -289,6 +294,23 @@ export async function mountExplainer(CHAPTERS, { key = "drawn", collapseSourcesO
   document.getElementById("toc").innerHTML = CHAPTERS.map((c) => `<li><a href="#${c.id}">${esc(c.title)}</a></li>`).join("");
   document.getElementById("chapters").innerHTML = LIST.map(chapterHTML).join("");
   LIST.forEach(mount);
+  const tocNav = document.querySelector("nav.toc");
+  if (tocNav && !tocNav.querySelector(".toc-fb")) {
+    const fbJump = document.createElement("button");
+    fbJump.type = "button";
+    fbJump.className = "toc-fb";
+    fbJump.textContent = "Send feedback ↓";
+    fbJump.addEventListener("click", () => {
+      const cur = document.querySelector('#toc a[aria-current="true"]')?.hash?.slice(1) || LIST[0]?.id;
+      const box = cur ? document.querySelector(`#${CSS.escape(cur)} .fb-box`) : document.querySelector(".fb-box");
+      if (box) {
+        box.open = true;
+        box.scrollIntoView({ behavior: "smooth", block: "center" });
+        box.querySelector("textarea")?.focus();
+      }
+    });
+    tocNav.appendChild(fbJump);
+  }
   if (matchMedia("(max-width: 999px)").matches) document.getElementById("tocBox").open = false;
   document.getElementById("toc").addEventListener("click", () => { if (matchMedia("(max-width: 999px)").matches) document.getElementById("tocBox").open = false; });
   // Highlight the chapter in view in the table of contents.

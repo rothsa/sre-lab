@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cardinality &amp; Sampling Cost Explorer · SRE Lab</title>
+<meta name="description" content="Interactive telemetry simulator: test how metric labels explode series count, compare head vs tail sampling and wide events, and see what percentage of outage errors survive.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800&display=swap">
+<style>
+:root {
+  --bg: #eef5e6; --bg2: #dcebcf; --panel: #fbfdf6; --fg: #14261a; --muted: #4a6250; --rule: #c4d9b3;
+  --accent: #1f7a3a; --ok: #15803d; --warn: #b45309; --bad: #d9481e; --wide: #3f9a4f;
+  --font-display: "Archivo", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #08130d; --bg2: #0d2016; --panel: #102318; --fg: #e3f0de; --muted: #9fb8a2; --rule: #21402c;
+    --accent: #8fdc7a; --ok: #4ade80; --warn: #f0a24c; --bad: #ff7a4d; --wide: #58c972; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #08130d; --bg2: #0d2016; --panel: #102318; --fg: #e3f0de; --muted: #9fb8a2; --rule: #21402c;
+  --accent: #8fdc7a; --ok: #4ade80; --warn: #f0a24c; --bad: #ff7a4d; --wide: #58c972; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: radial-gradient(ellipse 80% 35% at 50% -5%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 70%), linear-gradient(180deg, var(--bg2) 0%, var(--bg) 32%, var(--bg) 100%); background-attachment: fixed; color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.5; min-height: 100vh; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 28px 16px 56px; }
+header { display: grid; gap: 6px; margin-bottom: 22px; }
+.kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.kicker a { color: inherit; }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 5vw, 44px); line-height: 1.05; margin: 0; }
+.lede { color: var(--muted); max-width: 70ch; margin: 0; }
+.presets { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.presets button { font-family: var(--font-mono); font-size: 12.5px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--rule); background: var(--panel); color: var(--fg); cursor: pointer; }
+.presets button:hover, .presets button:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+.grid { display: grid; grid-template-columns: minmax(280px, 350px) 1fr; gap: 20px; align-items: start; }
+@media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+.panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; min-width: 0; }
+.controls { display: grid; gap: 16px; overflow: hidden; }
+.controls > * { min-width: 0; }
+label.ctrl { display: grid; gap: 6px; font-weight: 600; font-size: 14px; min-width: 0; }
+.ctrl-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; min-width: 0; }
+.val { font-family: var(--font-mono); font-size: 15px; color: var(--accent); font-weight: 600; white-space: nowrap; }
+.hint { font-weight: 400; color: var(--muted); font-size: 12.5px; }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+select { width: 100%; max-width: 100%; font: inherit; font-family: var(--font-mono); font-size: 13px; padding: 7px 9px; border: 1px solid var(--rule); border-radius: 6px; background: var(--bg); color: var(--fg); }
+.checks { display: grid; gap: 8px; }
+.checks label { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 10px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); font-size: 13.5px; cursor: pointer; }
+.checks label.danger { border-color: color-mix(in srgb, var(--bad) 55%, var(--rule)); }
+.checks input { accent-color: var(--accent); }
+.checks small { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); }
+.results { display: grid; gap: 16px; min-width: 0; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.stat { display: grid; gap: 3px; }
+.stat .k { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.stat .v { font-family: var(--font-display); font-weight: 800; font-size: 24px; font-variant-numeric: tabular-nums; }
+.stat .v.ok { color: var(--ok); }
+.stat .v.warn { color: var(--warn); }
+.stat .v.bad { color: var(--bad); }
+.banner { padding: 10px 14px; border-radius: 8px; font-size: 14px; border-left: 4px solid var(--ok); background: color-mix(in srgb, var(--ok) 10%, var(--panel)); }
+.banner.warn { border-left-color: var(--warn); background: color-mix(in srgb, var(--warn) 12%, var(--panel)); }
+.banner.bad { border-left-color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, var(--panel)); }
+h2 { font-family: var(--font-display); font-weight: 700; font-size: 19px; margin: 0 0 8px; }
+.chartbox { overflow-x: auto; }
+svg { display: block; width: 100%; min-width: 480px; height: auto; }
+svg text { font-family: var(--font-mono); font-size: 11.5px; fill: var(--muted); }
+.row-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+.copy-btn { font: inherit; font-size: 13px; border: 1px solid var(--rule); background: var(--panel); color: var(--fg); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+pre { margin: 0; background: var(--bg); border: 1px solid var(--rule); border-radius: 8px; padding: 12px; overflow-x: auto; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.5; }
+.notes { font-size: 14.5px; color: var(--muted); display: grid; gap: 8px; }
+.notes b { color: var(--fg); }
+.notes a { color: var(--accent); }
+footer { margin-top: 28px; color: var(--muted); font-size: 14px; }
+footer a { color: var(--accent); }
+</style>
+<link rel="stylesheet" href="../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+<nav class="site-nav" aria-label="Site" style="max-width:1120px"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/coffee</a></nav>
+<div class="wrap">
+  <header>
+    <div class="kicker"><a href="../">SRE Lab</a> · observability simulator · updated <time datetime="2026-11-22">22 Nov 2026</time></div>
+    <h1>Cardinality &amp; Sampling Cost Explorer</h1>
+    <p class="lede">See how one high-cardinality metric label blows up active series, how head vs. tail sampling changes outage visibility, and how a 3-pillar stack compares against wide structured events. Pricing uses illustrative cloud unit rates so you can compare relative shape.</p>
+    <div class="presets" role="group" aria-label="Scenarios">
+      <button type="button" data-preset="healthy">Healthy fleet service</button>
+      <button type="button" data-preset="userid">Oops: user_id metric label</button>
+      <button type="button" data-preset="highqps">High-QPS edge (15k req/s)</button>
+      <button type="button" data-preset="wide">Wide events + dynamic sampling</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="panel controls" aria-label="Inputs">
+      <label class="ctrl">
+        <span class="ctrl-top"><span>Traffic</span><span class="val" id="rpsOut">1,000 req/s</span></span>
+        <input type="range" id="rps" min="10" max="47" step="1" value="30">
+        <span class="hint">Log scale from 10 to 50,000 req/s (4 spans per request).</span>
+      </label>
+
+      <label class="ctrl">
+        <span class="ctrl-top"><span>Pods across fleet</span><span class="val" id="podsOut">40 pods</span></span>
+        <input type="range" id="pods" min="4" max="500" step="2" value="40">
+      </label>
+
+      <label class="ctrl">
+        <span class="ctrl-top"><span>Outage error rate</span><span class="val" id="errOut">0.5%</span></span>
+        <input type="range" id="err" min="1" max="50" step="1" value="5">
+      </label>
+
+      <div class="ctrl">
+        <span class="ctrl-top"><span>Metric labels (multiply series!)</span></span>
+        <div class="checks">
+          <label><span><input type="checkbox" id="lblStatus" checked> status_code</span><small>×5</small></label>
+          <label><span><input type="checkbox" id="lblRoute" checked> route</span><small>×20</small></label>
+          <label><span><input type="checkbox" id="lblPod"> pod_name</span><small id="podMult">×40</small></label>
+          <label class="danger"><span><input type="checkbox" id="lblUser"> user_id</span><small>×50,000</small></label>
+          <label class="danger"><span><input type="checkbox" id="lblTrace"> trace_id</span><small>×500,000</small></label>
+        </div>
+      </div>
+
+      <label class="ctrl">
+        <span>Sampling &amp; storage strategy</span>
+        <select id="strategy">
+          <option value="none">No sampling (100% traces + logs)</option>
+          <option value="head10">Head sampling 10% (ParentBased)</option>
+          <option value="head1">Head sampling 1% (ParentBased)</option>
+          <option value="hybrid" selected>Hybrid: 25% head + tail keep errors/p99</option>
+          <option value="wide">Observability 2.0: wide events + dynamic sampling</option>
+        </select>
+      </label>
+    </section>
+
+    <div class="results">
+      <section class="panel">
+        <div class="stats">
+          <div class="stat"><span class="k">Active metric series</span><span class="v" id="stSeries">-</span></div>
+          <div class="stat"><span class="k">3-pillar est. / mo</span><span class="v" id="stCost3">-</span></div>
+          <div class="stat"><span class="k">Wide-event est. / mo</span><span class="v" id="stCostW">-</span></div>
+          <div class="stat"><span class="k">Errors captured</span><span class="v" id="stErr">-</span></div>
+        </div>
+        <div class="banner" id="banner" style="margin-top:14px"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Monthly spend breakdown (illustrative unit model)</h2>
+        <div class="chartbox"><svg id="chart" viewBox="0 0 680 220" role="img" aria-label="Monthly telemetry cost comparison"></svg></div>
+        <p class="hint" style="margin:8px 0 0">Unit model: $8 / 1k active metric series, $0.55 / GB logs, $0.50 / GB traces (3-pillar) vs. $0.40 / GB columnar wide events + slim infra metrics. Relative shape matters more than vendor list prices.</p>
+      </section>
+
+      <section class="panel">
+        <div class="row-head">
+          <h2>Matching guardrails config</h2>
+          <button type="button" class="copy-btn" id="copyCfg">Copy YAML</button>
+        </div>
+        <pre><code id="cfg"></code></pre>
+      </section>
+
+      <section class="panel notes">
+        <h2>Why this breaks across hundreds of teams</h2>
+        <div><b>Cardinality multiplies silently:</b> Prometheus and managed metric stores bill per unique label combination. Adding <code>user_id</code> or <code>trace_id</code> to a metric turns 100 series into millions and triggers <code>sample_limit</code> scrape failures. Keep IDs in wide events or structured metadata instead.</div>
+        <div><b>Sampling trades cost against outage visibility:</b> Plain head sampling throws away 90% to 99% of error traces before a downstream service even fails. Hybrid tail sampling or dynamic wide-event sampling keeps ~100% of errors and slow p99s while thinning routine 200 OK traffic.</div>
+        <div>Related chapters: <a href="../observability/#three-signals">Telemetry strategy &amp; budget</a> · <a href="../observability/#sampling">Org sampling policy</a> · <a href="../cardinality/">Taming Cardinality</a></div>
+      </section>
+    </div>
+  </div>
+
+  <div data-lab-feedback="Feedback on the Telemetry Simulator" data-lab-title="Cardinality & Sampling Cost Explorer"></div>
+  <footer>Part of <a href="../">SRE Lab</a> by Sally Roth · <a href="https://resume.sallyroth.dev">resume.sallyroth.dev</a> · <a href="https://github.com/rothsa/sre-lab">source</a></footer>
+</div>
+<script src="/site-chrome.js" defer></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const fmtNum = (n) => n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${(n / 1e3).toFixed(n >= 1e4 ? 0 : 1)}k` : String(Math.round(n));
+const fmtUsd = (n) => n >= 1e6 ? `$${(n / 1e6).toFixed(2)}M` : n >= 1e3 ? `$${Math.round(n).toLocaleString()}` : `$${Math.round(n)}`;
+const rpsFromSlider = (v) => Math.round(Math.pow(10, v / 10));
+
+function compute() {
+  const rps = rpsFromSlider(Number($("rps").value));
+  const pods = Number($("pods").value);
+  const errPct = Number($("err").value) / 10;
+  const strategy = $("strategy").value;
+
+  $("rpsOut").textContent = `${rps.toLocaleString()} req/s`;
+  $("podsOut").textContent = `${pods} pods`;
+  $("errOut").textContent = `${errPct.toFixed(1)}%`;
+  $("podMult").textContent = `×${pods}`;
+
+  let series = 12;
+  if ($("lblStatus").checked) series *= 5;
+  if ($("lblRoute").checked) series *= 20;
+  if ($("lblPod").checked) series *= pods;
+  if ($("lblUser").checked) series *= 50000;
+  if ($("lblTrace").checked) series *= 500000;
+
+  const reqPerMonth = rps * 86400 * 30;
+  const rawTraceGb = (reqPerMonth * 4 * 650) / 1e9;
+  const rawLogGb = (reqPerMonth * 8 * 450) / 1e9;
+  const rawWideGb = (reqPerMonth * 1.2 * 1400) / 1e9;
+
+  const profiles = {
+    none: { traceKeep: 1.0, logKeep: 1.0, errCap: 100, wideKeep: 1.0, headArg: "1.0" },
+    head10: { traceKeep: 0.10, logKeep: 1.0, errCap: 10, wideKeep: 0.15, headArg: "0.1" },
+    head1: { traceKeep: 0.01, logKeep: 1.0, errCap: 1, wideKeep: 0.08, headArg: "0.01" },
+    hybrid: { traceKeep: Math.min(1, 0.25 * (errPct / 100 + 0.06)), logKeep: 0.55, errCap: 25, wideKeep: Math.min(1, errPct / 100 + 0.06), headArg: "0.25" },
+    wide: { traceKeep: Math.min(1, errPct / 100 + 0.05), logKeep: 0.2, errCap: 99, wideKeep: Math.min(1, errPct / 100 + 0.05), headArg: "1.0" },
+  };
+  const p = profiles[strategy];
+  const errCaptured = strategy === "hybrid" ? (rps > 5000 ? 25 : 99) : p.errCap;
+  const effectiveTraceKeep = strategy === "hybrid" && rps <= 5000 ? Math.min(1, errPct / 100 + 0.07) : p.traceKeep;
+
+  const costMetrics = (series / 1000) * 8;
+  const costLogs = rawLogGb * p.logKeep * 0.55;
+  const costTraces = rawTraceGb * effectiveTraceKeep * 0.50;
+  const total3 = costMetrics + costLogs + costTraces;
+
+  const slimInfraMetrics = (Math.min(series, 4000) / 1000) * 8;
+  const wideEventsCost = rawWideGb * p.wideKeep * 0.40;
+  const totalWide = slimInfraMetrics + wideEventsCost;
+
+  $("stSeries").textContent = fmtNum(series);
+  $("stSeries").className = `v ${series > 500000 ? "bad" : series > 50000 ? "warn" : "ok"}`;
+  $("stCost3").textContent = fmtUsd(total3);
+  $("stCostW").textContent = fmtUsd(totalWide);
+  $("stCostW").className = "v ok";
+  $("stErr").textContent = `${errCaptured}%`;
+  $("stErr").className = `v ${errCaptured >= 90 ? "ok" : errCaptured >= 25 ? "warn" : "bad"}`;
+
+  const banner = $("banner");
+  if ($("lblUser").checked || $("lblTrace").checked) {
+    banner.className = "banner bad";
+    banner.textContent = `Cardinality explosion: ${fmtNum(series)} active metric series. Prometheus sample_limit will fail scrapes whole (up = 0). Move user_id and trace_id out of metric labels into wide events or Loki structured metadata.`;
+  } else if (errCaptured < 20) {
+    banner.className = "banner warn";
+    banner.textContent = `Blind spot: ${strategy === "head1" ? "1%" : "10%"} head sampling drops ${100 - errCaptured}% of outage error traces before payments or downstream calls even fail. Add a tail sampler or dynamic wide-event sampling.`;
+  } else if (strategy === "none" && rps >= 1000) {
+    banner.className = "banner warn";
+    banner.textContent = `Unsampled at ${rps.toLocaleString()} req/s: storing 100% of traces and raw logs runs ${fmtUsd(total3)}/mo. OpenTelemetry recommends sampling past ~1,000 traces/s.`;
+  } else if (strategy === "hybrid" && rps > 5000) {
+    banner.className = "banner warn";
+    banner.textContent = `High-QPS hybrid trade-off: 25% head sampling protects the Collector tier at ${rps.toLocaleString()} req/s, so the tail tier keeps ~100% of arriving errors (25% of total). Drive SLOs from app metrics or unsampled wide-event counters.`;
+  } else {
+    banner.className = "banner";
+    banner.textContent = `Healthy balance: bounded metric cardinality (${fmtNum(series)} series), ${errCaptured}% outage error visibility, and predictable monthly spend.`;
+  }
+
+  const maxCost = Math.max(total3, totalWide, 100);
+  const wScale = (v) => Math.max(0, Math.min(460, (v / maxCost) * 460));
+  const mW = wScale(costMetrics), lW = wScale(costLogs), tW = wScale(costTraces);
+  const wiW = wScale(slimInfraMetrics), weW = wScale(wideEventsCost);
+
+  $("chart").innerHTML = `
+    <text x="10" y="34" style="font-weight:600;fill:var(--fg)">3-Pillar Stack</text>
+    <text x="10" y="52">${fmtUsd(total3)}/mo</text>
+    <rect x="150" y="20" width="${mW.toFixed(1)}" height="36" rx="4" fill="var(--bad)"/>
+    <rect x="${(150 + mW).toFixed(1)}" y="20" width="${lW.toFixed(1)}" height="36" rx="4" fill="var(--warn)"/>
+    <rect x="${(150 + mW + lW).toFixed(1)}" y="20" width="${tW.toFixed(1)}" height="36" rx="4" fill="var(--accent)"/>
+
+    <text x="10" y="106" style="font-weight:600;fill:var(--fg)">Wide Events (2.0)</text>
+    <text x="10" y="124">${fmtUsd(totalWide)}/mo</text>
+    <rect x="150" y="92" width="${wiW.toFixed(1)}" height="36" rx="4" fill="var(--accent)"/>
+    <rect x="${(150 + wiW).toFixed(1)}" y="92" width="${weW.toFixed(1)}" height="36" rx="4" fill="var(--wide)"/>
+
+    <rect x="150" y="162" width="12" height="12" rx="2" fill="var(--bad)"/><text x="168" y="172">Metrics (${fmtUsd(costMetrics)})</text>
+    <rect x="305" y="162" width="12" height="12" rx="2" fill="var(--warn)"/><text x="323" y="172">Logs (${fmtUsd(costLogs)})</text>
+    <rect x="445" y="162" width="12" height="12" rx="2" fill="var(--accent)"/><text x="463" y="172">Traces (${fmtUsd(costTraces)})</text>
+    <rect x="150" y="186" width="12" height="12" rx="2" fill="var(--wide)"/><text x="168" y="196">Columnar wide events (${fmtUsd(wideEventsCost)})</text>
+  `;
+
+  const sampleLimit = Math.max(5000, Math.min(50000, Math.ceil((Math.min(series, 25000) * 1.5) / 1000) * 1000));
+  $("cfg").textContent = [
+    `scrape_configs:`,
+    `  - job_name: checkout`,
+    `    sample_limit: ${sampleLimit}`,
+    ``,
+    `processors:`,
+    `  tail_sampling:`,
+    `    decision_wait: 30s`,
+    `    num_traces: ${Math.min(500000, Math.max(50000, Math.round(rps * 40)))}`,
+    `    policies:`,
+    `      - name: errors`,
+    `        type: status_code`,
+    `        status_code: { status_codes: [ERROR] }`,
+    `      - name: slow-p99`,
+    `        type: latency`,
+    `        latency: { threshold_ms: 2000 }`,
+    `      - name: baseline`,
+    `        type: probabilistic`,
+    `        probabilistic: { sampling_percentage: ${strategy === "head1" ? 1 : 5} }`,
+    ``,
+    `connectors:`,
+    `  spanmetrics:`,
+    `    aggregation_cardinality_limit: 5000`,
+  ].join("\n");
+}
+
+const PRESETS = {
+  healthy: { rps: 27, pods: 30, err: 3, lblStatus: true, lblRoute: true, lblPod: false, lblUser: false, lblTrace: false, strategy: "hybrid" },
+  userid: { rps: 27, pods: 30, err: 5, lblStatus: true, lblRoute: true, lblPod: false, lblUser: true, lblTrace: false, strategy: "hybrid" },
+  highqps: { rps: 42, pods: 240, err: 4, lblStatus: true, lblRoute: true, lblPod: true, lblUser: false, lblTrace: false, strategy: "hybrid" },
+  wide: { rps: 36, pods: 120, err: 5, lblStatus: true, lblRoute: true, lblPod: false, lblUser: false, lblTrace: false, strategy: "wide" },
+};
+
+document.querySelectorAll("[data-preset]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const p = PRESETS[btn.dataset.preset];
+    $("rps").value = p.rps;
+    $("pods").value = p.pods;
+    $("err").value = p.err;
+    $("lblStatus").checked = p.lblStatus;
+    $("lblRoute").checked = p.lblRoute;
+    $("lblPod").checked = p.lblPod;
+    $("lblUser").checked = p.lblUser;
+    $("lblTrace").checked = p.lblTrace;
+    $("strategy").value = p.strategy;
+    compute();
+  });
+});
+
+["rps", "pods", "err", "lblStatus", "lblRoute", "lblPod", "lblUser", "lblTrace", "strategy"].forEach((id) => {
+  $(id).addEventListener("input", compute);
+  $(id).addEventListener("change", compute);
+});
+
+$("copyCfg").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText($("cfg").textContent);
+    $("copyCfg").textContent = "Copied";
+    setTimeout(() => { $("copyCfg").textContent = "Copy YAML"; }, 1600);
+  } catch {}
+});
+
+compute();
+</script>
+</body>
+</html>
