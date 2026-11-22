@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Query and rule standards for the fleet: the film</title>
+<meta name="description" content="A short narrated film on fleet PromQL standards: rate before sum, histograms, recording-rule libraries, Sloth SLO generation and promtool CI tests.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.fp{position:absolute;border:2.5px solid var(--rule);background:var(--panel);border-radius:30px 10px 30px 10px;box-shadow:0 12px 32px rgba(20,70,35,.10);padding:26px 32px}
+.fp h2{margin:0 0 16px;font:800 30px "Archivo";color:var(--fg)}
+.fb{display:inline-flex;align-items:center;gap:12px;border:2.5px solid var(--blue);background:#dff0d3;border-radius:999px;padding:10px 24px;font:700 24px "IBM Plex Sans";color:var(--fg)}
+.fb.green{border-color:var(--green);background:#e9f6dc;color:var(--blue)}
+.fb.amber{border-color:var(--amber);background:#fbefd0;color:#7a5308}
+.fb.red{border-color:var(--red);background:#fbe4d9;color:var(--red)}
+.fn{width:38px;height:38px;border-radius:50%;background:var(--blue);color:#fff;font:800 21px "Archivo";display:inline-flex;align-items:center;justify-content:center;flex:none}
+.fc{background:#0d2016;color:#e3f0de;border-radius:22px 8px 22px 8px;padding:22px 26px;font:400 22px/1.6 "IBM Plex Mono";box-shadow:0 14px 34px rgba(20,70,35,.18)}
+.fc .k{color:#8fdc7a}.fc .v{color:#f5c26b}.fc .e{color:#ff8a5c}.fc .m{color:#9fb8a2}
+.fm{position:relative;width:100%;height:44px;border-radius:22px;background:#d6e6c8;overflow:hidden;margin:14px 0}
+.fmf{height:100%;width:0;border-radius:22px;background:var(--green)}
+.scene.on .fmf{animation:f-grow 1.3s cubic-bezier(.2,.7,.2,1) var(--d,0s) forwards}
+@keyframes f-grow{to{width:var(--w)}}
+.fstep{border:2.5px solid var(--rule);background:#fff;border-radius:22px 8px 22px 8px;padding:18px 22px;font:700 24px "IBM Plex Sans"}
+.fstep small{display:block;font:400 19px "IBM Plex Mono";color:var(--muted);margin-top:6px}
+.fstep.blue{border-color:var(--blue);background:#dff0d3;color:var(--blue)}
+.fstep.green{border-color:var(--green);background:#e9f6dc;color:var(--blue)}
+.fstep.amber{border-color:var(--amber);background:#fbefd0;color:#7a5308}
+.fstep.red{border-color:var(--red);background:#fbe4d9;color:var(--red)}
+.fband{position:absolute;left:110px;top:760px;width:1700px;height:120px;border:3px dashed var(--blue);border-radius:30px 10px 30px 10px;background:rgba(255,255,255,.55);display:flex;align-items:center;justify-content:space-between;padding:0 36px}
+.fgrid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.fgrid2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.fgrid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.fline-v{position:absolute;top:-8px;bottom:-8px;width:4px;background:var(--red);z-index:3}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/coffee</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../observability/#promql-essentials">Observability</a> · film · recorded 22 Nov 2026</div>
+  <h1 class="page">Query and rule standards for the fleet</h1>
+  <div id="viewport">
+    <div id="stage">
+
+<section class="scene">
+  <div class="kick">Observability · chapter 4</div>
+  <h1>Query and rule standards for the fleet</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:550px;--d:6.72s;border-color:var(--red)">
+    <h2 class="t-red">Without shared libraries</h2>
+    <div class="fstep red" style="margin-top:20px">100 teams write 100 p99 queries<small>different windows, broken averages, dropped le</small></div>
+    <div class="muted" style="font:500 23px 'IBM Plex Sans';margin-top:28px">Dashboards quietly disagree on the latency of the exact same service.</div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:550px;--d:7.56s;border-color:var(--green)">
+    <h2 class="t-green">Platform rule library</h2>
+    <div class="fstep green" style="margin-top:20px">Ship recording &amp; SLO rules once<small>tested in CI · consistent across every dashboard</small></div>
+    <div class="muted" style="font:500 23px 'IBM Plex Sans';margin-top:28px">Every team reads the same pre-computed SLIs instead of reinventing PromQL.</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 2 of 8</div>
+  <h1>rate() first, then sum by</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:560px;--d:5.42s;border-color:var(--green)">
+    <h2 class="t-green">Right: rate per series first</h2>
+    <div class="fc" style="margin-top:20px">
+      <div><span class="k">sum by</span> (<span class="v">job</span>) (</div>
+      <div>&nbsp;&nbsp;<span class="k">rate</span>(http_requests_total[<span class="v">5m</span>])</div>
+      <div>)</div>
+    </div>
+    <div class="fb green" style="margin-top:34px">Handles pod counter resets cleanly</div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:560px;--d:11.71s;border-color:var(--red)">
+    <h2 class="t-red">Wrong: sum before rate</h2>
+    <div class="fc" style="margin-top:20px">
+      <div><span class="e">rate</span>(</div>
+      <div>&nbsp;&nbsp;<span class="e">sum</span>(http_requests_total)[<span class="v">5m</span>]</div>
+      <div>)</div>
+    </div>
+    <div class="fb red" style="margin-top:34px">Every pod restart looks like a spike</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 3 of 8</div>
+  <h1>Histograms: keep le, or go native</h1>
+  <div class="fp a" style="left:110px;top:290px;width:960px;height:560px;--d:.6s">
+    <h2>Classic histograms: rate → sum by (le) → quantile</h2>
+    <div class="fc a" style="--d:10.53s;margin-top:18px;font-size:21px">
+      <div><span class="k">histogram_quantile</span>(<span class="v">0.99</span>,</div>
+      <div>&nbsp;&nbsp;<span class="k">sum by</span> (job, <span class="v">le</span>) (</div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">rate</span>(http_request_duration_seconds_bucket[<span class="v">5m</span>])</div>
+      <div>&nbsp;&nbsp;)</div>
+      <div>)</div>
+    </div>
+    <div class="fb red a" style="--d:11.81s;margin-top:26px">Drop le and histogram_quantile breaks</div>
+  </div>
+  <div class="fp a" style="left:1120px;top:290px;width:690px;height:560px;--d:14.59s;border-color:var(--blue)">
+    <h2 class="t-blue">Native histograms</h2>
+    <div class="fstep blue" style="margin-top:24px">One series per label set<small>no manual _bucket explosion</small></div>
+    <div style="font:500 23px 'IBM Plex Sans';color:var(--muted);margin-top:32px">Enable <span class="mono">scrape_native_histograms</span> once clients expose them for huge cardinality savings.</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 4 of 8</div>
+  <h1>Never average per-pod p99s</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s">
+    <h2>An average of percentiles is not a percentile</h2>
+    <div class="fgrid3" style="margin-top:26px">
+      <div class="fstep a" style="--d:1.0s">Pod 1 · 10 req/s<small>p99 = 20 ms</small></div>
+      <div class="fstep a" style="--d:1.4s">Pod 2 · 1,000 req/s<small>p99 = 900 ms</small></div>
+      <div class="fstep red a" style="--d:7.97s">avg(p99) = 460 ms<small>statistically invalid</small></div>
+    </div>
+    <div class="fb red a" style="--d:13.29s;margin-top:52px">Never average ratios or averages either: sum numerators and denominators, then divide</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 5 of 8</div>
+  <h1>Record the right expression once</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s">
+    <h2>Naming convention: <span class="mono t-blue">level:metric:operations</span></h2>
+    <div class="fc a" style="--d:4.62s;margin-top:20px;font-size:21px">
+      <div>- <span class="k">record</span>: <span class="v">job:http_requests:rate5m</span></div>
+      <div>&nbsp;&nbsp;<span class="k">expr</span>: sum by (job) (rate(http_requests_total[5m]))</div>
+      <div>- <span class="k">record</span>: <span class="v">job_le:http_request_duration_seconds_bucket:rate5m</span></div>
+      <div>&nbsp;&nbsp;<span class="k">expr</span>: sum by (job, le) (rate(http_request_duration_seconds_bucket[5m]))</div>
+    </div>
+    <div class="fb green a" style="--d:13.2s;margin-top:34px">Fast reads · every team gets the exact same p99 for checkout</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 6 of 8</div>
+  <h1>Generate SLO rules from one spec</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s">
+    <h2>Stop hand-writing burn-rate alerts</h2>
+    <div class="fgrid3" style="margin-top:28px">
+      <div class="fstep a" style="--d:3.09s">1. SLO Spec<small>OpenSLO / Sloth YAML per service</small></div>
+      <div class="fstep blue a" style="--d:6.55s">2. Rule Generator<small>Sloth writes SLI &amp; burn rules</small></div>
+      <div class="fstep green a" style="--d:11.7s">3. Fleet Alerts<small>multi-window page + ticket tiers</small></div>
+    </div>
+    <div class="fb green a" style="--d:16.12s;margin-top:52px">One generator fix lands across every tier-1 service at once</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 7 of 8</div>
+  <h1>Reuse monitoring mixins for shared infra</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:550px;--d:.6s">
+    <h2>Don't reinvent standard dashboards and alerts</h2>
+    <div class="fgrid3" style="margin-top:28px">
+      <div class="fstep blue a" style="--d:2.14s">Kubernetes mixin<small>apiserver, kubelet, resources</small></div>
+      <div class="fstep green a" style="--d:3.04s">Node Exporter mixin<small>CPU, memory, disk, network</small></div>
+      <div class="fstep amber a" style="--d:4.33s">Prometheus mixin<small>remote_write lag, TSDB health</small></div>
+    </div>
+    <div class="fb green a" style="--d:10.18s;margin-top:52px">Community-tested dashboards, recording rules and alerts bundled together</div>
+  </div>
+</section>
+
+<section class="scene" style="--egg:17.69s">
+  <div class="kick">Step 8 of 8</div>
+  <h1>Test rules in CI &amp; pair with wide events</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:550px;--d:.6s;border-color:var(--green)">
+    <h2 class="t-green">CI gates on every rule</h2>
+    <div class="fc" style="margin-top:16px;font-size:21px">
+      <div><span class="k">$</span> promtool test rules slo-rules.yml</div>
+      <div class="m"># plus per-rule limit: 5000</div>
+    </div>
+    <div class="fb green a" style="--d:8.39s;margin-top:34px;font-size:22px">Renamed labels fail PRs, not dashboards</div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:550px;--d:18.19s;border-color:var(--blue)">
+    <h2 class="t-blue">Know where PromQL stops</h2>
+    <div class="fstep blue" style="margin-top:20px">PromQL libraries → fleet SLIs &amp; alerts<small>fast, bounded, agreed across teams</small></div>
+    <div class="fstep amber" style="margin-top:20px">Wide events / traces → ad-hoc debugging<small>arbitrary high-cardinality slices</small></div>
+  </div>
+  <div class="critter"><div id="critter"></div></div>
+</section>
+
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 2.3 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../observability/#promql-essentials">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Query and rule standards for the fleet. Hundreds of teams query the same metrics every day. Without a shared library of recording rules and S L O rules, every team writes its own p99 formula, and half of them quietly get the math wrong.", "Counters only climb and reset whenever a pod restarts. Always call rate per series first over a window like five minutes, which handles resets cleanly, and only then sum by job. Sum first and every restart looks like a fake traffic spike.", "Classic histograms are counters too, with one bucket series per upper bound. Take the rate of each bucket, sum while keeping the l e label, and call histogram quantile last. Drop l e and the math breaks. Native histograms collapse those buckets into a single series per label set.", "The classic fleet mistake is averaging per-pod p99s from summaries. An average of percentiles is statistically meaningless. Multiply that mistake across a hundred teams and leadership dashboards disagree on the latency of the same service.", "So record the right expression once in a shared library, named by level, metric, and operations. Aggregate numerators and denominators separately before dividing, and let every dashboard read the same recorded series so two teams asking for checkout latency get the same number.", "Generate S L O rules from a single spec per service instead of hand-writing them. Tools like Sloth turn an Open S L O spec into multi-window S L I recording rules and burn-rate alerts at both page and ticket tiers, so fixes roll out everywhere at once.", "For shared infrastructure like Kubernetes, node exporter, and Prometheus itself, don't reinvent the wheel. Adopt community monitoring mixins that bundle tested dashboards, recording rules, and alerts together.", "Put every library rule behind promtool unit tests in C I and enforce a per-rule series limit. A renamed label then breaks a pull request instead of silently breaking hundreds of dashboards. Remember: keep Prom Q L libraries for fleet S L Is, and lean on wide events or traces for high-cardinality debugging."], "seconds": [16.51, 16.39, 18.91, 15.98, 17.86, 16.94, 13.97, 21.29]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

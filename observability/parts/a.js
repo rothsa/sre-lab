@@ -89,6 +89,7 @@ export const CHAPTERS = [
 
   {
     id: "otel-collector",
+    film: "../films/otel-collector/",
     n: 2,
     title: "Telemetry pipeline as a platform",
     question: "Every team's spans, metrics and logs go through the same OpenTelemetry Collectors. What SLOs does that pipeline need, who carries its pager, and where does it lose data?",
@@ -239,6 +240,7 @@ max by (exporter) (
 
   {
     id: "prometheus-scrape",
+    film: "../films/prometheus-scrape/",
     n: 3,
     title: "Prometheus topology: shards, HA and remote write",
     question: "Hundreds of clusters each run Prometheus. How do you shard and pair the servers, get one global view, and prove no targets went missing?",
@@ -365,6 +367,7 @@ avg by (cluster) (up{job="kubernetes-pods"})` },
 
   {
     id: "promql-essentials",
+    film: "../films/promql-essentials/",
     n: 4,
     title: "Query and rule standards for the fleet",
     question: "Hundreds of teams query the same metrics. How do you ship recording-rule and SLO-rule libraries so they don't each compute p99 their own way, and often wrong?",

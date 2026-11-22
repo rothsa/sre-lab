@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prometheus topology: shards, HA and remote write: the film</title>
+<meta name="description" content="A short narrated film on scaling Prometheus across hundreds of clusters: discovery, relabeling, WAL, HA pairs, remote write and fleet SLIs.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.fp{position:absolute;border:2.5px solid var(--rule);background:var(--panel);border-radius:30px 10px 30px 10px;box-shadow:0 12px 32px rgba(20,70,35,.10);padding:26px 32px}
+.fp h2{margin:0 0 16px;font:800 30px "Archivo";color:var(--fg)}
+.fb{display:inline-flex;align-items:center;gap:12px;border:2.5px solid var(--blue);background:#dff0d3;border-radius:999px;padding:10px 24px;font:700 24px "IBM Plex Sans";color:var(--fg)}
+.fb.green{border-color:var(--green);background:#e9f6dc;color:var(--blue)}
+.fb.amber{border-color:var(--amber);background:#fbefd0;color:#7a5308}
+.fb.red{border-color:var(--red);background:#fbe4d9;color:var(--red)}
+.fn{width:38px;height:38px;border-radius:50%;background:var(--blue);color:#fff;font:800 21px "Archivo";display:inline-flex;align-items:center;justify-content:center;flex:none}
+.fc{background:#0d2016;color:#e3f0de;border-radius:22px 8px 22px 8px;padding:22px 26px;font:400 22px/1.6 "IBM Plex Mono";box-shadow:0 14px 34px rgba(20,70,35,.18)}
+.fc .k{color:#8fdc7a}.fc .v{color:#f5c26b}.fc .e{color:#ff8a5c}.fc .m{color:#9fb8a2}
+.fm{position:relative;width:100%;height:44px;border-radius:22px;background:#d6e6c8;overflow:hidden;margin:14px 0}
+.fmf{height:100%;width:0;border-radius:22px;background:var(--green)}
+.scene.on .fmf{animation:f-grow 1.3s cubic-bezier(.2,.7,.2,1) var(--d,0s) forwards}
+@keyframes f-grow{to{width:var(--w)}}
+.fstep{border:2.5px solid var(--rule);background:#fff;border-radius:22px 8px 22px 8px;padding:18px 22px;font:700 24px "IBM Plex Sans"}
+.fstep small{display:block;font:400 19px "IBM Plex Mono";color:var(--muted);margin-top:6px}
+.fstep.blue{border-color:var(--blue);background:#dff0d3;color:var(--blue)}
+.fstep.green{border-color:var(--green);background:#e9f6dc;color:var(--blue)}
+.fstep.amber{border-color:var(--amber);background:#fbefd0;color:#7a5308}
+.fstep.red{border-color:var(--red);background:#fbe4d9;color:var(--red)}
+.fband{position:absolute;left:110px;top:760px;width:1700px;height:120px;border:3px dashed var(--blue);border-radius:30px 10px 30px 10px;background:rgba(255,255,255,.55);display:flex;align-items:center;justify-content:space-between;padding:0 36px}
+.fgrid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.fgrid2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.fgrid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.fline-v{position:absolute;top:-8px;bottom:-8px;width:4px;background:var(--red);z-index:3}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/coffee</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../observability/#prometheus-scrape">Observability</a> · film · recorded 22 Nov 2026</div>
+  <h1 class="page">Prometheus topology: shards, HA and remote write</h1>
+  <div id="viewport">
+    <div id="stage">
+
+<section class="scene">
+  <div class="kick">Observability · chapter 3</div>
+  <h1>Prometheus: shards, HA &amp; remote write</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:430px;--d:.6s">
+    <h2>Hundreds of clusters → one global view</h2>
+    <div class="fgrid3" style="margin-top:28px">
+      <div class="fstep blue a" style="--d:2.29s">Cluster A · HA pair<small>shards + local WAL</small></div>
+      <div class="fstep blue a" style="--d:9.66s">Cluster B · HA pair<small>shards + local WAL</small></div>
+      <div class="fstep green a" style="--d:11.2s">Long-term store<small>Mimir / Thanos deduplicates</small></div>
+    </div>
+    <div class="fb amber a" style="--d:14.21s;margin-top:40px">Fleet goal: prove no targets quietly disappeared</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 2 of 9</div>
+  <h1>Discovery and relabeling before scraping</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s">
+    <h2>One shared config across every cluster</h2>
+    <div class="fgrid3" style="margin-top:24px">
+      <div class="fstep a" style="--d:2.24s">1. Kubernetes API<small>pods &amp; EndpointSlices</small></div>
+      <div class="fstep blue a" style="--d:6.76s">2. kubernetes_sd_configs<small>__meta_kubernetes_* labels</small></div>
+      <div class="fstep green a" style="--d:10.19s">3. relabel_configs<small>keep opted-in · copy pod/ns</small></div>
+    </div>
+    <div class="fc a" style="--d:11.46s;margin-top:34px;font-size:21px">
+      <div>- <span class="k">source_labels</span>: [<span class="v">__meta_kubernetes_pod_annotation_prometheus_io_scrape</span>]</div>
+      <div>&nbsp;&nbsp;<span class="k">action</span>: <span class="v">keep</span> &nbsp;<span class="k">regex</span>: <span class="v">"true"</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 3 of 9</div>
+  <h1>Scrape failures vs invisible targets</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:560px;--d:.6s">
+    <h2>Scrape loop writes up</h2>
+    <div class="fstep green a" style="--d:4.83s;margin-top:20px">GET /metrics OK → up == 1<small>samples appended cleanly</small></div>
+    <div class="fstep red a" style="--d:8.51s;margin-top:24px">Timeout or sample_limit → up == 0<small>whole scrape fails; zero samples land</small></div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:560px;--d:16.91s;border-color:var(--amber)">
+    <h2 style="color:#9a6a0c">The silent blind spot</h2>
+    <div class="fstep amber" style="margin-top:20px">Dropped by discovery or keep rule<small>NO up series exists at all</small></div>
+    <div style="font:500 24px 'IBM Plex Sans';color:var(--muted);margin-top:32px">An <span class="mono">up == 0</span> alert never fires for a target Prometheus stopped discovering. Use <span class="mono">absent()</span> or expected target counts.</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 4 of 9</div>
+  <h1>Head block, WAL, and the RAM ceiling</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s">
+    <h2>Local TSDB path</h2>
+    <div class="fgrid3" style="margin-top:24px">
+      <div class="fstep blue a" style="--d:2.74s">In-memory Head<small>recent active series live in RAM</small></div>
+      <div class="fstep amber a" style="--d:5.36s">Write-Ahead Log (WAL)<small>128 MB segments · replayed on restart</small></div>
+      <div class="fstep green a" style="--d:8.82s">2-hour Disk Blocks<small>compacted · 15 days default</small></div>
+    </div>
+    <div class="fb red a" style="--d:17.93s;margin-top:52px">Single node, unreplicated RAM head = finite per-server ceiling</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 5 of 9</div>
+  <h1>Size first, split by team, shard last</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:560px;--d:.6s">
+    <h2>Capacity arithmetic</h2>
+    <div class="fc a" style="--d:3.51s;margin-top:24px;font-size:22px;line-height:1.8">
+      <div><span class="k">samples/s</span> = targets × series ÷ interval</div>
+      <div><span class="k">disk</span> ≈ retention_s × samples/s × <span class="v">1–2 B</span></div>
+    </div>
+    <div style="font:500 23px 'IBM Plex Sans';color:var(--muted);margin-top:34px">Always verify sizing with arithmetic before tuning flags or adding replicas.</div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:560px;--d:9.07s;border-color:var(--blue)">
+    <h2>Scaling order</h2>
+    <div class="fstep green a" style="--d:11.01s;margin-top:20px"><span class="fn">1</span> Split by team or service group<small>clean ownership and blast radius</small></div>
+    <div class="fstep amber a" style="--d:13.8s;margin-top:26px"><span class="fn" style="background:var(--amber)">2</span> hashmod relabel sharding<small>last step when one job outgrows a server</small></div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 6 of 9</div>
+  <h1>HA pairs and deduplication</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:560px;--d:.6s">
+    <h2>Identical config, distinct replica label</h2>
+    <div class="fgrid2" style="margin-top:22px">
+      <div class="fstep blue a" style="--d:3.42s">Replica A<small>cluster: prod-eu-1-s0<br>__replica__: a</small></div>
+      <div class="fstep blue a" style="--d:3.95s">Replica B<small>cluster: prod-eu-1-s0<br>__replica__: b</small></div>
+    </div>
+    <div class="fb amber a" style="--d:6.85s;margin-top:38px;font-size:22px">One unique cluster label per HA pair</div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:560px;--d:12.82s;border-color:var(--green)">
+    <h2 class="t-green">Mimir HA tracker</h2>
+    <div class="fstep green" style="margin-top:24px">Elects 1 active replica per cluster value<small>drops the twin's duplicate samples cleanly</small></div>
+    <div style="font:500 23px 'IBM Plex Sans';color:var(--muted);margin-top:32px">Stagger restarts so one replica keeps scraping while the twin replays its 2-hour WAL.</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 7 of 9</div>
+  <h1>remote_write tails the WAL</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s">
+    <h2>Global view and long-term retention</h2>
+    <div class="fgrid3" style="margin-top:22px">
+      <div class="fstep amber a" style="--d:1.25s">Local WAL<small>128 MB segments</small></div>
+      <div class="fstep blue a" style="--d:3.33s">remote_write shards<small>HTTP POST batches</small></div>
+      <div class="fstep green a" style="--d:5.4s">Mimir / Thanos<small>global query &amp; retention</small></div>
+    </div>
+    <div class="fgrid2" style="margin-top:40px">
+      <div class="fstep red a" style="--d:9.35s">One full shard stalls WAL reads<small>blocks every shard behind it</small></div>
+      <div class="fstep red a" style="--d:13.68s">Down past 2 hours = data loss<small>WAL compaction drops unsent samples</small></div>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 8 of 9</div>
+  <h1>Agent mode for forward-only clusters</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:560px;--d:.6s;border-color:var(--blue)">
+    <h2>prometheus --agent</h2>
+    <div class="fstep green a" style="--d:5.7s;margin-top:20px">Same discovery &amp; scraping<small>same relabel configs as full server</small></div>
+    <div class="fstep blue a" style="--d:8.55s;margin-top:20px">Lean WAL cleared after push<small>no local 2h blocks, queries, or rules</small></div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:560px;--d:13.55s;border-color:var(--amber)">
+    <h2 style="color:#9a6a0c">The trade-off</h2>
+    <div class="fstep amber" style="margin-top:20px">Rules and alerts run centrally<small>paging depends on the remote store staying up</small></div>
+    <div style="font:500 24px 'IBM Plex Sans';color:var(--muted);margin-top:32px">Keep full Prometheus with local alerting where edge autonomy matters during central outages.</div>
+  </div>
+</section>
+
+<section class="scene" style="--egg:16.23s">
+  <div class="kick">Step 9 of 9</div>
+  <h1>Federation &amp; three fleet SLIs</h1>
+  <div class="fp a" style="left:110px;top:284px;width:1700px;height:150px;--d:.6s;display:flex;align-items:center;justify-content:space-between">
+    <div><h2 style="margin:0 0 6px">Federation (/federate)</h2><div class="muted" style="font:500 22px 'IBM Plex Sans'">Pull recorded aggregates only; keep raw history in remote_write.</div></div>
+    <span class="fb green">honor_labels: true</span>
+  </div>
+  <div class="fgrid3" style="position:absolute;left:110px;top:474px;width:1700px">
+    <div class="fp a" style="position:static;height:360px;--d:9.57s;border-color:var(--green)">
+      <h2 class="t-green">1. Target coverage</h2>
+      <div style="font:500 23px 'IBM Plex Sans';color:var(--muted)">Targets with <span class="mono">up == 1</span> compared against expected services.</div>
+    </div>
+    <div class="fp a" style="position:static;height:360px;--d:12.7s;border-color:var(--amber)">
+      <h2 style="color:#9a6a0c">2. Remote write lag</h2>
+      <div style="font:500 23px 'IBM Plex Sans';color:var(--muted)">Highest queued minus highest sent timestamp. Page past <b>120s</b>.</div>
+    </div>
+    <div class="fp a" style="position:static;height:360px;--d:16.73s;border-color:var(--blue)">
+      <h2 class="t-blue">3. Series capacity</h2>
+      <div style="font:500 23px 'IBM Plex Sans';color:var(--muted)">Active series per server tracked against its planned ceiling.</div>
+    </div>
+  </div>
+  <div class="critter"><div id="critter"></div></div>
+</section>
+
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 2.6 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../observability/#prometheus-scrape">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Prometheus topology: shards, high availability, and remote write. When hundreds of clusters each run Prometheus, how do you shard and pair servers, build one global view, and prove no targets quietly disappeared?", "Service discovery watches the Kubernetes A P I for pods and EndpointSlices, attaching internal metadata labels. Before a single scrape happens, relabel configs keep opted-in targets and promote namespace and pod into real labels. Every cluster inherits this from one shared config.", "The scrape loop pulls slash metrics on each interval and writes the up series for every target. If a scrape exceeds its timeout or hits sample limit, it fails whole: up becomes zero and no samples land. Even trickier, a target dropped by discovery has no up series at all.", "Scraped samples land in an in-memory head block, logged to a write-ahead log in 128-megabyte segments, then cut into two-hour blocks on local disk for fifteen days by default. Because storage is single-node and the head lives in RAM, one server has a hard ceiling.", "Size every server with simple arithmetic: disk tracks retention seconds times samples per second times one to two bytes. When a cluster outgrows one server, split by team or service group first. Using a hashmod relabel rule to shard one job across servers is the last step.", "Run every server or shard as an H A pair with identical config. External labels stamp cluster and replica on every sample. Give each pair its own cluster label so a store like Mimir can elect one leader per pair and deduplicate the other copy cleanly.", "Remote write tails the write-ahead log and posts batches to long-term storage like Mimir or Thanos for your global view. One full shard queue stalls log reads for every shard, and if the backend stays down past two hours, compaction drops unsent samples.", "Clusters that only forward metrics can run Prometheus in agent mode: same discovery and scraping, a write-ahead log cleared after each successful push, and no local queries or rules. The trade-off is that paging now depends on the central store.", "Keep federation for a handful of recorded aggregates, never raw high-resolution data. Then track three fleet S L Is per cluster: target coverage against expected services, remote write lag against a two-minute ceiling, and active series against planned capacity."], "seconds": [14.78, 18.94, 19.61, 18.36, 18.02, 17.3, 16.58, 16.44, 17.28]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

@@ -115,3 +115,24 @@ svg{position:absolute;inset:0;width:1920px;height:1080px;overflow:visible}
 #caption[hidden]{display:none}
 .film-note{color:var(--muted);font-size:14px;margin-top:18px;border-top:1px solid var(--rule);padding-top:12px}
 .film-note a{color:#1f7a3a}
+.fb-box{margin-top:14px;background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:10px 14px;font-size:14.5px}
+.fb-box summary{cursor:pointer;font:600 12px "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.fb-form{margin-top:10px;display:grid;gap:10px;position:relative}
+.fb-tags{display:flex;flex-wrap:wrap;gap:8px}
+.fb-tags label{display:inline-flex;align-items:center;cursor:pointer}
+.fb-tags input{position:absolute;opacity:0;pointer-events:none}
+.fb-tags span{padding:4px 12px;border-radius:999px;border:1px solid var(--rule);background:#eef5e6;color:var(--fg);font-size:13px;font-weight:600}
+.fb-tags input:checked+span{border-color:var(--blue);background:#dff0d3;color:var(--blue)}
+.fb-tags input:focus-visible+span{outline:2px solid var(--blue);outline-offset:2px}
+.fb-form textarea,.fb-form input[type="text"]{width:100%;font:inherit;color:var(--fg);background:#fff;border:1px solid var(--rule);border-radius:8px;padding:8px 10px}
+.fb-form textarea{resize:vertical;min-height:76px}
+.fb-form textarea:focus-visible,.fb-form input[type="text"]:focus-visible{outline:2px solid var(--blue);outline-offset:1px;border-color:var(--blue)}
+.fb-row{display:flex;gap:8px;flex-wrap:wrap}
+.fb-row input[type="text"]{flex:1 1 220px}
+.fb-row button{font:inherit;font-weight:600;padding:8px 18px;border-radius:999px;border:1px solid var(--blue);background:var(--blue);color:#fff;cursor:pointer}
+.fb-row button:disabled{opacity:.55;cursor:default}
+.fb-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.fb-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.fb-foot a{color:var(--blue)}
+.fb-status.ok{color:var(--green);font-weight:600}
+.fb-status.err{color:var(--red);font-weight:600}

@@ -3,6 +3,7 @@
 export const CHAPTERS = [
   {
     id: "next-five-years",
+    film: "../films/next-five-years/",
     n: 9,
     title: "Observability when agents do the reading",
     question: "Over the next five years agents will read more of your telemetry than people do. What happens to metrics, logs and traces, and what should an org running hundreds of teams build now versus later?",

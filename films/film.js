@@ -27,7 +27,11 @@ jaguar:'<svg viewBox="0 0 120 120"><path d="M18 90 Q0 84 6 64" fill="none" strok
     [/\bCo-sign/g, "Cosign"], [/\bS-BOM/g, "SBOM"], [/\bP stack\b/g, "pstack"], [/\bkube control\b/g, "kubectl"],
     [/\b[Cc]laude dot MD\b/g, "CLAUDE.md"], [/\b[Aa]gents dot MD\b/g, "AGENTS.md"], [/ dot MD\b/g, ".md"], [/\bIncident dot IO\b/g, "incident.io"],
     [/\bLite LLM\b/g, "LiteLLM"], [/\bCyclone DX\b/g, "CycloneDX"], [/\bmicro VM/g, "microVM"], [/\bIT Bench\b/g, "ITBench"],
-    [/\bSWE bench\b/g, "SWE-bench"], [/\bGPT four oh\b/g, "GPT-4o"], [/\bOpen Telemetry\b/g, "OpenTelemetry"]];
+    [/\bSWE bench\b/g, "SWE-bench"], [/\bGPT four oh\b/g, "GPT-4o"], [/\bOpen Telemetry\b/g, "OpenTelemetry"],
+    [/\bg R P C\b/g, "gRPC"], [/\bW 3 C\b/g, "W3C"], [/\bB 3\b/g, "B3"], [/\bProm Q L\b/g, "PromQL"],
+    [/\bOpen S L O\b/g, "OpenSLO"], [/\bl e\b/g, "le"], [/\be B P F\b/g, "eBPF"],
+    [/\bLog Q L\b/g, "LogQL"], [/\bGen A I\b/g, "GenAI"], [/\bS W E Ops Bench\b/g, "SWEOps-Bench"],
+    [/\bI T Bench\b/g, "ITBench"]];
   const readable = (s) => FIXES.reduce((x, [re, to]) => x.replace(re, to), s);
 
   function show(n) {
@@ -72,10 +76,80 @@ jaguar:'<svg viewBox="0 0 120 120"><path d="M18 90 Q0 84 6 64" fill="none" strok
   document.getElementById("f-next").addEventListener("click", () => start(Math.min(N - 1, i + 1)));
   document.getElementById("f-cc").addEventListener("click", (e) => { caption.hidden = !caption.hidden; e.currentTarget.setAttribute("aria-pressed", String(!caption.hidden)); });
   document.addEventListener("keydown", (e) => {
-    if (e.target.closest("button, a, input")) return;
+    if (e.target.closest("button, a, input, textarea, select")) return;
     if (e.key === " ") { e.preventDefault(); toggle(); }
     else if (e.key === "ArrowRight") start(Math.min(N - 1, i + 1));
     else if (e.key === "ArrowLeft") start(Math.max(0, i - 1));
   });
   show(0); stage.classList.add("paused"); label();
+
+  const wrap = document.querySelector(".film-wrap");
+  if (wrap) {
+    const loadedAt = Date.now();
+    const title = (document.querySelector(".film-wrap h1.page")?.textContent || document.title || "SRE Lab film").trim();
+    const page = location.pathname;
+    const issueHref = `https://github.com/rothsa/sre-lab/issues/new?title=${encodeURIComponent(`Feedback (film): ${title}`)}&body=${encodeURIComponent(`Page: https://lab.sallyroth.dev${page}\n\n`)}`;
+    const box = document.createElement("details");
+    box.className = "fb-box";
+    box.innerHTML = `<summary>Feedback on this film</summary>
+      <form class="fb-form">
+        <div class="fb-tags" role="radiogroup" aria-label="Feedback type">
+          <label><input type="radio" name="kind" value="helpful"><span>Helpful</span></label>
+          <label><input type="radio" name="kind" value="issue"><span>Error or gap</span></label>
+          <label><input type="radio" name="kind" value="suggestion"><span>Suggestion</span></label>
+        </div>
+        <textarea name="message" rows="3" maxlength="1000" required placeholder="What helped, what was unclear, or what looks wrong?"></textarea>
+        <div class="fb-row">
+          <input type="text" name="contact" maxlength="160" placeholder="Email or handle (optional, if you want a reply)">
+          <button type="submit">Send</button>
+        </div>
+        <input type="text" name="website" class="fb-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <div class="fb-foot">
+          <span class="fb-status" aria-live="polite"></span>
+          <a href="${issueHref}" target="_blank" rel="noopener">or open a GitHub issue</a>
+        </div>
+      </form>`;
+    wrap.appendChild(box);
+    const form = box.querySelector(".fb-form");
+    const status = box.querySelector(".fb-status");
+    const btn = box.querySelector("button[type=submit]");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const f = new FormData(form);
+      const message = String(f.get("message") || "").trim();
+      if (message.length < 3) {
+        status.className = "fb-status err";
+        status.textContent = "Please write a short note first.";
+        return;
+      }
+      btn.disabled = true;
+      status.className = "fb-status";
+      status.textContent = "Sending...";
+      try {
+        const res = await fetch("https://resume.sallyroth.dev/api/feedback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            page,
+            title: `${title} (film)`,
+            kind: String(f.get("kind") || "note"),
+            message,
+            contact: String(f.get("contact") || "").trim() || undefined,
+            website: String(f.get("website") || ""),
+            loadedAt,
+          }),
+        });
+        const resData = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(resData.error || "Could not send feedback.");
+        status.className = "fb-status ok";
+        status.textContent = "Sent. Thank you for the note.";
+        form.reset();
+      } catch (err) {
+        status.className = "fb-status err";
+        status.textContent = err.message || "Could not send feedback.";
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
 })();

@@ -1,3 +1,5 @@
+import { logger } from "./telemetry.js";
+
 // Status API, shared by the Pages Functions at /api/status and /private/api/status.
 
 const b64url = (s) => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(s.length / 4) * 4, "=")), (c) => c.charCodeAt(0));
@@ -39,7 +41,8 @@ export async function verifyAccess(req, env, fetchFn = fetch) {
     if (!ok) return null;
     const email = String(claims.email || "").toLowerCase();
     return email && email === owner.toLowerCase() ? email : null;
-  } catch {
+  } catch (err) {
+    logger.warn("access_jwt_verify_failed", { error: String(err) });
     return null;
   }
 }

@@ -3,6 +3,7 @@
 import { connect } from "cloudflare:sockets";
 import { allTargets } from "./targets.js";
 import { heartbeatCheck } from "./heartbeat.js";
+import { logger, withSpan } from "./telemetry.js";
 
 const CHECK_TIMEOUT_MS = 10_000;
 const SLOW_FACTOR = 3;          // latency this many times the recent median counts as unusual
@@ -12,22 +13,26 @@ const NOTIFY_MIN_CONFIDENCE = 0.8;
 
 export default {
   async scheduled(_event, env, ctx) {
-    ctx.waitUntil(runCycle(env));
+    ctx.waitUntil(withSpan("cron.down_or_me.cycle", { trigger: "scheduled" }, (span) => runCycle(env, span)));
   },
 
   // No public HTTP surface: the board's API is served by Pages Functions.
   async fetch() {
-    return new Response("Not found", { status: 404 });
+    return withSpan("http.worker.fallback", { route: "/" }, async (span) => {
+      span.setAttribute("http_status", 404);
+      return new Response("Not found", { status: 404 });
+    });
   },
 };
 
 // ---------- the check cycle ----------
 
-async function runCycle(env) {
+async function runCycle(env, span) {
   const TARGETS = allTargets(env);
   const now = Date.now();
   const results = await Promise.all(TARGETS.map((t) => checkTarget(t, env).catch((e) => ({ ok: false, status: "error", error: String(e).slice(0, 200) }))));
   const failingNow = results.filter((r) => r && !r.skipped && !r.ok).length;
+  span?.setAttributes({ targets_total: TARGETS.length, targets_failing: failingNow });
   await env.DB.batch(TARGETS.map((t, i) =>
     env.DB.prepare("INSERT INTO targets (id, name, kind, public, seen, position) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name, kind = excluded.kind, public = excluded.public, seen = excluded.seen, position = excluded.position")
       .bind(t.id, t.name, t.kind, t.public ? 1 : 0, now, i)));
@@ -273,7 +278,7 @@ async function askJev(env, ctx) {
       body: JSON.stringify(body),
     });
     if (!res.ok) {
-      console.error("Jev error", res.status, (await res.text()).slice(0, 300));
+      logger.error("jev_http_error", { status: res.status, body: (await res.text()).slice(0, 300) });
       return null;
     }
     const data = await res.json();
@@ -284,7 +289,7 @@ async function askJev(env, ctx) {
       model: data.model ?? null,
     };
   } catch (e) {
-    console.error("Jev call failed", String(e));
+    logger.error("jev_call_failed", { error: String(e) });
     return null;
   }
 }
@@ -307,10 +312,10 @@ async function notify(env, t, r, v) {
       headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({ from: `Down or Me <${env.NOTIFY_FROM}>`, to: [env.NOTIFY_TO], subject: `[Down or Me] ${t.name}: ${cause}`, text }),
     });
-    if (!res.ok) console.error("notify failed", res.status, (await res.text()).slice(0, 200));
+    if (!res.ok) logger.error("notify_http_error", { target: t.id, status: res.status, body: (await res.text()).slice(0, 200) });
     return res.ok;
   } catch (e) {
-    console.error("notify failed", String(e));
+    logger.error("notify_failed", { target: t.id, error: String(e) });
     return false;
   }
 }

@@ -144,6 +144,79 @@ function codeHTML(ch) {
   return `<div class="codes" style="--cols:${ch.code.length}">${cols}</div>${ch.codeNote ? `<p class="code-note">${fmt(ch.codeNote)}</p>` : ""}`;
 }
 
+const FEEDBACK_URL = "https://resume.sallyroth.dev/api/feedback";
+const PAGE_LOADED_AT = Date.now();
+
+function feedbackHTML(ch) {
+  const page = `${location.pathname}#${ch.id}`;
+  const issueHref = `https://github.com/rothsa/sre-lab/issues/new?title=${encodeURIComponent(`Feedback: ${ch.title}`)}&body=${encodeURIComponent(`Page: https://lab.sallyroth.dev${page}\n\n`)}`;
+  return `<details class="fb-box">
+    <summary>Feedback on this chapter</summary>
+    <form class="fb-form" data-fb-id="${esc(ch.id)}" data-fb-title="${esc(ch.title)}">
+      <div class="fb-tags" role="radiogroup" aria-label="Feedback type">
+        <label><input type="radio" name="kind" value="helpful"><span>Helpful</span></label>
+        <label><input type="radio" name="kind" value="issue"><span>Error or gap</span></label>
+        <label><input type="radio" name="kind" value="suggestion"><span>Suggestion</span></label>
+      </div>
+      <textarea name="message" rows="3" maxlength="1000" required placeholder="What helped, what was unclear, or what looks wrong?"></textarea>
+      <div class="fb-row">
+        <input type="text" name="contact" maxlength="160" placeholder="Email or handle (optional, if you want a reply)">
+        <button type="submit">Send</button>
+      </div>
+      <input type="text" name="website" class="fb-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="fb-foot">
+        <span class="fb-status" aria-live="polite"></span>
+        <a href="${esc(issueHref)}" target="_blank" rel="noopener">or open a GitHub issue</a>
+      </div>
+    </form>
+  </details>`;
+}
+
+function mountFeedback(sec, ch) {
+  const form = sec.querySelector(".fb-form");
+  if (!form) return;
+  const status = form.querySelector(".fb-status");
+  const btn = form.querySelector("button[type=submit]");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const f = new FormData(form);
+    const message = String(f.get("message") || "").trim();
+    if (message.length < 3) {
+      status.className = "fb-status err";
+      status.textContent = "Please write a short note first.";
+      return;
+    }
+    btn.disabled = true;
+    status.className = "fb-status";
+    status.textContent = "Sending...";
+    try {
+      const res = await fetch(FEEDBACK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          page: `${location.pathname}#${ch.id}`,
+          title: ch.title,
+          kind: String(f.get("kind") || "note"),
+          message,
+          contact: String(f.get("contact") || "").trim() || undefined,
+          website: String(f.get("website") || ""),
+          loadedAt: PAGE_LOADED_AT,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Could not send feedback.");
+      status.className = "fb-status ok";
+      status.textContent = "Sent. Thank you for the note.";
+      form.reset();
+    } catch (err) {
+      status.className = "fb-status err";
+      status.textContent = err.message || "Could not send feedback.";
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}
+
 function chapterHTML(ch) {
   return `<section class="chapter" id="${ch.id}" aria-labelledby="h-${ch.id}">
     <h2 id="h-${ch.id}"><span class="n">${ch.n}.</span>${esc(ch.title)}</h2>
@@ -169,6 +242,7 @@ function chapterHTML(ch) {
       <div class="aid"><h3>Questions to think through</h3>${ch.quiz.map((x) => `<details><summary>${fmt(x.q)}</summary><p>${fmt(x.a)}</p></details>`).join("")}</div>
       <div class="aid more" data-more="${ch.id}"></div>
     </div>
+    ${feedbackHTML(ch)}
   </section>`;
 }
 
@@ -202,6 +276,7 @@ function mount(ch) {
     if (e.key === "ArrowLeft") { e.preventDefault(); go(i - 1); }
   });
   go(i);
+  mountFeedback(sec, ch);
 }
 
 

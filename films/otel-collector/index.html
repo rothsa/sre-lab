@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Telemetry pipeline as a platform: the film</title>
+<meta name="description" content="A short narrated film on running OpenTelemetry Collectors as a tier-0 platform service: processor order, queue loss, SLOs and OpAMP.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.fp{position:absolute;border:2.5px solid var(--rule);background:var(--panel);border-radius:30px 10px 30px 10px;box-shadow:0 12px 32px rgba(20,70,35,.10);padding:26px 32px}
+.fp h2{margin:0 0 16px;font:800 30px "Archivo";color:var(--fg)}
+.fb{display:inline-flex;align-items:center;gap:12px;border:2.5px solid var(--blue);background:#dff0d3;border-radius:999px;padding:10px 24px;font:700 24px "IBM Plex Sans";color:var(--fg)}
+.fb.green{border-color:var(--green);background:#e9f6dc;color:var(--blue)}
+.fb.amber{border-color:var(--amber);background:#fbefd0;color:#7a5308}
+.fb.red{border-color:var(--red);background:#fbe4d9;color:var(--red)}
+.fn{width:38px;height:38px;border-radius:50%;background:var(--blue);color:#fff;font:800 21px "Archivo";display:inline-flex;align-items:center;justify-content:center;flex:none}
+.fc{background:#0d2016;color:#e3f0de;border-radius:22px 8px 22px 8px;padding:22px 26px;font:400 22px/1.6 "IBM Plex Mono";box-shadow:0 14px 34px rgba(20,70,35,.18)}
+.fc .k{color:#8fdc7a}.fc .v{color:#f5c26b}.fc .e{color:#ff8a5c}.fc .m{color:#9fb8a2}
+.fm{position:relative;width:100%;height:44px;border-radius:22px;background:#d6e6c8;overflow:hidden;margin:14px 0}
+.fmf{height:100%;width:0;border-radius:22px;background:var(--green)}
+.scene.on .fmf{animation:f-grow 1.3s cubic-bezier(.2,.7,.2,1) var(--d,0s) forwards}
+@keyframes f-grow{to{width:var(--w)}}
+.fstep{border:2.5px solid var(--rule);background:#fff;border-radius:22px 8px 22px 8px;padding:18px 22px;font:700 24px "IBM Plex Sans"}
+.fstep small{display:block;font:400 19px "IBM Plex Mono";color:var(--muted);margin-top:6px}
+.fstep.blue{border-color:var(--blue);background:#dff0d3;color:var(--blue)}
+.fstep.green{border-color:var(--green);background:#e9f6dc;color:var(--blue)}
+.fstep.amber{border-color:var(--amber);background:#fbefd0;color:#7a5308}
+.fstep.red{border-color:var(--red);background:#fbe4d9;color:var(--red)}
+.fband{position:absolute;left:110px;top:760px;width:1700px;height:120px;border:3px dashed var(--blue);border-radius:30px 10px 30px 10px;background:rgba(255,255,255,.55);display:flex;align-items:center;justify-content:space-between;padding:0 36px}
+.fgrid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.fgrid2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.fgrid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.fline-v{position:absolute;top:-8px;bottom:-8px;width:4px;background:var(--red);z-index:3}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/coffee</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../observability/#otel-collector">Observability</a> · film · recorded 22 Nov 2026</div>
+  <h1 class="page">Telemetry pipeline as a platform</h1>
+  <div id="viewport">
+    <div id="stage">
+
+<section class="scene">
+  <div class="kick">Observability · chapter 2</div>
+  <h1>Telemetry pipeline as a platform</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:210px;--d:4.21s">
+    <h2>Shared OpenTelemetry Collector pipeline</h2>
+    <div class="fgrid4" style="margin-top:16px">
+      <div class="fstep blue">Services<small>spans · metrics · logs</small></div>
+      <div class="fstep">Node Agent<small>DaemonSet</small></div>
+      <div class="fstep green">Gateway tier<small>enrich · redact · route</small></div>
+      <div class="fstep">Backends<small>stores &amp; samplers</small></div>
+    </div>
+  </div>
+  <div class="fp a" style="left:110px;top:545px;width:1700px;height:310px;--d:11.95s;border-color:var(--blue)">
+    <h2 class="t-blue">Tier-0 platform service requirements</h2>
+    <div class="fgrid3" style="margin-top:26px">
+      <div class="fstep green a" style="--d:1.96s"><span class="fn">1</span> Pipeline SLOs<small>otelcol_* delivery &amp; drops</small></div>
+      <div class="fstep amber a" style="--d:15.56s"><span class="fn" style="background:var(--amber)">2</span> Dedicated on-call<small>platform team holds pager</small></div>
+      <div class="fstep blue a" style="--d:18.6s"><span class="fn">3</span> Fleet config control<small>OpAMP or GitOps rollout</small></div>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 2 of 9</div>
+  <h1>Agent on the node, gateway per cluster</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:560px;--d:.6s">
+    <h2>Node (DaemonSet)</h2>
+    <div class="fstep blue a" style="--d:1.0s;margin-top:22px">Application service<small>OTel SDK exports OTLP</small></div>
+    <div style="display:flex;gap:14px;margin:22px 0">
+      <span class="fb green a" style="--d:6.61s">gRPC :4317</span>
+      <span class="fb amber a" style="--d:10.24s">HTTP :4318</span>
+    </div>
+    <div class="fstep green a" style="--d:3.73s">Node Agent Collector<small>attaches host metadata, buffers locally</small></div>
+  </div>
+  <svg>
+    <path class="line a" style="--d:14.16s;stroke:var(--blue);stroke-width:5" d="M930 570 H986"/>
+    <path class="a" style="--d:14.16s;fill:var(--blue)" d="M972 556 L994 570 L972 584 Z"/>
+  </svg>
+  <div class="fp a" style="left:996px;top:290px;width:814px;height:560px;--d:14.94s;border-color:var(--blue)">
+    <h2>Gateway Collector</h2>
+    <div style="font:500 24px 'IBM Plex Sans';color:var(--muted);margin-bottom:24px">Usually one shared tier per cluster or region.</div>
+    <div class="fstep a" style="--d:17.32s">Central policy enforcement<small>redaction · routing · tail sampling</small></div>
+    <div class="fstep green a" style="--d:18.11s;margin-top:20px">Single upgrade &amp; quota point<small>one config governs every team</small></div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 3 of 9</div>
+  <h1>Put memory_limiter first</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:230px;--d:.6s">
+    <h2>Gateway processor order</h2>
+    <div class="fgrid4" style="margin-top:18px">
+      <div class="fstep red a" style="--d:5.84s">1. memory_limiter<small>always first in chain</small></div>
+      <div class="fstep">2. k8s_attributes<small>pod &amp; namespace</small></div>
+      <div class="fstep">3. attributes / OTTL<small>redact &amp; strip</small></div>
+      <div class="fstep">4. exporter queue<small>batch &amp; ship</small></div>
+    </div>
+  </div>
+  <div class="fp a" style="left:110px;top:565px;width:820px;height:300px;--d:8.84s;border-color:var(--amber)">
+    <h2>Over soft limit → backpressure</h2>
+    <div style="position:relative;margin-top:24px">
+      <div class="fline-v" style="left:72%"></div>
+      <div class="fm"><div class="fmf" style="--w:85%;--d:8.84s;background:var(--amber)"></div></div>
+    </div>
+    <div class="fb amber a" style="--d:11.7s;margin-top:20px">Refuses with retryable error → sender backs off</div>
+  </div>
+  <div class="fp a" style="left:990px;top:565px;width:820px;height:300px;--d:11.7s;border-color:var(--red)">
+    <h2 class="t-red">No retry = silent loss</h2>
+    <div style="font:500 25px 'IBM Plex Sans';color:var(--fg);margin-top:16px">A sender that ignores retryable refusals drops those spans, metrics, or logs immediately.</div>
+    <div class="fb red a" style="--d:16.07s;margin-top:26px">Verify retries in every SDK &amp; agent</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 4 of 9</div>
+  <h1>Enrich, redact once, and drop batch</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:570px;--d:.6s">
+    <h2>Where org policy lives</h2>
+    <div class="fstep green a" style="--d:3.02s;margin-top:16px">k8s_attributes<small>runs before batching while context is intact</small></div>
+    <div class="fstep blue a" style="--d:7.58s;margin-top:20px">attributes / transform (OTTL)<small>strip PII and high-cardinality junk once for every team</small></div>
+    <div class="fc a" style="--d:13.94s;margin-top:24px;font-size:20px">
+      <div><span class="k">actions</span>:</div>
+      <div>&nbsp;&nbsp;- &#123; <span class="k">key</span>: <span class="v">user.email</span>, <span class="k">action</span>: <span class="e">delete</span> &#125;</div>
+    </div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:570px;--d:4.61s;border-color:var(--amber)">
+    <h2>Migration note (Nov 2026)</h2>
+    <div class="fstep amber a" style="--d:20.84s;margin-top:16px">Standalone batch processor deprecated<small>batching moves into each exporter's sending_queue</small></div>
+    <div class="fc a" style="--d:24.71s;margin-top:24px;font-size:21px">
+      <div><span class="k">sending_queue</span>:</div>
+      <div>&nbsp;&nbsp;<span class="k">batch</span>:</div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">enabled</span>: <span class="v">true</span></div>
+    </div>
+    <div class="muted a" style="--d:25.23s;font:600 22px 'IBM Plex Sans';margin-top:22px">Resize queue_size: the queue now sits before batching.</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 5 of 9</div>
+  <h1>Fan-out and trace-ID load balancing</h1>
+  <div class="fp a" style="left:110px;top:290px;width:430px;height:560px;--d:.6s">
+    <h2>Gateway fan-out</h2>
+    <div class="fstep blue" style="margin-top:26px">Pipeline output<small>each exporter gets a full copy</small></div>
+    <div class="fstep green a" style="--d:5.54s;margin-top:40px">load_balancing<small>routing_key: traceID</small></div>
+  </div>
+  <svg>
+    <path class="line a" style="--d:5.54s;stroke:var(--blue);stroke-width:4" d="M540 500 H640"/>
+    <path class="line a" style="--d:12.1s;stroke:var(--amber);stroke-width:4" d="M540 660 C600 660 600 420 650 420"/>
+    <path class="line a" style="--d:12.1s;stroke:var(--amber);stroke-width:4" d="M540 660 C600 660 600 660 650 660"/>
+  </svg>
+  <div class="fp a" style="left:650px;top:290px;width:580px;height:560px;--d:12.1s;border-color:var(--amber)">
+    <h2>Tier 2 · Tail samplers</h2>
+    <div class="fstep amber a" style="--d:9.95s;margin-top:20px">Sampler A<small>all spans of trace X</small></div>
+    <div class="fstep amber a" style="--d:11.65s;margin-top:24px">Sampler B<small>all spans of trace Y</small></div>
+    <div class="fb red a" style="--d:16.12s;margin-top:46px;font-size:21px">Rescaling shifts routes mid-flight</div>
+  </div>
+  <div class="fp a" style="left:1280px;top:290px;width:530px;height:560px;--d:13.84s">
+    <h2>Watch backend count</h2>
+    <div class="fc" style="margin-top:26px;font-size:20px"><span class="k">otelcol_loadbalancer_</span><br><span class="v">num_backends</span></div>
+    <div style="font:500 23px 'IBM Plex Sans';color:var(--muted);margin-top:28px">Avoid aggressive autoscaling on tier-2 samplers or in-flight traces split across pods.</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 6 of 9</div>
+  <h1>Where the pipeline loses data</h1>
+  <div class="fgrid3" style="position:absolute;left:110px;top:310px;width:1700px">
+    <div class="fp a" style="position:static;height:490px;--d:3.1s;border-color:var(--red)">
+      <h2 class="t-red">1. Pod restarts</h2>
+      <div class="fstep red" style="margin-top:24px">In-memory queues vanish<small>everything buffered dies with the process</small></div>
+      <div class="muted" style="font:500 22px 'IBM Plex Sans';margin-top:28px">Use persistent disk queues when durability beats raw speed.</div>
+    </div>
+    <div class="fp a" style="position:static;height:490px;--d:6.12s;border-color:var(--amber)">
+      <h2 style="color:#9a6a0c">2. Full queues</h2>
+      <div class="fstep amber" style="margin-top:24px">New batches dropped<small>enqueue_failed rises immediately</small></div>
+      <div class="muted" style="font:500 22px 'IBM Plex Sans';margin-top:28px">Happens when ingest bursts outrun exporter throughput.</div>
+    </div>
+    <div class="fp a" style="position:static;height:490px;--d:10.11s;border-color:var(--blue)">
+      <h2 class="t-blue">3. Long outages</h2>
+      <div class="fstep blue" style="margin-top:24px">5-minute retry window<small>default max_elapsed_time expires old batches</small></div>
+      <div class="muted" style="font:500 22px 'IBM Plex Sans';margin-top:28px">Outages past 5 minutes drop buffered data unless extended.</div>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 7 of 9</div>
+  <h1>Give the pipeline its own SLOs</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s">
+    <h2>Three internal metrics, per signal and cluster</h2>
+    <div class="fgrid3" style="margin-top:28px">
+      <div class="a" style="--d:8.71s">
+        <div class="fb green" style="margin-bottom:18px">1. Delivery ratio</div>
+        <div class="fc" style="font-size:19px"><span class="k">otelcol_exporter_sent_*</span><br><span class="m">÷</span><br><span class="v">otelcol_receiver_accepted_*</span></div>
+      </div>
+      <div class="a" style="--d:10.45s">
+        <div class="fb amber" style="margin-bottom:18px">2. Backpressure</div>
+        <div class="fc" style="font-size:19px"><span class="v">otelcol_receiver_refused_*</span><br><br><span class="m"># memory_limiter pushing back</span></div>
+      </div>
+      <div class="a" style="--d:12.54s">
+        <div class="fb red" style="margin-bottom:18px">3. Pre-queue drops</div>
+        <div class="fc" style="font-size:19px"><span class="e">otelcol_exporter_</span><br><span class="e">enqueue_failed_*</span><br><br><span class="m"># target: 0</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 8 of 9</div>
+  <h1>Scale at 60–70% queue, check backend first</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:560px;--d:.6s">
+    <h2>Scale before drops start</h2>
+    <div style="position:relative;margin-top:34px">
+      <div class="fline-v" style="left:65%;background:var(--amber)"></div>
+      <div style="position:absolute;left:65%;top:-34px;transform:translateX(-50%);font:700 20px 'IBM Plex Mono';color:#9a6a0c">60–70% scale-out</div>
+      <div class="fm" style="height:54px;border-radius:27px"><div class="fmf" style="--w:68%;--d:6.45s;background:var(--amber)"></div></div>
+    </div>
+    <div class="fstep blue a" style="--d:16.74s;margin-top:46px">limit_mib &lt; container memory limit<small>leave headroom so OOM killer doesn't win</small></div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:560px;--d:13.65s;border-color:var(--red)">
+    <h2 class="t-red">Queues still full after scaling?</h2>
+    <div class="fstep red" style="margin-top:24px">The backend is the bottleneck<small>more Collectors just hammer a slow store harder</small></div>
+    <div style="font:500 24px 'IBM Plex Sans';color:var(--muted);margin-top:30px">Check backend ingest latency, 429 rate limits, and downstream availability before adding replicas.</div>
+  </div>
+</section>
+
+<section class="scene" style="--egg:11.55s">
+  <div class="kick">Step 9 of 9</div>
+  <h1>Own the pager, roll config as a fleet</h1>
+  <div class="fgrid3" style="position:absolute;left:110px;top:300px;width:1700px">
+    <div class="fp a" style="position:static;height:440px;--d:5.59s;border-color:var(--blue)">
+      <h2 class="t-blue">Platform carries pager</h2>
+      <div style="font:500 24px 'IBM Plex Sans';color:var(--muted);margin-top:16px">Paged on pipeline SLOs: sustained refusals, enqueue failures, or delivery drops.</div>
+    </div>
+    <div class="fp a" style="position:static;height:440px;--d:7.36s;border-color:var(--green)">
+      <h2 class="t-green">Product status panel</h2>
+      <div style="font:500 24px 'IBM Plex Sans';color:var(--muted);margin-top:16px">Shows product teams immediately when missing telemetry is the pipeline's fault.</div>
+    </div>
+    <div class="fp a" style="position:static;height:440px;--d:12.05s;border-color:var(--amber)">
+      <h2 style="color:#9a6a0c">OpAMP fleet control</h2>
+      <div style="font:500 24px 'IBM Plex Sans';color:var(--muted);margin-top:16px">Push redaction rules, track agent versions, and stage rollouts across thousands of nodes.</div>
+    </div>
+  </div>
+  <div class="critter"><div id="critter"></div></div>
+</section>
+
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 2.7 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../observability/#otel-collector">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Telemetry pipeline as a platform. Once every team's spans, metrics, and logs flow through shared Open Telemetry Collectors, the pipeline stops being plumbing and becomes a tier-zero service. It needs its own S L Os, an on-call team carrying its pager, and fleet-wide config control.", "Every application exports O T L P to a node agent Collector over g R P C on port 4317 or H T T P on port 4318. The agent attaches host metadata and forwards to a gateway Collector, usually deployed per cluster or region.", "Inside the gateway, processor order decides whether you keep data under load. Put memory limiter first. When memory crosses its soft limit, it refuses incoming data with a retryable error so senders back off. Any sender that doesn't retry loses those events.", "Next come enrichment and policy: Kubernetes attributes before batching so pod context stays intact, then redaction in the attributes or transform processor. This is where org-wide rules live, stripping personal data and high-cardinality junk once for every team. Note that the standalone batch processor was deprecated in November 2026 as batching moves into exporter queues.", "Every exporter receives its own copy of the stream. For tail sampling, put a load-balancing exporter in front, keyed on trace ID, so every span of a request lands on the same tier-two sampler. Watch backend count changes closely, because rescaling shifts trace routes mid-flight.", "Telemetry is lost at the queues. In-memory queues vanish when a pod restarts, full queues drop new data, and a backend outage longer than the default five-minute retry window expires buffered batches.", "So measure the pipeline from its own internal metrics, per signal and cluster. Compare exporter sent against receiver accepted for delivery. Track receiver refused for backpressure, and watch enqueue failed for drops before the queue even fills.", "Scale before the pipeline drops a single event. Open Telemetry recommends scaling out around sixty to seventy percent queue usage. If queues stay full as you add Collectors, stop scaling Collectors and check the backend. And always set memory limiter below the container's memory limit.", "Finally, run it like production infrastructure. The platform team carries the pipeline pager, product teams get a status panel showing when missing data is the pipeline's fault, and tools like OpAMP roll config and upgrades across thousands of agents instead of blind deploys."], "seconds": [19.49, 18.46, 17.04, 25.63, 18.43, 13.18, 15.55, 18.1, 17.04]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

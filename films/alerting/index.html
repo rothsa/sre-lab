@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Paging as an org control loop: the film</title>
+<meta name="description" content="Multi-window SLO burn rates, HA Alertmanager deduplication, routing and inhibition, pager budgets, and org responses when a team goes over.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.fp{position:absolute;border:2.5px solid var(--rule);background:var(--panel);border-radius:30px 10px 30px 10px;box-shadow:0 12px 32px rgba(20,70,35,.10);padding:26px 32px}
+.fp h2{margin:0 0 16px;font:800 30px "Archivo";color:var(--fg)}
+.fb{display:inline-flex;align-items:center;gap:12px;border:2.5px solid var(--blue);background:#dff0d3;border-radius:999px;padding:10px 24px;font:700 24px "IBM Plex Sans";color:var(--fg)}
+.fb.green{border-color:var(--green);background:#e9f6dc;color:var(--blue)}
+.fb.amber{border-color:var(--amber);background:#fbefd0;color:#7a5308}
+.fb.red{border-color:var(--red);background:#fbe4d9;color:var(--red)}
+.fn{width:38px;height:38px;border-radius:50%;background:var(--blue);color:#fff;font:800 21px "Archivo";display:inline-flex;align-items:center;justify-content:center;flex:none}
+.fc{background:#0d2016;color:#e3f0de;border-radius:22px 8px 22px 8px;padding:22px 26px;font:400 22px/1.6 "IBM Plex Mono";box-shadow:0 14px 34px rgba(20,70,35,.18)}
+.fc .k{color:#8fdc7a}.fc .v{color:#f5c26b}.fc .e{color:#ff8a5c}.fc .m{color:#9fb8a2}
+.fm{position:relative;width:100%;height:44px;border-radius:22px;background:#d6e6c8;overflow:hidden;margin:14px 0}
+.fmf{height:100%;width:0;border-radius:22px;background:var(--green)}
+.scene.on .fmf{animation:f-grow 1.3s cubic-bezier(.2,.7,.2,1) var(--d,0s) forwards}
+@keyframes f-grow{to{width:var(--w)}}
+.fstep{border:2.5px solid var(--rule);background:#fff;border-radius:22px 8px 22px 8px;padding:18px 22px;font:700 24px "IBM Plex Sans"}
+.fstep small{display:block;font:400 19px "IBM Plex Mono";color:var(--muted);margin-top:6px}
+.fstep.blue{border-color:var(--blue);background:#dff0d3;color:var(--blue)}
+.fstep.green{border-color:var(--green);background:#e9f6dc;color:var(--blue)}
+.fstep.amber{border-color:var(--amber);background:#fbefd0;color:#7a5308}
+.fstep.red{border-color:var(--red);background:#fbe4d9;color:var(--red)}
+.fgrid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.fgrid2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.fgrid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/coffee</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../observability/#alerting">Observability</a> · film · recorded 22 Nov 2026</div>
+  <h1 class="page">Paging as an org control loop</h1>
+  <div id="viewport">
+    <div id="stage">
+
+<section class="scene">
+  <div class="kick">Observability · chapter 8</div>
+  <h1>Paging as an org control loop</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:240px;--d:.6s">
+    <h2>Top loop: one failure → one page to the right owner</h2>
+    <div class="fgrid4" style="margin-top:18px">
+      <div class="fstep blue">SLO burn rules<small>multi-window</small></div>
+      <div class="fstep green">HA Alertmanager<small>gossip + dedup</small></div>
+      <div class="fstep amber">Route &amp; inhibit<small>team + severity</small></div>
+      <div class="fstep">One page<small>human owner</small></div>
+    </div>
+  </div>
+  <div class="fp a" style="left:110px;top:575px;width:1700px;height:275px;--d:11.44s;border-color:var(--blue)">
+    <h2 class="t-blue">Bottom loop: measure paging load like a budget</h2>
+    <div class="fgrid3" style="margin-top:20px">
+      <div class="fstep green a" style="--d:8.84s"><span class="fn">1</span> Record every page<small>team · alert · acted on?</small></div>
+      <div class="fstep amber a" style="--d:11.44s"><span class="fn" style="background:var(--amber)">2</span> Weekly review<small>21-day trailing average</small></div>
+      <div class="fstep red a" style="--d:15.29s"><span class="fn" style="background:var(--red)">3</span> Fixed response<small>fix, demote, or freeze</small></div>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 2 of 9</div>
+  <h1>Page on multi-window SLO burn rates</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s">
+    <h2>Symptoms users feel, not noisy CPU spikes</h2>
+    <div class="fgrid3" style="margin-top:24px">
+      <div class="fstep red a" style="--d:8.75s">Fast burn · Page<small>14.4× over 1h AND 5m</small></div>
+      <div class="fstep amber a" style="--d:11.72s">Medium burn · Page<small>6× over 6h AND 30m</small></div>
+      <div class="fstep blue a" style="--d:15.26s">Slow burn · Ticket<small>1× over 3d AND 6h</small></div>
+    </div>
+    <div class="fgrid2" style="margin-top:34px">
+      <div class="fstep green a" style="--d:9.74s">Long window proves impact<small>enough error budget burned to matter</small></div>
+      <div class="fstep green a" style="--d:16.16s">Short window resets fast<small>clears within minutes once traffic recovers</small></div>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 3 of 9</div>
+  <h1>Send every alert to every Alertmanager</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:310px;--d:.6s;border-color:var(--blue)">
+    <h2>High-availability mesh: never put an LB in the middle</h2>
+    <div class="fgrid3" style="margin-top:22px">
+      <div class="fstep blue a" style="--d:2.5s">Prometheus A &amp; B<small>identical rules, send to all AMs</small></div>
+      <div class="fstep green a" style="--d:2.5s">alert_relabel_configs<small>drop replica label → 1 alert</small></div>
+      <div class="fstep amber a" style="--d:15.68s">Alertmanager gossip<small>shared silences &amp; notification log</small></div>
+    </div>
+  </div>
+  <div class="fp a" style="left:110px;top:640px;width:1700px;height:210px;--d:13.53s">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:24px">
+      <div style="font:600 25px 'IBM Plex Sans';color:var(--fg)">Two Prometheus servers fire the same alert → Alertmanagers deduplicate → <b class="t-blue">one page fires</b>.</div>
+      <span class="fb red">No LB in front of AM</span>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 4 of 9</div>
+  <h1>Enforce team and severity labels in CI</h1>
+  <div class="fp a" style="left:110px;top:290px;width:860px;height:560px;--d:.6s;border-color:var(--blue)">
+    <h2 class="t-blue">Alertmanager route tree</h2>
+    <div class="fc" style="font-size:21px;line-height:1.65">
+      <div><span class="k">route</span>:</div>
+      <div>&nbsp;&nbsp;<span class="k">receiver</span>: <span class="e">default-triage</span></div>
+      <div>&nbsp;&nbsp;<span class="k">routes</span>:</div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;- <span class="k">matchers</span>: [<span class="v">'team="payments"'</span>, <span class="v">'severity="page"'</span>]</div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">receiver</span>: <span class="v">payments-pager</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;- <span class="k">matchers</span>: [<span class="v">'severity="ticket"'</span>]</div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">receiver</span>: <span class="v">ticket-queue</span></div>
+    </div>
+  </div>
+  <div class="fp a" style="left:1020px;top:290px;width:790px;height:560px;--d:10.39s;border-color:var(--amber)">
+    <h2 class="t-amber">Guard against orphan alerts</h2>
+    <div class="fstep green a" style="--d:4.17s;margin-top:20px">CI rule lint<small>reject any rule missing team, severity, or cluster</small></div>
+    <div class="fstep amber a" style="--d:13.55s;margin-top:22px">Owned default receiver<small>weekly audit catches deleted or renamed teams</small></div>
+    <div class="fb green a" style="--d:14.34s;margin-top:28px">Target: 0 unowned alerts</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 5 of 9</div>
+  <h1>Group and inhibit to quiet alert storms</h1>
+  <div class="fp a" style="left:110px;top:290px;width:780px;height:560px;--d:.6s;border-color:var(--red)">
+    <h2 class="t-red">Without inhibition</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px">
+      <div class="fstep red" style="padding:12px;font-size:18px">ClusterDown</div>
+      <div class="fstep red" style="padding:12px;font-size:18px">checkout 5xx</div>
+      <div class="fstep red" style="padding:12px;font-size:18px">payments 5xx</div>
+      <div class="fstep red" style="padding:12px;font-size:18px">orders 5xx</div>
+      <div class="fstep red" style="padding:12px;font-size:18px">auth 5xx</div>
+      <div class="fstep red" style="padding:12px;font-size:18px">+ 45 more...</div>
+    </div>
+    <div class="fb red a" style="--d:9.03s;margin-top:34px">50 pages hit on-call at once</div>
+  </div>
+  <div class="fp a" style="left:940px;top:290px;width:870px;height:560px;--d:1.29s;border-color:var(--green)">
+    <h2 class="t-blue">With group_by + inhibit_rules</h2>
+    <div class="fstep green a" style="--d:7.71s;margin-top:16px">Source: ClusterDown (cluster="eu-1")<small>mutes target severity="page" where equal: [cluster]</small></div>
+    <div class="fstep blue a" style="--d:14.21s;margin-top:22px">1 focused page delivered<small>alertname!="ClusterDown" prevents self-muting</small></div>
+    <div class="fb green a" style="--d:14.95s;margin-top:28px">Silences handle planned maintenance cleanly</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 6 of 9</div>
+  <h1>Log every page and test the path</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:280px;--d:.6s">
+    <h2>Every page appends to the org page log</h2>
+    <div class="fgrid4" style="margin-top:22px">
+      <div class="fstep blue a" style="--d:7.04s">team<small>payments</small></div>
+      <div class="fstep a" style="--d:7.88s">alert<small>CheckoutBurn</small></div>
+      <div class="fstep a" style="--d:8.84s">timestamp<small>03:14 UTC</small></div>
+      <div class="fstep green a" style="--d:11.2s">acted_on?<small>yes / no-op</small></div>
+    </div>
+  </div>
+  <div class="fp a" style="left:110px;top:610px;width:1700px;height:240px;--d:12.64s;border-color:var(--green)">
+    <h2 class="t-blue">Dead-man's switch: scheduled synthetic page</h2>
+    <div style="font:500 25px 'IBM Plex Sans';color:var(--fg)">Fires end-to-end through Prometheus → Alertmanager → pager receiver on a schedule so a broken alert pipeline never goes unnoticed.</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 7 of 9</div>
+  <h1>Track three fleet paging health numbers</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s">
+    <h2>Weekly org scorecard per team (Google SRE workbook)</h2>
+    <div class="fgrid3" style="margin-top:30px">
+      <div class="fstep blue a" style="--d:4.09s;padding:26px">
+        <div style="font:900 62px 'Archivo';color:var(--blue)">&le; 2</div>
+        Incidents / 12h shift<small>median 0 · 21-day trailing avg</small>
+      </div>
+      <div class="fstep green a" style="--d:12.93s">
+        <div style="font:900 62px 'Archivo';color:var(--green)">~100%</div>
+        Actionable page rate<small>one alert per real incident</small>
+      </div>
+      <div class="fstep amber a" style="--d:14.6s">
+        <div style="font:900 62px 'Archivo';color:#9a6a0c">0</div>
+        Unowned alerts<small>hitting default-triage receiver</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 8 of 9</div>
+  <h1>Delete noise; keep SLO thresholds</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:560px;--d:.6s;border-color:var(--green)">
+    <h2 class="t-blue">Healthy alert hygiene</h2>
+    <div class="fstep green a" style="--d:5.25s;margin-top:18px">Closed with no action?<small>delete it, automate the fix, or demote to ticket</small></div>
+    <div class="fstep blue a" style="--d:10.95s;margin-top:22px">One-week burn-in<small>new alerts run non-paging before earning pager rights</small></div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:560px;--d:15.38s;border-color:var(--red)">
+    <h2 class="t-red">The anti-pattern</h2>
+    <div class="fstep red a" style="--d:16.68s;margin-top:18px">Raising SLO burn thresholds<small>hides real user pain just to make pager charts green</small></div>
+    <div style="font:500 24px 'IBM Plex Sans';color:var(--fg);margin-top:28px">Fix the underlying reliability bug, or formally renegotiate the SLO with product owners.</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 9 of 9</div>
+  <h1>Over budget gets a fixed response</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:300px;--d:.6s;border-color:var(--amber)">
+    <h2 class="t-amber">When a team stays over 2 pages / shift</h2>
+    <div class="fgrid3" style="margin-top:22px">
+      <div class="fstep amber a" style="--d:4.99s"><span class="fn" style="background:var(--amber)">1</span> Audit top pagers<small>cut or demote noisy alerts</small></div>
+      <div class="fstep red a" style="--d:7.95s"><span class="fn" style="background:var(--red)">2</span> Reliability first<small>bugs ahead of features, up to freeze</small></div>
+      <div class="fstep blue a" style="--d:8.93s"><span class="fn">3</span> Loaned SRE<small>quarterly goal &lt; 2 pages / shift</small></div>
+    </div>
+  </div>
+  <div class="fp a" style="left:110px;top:630px;width:1700px;height:190px;--d:16.16s;border-color:var(--blue)">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:24px">
+      <div style="font:600 25px 'IBM Plex Sans';color:var(--fg)">Keep investigation agents <b class="t-blue">read-only on Alertmanager</b>: a silence is a write that can hide the next real outage.</div>
+      <span class="fb">Read-only AI</span>
+    </div>
+  </div>
+  <div class="critter"><div id="critter"></div></div>
+</section>
+
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 3 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../observability/#alerting">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Paging as an org control loop. Hundreds of teams carry their own pagers. How does one failure turn into one actionable page for the right owner, which fleet numbers tell you paging is healthy, and what happens when a team blows past its pager budget?", "Page on symptoms users actually feel, not noisy infrastructure thresholds. Multi-window S L O burn-rate alerts check a long window to confirm real budget spend and a short window to confirm it is still burning, so pages reset within minutes once the outage ends.", "Both Prometheus high-availability replicas evaluate the same rules and send every firing alert to every Alertmanager, never through a load balancer. Dropping the replica label merges the duplicate pair into one alert, and Alertmanagers gossip silences and a shared notification log so normally only one sends the page.", "Route strictly on ownership labels: team and severity, required on every rule and enforced in C I. Any alert that matches no route falls through to the default receiver, so that receiver needs a real owner who audits it every week.", "Grouping, inhibition, and silences turn an alert storm into one clean page. An inhibit rule lets a top-level cluster down alert mute fifty downstream per-service pages in that same cluster, keeping the on-call engineer focused on the root problem.", "Fast burns wake the on-call engineer, slow burns open tickets, and every page writes a record: team, alert name, timestamp, and whether a human had to act. A scheduled synthetic page running end to end proves the paging pipeline itself hasn't silently broken.", "Google's S R E book sets the pager budget: at most two incidents per twelve-hour shift, with a median of zero. Track it per team on a twenty-one-day trailing average, and watch two companion metrics: actionable page rate and unowned alerts hitting the default receiver.", "Every page should require human action. Alerts closed with no action get deleted, automated, or demoted to tickets, and new alerts run non-paging for about a week before earning pager rights. Never silence noise by quietly loosening S L O thresholds.", "When a team stays over budget, run a fixed org response: review the noisiest alerts, put reliability fixes ahead of features, and loan an experienced S R E with a quarterly target under two pages per shift. And keep investigation agents read-only on Alertmanager so no automation can silently mute future pages."], "seconds": [15.67, 17.71, 21.19, 14.62, 15.58, 18.12, 16.8, 17.3, 20.69]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

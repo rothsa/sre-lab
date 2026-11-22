@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Observability when agents do the reading: the film</title>
+<meta name="description" content="Wide correlated events, OBI eBPF v1.0, OTel profiles alpha, owned Collector pipelines, read-only MCP identities, hard query limits, and GenAI spans.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.fp{position:absolute;border:2.5px solid var(--rule);background:var(--panel);border-radius:30px 10px 30px 10px;box-shadow:0 12px 32px rgba(20,70,35,.10);padding:26px 32px}
+.fp h2{margin:0 0 16px;font:800 30px "Archivo";color:var(--fg)}
+.fb{display:inline-flex;align-items:center;gap:12px;border:2.5px solid var(--blue);background:#dff0d3;border-radius:999px;padding:10px 24px;font:700 24px "IBM Plex Sans";color:var(--fg)}
+.fb.green{border-color:var(--green);background:#e9f6dc;color:var(--blue)}
+.fb.amber{border-color:var(--amber);background:#fbefd0;color:#7a5308}
+.fb.red{border-color:var(--red);background:#fbe4d9;color:var(--red)}
+.fn{width:38px;height:38px;border-radius:50%;background:var(--blue);color:#fff;font:800 21px "Archivo";display:inline-flex;align-items:center;justify-content:center;flex:none}
+.fc{background:#0d2016;color:#e3f0de;border-radius:22px 8px 22px 8px;padding:22px 26px;font:400 22px/1.6 "IBM Plex Mono";box-shadow:0 14px 34px rgba(20,70,35,.18)}
+.fc .k{color:#8fdc7a}.fc .v{color:#f5c26b}.fc .e{color:#ff8a5c}.fc .m{color:#9fb8a2}
+.fm{position:relative;width:100%;height:44px;border-radius:22px;background:#d6e6c8;overflow:hidden;margin:14px 0}
+.fmf{height:100%;width:0;border-radius:22px;background:var(--green)}
+.scene.on .fmf{animation:f-grow 1.3s cubic-bezier(.2,.7,.2,1) var(--d,0s) forwards}
+@keyframes f-grow{to{width:var(--w)}}
+.fstep{border:2.5px solid var(--rule);background:#fff;border-radius:22px 8px 22px 8px;padding:18px 22px;font:700 24px "IBM Plex Sans"}
+.fstep small{display:block;font:400 19px "IBM Plex Mono";color:var(--muted);margin-top:6px}
+.fstep.blue{border-color:var(--blue);background:#dff0d3;color:var(--blue)}
+.fstep.green{border-color:var(--green);background:#e9f6dc;color:var(--blue)}
+.fstep.amber{border-color:var(--amber);background:#fbefd0;color:#7a5308}
+.fstep.red{border-color:var(--red);background:#fbe4d9;color:var(--red)}
+.fgrid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.fgrid2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.fgrid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/coffee</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../observability/#next-five-years">Observability</a> · film · recorded 22 Nov 2026</div>
+  <h1 class="page">Observability when agents do the reading</h1>
+  <div id="viewport">
+    <div id="stage">
+
+<section class="scene">
+  <div class="kick">Observability · chapter 9</div>
+  <h1>Observability when agents read it</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:250px;--d:1.96s">
+    <h2>The reader is changing</h2>
+    <div class="fgrid3" style="margin-top:20px">
+      <div class="fstep blue">Wide correlated events<small>fewer signal silos</small></div>
+      <div class="fstep green">One org pipeline<small>collector is the control point</small></div>
+      <div class="fstep amber">Bounded machine readers<small>agents query · people decide</small></div>
+    </div>
+  </div>
+  <div class="fp a" style="left:110px;top:585px;width:1700px;height:255px;--d:14.59s;border-color:var(--blue)">
+    <h2 class="t-blue">What to build now vs. wait on</h2>
+    <div class="fgrid2" style="margin-top:18px">
+      <div class="fstep green">Build now<small>owned Collector · wide events · read-only MCP + query caps</small></div>
+      <div class="fstep amber">Plan, don't page on yet<small>OTel profiles (alpha) · autonomous remediation</small></div>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 2 of 10</div>
+  <h1>The three pillars merge into events</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:560px;--d:.6s;border-color:var(--blue)">
+    <h2 class="t-blue">2026 platform shift</h2>
+    <div class="fstep blue a" style="--d:5.95s;margin-top:18px">OTel deprecated span events<small>Mar 2026: write events as logs tied to active span</small></div>
+    <div class="fstep green a" style="--d:12.38s;margin-top:22px">Unified query engines<small>time series + wide events on one columnar platform</small></div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:560px;--d:15.85s;border-color:var(--green)">
+    <h2 class="t-blue">Why context beats silos</h2>
+    <div style="font:700 32px/1.4 'Archivo';color:var(--fg);margin-top:28px">"Slice it up into pillars, and you destroy that value for good."</div>
+    <div class="mono muted" style="font-size:21px;margin-top:18px">Charity Majors (Mar 2026)</div>
+    <div class="fb green a" style="--d:19.93s;margin-top:44px">Keep full request context in one place</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 3 of 10</div>
+  <h1>Zero-code eBPF fills coverage gaps</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s">
+    <h2>OpenTelemetry eBPF Instrumentation (OBI v1.0 · Oct 2026)</h2>
+    <div class="fgrid2" style="margin-top:26px">
+      <div class="fstep green a" style="--d:15.1s">Where OBI shines<small>captures Linux HTTP, gRPC, and DB telemetry from running processes with zero source changes</small></div>
+      <div class="fstep blue a" style="--d:21.5s">Where SDKs stay essential<small>custom business context: user ID, tenant, build SHA, feature flags, and domain attributes</small></div>
+    </div>
+    <div class="fb amber a" style="--d:17.86s;margin-top:38px">Check which OBI conventions are stable before building dashboards on them</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 4 of 10</div>
+  <h1>Profiles are coming, not ready for SLOs</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s;border-color:var(--amber)">
+    <h2 class="t-amber">OpenTelemetry Profiles signal (Alpha · Mar 2026)</h2>
+    <div class="fgrid2" style="margin-top:28px">
+      <div class="fstep amber a" style="--d:8.59s">Current status<small>alpha spec · production-ready backends are still maturing</small></div>
+      <div class="fstep green a" style="--d:14.2s">Right org move today<small>leave room in the Collector pipeline; do not build critical SLOs or pages on it yet</small></div>
+    </div>
+    <div class="fb amber a" style="--d:17.32s;margin-top:44px">Plan for profiles now · page on them after stability</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 5 of 10</div>
+  <h1>Alert when metric cardinality overflows</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s;border-color:var(--red)">
+    <h2 class="t-red">Silent trap for human and agent readers alike</h2>
+    <div class="fgrid2" style="margin-top:28px">
+      <div class="fstep green a" style="--d:8.66s">Unfiltered total<small>stays accurate (overflow bucket preserves sum)</small></div>
+      <div class="fstep red a" style="--d:11.43s">Filtered / grouped query<small>silently undercounts any label slice past the cap</small></div>
+    </div>
+    <div class="fb red a" style="--d:14.86s;margin-top:42px">An agent reading the graph won't know slices were dropped: alert on overflow</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 6 of 10</div>
+  <h1>Own the Collector as control point</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:300px;--d:.6s;border-color:var(--blue)">
+    <h2 class="t-blue">One org-owned pipeline decouples apps from vendors</h2>
+    <div class="fgrid3" style="margin-top:22px">
+      <div class="fstep a" style="--d:5.65s">All signals in<small>wide events · metrics · profiles</small></div>
+      <div class="fstep blue a" style="--d:5.36s">Org Collector pipeline<small>schema · sampling · routing</small></div>
+      <div class="fstep green a" style="--d:8.75s">One query layer<small>swappable backend</small></div>
+    </div>
+  </div>
+  <div class="fp a" style="left:110px;top:630px;width:1700px;height:210px;--d:13.35s">
+    <div style="font:600 27px 'IBM Plex Sans';color:var(--fg)">Changing a sampler, store, or vendor becomes a <b class="t-blue">pipeline config change</b>, not a migration across hundreds of teams.</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 7 of 10</div>
+  <h1>Give each agent a read-only identity</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s;border-color:var(--blue)">
+    <h2 class="t-blue">Agents querying via MCP (e.g. Grafana MCP server)</h2>
+    <div class="fgrid3" style="margin-top:28px">
+      <div class="fstep blue a" style="--d:1.31s">Direct tool access<small>dashboards · alert rules · incidents · data sources</small></div>
+      <div class="fstep green a" style="--d:8.69s">Read-only service account<small>one distinct identity per agent</small></div>
+      <div class="fstep amber a" style="--d:13.22s">Separate attribution<small>audit trail, query load, and spend isolated from humans</small></div>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 8 of 10</div>
+  <h1>Enforce hard execution caps per agent</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:560px;--d:.6s;border-color:var(--amber)">
+    <h2 class="t-amber">Cost estimate ≠ protection</h2>
+    <div class="fstep amber a" style="--d:9.34s;margin-top:20px">Prometheus 3.16 query cost<small>experimental estimate is informational only; never rejects a query</small></div>
+    <div style="font:500 23px 'IBM Plex Sans';color:var(--muted);margin-top:26px">A runaway agent loop will happily scan a week of raw series unless the store refuses it.</div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:560px;--d:13.24s;border-color:var(--green)">
+    <h2 class="t-blue">Hard per-agent limits</h2>
+    <div class="fc" style="font-size:22px;line-height:1.85">
+      <div><span class="k">query_max_series</span></div>
+      <div><span class="k">query_max_samples_read</span></div>
+      <div><span class="k">query_max_duration</span></div>
+    </div>
+    <div class="fb green a" style="--d:19.11s;margin-top:26px">Stops bad loops before they starve on-call</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 9 of 10</div>
+  <h1>Agents detect far better than they fix</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s">
+    <h2>2026 incident benchmarks (ITBench &amp; SWEOps-Bench)</h2>
+    <div style="display:grid;gap:26px;margin-top:26px">
+      <div class="a" style="--d:9.24s">
+        <div style="display:flex;justify-content:space-between;font:700 26px 'IBM Plex Sans'"><span>Incident detection (SWEOps-Bench)</span><span class="t-green">72.7% – 90.9%</span></div>
+        <div class="fm" style="height:54px"><div class="fmf" style="--w:86%;background:var(--green);--d:9.24s"></div></div>
+      </div>
+      <div class="a" style="--d:12.82s">
+        <div style="display:flex;justify-content:space-between;font:700 26px 'IBM Plex Sans'"><span>End-to-end recovery (SWEOps-Bench)</span><span class="t-red">14.5% – 52.7%</span></div>
+        <div class="fm" style="height:54px"><div class="fmf" style="--w:42%;background:var(--red);--d:12.82s"></div></div>
+      </div>
+    </div>
+    <div class="fb blue a" style="--d:17.21s;margin-top:34px">Rollout order: read-only evidence with links first · humans approve actions</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 10 of 10</div>
+  <h1>Observe your agents on the same pipe</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:440px;--d:4.41s;border-color:var(--blue)">
+    <h2 class="t-blue">Visual evidence + GenAI spans</h2>
+    <div class="fstep a" style="--d:4.41s;margin-top:14px">Replays &amp; screenshots<small>supporting proof of work, alongside API queries</small></div>
+    <div class="fstep blue a" style="--d:2.12s;margin-top:18px">OTel GenAI spans<small>invoke_agent · model calls · execute_tool</small></div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:440px;--d:13.19s;border-color:var(--green)">
+    <h2 class="t-blue">Three rules for agent telemetry</h2>
+    <div class="fstep green a" style="--d:13.19s;margin-top:14px">Pin the convention version<small>GenAI semconv is still in Development</small></div>
+    <div class="fstep amber a" style="--d:15.57s;margin-top:18px">Keep prompt capture opt-in<small>privacy + attribute size limits by default</small></div>
+  </div>
+  <div class="critter"><div id="critter"></div></div>
+</section>
+
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 3.5 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../observability/#next-five-years">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Observability when agents do the reading. Over the next five years, agents will read far more of your telemetry than people do. What happens to metrics, logs, and traces, and what should an org running hundreds of teams build now versus later?", "First, the three pillars are merging into wide correlated events. Open Telemetry deprecated span events in March 2026 in favor of logs tied to the active span, and vendors are unifying time series and events on one engine. As Charity Majors puts it, slice data into separate pillars and you destroy its context for good.", "Second, basic instrumentation is moving out of app code. Open Telemetry's e B P F instrumentation, O B I, hit version one point zero in October 2026, capturing signals from running Linux services without source edits. Use it to close coverage gaps, while keeping S D K instrumentation where you need business context.", "Third, continuous profiles are coming, not ready for critical S L Os yet. Open Telemetry's profiles signal entered alpha in March 2026, and production-ready backends are still maturing. Leave room for profiles in your pipeline, without building production pages on them today.", "Meanwhile, metric cardinality limits stay strict. When an Open Telemetry metric stream overflows its cardinality cap, totals stay right while grouped queries silently undercount. Always alert on overflow, because an agent reading the graph won't know slices are missing.", "That makes the Collector pipeline your org's true control point. One pipeline you own routes events, metrics, and future profiles into one query layer, so swapping a sampler, schema, or backend vendor is a config change instead of a migration across hundreds of teams.", "As agents become the primary reader through interfaces like Grafana's M C P server, give every investigation agent its own read-only identity. That way its query load, audit trail, and cost stay separate from human engineers.", "Machine readers also need hard execution limits. Prometheus 3.16 added experimental query cost reporting, but it is informational only and never rejects a query. Set hard caps per agent identity on max series, samples read, and query duration so a loop can't melt your store.", "Keep humans in the decision seat. On 2026 benchmarks like I T Bench and S W E Ops Bench, frontier models detected incidents seventy to ninety percent of the time, yet recovered only fifteen to fifty-three percent. Let agents gather evidence with direct links, and let people approve actions.", "Finally, observe your own agents as production workloads. Visual replays and screenshots join as supporting evidence, while your agent fleet emits Gen A I spans through the same pipeline. Pin the developing convention version, keep prompt capture opt-in by default, and build precision telemetry both humans and agents can trust."], "seconds": [15.53, 21.46, 22.37, 18.31, 17.57, 16.75, 15.5, 19.75, 20.26, 21.67]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

@@ -2,6 +2,7 @@
 export const CHAPTERS = [
   {
     id: "tracing",
+    film: "../films/tracing/",
     n: 5,
     title: "Trace propagation as a fleet standard",
     question: "Hundreds of services in several languages, with queues and proxies in between. How do you make one propagation standard hold everywhere, and measure trace completeness for the whole fleet?",
@@ -97,6 +98,7 @@ export const CHAPTERS = [
   },
   {
     id: "sampling",
+    film: "../films/sampling/",
     n: 6,
     title: "Org sampling policy: head and tail",
     question: "Who sets the org's sampling policy, what must it always keep, and how do you show each team what it costs and what it throws away?",
@@ -187,6 +189,7 @@ export const CHAPTERS = [
   },
   {
     id: "logs-pipeline",
+    film: "../films/logs-pipeline/",
     n: 7,
     title: "Log standards: schema, labels and retention tiers",
     question: "Hundreds of teams log to one store. What schema and labels do you enforce, what retention does each stream get, and how does each team see its bill?",
@@ -274,6 +277,7 @@ export const CHAPTERS = [
   },
   {
     id: "alerting",
+    film: "../films/alerting/",
     n: 8,
     title: "Paging as an org control loop",
     question: "Hundreds of teams page their own on-call. How does one alert reach the right person as one page, which fleet numbers tell you paging is healthy, and what happens to a team that goes over budget?",

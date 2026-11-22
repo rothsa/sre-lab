@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trace propagation as a fleet standard: the film</title>
+<meta name="description" content="A short narrated film on distributed trace propagation across hundreds of services: W3C traceparent, queues, broken proxies, OTel Operator defaults and completeness.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.fp{position:absolute;border:2.5px solid var(--rule);background:var(--panel);border-radius:30px 10px 30px 10px;box-shadow:0 12px 32px rgba(20,70,35,.10);padding:26px 32px}
+.fp h2{margin:0 0 16px;font:800 30px "Archivo";color:var(--fg)}
+.fb{display:inline-flex;align-items:center;gap:12px;border:2.5px solid var(--blue);background:#dff0d3;border-radius:999px;padding:10px 24px;font:700 24px "IBM Plex Sans";color:var(--fg)}
+.fb.green{border-color:var(--green);background:#e9f6dc;color:var(--blue)}
+.fb.amber{border-color:var(--amber);background:#fbefd0;color:#7a5308}
+.fb.red{border-color:var(--red);background:#fbe4d9;color:var(--red)}
+.fn{width:38px;height:38px;border-radius:50%;background:var(--blue);color:#fff;font:800 21px "Archivo";display:inline-flex;align-items:center;justify-content:center;flex:none}
+.fc{background:#0d2016;color:#e3f0de;border-radius:22px 8px 22px 8px;padding:22px 26px;font:400 22px/1.6 "IBM Plex Mono";box-shadow:0 14px 34px rgba(20,70,35,.18)}
+.fc .k{color:#8fdc7a}.fc .v{color:#f5c26b}.fc .e{color:#ff8a5c}.fc .m{color:#9fb8a2}
+.fm{position:relative;width:100%;height:44px;border-radius:22px;background:#d6e6c8;overflow:hidden;margin:14px 0}
+.fmf{height:100%;width:0;border-radius:22px;background:var(--green)}
+.scene.on .fmf{animation:f-grow 1.3s cubic-bezier(.2,.7,.2,1) var(--d,0s) forwards}
+@keyframes f-grow{to{width:var(--w)}}
+.fstep{border:2.5px solid var(--rule);background:#fff;border-radius:22px 8px 22px 8px;padding:18px 22px;font:700 24px "IBM Plex Sans"}
+.fstep small{display:block;font:400 19px "IBM Plex Mono";color:var(--muted);margin-top:6px}
+.fstep.blue{border-color:var(--blue);background:#dff0d3;color:var(--blue)}
+.fstep.green{border-color:var(--green);background:#e9f6dc;color:var(--blue)}
+.fstep.amber{border-color:var(--amber);background:#fbefd0;color:#7a5308}
+.fstep.red{border-color:var(--red);background:#fbe4d9;color:var(--red)}
+.fband{position:absolute;left:110px;top:760px;width:1700px;height:120px;border:3px dashed var(--blue);border-radius:30px 10px 30px 10px;background:rgba(255,255,255,.55);display:flex;align-items:center;justify-content:space-between;padding:0 36px}
+.fgrid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.fgrid2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.fgrid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.fline-v{position:absolute;top:-8px;bottom:-8px;width:4px;background:var(--red);z-index:3}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/coffee</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../observability/#tracing">Observability</a> · film · recorded 22 Nov 2026</div>
+  <h1 class="page">Trace propagation as a fleet standard</h1>
+  <div id="viewport">
+    <div id="stage">
+
+<section class="scene">
+  <div class="kick">Observability · chapter 5</div>
+  <h1>Trace propagation as a fleet standard</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:390px;--d:.6s">
+    <h2>One request, many services, queues and proxies</h2>
+    <div class="fgrid4" style="margin-top:26px">
+      <div class="fstep blue">API Gateway<small>root span</small></div>
+      <div class="fstep">Checkout<small>child span</small></div>
+      <div class="fstep amber">Orders Queue<small>header in msg</small></div>
+      <div class="fstep green">Payments &amp; Worker<small>same trace ID</small></div>
+    </div>
+    <div class="fb red a" style="--d:9.32s;margin-top:38px">One dropped header splits one request into disconnected traces</div>
+  </div>
+  <div class="fband a" style="--d:15.99s">
+    <div style="font:700 22px 'IBM Plex Mono';color:var(--blue)">FLEET CONTROLS</div>
+    <div style="display:flex;gap:20px">
+      <span class="fb green"><span class="fn">1</span>One propagation default</span>
+      <span class="fb amber"><span class="fn" style="background:var(--amber)">2</span>Trace completeness metric</span>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 2 of 9</div>
+  <h1>The gateway starts traceparent</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s">
+    <h2>W3C Trace Context</h2>
+    <div class="fgrid3" style="margin-top:20px">
+      <div class="fstep a" style="--d:0.8s">Browser<small>no trace headers</small></div>
+      <div class="fstep blue a" style="--d:3.96s">API Gateway<small>mints 16-byte trace ID · root span</small></div>
+      <div class="fstep green a" style="--d:10.62s">Checkout<small>child server span</small></div>
+    </div>
+    <div class="fc a" style="--d:13.35s;margin-top:36px;font-size:21px">
+      <div><span class="k">traceparent</span>: 00-<span class="v">4bf92f3577b34da6a3ce929d0e0e4736</span>-<span class="e">00f067aa0ba902b7</span>-01</div>
+      <div class="m">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ver &nbsp;trace-id (16 bytes) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;parent-id (8B) &nbsp;&nbsp;sampled</div>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 3 of 9</div>
+  <h1>Carry context inside the process</h1>
+  <div class="fp a" style="left:110px;top:290px;width:980px;height:560px;--d:.6s">
+    <h2>Active span travels in context</h2>
+    <div class="fgrid3" style="margin-top:22px">
+      <div class="fstep blue a" style="--d:4.69s">HTTP handler<small>Go ctx / contextvars</small></div>
+      <div class="fstep green a" style="--d:9.81s">HTTP client<small>new parent-id</small></div>
+      <div class="fstep green a" style="--d:11.2s">Payments<small>child of client span</small></div>
+    </div>
+    <div class="fb green a" style="--d:12.21s;margin-top:42px;font-size:22px">Same trace ID · each hop sets its own span ID as parent</div>
+  </div>
+  <div class="fp a" style="left:1140px;top:290px;width:670px;height:560px;--d:17.32s;border-color:var(--red)">
+    <h2 class="t-red">Common snap point</h2>
+    <div class="fstep red" style="margin-top:22px">Background thread or goroutine<small>launched without ctx → chain breaks</small></div>
+    <div class="muted" style="font:500 22px 'IBM Plex Sans';margin-top:28px">Downstream DB calls show up as stray root traces instead of children.</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 4 of 9</div>
+  <h1>Queues carry context in message headers</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s">
+    <h2>Async propagation uses span links</h2>
+    <div class="fgrid3" style="margin-top:24px">
+      <div class="fstep blue a" style="--d:4.83s">Producer<small>injects traceparent into msg header</small></div>
+      <div class="fstep amber a" style="--d:3.95s">Orders Topic<small>batch of msgs from many traces</small></div>
+      <div class="fstep green a" style="--d:7.11s">Consumer Worker<small>extracts headers → attaches span links</small></div>
+    </div>
+    <div class="fb green a" style="--d:12.46s;margin-top:52px">Span links connect one consumer batch cleanly to multiple producer traces</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 5 of 9</div>
+  <h1>Broken hops and the service-mesh myth</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:250px;--d:.6s;border-color:var(--red)">
+    <h2 class="t-red">One stripped header = two unrelated traces</h2>
+    <div class="fgrid3" style="margin-top:16px">
+      <div class="fstep blue">Checkout client<small>sends traceparent</small></div>
+      <div class="fstep red a" style="--d:3.45s">Older proxy<small>strips traceparent header</small></div>
+      <div class="fstep amber a" style="--d:6.16s">Fraud service<small>starts brand-new root trace</small></div>
+    </div>
+  </div>
+  <div class="fp a" style="left:110px;top:585px;width:1700px;height:260px;--d:13.74s;border-color:var(--amber)">
+    <h2 style="color:#9a6a0c">A service mesh won't fix missing propagation</h2>
+    <div style="font:500 26px 'IBM Plex Sans';color:var(--fg);margin-top:14px">Istio's sidecars emit proxy spans, but Istio's own docs note that applications must still forward trace headers from inbound to outbound requests.</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 6 of 9</div>
+  <h1>Ship one propagation default for the fleet</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:560px;--d:.6s;border-color:var(--blue)">
+    <h2>OpenTelemetry Operator CRD</h2>
+    <div class="fc" style="margin-top:14px;font-size:20px">
+      <div><span class="k">kind</span>: <span class="v">Instrumentation</span></div>
+      <div><span class="k">spec</span>:</div>
+      <div>&nbsp;&nbsp;<span class="k">propagators</span>:</div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;- <span class="v">tracecontext</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;- <span class="v">baggage</span></div>
+      <div>&nbsp;&nbsp;<span class="k">sampler</span>: <span class="v">parentbased_traceidratio</span></div>
+    </div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:560px;--d:8.94s;border-color:var(--green)">
+    <h2 class="t-green">Auto-injected across languages</h2>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px">
+      <span class="chip">Java</span><span class="chip">Python</span><span class="chip">Node.js</span><span class="chip">.NET</span><span class="chip">Go</span>
+    </div>
+    <div class="fb red a" style="--d:6.15s;margin-top:46px;font-size:22px">Never put secrets or PII in baggage (travels to every hop)</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 7 of 9</div>
+  <h1>Two boundary rules: B3 &amp; public edge</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:560px;--d:5.41s;border-color:var(--blue)">
+    <h2 class="t-blue">1. B3 → W3C migration</h2>
+    <div class="fstep blue" style="margin-top:22px">Composite propagator<small>reads &amp; writes both B3 and tracecontext</small></div>
+    <div style="font:500 23px 'IBM Plex Sans';color:var(--muted);margin-top:28px">Drop B3 once no internal service sends B3-only and unexpected roots stop at that boundary.</div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:560px;--d:12.47s;border-color:var(--amber)">
+    <h2 style="color:#9a6a0c">2. Public edge trust boundary</h2>
+    <div class="fstep amber" style="margin-top:22px">Always start a fresh root trace<small>keep outside caller ID only as a link or attribute</small></div>
+    <div style="font:500 23px 'IBM Plex Sans';color:var(--muted);margin-top:28px">Prevents external callers from forging trace IDs or injecting themselves into internal traces.</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 8 of 9</div>
+  <h1>Export queues and attribute limits</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s">
+    <h2>Protecting memory when spans carry rich wide-event context</h2>
+    <div class="fgrid3" style="margin-top:24px">
+      <div class="fstep blue a" style="--d:1.31s">SDK Batch Processor<small>default queue: 2,048 spans</small></div>
+      <div class="fstep green a" style="--d:4.91s">OTLP → Collector<small>ships to Tempo / columnar store</small></div>
+      <div class="fstep amber a" style="--d:12.8s">Attribute length limit<small>OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT</small></div>
+    </div>
+    <div class="fb red a" style="--d:18.18s;margin-top:52px">Full export queue drops new spans · unbounded attributes bloat process RAM</div>
+  </div>
+</section>
+
+<section class="scene" style="--egg:15.43s">
+  <div class="kick">Step 9 of 9</div>
+  <h1>Measure trace completeness</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:520px;--d:4.39s;border-color:var(--blue)">
+    <h2 class="t-blue">Two fleet completeness numbers</h2>
+    <div class="fstep amber" style="margin-top:20px">1. Unpaired client &amp; server spans<small>Tempo service graphs surface gaps automatically</small></div>
+    <div class="fstep red a" style="--d:9.47s;margin-top:22px">2. Unexpected internal root spans<small>non-edge services starting fresh traces</small></div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:520px;--d:13.66s;border-color:var(--green)">
+    <h2 class="t-green">How to close the gaps</h2>
+    <div class="fstep green" style="margin-top:20px">Publish completeness per service<small>fix the worst hop first, start new services on the default</small></div>
+    <div style="font:500 23px 'IBM Plex Sans';color:var(--muted);margin-top:28px">Canary SDK bumps against completeness before rolling out fleet-wide.</div>
+  </div>
+  <div class="critter"><div id="critter"></div></div>
+</section>
+
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 2.8 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../observability/#tracing">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Trace propagation as a fleet standard. Across hundreds of services in different languages, with queues and proxies in between, one broken hop splits a request into disconnected pieces. How do you make one standard hold everywhere and measure completeness across the fleet?", "A browser sends no trace headers, so your edge A P I gateway starts the trace: a random sixteen-byte trace ID and a root span with no parent. Calling checkout, it injects a W 3 C traceparent header, and checkout begins a child server span.", "Inside a process, the S D K carries the active span in a context object, like Go context or Python contextvars. Outbound clients inject a fresh traceparent with the same trace ID and their own span ID as parent. Hand work to a background thread without that context and the chain snaps.", "Asynchronous queues carry trace context inside message headers. Producers inject it on publish and workers extract it on consume. Open Telemetry messaging conventions attach a span link rather than a strict parent, because one consumer batch often mixes messages from many traces.", "Here is how traces break in production: an older proxy strips the traceparent header, so the fraud service starts a brand-new root span and one request shows up as two unrelated traces. Even a service mesh like Istio can't fix this alone; apps still have to forward headers.", "Make the right path the platform default. Set O T E L propagators to tracecontext and baggage everywhere, and use the Open Telemetry Operator to auto-inject standard instrumentation, propagators, and samplers into opted-in pods from one shared resource.", "Pair that default with two boundary rules. During a B 3 to W 3 C migration, run a composite propagator that reads and writes both until B 3 disappears. And at the public edge, always start a fresh trace, storing any external caller ID only as a link so outsiders can't forge your traces.", "Each service batches finished spans and exports them over O T L P to a Collector and then a trace store like Tempo. Remember that spans carry rich wide-event context, so set an attribute value length limit and watch the default two-thousand-forty-eight span export queue so bursts don't drop data.", "Finally, treat trace completeness as a fleet metric. Tempo service graphs count unpaired client and server spans, and unexpected root spans in internal services point straight to broken hops. Publish both per service, fix the worst hop first, and keep every new service on the default."], "seconds": [17.45, 17.02, 19.94, 18.26, 17.42, 16.49, 20.71, 18.74, 19.25]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Log standards: schema, labels and retention tiers: the film</title>
+<meta name="description" content="Canonical structured logs, Loki label allowlists vs structured metadata, node-agent drops, retention tiers, and per-tenant billing.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.fp{position:absolute;border:2.5px solid var(--rule);background:var(--panel);border-radius:30px 10px 30px 10px;box-shadow:0 12px 32px rgba(20,70,35,.10);padding:26px 32px}
+.fp h2{margin:0 0 16px;font:800 30px "Archivo";color:var(--fg)}
+.fb{display:inline-flex;align-items:center;gap:12px;border:2.5px solid var(--blue);background:#dff0d3;border-radius:999px;padding:10px 24px;font:700 24px "IBM Plex Sans";color:var(--fg)}
+.fb.green{border-color:var(--green);background:#e9f6dc;color:var(--blue)}
+.fb.amber{border-color:var(--amber);background:#fbefd0;color:#7a5308}
+.fb.red{border-color:var(--red);background:#fbe4d9;color:var(--red)}
+.fn{width:38px;height:38px;border-radius:50%;background:var(--blue);color:#fff;font:800 21px "Archivo";display:inline-flex;align-items:center;justify-content:center;flex:none}
+.fc{background:#0d2016;color:#e3f0de;border-radius:22px 8px 22px 8px;padding:22px 26px;font:400 22px/1.6 "IBM Plex Mono";box-shadow:0 14px 34px rgba(20,70,35,.18)}
+.fc .k{color:#8fdc7a}.fc .v{color:#f5c26b}.fc .e{color:#ff8a5c}.fc .m{color:#9fb8a2}
+.fm{position:relative;width:100%;height:44px;border-radius:22px;background:#d6e6c8;overflow:hidden;margin:14px 0}
+.fmf{height:100%;width:0;border-radius:22px;background:var(--green)}
+.scene.on .fmf{animation:f-grow 1.3s cubic-bezier(.2,.7,.2,1) var(--d,0s) forwards}
+@keyframes f-grow{to{width:var(--w)}}
+.fstep{border:2.5px solid var(--rule);background:#fff;border-radius:22px 8px 22px 8px;padding:18px 22px;font:700 24px "IBM Plex Sans"}
+.fstep small{display:block;font:400 19px "IBM Plex Mono";color:var(--muted);margin-top:6px}
+.fstep.blue{border-color:var(--blue);background:#dff0d3;color:var(--blue)}
+.fstep.green{border-color:var(--green);background:#e9f6dc;color:var(--blue)}
+.fstep.amber{border-color:var(--amber);background:#fbefd0;color:#7a5308}
+.fstep.red{border-color:var(--red);background:#fbe4d9;color:var(--red)}
+.fgrid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.fgrid2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.fgrid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/coffee</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../observability/#logs-pipeline">Observability</a> · film · recorded 22 Nov 2026</div>
+  <h1 class="page">Log standards: schema, labels and retention tiers</h1>
+  <div id="viewport">
+    <div id="stage">
+
+<section class="scene">
+  <div class="kick">Observability · chapter 7</div>
+  <h1>Log standards: schema, labels, tiers</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:240px;--d:7.51s">
+    <h2>One log pipeline shared by hundreds of teams</h2>
+    <div class="fgrid4" style="margin-top:18px">
+      <div class="fstep blue">App stdout<small>1 structured event/line</small></div>
+      <div class="fstep green">Node Agent<small>parse · label · drop</small></div>
+      <div class="fstep amber">Loki ingest<small>tenant quotas · chunks</small></div>
+      <div class="fstep">Object storage<small>tiered retention</small></div>
+    </div>
+  </div>
+  <div class="fp a" style="left:110px;top:575px;width:1700px;height:275px;--d:9.82s;border-color:var(--blue)">
+    <h2 class="t-blue">Three controls that protect cost and speed</h2>
+    <div class="fgrid3" style="margin-top:20px">
+      <div class="fstep green a" style="--d:9.82s"><span class="fn">1</span> Shared schema<small>canonical structured events</small></div>
+      <div class="fstep amber a" style="--d:2.9s"><span class="fn" style="background:var(--amber)">2</span> Label allowlist<small>bounded streams, metadata for IDs</small></div>
+      <div class="fstep blue a" style="--d:16.14s"><span class="fn">3</span> Retention tiers<small>per-tenant bill by tier</small></div>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 2 of 9</div>
+  <h1>One canonical event, not 20 fragments</h1>
+  <div class="fp a" style="left:110px;top:290px;width:860px;height:560px;--d:.6s;border-color:var(--blue)">
+    <h2 class="t-blue">Core org schema (JSON / logfmt)</h2>
+    <div class="fc a" style="--d:8.44s;font-size:21px;line-height:1.65">
+      <div>&#123;</div>
+      <div>&nbsp;&nbsp;<span class="k">"service.name"</span>: <span class="v">"checkout"</span>,</div>
+      <div>&nbsp;&nbsp;<span class="k">"severity"</span>: <span class="e">"ERROR"</span>,</div>
+      <div>&nbsp;&nbsp;<span class="k">"message"</span>: <span class="v">"card charge timed out"</span>,</div>
+      <div>&nbsp;&nbsp;<span class="k">"trace_id"</span>: <span class="v">"4bf92f3577b34da6"</span>,</div>
+      <div>&nbsp;&nbsp;<span class="k">"user_id"</span>: <span class="v">"u_94821"</span>, <span class="k">"duration_ms"</span>: <span class="e">1840</span></div>
+      <div>&#125;</div>
+    </div>
+  </div>
+  <div class="fp a" style="left:1020px;top:290px;width:790px;height:560px;--d:14.64s;border-color:var(--green)">
+    <h2 class="t-blue">Why wide events win</h2>
+    <div class="fstep green a" style="--d:15.68s;margin-top:18px">One rich line per request<small>maps cleanly onto OTel Logs data model</small></div>
+    <div class="fstep red a" style="--d:16.84s;margin-top:20px">Instead of 20 scattered lines<small>no stitching fragments during an outage</small></div>
+    <div class="fb green a" style="--d:19.8s;margin-top:28px">Humans &amp; agents query every team the same way</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 3 of 9</div>
+  <h1>Keep labels tiny; put IDs in metadata</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:560px;--d:14.14s;border-color:var(--green)">
+    <h2 class="t-blue">Indexed labels (short allowlist)</h2>
+    <div style="display:flex;flex-wrap:wrap;gap:14px;margin:20px 0">
+      <span class="fb green">team</span><span class="fb green">namespace</span><span class="fb green">app</span><span class="fb green">env</span>
+    </div>
+    <div style="font:500 24px 'IBM Plex Sans';color:var(--fg);margin-top:24px">Each unique label set opens a separate Loki stream. Keep values in the tens.</div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:560px;--d:22.56s;border-color:var(--amber)">
+    <h2 class="t-amber">Structured metadata (unindexed)</h2>
+    <div style="display:flex;flex-wrap:wrap;gap:14px;margin:20px 0">
+      <span class="fb amber">trace_id</span><span class="fb amber">user_id</span><span class="fb amber">request_id</span><span class="fb amber">pod</span>
+    </div>
+    <div style="font:500 24px 'IBM Plex Sans';color:var(--fg);margin-top:24px">Queryable after stream selection without exploding stream count or index size.</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 4 of 9</div>
+  <h1>Loki OTLP splits labels by default</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s;border-color:var(--blue)">
+    <h2 class="t-blue">Automatic resource attribute mapping</h2>
+    <div class="fgrid2" style="margin-top:28px">
+      <div class="fstep green a" style="--d:9.21s">Default indexed labels<small>service.name · k8s.namespace.name · service.namespace</small></div>
+      <div class="fstep amber a" style="--d:10.88s">Default structured metadata<small>all remaining resource &amp; log attributes</small></div>
+    </div>
+    <div class="fc a" style="--d:14.59s;margin-top:34px;font-size:22px">
+      <div><span class="k">otlp_config</span>: <span class="m">override per tenant only when a real query needs an extra index label</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 5 of 9</div>
+  <h1>Stop DEBUG floods at the node agent</h1>
+  <div class="fp a" style="left:110px;top:290px;width:780px;height:560px;--d:.6s;border-color:var(--red)">
+    <h2 class="t-red">One chatty pod</h2>
+    <div class="fstep red a" style="--d:1.94s;margin-top:20px">DEBUG at full rate<small>can outspend every other service on the team</small></div>
+    <div class="fstep amber a" style="--d:6.5s;margin-top:24px">Shared tenant quota<small>one noisy pod starves prod error logs if uncapped</small></div>
+  </div>
+  <div class="fp a" style="left:940px;top:290px;width:870px;height:560px;--d:7.3s;border-color:var(--green)">
+    <h2 class="t-blue">Grafana Alloy loki.process</h2>
+    <div class="fc" style="font-size:21px;line-height:1.65">
+      <div><span class="k">stage.drop</span> &#123;</div>
+      <div>&nbsp;&nbsp;<span class="k">source</span> = <span class="v">"level"</span></div>
+      <div>&nbsp;&nbsp;<span class="k">value</span>  = <span class="v">"debug"</span></div>
+      <div>&nbsp;&nbsp;<span class="k">drop_counter_reason</span> = <span class="v">"debug_logs"</span></div>
+      <div>&#125;</div>
+    </div>
+    <div class="fb green a" style="--d:12.89s;margin-top:24px">Or stage.limit per label value to hit the offender</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 6 of 9</div>
+  <h1>HTTP 429s hide logs during outages</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:270px;--d:.6s;border-color:var(--amber)">
+    <h2>Distributor per-tenant &amp; per-stream limits</h2>
+    <div class="fgrid3" style="margin-top:20px">
+      <div class="fstep amber a" style="--d:2.7s">Tenant ingestion rate<small>per-team MB/s cap</small></div>
+      <div class="fstep amber a" style="--d:4.46s">Per-stream default<small>3 MB/s rate · 15 MB burst</small></div>
+      <div class="fstep red a" style="--d:7.21s">Over limit → HTTP 429<small>agent retries &amp; falls behind</small></div>
+    </div>
+  </div>
+  <div class="fp a" style="left:110px;top:605px;width:1700px;height:250px;--d:18.29s;border-color:var(--blue)">
+    <h2 class="t-blue">First metric to check when recent logs vanish</h2>
+    <div class="fc" style="font-size:24px"><span class="k">loki_discarded_samples_total</span>&#123;<span class="k">reason</span>=<span class="v">"rate_limited"</span> | <span class="v">"per_stream_rate_limit"</span>&#125;</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 7 of 9</div>
+  <h1>Keep active streams under 100k</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:270px;--d:.6s">
+    <h2>Ingesters flush compressed chunks to object storage</h2>
+    <div class="fgrid3" style="margin-top:20px">
+      <div class="fstep blue a" style="--d:2.5s">1 stream = 1 chunk chain<small>compressed in memory, flushed to S3</small></div>
+      <div class="fstep green a" style="--d:6.99s">Index maps labels → chunks<small>log body text is never indexed</small></div>
+      <div class="fstep red a" style="--d:10.64s">Too many streams<small>tiny chunks + huge index + slow reads</small></div>
+    </div>
+  </div>
+  <div class="fp a" style="left:110px;top:605px;width:1700px;height:250px;--d:16.49s;border-color:var(--green)">
+    <h2>Grafana sizing rule for large tenants</h2>
+    <div class="fm" style="height:54px"><div class="fmf" style="--w:72%;background:var(--green);--d:16.49s"></div></div>
+    <div style="display:flex;justify-content:space-between;font:700 23px 'IBM Plex Sans'">
+      <span class="t-blue">Healthy ceiling: &lt; 100,000 active streams</span>
+      <span class="muted">Keep shard_streams on for hot streams</span>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 8 of 9</div>
+  <h1>Make retention tiers explicit policy</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s">
+    <h2>Compactor retention_stream tiers (24h min · off by default!)</h2>
+    <div style="display:grid;gap:22px;margin-top:26px">
+      <div class="a" style="--d:13.6s">
+        <div style="display:flex;justify-content:space-between;font:700 24px 'IBM Plex Sans'"><span>&#123;env="dev"&#125; / debug streams</span><span class="t-amber">72 hours</span></div>
+        <div class="fm"><div class="fmf" style="--w:12%;background:var(--amber);--d:13.6s"></div></div>
+      </div>
+      <div class="a" style="--d:15.47s">
+        <div style="display:flex;justify-content:space-between;font:700 24px 'IBM Plex Sans'"><span>Default application logs</span><span class="t-green">31 days (744h)</span></div>
+        <div class="fm"><div class="fmf" style="--w:42%;background:var(--green);--d:15.47s"></div></div>
+      </div>
+      <div class="a" style="--d:17.93s">
+        <div style="display:flex;justify-content:space-between;font:700 24px 'IBM Plex Sans'"><span>&#123;log_type="audit"&#125;</span><span class="t-blue">1 year (8760h)</span></div>
+        <div class="fm"><div class="fmf" style="--w:95%;background:var(--blue);--d:17.93s"></div></div>
+      </div>
+    </div>
+    <div class="fb amber a" style="--d:17.93s;margin-top:24px">Never apply a bucket-wide S3 lifecycle rule: it deletes Loki index files</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 9 of 9</div>
+  <h1>Bill per tenant, filter before parsing</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:440px;--d:1.75s;border-color:var(--blue)">
+    <h2 class="t-blue">Per-team log bill</h2>
+    <div class="fc" style="font-size:20px;margin-top:12px"><span class="k">loki_distributor_bytes_received_total</span></div>
+    <div style="font:500 23px 'IBM Plex Sans';color:var(--fg);margin-top:20px">Tracks uncompressed GB per tenant and retention tier, right beside active streams and schema compliance.</div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:440px;--d:10.7s;border-color:var(--green)">
+    <h2 class="t-blue">Fast LogQL order</h2>
+    <div class="fc" style="font-size:21px;line-height:1.7">
+      <div><span class="k">&#123;app="checkout", env="prod"&#125;</span></div>
+      <div>&nbsp;&nbsp;<span class="v">|= "timeout"</span> <span class="m">  (cheap text filter first)</span></div>
+      <div>&nbsp;&nbsp;| json | duration_ms &gt; 500</div>
+    </div>
+    <div class="fb green a" style="--d:19.43s;margin-top:22px">Repeatedly parsed fields → make a metric</div>
+  </div>
+  <div class="critter"><div id="critter"></div></div>
+</section>
+
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 3 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../observability/#logs-pipeline">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Log standards: schema, labels, and retention tiers. When hundreds of teams ship logs into one shared store, how do you stop noisy debug floods and unbounded labels from blowing up the bill, while still letting on-call engineers find answers fast?", "Start with one shared schema. Every service writes a single structured event per line in J S O N or logfmt with the same core fields: service name, severity, message, and trace ID. Emit one rich canonical event per request rather than twenty scattered lines, so an engineer or agent gets full context without stitching fragments together.", "On each node, an agent like Grafana Alloy tails container output, parses fields, and attaches labels. In Loki, every unique label combination creates a separate stream. Keep labels to a short allowlist like team, namespace, app, and env, and put high-cardinality fields like user ID and trace ID into structured metadata.", "Loki's O T L P ingest follows this same split by default: a small set of resource attributes like service name and namespace become indexed labels, while everything else lands in structured metadata. Teams don't have to invent their own label rules from scratch.", "One chatty pod dumping debug logs at full rate can outspend the rest of the team and burn its shared ingestion quota. Drop debug noise right at the node agent with stage drop, which counts every dropped line, or cap it per label value so limits hit the offending pod first.", "At the distributor, Loki enforces per-tenant ingestion rates and per-stream limits, returning H T T P 429 when a team goes over. Because agents retry 429s, sustained throttling shows up as delayed or missing recent logs during an outage. Always check discarded samples first to see which limit fired.", "Ingesters pack each stream into compressed chunks and flush them to object storage, indexing only labels rather than full log text. Too many streams create tiny chunks and a bloated index, so Grafana advises keeping even huge tenants under one hundred thousand active streams.", "Make retention tiers explicit policy. Loki keeps logs forever until compactor retention is enabled. Set a default period like thirty-one days, then apply retention stream rules by label: a few days for dev or debug, a month for app logs, and a year for audit.", "Make every team a tenant so distributor bytes received break down directly into gigabytes per team and retention tier. And remind query writers and agents alike: narrow labels and time first, put plain text filters before J S O N parsing, and turn any field every dashboard parses into a metric."], "seconds": [16.97, 23.04, 23.04, 16.58, 16.49, 20.83, 18.19, 18.24, 19.85]}</script>
+<script src="../film.js"></script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Org sampling policy: head and tail: the film</title>
+<meta name="description" content="Who sets the org sampling policy, how head and tail sampling fit together, and how to prove cost and fidelity per team.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.fp{position:absolute;border:2.5px solid var(--rule);background:var(--panel);border-radius:30px 10px 30px 10px;box-shadow:0 12px 32px rgba(20,70,35,.10);padding:26px 32px}
+.fp h2{margin:0 0 16px;font:800 30px "Archivo";color:var(--fg)}
+.fb{display:inline-flex;align-items:center;gap:12px;border:2.5px solid var(--blue);background:#dff0d3;border-radius:999px;padding:10px 24px;font:700 24px "IBM Plex Sans";color:var(--fg)}
+.fb.green{border-color:var(--green);background:#e9f6dc;color:var(--blue)}
+.fb.amber{border-color:var(--amber);background:#fbefd0;color:#7a5308}
+.fb.red{border-color:var(--red);background:#fbe4d9;color:var(--red)}
+.fn{width:38px;height:38px;border-radius:50%;background:var(--blue);color:#fff;font:800 21px "Archivo";display:inline-flex;align-items:center;justify-content:center;flex:none}
+.fc{background:#0d2016;color:#e3f0de;border-radius:22px 8px 22px 8px;padding:22px 26px;font:400 22px/1.6 "IBM Plex Mono";box-shadow:0 14px 34px rgba(20,70,35,.18)}
+.fc .k{color:#8fdc7a}.fc .v{color:#f5c26b}.fc .e{color:#ff8a5c}.fc .m{color:#9fb8a2}
+.fm{position:relative;width:100%;height:44px;border-radius:22px;background:#d6e6c8;overflow:hidden;margin:14px 0}
+.fmf{height:100%;width:0;border-radius:22px;background:var(--green)}
+.scene.on .fmf{animation:f-grow 1.3s cubic-bezier(.2,.7,.2,1) var(--d,0s) forwards}
+@keyframes f-grow{to{width:var(--w)}}
+.fstep{border:2.5px solid var(--rule);background:#fff;border-radius:22px 8px 22px 8px;padding:18px 22px;font:700 24px "IBM Plex Sans"}
+.fstep small{display:block;font:400 19px "IBM Plex Mono";color:var(--muted);margin-top:6px}
+.fstep.blue{border-color:var(--blue);background:#dff0d3;color:var(--blue)}
+.fstep.green{border-color:var(--green);background:#e9f6dc;color:var(--blue)}
+.fstep.amber{border-color:var(--amber);background:#fbefd0;color:#7a5308}
+.fstep.red{border-color:var(--red);background:#fbe4d9;color:var(--red)}
+.fgrid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.fgrid2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.fgrid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/coffee</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../observability/#sampling">Observability</a> · film · recorded 22 Nov 2026</div>
+  <h1 class="page">Org sampling policy: head and tail</h1>
+  <div id="viewport">
+    <div id="stage">
+
+<section class="scene">
+  <div class="kick">Observability · chapter 6</div>
+  <h1>Org sampling policy: head and tail</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:250px;--d:7.25s;border-color:var(--red)">
+    <h2 class="t-red">Keep 100% of traces</h2>
+    <div style="font:500 25px 'IBM Plex Sans';color:var(--fg)">Every healthy ping and routine hop lands in storage.</div>
+    <div class="fb red" style="margin-top:22px">Cost scales with traffic × call depth</div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:250px;--d:8.17s;border-color:var(--amber)">
+    <h2 class="t-amber">Keep a random 1%</h2>
+    <div style="font:500 25px 'IBM Plex Sans';color:var(--fg)">Cheap, until an incident hits a 1-in-200 failure path.</div>
+    <div class="fb amber" style="margin-top:22px">99% of outage traces vanish</div>
+  </div>
+  <div class="fp a" style="left:110px;top:585px;width:1700px;height:270px;--d:1.4s;border-color:var(--blue)">
+    <h2 class="t-blue">Three org-level questions</h2>
+    <div class="fgrid3" style="margin-top:20px">
+      <div class="fstep blue a" style="--d:12.16s"><span class="fn">1</span> Policy owner<small>platform team ships config</small></div>
+      <div class="fstep green a" style="--d:14.64s"><span class="fn">2</span> Must-keep floor<small>errors, slow p99, baseline</small></div>
+      <div class="fstep amber a" style="--d:17.3s"><span class="fn" style="background:var(--amber)">3</span> Weekly proof<small>cost vs fidelity per team</small></div>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 2 of 9</div>
+  <h1>Head sampling decides at the root</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:300px;--d:.6s">
+    <h2>Root span flips the coin; children follow ParentBased</h2>
+    <div class="fgrid3" style="margin-top:24px">
+      <div class="fstep blue a" style="--d:2.01s">checkout (root)<small>trace_id ratio = 10%</small></div>
+      <div class="fstep green a" style="--d:11.79s">traceparent flag = 01<small>decision rides in header</small></div>
+      <div class="fstep green a" style="--d:10.57s">payments (child)<small>ParentBased follows flag</small></div>
+    </div>
+  </div>
+  <div class="fp a" style="left:110px;top:630px;width:1700px;height:230px;--d:17.02s">
+    <h2>Traffic split at the SDK</h2>
+    <div class="fm" style="height:56px"><div class="fmf" style="--w:10%;background:var(--blue);--d:7.65s"></div></div>
+    <div style="display:flex;justify-content:space-between;font:600 22px 'IBM Plex Mono'">
+      <span class="t-blue">10% recorded &amp; exported intact</span>
+      <span class="muted">90% never recorded (zero pipeline cost)</span>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 3 of 9</div>
+  <h1>Head sampling is blind to later errors</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s">
+    <h2>Timeline of a failing checkout request</h2>
+    <div class="fgrid3" style="margin-top:36px">
+      <div class="fstep a" style="--d:2.31s">t = 0 ms · checkout<small>root picks flag = 00 (drop)</small></div>
+      <div class="fstep red a" style="--d:4.59s">t = 420 ms · payments<small>HTTP 500 timeout · card failed</small></div>
+      <div class="fstep red a" style="--d:10.16s">Result in trace store<small>0 spans recorded · trace gone</small></div>
+    </div>
+    <div class="fb red a" style="--d:12.96s;margin-top:54px">Head sampling cannot guarantee every error or slow trace</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 4 of 9</div>
+  <h1>Tail sampling decides after the trace</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:310px;--d:.6s">
+    <h2>Two-tier Collector routing by trace ID</h2>
+    <div class="fgrid4" style="margin-top:24px">
+      <div class="fstep blue a" style="--d:3.41s">Services<small>export all spans</small></div>
+      <div class="fstep green a" style="--d:6.94s">Tier 1 · LB exporter<small>hash(trace_id)</small></div>
+      <div class="fstep amber a" style="--d:14.64s">Tier 2 · tail sampler<small>holds whole trace</small></div>
+      <div class="fstep a" style="--d:15.68s">decision_wait: 30s<small>then run policies</small></div>
+    </div>
+  </div>
+  <div class="fp a" style="left:110px;top:640px;width:1700px;height:220px;--d:12.12s;border-color:var(--amber)">
+    <div class="fc" style="font-size:21px"><span class="k">load_balancing</span>: &#123; <span class="k">routing_key</span>: <span class="v">traceID</span>, <span class="k">dns</span>: <span class="v">tail-samplers-headless.otel.svc</span> &#125;</div>
+    <div style="font:500 22px 'IBM Plex Sans';color:var(--muted);margin-top:14px">Every span of trace X must reach the same tier-2 pod; round-robin splits traces in half.</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 5 of 9</div>
+  <h1>Keep errors, slow p99, and rare shapes</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:560px;--d:.6s;border-color:var(--blue)">
+    <h2 class="t-blue">Tier-2 tail policies</h2>
+    <div class="fstep red a" style="--d:2.83s;margin-top:16px">status_code: ERROR<small>keep 100% of failing traces</small></div>
+    <div class="fstep amber a" style="--d:0.6s;margin-top:16px">latency &gt; 2000 ms<small>keep slow tail requests</small></div>
+    <div class="fstep green a" style="--d:8.56s;margin-top:16px">probabilistic: 5%<small>steady healthy baseline</small></div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:560px;--d:9.55s;border-color:var(--green)">
+    <h2 class="t-blue">Dynamic sampling + trade-off</h2>
+    <div class="fstep green a" style="--d:12.89s;margin-top:16px">Weight by rarity<small>keep rare routes &amp; error shapes, thin health checks</small></div>
+    <div class="fstep amber a" style="--d:17.04s;margin-top:24px">The hidden bill<small>you still pay CPU, RAM, and network to export and buffer spans before dropping them</small></div>
+    <div class="fb amber a" style="--d:20.46s;margin-top:26px">Size decision_cache above num_traces</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 6 of 9</div>
+  <h1>Ship one org policy in the template</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:280px;--d:.6s;border-color:var(--blue)">
+    <h2 class="t-blue">Platform-owned hybrid policy</h2>
+    <div class="fgrid3" style="margin-top:20px">
+      <div class="fstep blue a" style="--d:7.21s">Service template<small>parentbased_traceidratio by tier</small></div>
+      <div class="fstep green a" style="--d:8.6s">Shared tail tier<small>keeps all arriving errors &amp; slow traces</small></div>
+      <div class="fstep amber a" style="--d:1.0s">High-volume guard<small>busiest services head-sample first</small></div>
+    </div>
+  </div>
+  <div class="fp a" style="left:110px;top:610px;width:1700px;height:240px;--d:5.16s">
+    <div class="fc" style="font-size:22px">
+      <div><span class="k">OTEL_TRACES_SAMPLER</span>=<span class="v">parentbased_traceidratio</span></div>
+      <div><span class="k">OTEL_TRACES_SAMPLER_ARG</span>=<span class="v">0.2</span> <span class="m">  (tier-1 API: 1.0 · high-QPS edge: 0.1)</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 7 of 9</div>
+  <h1>Cap every team with composite shares</h1>
+  <div class="fp a" style="left:110px;top:290px;width:1700px;height:560px;--d:.6s">
+    <h2>Composite policy isolates noisy neighbors</h2>
+    <div style="margin-top:24px;display:grid;gap:22px">
+      <div class="a" style="--d:2.96s">
+        <div style="display:flex;justify-content:space-between;font:700 23px 'IBM Plex Sans'"><span>Team Payments · 30% share</span><span class="t-green">1,100 / 3,000 spans/s</span></div>
+        <div class="fm"><div class="fmf" style="--w:37%;background:var(--green);--d:2.96s"></div></div>
+      </div>
+      <div class="a" style="--d:9.46s">
+        <div style="display:flex;justify-content:space-between;font:700 23px 'IBM Plex Sans'"><span>Team Search · 30% share</span><span class="t-blue">1,950 / 3,000 spans/s</span></div>
+        <div class="fm"><div class="fmf" style="--w:65%;background:var(--blue);--d:9.46s"></div></div>
+      </div>
+      <div class="a" style="--d:13.19s">
+        <div style="display:flex;justify-content:space-between;font:700 23px 'IBM Plex Sans'"><span>Team Promo (noisy loop) · 20% share</span><span class="t-red">Capped at 2,000 / 2,000 spans/s</span></div>
+        <div class="fm"><div class="fmf" style="--w:100%;background:var(--red);--d:13.19s"></div></div>
+      </div>
+    </div>
+    <div class="fb green a" style="--d:15.53s;margin-top:26px">Noisy service fills only its own slice; rest of fleet unaffected</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 8 of 9</div>
+  <h1>Measure RED metrics before sampling</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:560px;--d:.6s;border-color:var(--red)">
+    <h2 class="t-red">Wrong: metrics from kept traces</h2>
+    <div class="fstep red a" style="--d:6.12s;margin-top:24px">Keep 100% errors + 5% OK<small>0.1% true errors looks like 2% error rate!</small></div>
+    <div style="font:500 23px 'IBM Plex Sans';color:var(--muted);margin-top:28px">Keep-errors policies intentionally bias the stored trace sample. Never drive SLOs from it.</div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:560px;--d:8.65s;border-color:var(--green)">
+    <h2 class="t-blue">Right: spanmetrics in Tier 1</h2>
+    <div class="fstep green a" style="--d:10.04s;margin-top:20px">Count every arriving span<small>Tier 1 emits RED metrics before Tier 2 drops</small></div>
+    <div class="fstep blue a" style="--d:15.9s;margin-top:18px">Pair with app metrics<small>required wherever services head-sample</small></div>
+    <div class="fb amber a" style="--d:19.48s;margin-top:22px">Set aggregation_cardinality_limit</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 9 of 9</div>
+  <h1>Publish cost and fidelity every week</h1>
+  <div class="fp a" style="left:110px;top:290px;width:820px;height:430px;--d:3.3s;border-color:var(--blue)">
+    <h2 class="t-blue">1. Cost per team</h2>
+    <div style="font:800 54px 'Archivo';color:var(--blue);margin:14px 0">kept spans / sec</div>
+    <div style="font:500 24px 'IBM Plex Sans';color:var(--muted)">Tracked right next to each team's composite share so budget growth is visible before it hurts.</div>
+  </div>
+  <div class="fp a" style="left:990px;top:290px;width:820px;height:430px;--d:6.81s;border-color:var(--green)">
+    <h2 class="t-blue">2. Fidelity per team</h2>
+    <div style="font:800 54px 'Archivo';color:var(--green);margin:14px 0">~100% errors kept</div>
+    <div class="mono" style="font-size:21px;color:var(--fg)">error spans kept / error spans pre-sampling</div>
+    <div class="fb amber a" style="--d:15.35s;margin-top:22px">Watch sampling_trace_dropped_too_early</div>
+  </div>
+  <div class="critter"><div id="critter"></div></div>
+</section>
+
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 3 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../observability/#sampling">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Org sampling policy: head and tail. Across hundreds of services, keeping every trace blows up the bill, while random sampling drops the failures you need during an outage. Who sets the sampling policy, what must it always keep, and how do you show each team what it costs and what it throws away?", "Head sampling decides at the root span, before the request has finished, using the trace ID and a fixed ratio like ten percent. That choice rides downstream in the traceparent sampled flag, and parent-based children follow it so whole traces stay intact. The other ninety percent are never recorded.", "Here is the blind spot. Checkout made that sampling decision before payments ever failed. If the request fell in the dropped ninety percent, the error trace is gone forever. Plain head sampling cannot promise you every error or every slow trace.", "Tail sampling flips the timing. Services export all or most spans to tier-one Collectors running a load-balancing exporter keyed on trace ID, so every span of one trace lands on the same tier-two sampler. That sampler buffers the trace for thirty seconds by default before deciding.", "Tier-two policies keep traces with an error status, latency above a threshold like two seconds, and a small probabilistic baseline. Dynamic sampling goes further, raising the keep rate for rare routes or error shapes while thinning routine health checks. One catch: you still pay to export and buffer spans before dropping them.", "Make the platform team own one clear org policy. Ship parent-based head ratios by service tier in every template, plus one shared tail tier that keeps errors and slow traces. The highest-volume services head-sample first so they don't swamp the pipeline.", "Give every team a bounded share. The composite policy caps total spans per second and splits that cap across sub-policies by percentage, while rate limiting caps any single rule. When one service gets noisy, it fills only its own slice instead of crowding out the rest of the fleet.", "Never compute request or error rates from sampled traces, because keep-errors policies inflate error rates by design. Put the spanmetrics connector in tier one before tail sampling so R E D metrics count every arriving span, and pair it with app metrics wherever services head-sample. Always set its cardinality limit.", "Publish two numbers per team every week. Cost is kept spans per second against the team's share. Fidelity is error spans kept divided by error spans seen before sampling, which should stay near a hundred percent, alongside traces evicted early before a decision."], "seconds": [19.03, 18.91, 15.67, 18.07, 21.02, 16.1, 18.19, 20.42, 17.14]}</script>
+<script src="../film.js"></script>
+</body>
+</html>
