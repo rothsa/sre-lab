@@ -164,6 +164,7 @@ footer a { color: var(--accent); }
         <h2>Why this breaks across hundreds of teams</h2>
         <div><b>Cardinality multiplies silently:</b> Prometheus and managed metric stores bill per unique label combination. Adding <code>user_id</code> or <code>trace_id</code> to a metric turns 100 series into millions and triggers <code>sample_limit</code> scrape failures. Keep IDs in wide events or structured metadata instead.</div>
         <div><b>Sampling trades cost against outage visibility:</b> Plain head sampling throws away 90% to 99% of error traces before a downstream service even fails. Hybrid tail sampling or dynamic wide-event sampling keeps ~100% of errors and slow p99s while thinning routine 200 OK traffic.</div>
+        <div><b>Catch cardinality bombs in PR review before deploy:</b> <a href="https://github.com/telemetry-prs/telemetry-prs" target="_blank" rel="noopener"><b>Telemetry PRs</b></a> is an open-source static GitHub Action (<code>telemetry-prs/telemetry-prs@v0.2.0</code>, <code>block-on: high</code>) that flags unbounded metric labels like <code>user_id</code>, <code>trace_id</code>, and <code>req.url</code> across OpenTelemetry and <code>prom-client</code> right in your pull request diff, 100% inside CI with no SaaS upload or LLM keys.</div>
         <div>Related chapters: <a href="../observability/#three-signals">Telemetry strategy &amp; budget</a> · <a href="../observability/#sampling">Org sampling policy</a> · <a href="../cardinality/">Taming Cardinality</a></div>
       </section>
     </div>
