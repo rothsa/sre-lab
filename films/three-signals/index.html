@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Telemetry strategy and budget: the film</title>
+<meta name="description" content="A short narrated film on telemetry strategy and budget across hundreds of teams: three-store stacks vs observability 2.0 wide events, limits per team and cost attribution.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../film.css">
+<link rel="stylesheet" href="../../site-nav.css">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+.ts-panel{position:absolute;border:2.5px solid var(--rule);background:var(--panel);border-radius:30px 10px 30px 10px;box-shadow:0 12px 32px rgba(20,70,35,.10);padding:26px 32px}
+.ts-panel h2{margin:0 0 16px;font:800 31px "Archivo";color:var(--fg)}
+.ts-band{position:absolute;left:110px;top:760px;width:1700px;height:126px;border:3px dashed var(--blue);border-radius:30px 10px 30px 10px;background:rgba(255,255,255,.55);display:flex;align-items:center;justify-content:space-between;padding:0 36px}
+.ts-band-title{font:700 22px "IBM Plex Mono";text-transform:uppercase;letter-spacing:.08em;color:var(--blue)}
+.ts-pill-row{display:flex;gap:22px;align-items:center}
+.ts-badge{display:inline-flex;align-items:center;gap:14px;border:2.5px solid var(--blue);background:#dff0d3;border-radius:999px;padding:12px 26px;font:700 26px "IBM Plex Sans";color:var(--fg)}
+.ts-badge.amber{border-color:var(--amber);background:#fbefd0;color:#7a5308}
+.ts-badge.red{border-color:var(--red);background:#fbe4d9;color:var(--red)}
+.ts-badge.green{border-color:var(--green);background:#e9f6dc;color:var(--blue)}
+.ts-num{width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;font:800 22px "Archivo";display:inline-flex;align-items:center;justify-content:center;flex:none}
+.ts-meter{position:relative;width:100%;height:46px;border-radius:23px;background:#d6e6c8;overflow:hidden;margin:14px 0}
+.ts-meter-fill{height:100%;width:0;border-radius:23px;background:var(--green)}
+.scene.on .ts-meter-fill{animation:ts-grow 1.4s cubic-bezier(.2,.7,.2,1) var(--d,0s) forwards}
+@keyframes ts-grow{to{width:var(--w)}}
+.ts-card-grid{display:grid;grid-template-columns:repeat(14,1fr);gap:8px;margin-top:18px}
+.ts-card-grid i{height:34px;border-radius:8px 3px 8px 3px;background:#e4edd9;display:block}
+.scene.on .ts-card-grid i{animation:ts-hot .35s var(--d) forwards}
+@keyframes ts-hot{to{background:var(--red)}}
+.ts-wf-row{display:flex;align-items:center;gap:16px;margin:14px 0;font:600 24px "IBM Plex Mono";color:var(--fg)}
+.ts-wf-name{width:170px;text-align:right;color:var(--muted)}
+.ts-wf-track{position:relative;flex:1;height:36px;background:#e7f0de;border-radius:10px;overflow:hidden}
+.ts-wf-bar{position:absolute;top:0;height:100%;border-radius:10px;background:var(--blue);transform-origin:left center;transform:scaleX(0)}
+.scene.on .ts-wf-bar{animation:ts-scale .7s cubic-bezier(.2,.7,.2,1) var(--d) forwards}
+@keyframes ts-scale{to{transform:scaleX(1)}}
+.ts-wf-bar.amber{background:var(--amber)}
+.ts-wf-bar.red{background:var(--red)}
+.ts-code{background:#0d2016;color:#e3f0de;border-radius:22px 8px 22px 8px;padding:22px 28px;font:400 23px/1.6 "IBM Plex Mono";box-shadow:0 14px 34px rgba(20,70,35,.18)}
+.ts-code .k{color:#8fdc7a}.ts-code .v{color:#f5c26b}.ts-code .e{color:#ff8a5c}.ts-code .m{color:#9fb8a2}
+.ts-hi{border-radius:6px;padding:1px 6px;margin:0 -6px;transition:background .4s}
+.scene.on .ts-hi{animation:ts-hilite .6s 17.5s forwards}
+@keyframes ts-hilite{to{background:rgba(143,220,122,.20)}}
+.ts-policy{position:absolute;left:140px;top:290px;width:1640px;background:#fff;border:2.5px solid var(--rule);border-top:10px solid var(--blue);border-radius:24px 10px 24px 10px;box-shadow:0 24px 60px rgba(20,70,35,.14);padding:34px 48px}
+.ts-policy-row{display:grid;grid-template-columns:420px 260px 1fr 220px;align-items:center;gap:22px;padding:22px 0;border-bottom:1.5px solid #e3eed9;font:600 28px "IBM Plex Sans"}
+.ts-policy-row:last-of-type{border-bottom:0}
+.ts-ret-track{height:34px;border-radius:17px;background:#e7f0de;overflow:hidden}
+.ts-ret-fill{height:100%;width:0;border-radius:17px}
+.scene.on .ts-ret-fill{animation:ts-grow 1.2s cubic-bezier(.2,.7,.2,1) var(--d) forwards}
+.ts-ret-fill.dashed{background:repeating-linear-gradient(135deg,#d9981e 0 14px,#f0ca6e 14px 28px)}
+.ts-limit-line{position:absolute;top:-10px;bottom:-10px;left:62%;width:4px;background:var(--red);z-index:3}
+.ts-flip{border:2.5px solid var(--green);background:#e9f6dc;border-radius:22px 8px 22px 8px;padding:20px 26px;font:700 28px "IBM Plex Sans";color:var(--blue);margin-top:26px}
+.scene.on .ts-flip{animation:in .7s cubic-bezier(.2,.7,.2,1) var(--d,0s) both,ts-dark .5s 6.2s forwards}
+@keyframes ts-dark{to{border-color:var(--red);background:#fbe4d9;color:var(--red)}}
+.ts-shrink-track{position:relative;height:48px;border-radius:24px;background:#e4edd9;overflow:hidden;margin-top:14px}
+.ts-shrink-fill{height:100%;width:58%;border-radius:24px;background:var(--red)}
+.scene.on .ts-shrink-fill{animation:ts-zero 2.4s cubic-bezier(.2,.7,.2,1) 17.0s forwards}
+@keyframes ts-zero{to{width:4%;background:var(--green)}}
+.ts-table{width:100%;border-collapse:collapse;font:500 25px "IBM Plex Sans"}
+.ts-table th{text-align:left;padding:12px 18px;font:700 19px "IBM Plex Mono";text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:2px solid var(--rule)}
+.ts-table td{padding:16px 18px;border-bottom:1px solid #e4edd9}
+.scene.on .ts-table tr.over{animation:ts-row-warn .6s 9.8s forwards}
+@keyframes ts-row-warn{to{background:#fbefd0}}
+.ts-scan{position:absolute;inset:0 auto 0 0;width:90px;background:linear-gradient(90deg,transparent,rgba(31,122,58,.24),transparent);opacity:0}
+.scene.on .ts-scan{animation:ts-sweep 2.2s ease-in-out 10.8s infinite}
+@keyframes ts-sweep{0%{left:-90px;opacity:0}15%{opacity:1}85%{opacity:1}100%{left:100%;opacity:0}}
+.ts-mini-col{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.ts-mini{border:2px solid var(--rule);background:#fff;border-radius:18px 6px 18px 6px;padding:16px 14px;text-align:center;font:700 23px "IBM Plex Sans"}
+.ts-mini small{display:block;font:400 18px "IBM Plex Mono";color:var(--muted);margin-top:6px}
+.ts-lens{border:2.5px solid var(--blue);background:#e9f6dc;border-radius:20px 8px 20px 8px;padding:16px 22px;margin-top:14px;font:700 25px "IBM Plex Sans";color:var(--blue);display:flex;justify-content:space-between;align-items:center}
+.ts-lens small{font:400 20px "IBM Plex Mono";color:var(--muted)}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><a href="https://resume.sallyroth.dev/">~/resume</a><a href="../../" aria-current="page">~/lab</a><a href="https://resume.sallyroth.dev/flix/">~/flix</a><a href="https://resume.sallyroth.dev/hire/" class="hire">~/coffee</a></nav>
+<div class="film-wrap">
+  <div class="kicker"><a href="../../">SRE Lab</a> · <a href="../../observability/#three-signals">Observability</a> · film · recorded 22 Nov 2026</div>
+  <h1 class="page">Telemetry strategy and budget</h1>
+  <div id="viewport">
+    <div id="stage">
+
+<section class="scene">
+  <div class="kick">Observability · chapter 1</div>
+  <h1>Telemetry strategy and budget</h1>
+  <div class="a" style="--d:3.0s;position:absolute;left:110px;top:248px;display:flex;gap:14px;align-items:center">
+    <span class="ts-badge green" style="font-size:22px;padding:8px 20px">Metrics</span>
+    <span class="ts-badge amber" style="font-size:22px;padding:8px 20px">Traces</span>
+    <span class="ts-badge red" style="font-size:22px;padding:8px 20px">Logs</span>
+    <span class="muted" style="font:600 24px 'IBM Plex Sans';margin-left:8px">data types, not separate worlds</span>
+  </div>
+  <div class="ts-panel a" style="left:110px;top:338px;width:820px;height:382px;--d:15.6s">
+    <h2>Three-store stack <span class="mono muted" style="font-size:22px">· o11y 1.0</span></h2>
+    <div style="font:500 23px 'IBM Plex Sans';color:var(--muted)">Split each request across three tools and stitch IDs back later.</div>
+    <div class="ts-mini-col">
+      <div class="ts-mini" style="border-color:var(--blue);background:#dff0d3">Metrics<small>Prometheus, Mimir</small></div>
+      <div class="ts-mini" style="border-color:var(--amber);background:#fbefd0">Traces<small>Tempo, Jaeger</small></div>
+      <div class="ts-mini" style="border-color:var(--red);background:#fbe4d9">Logs<small>Loki, Elastic</small></div>
+    </div>
+    <div class="muted" style="font:600 21px 'IBM Plex Mono';margin-top:24px">Pay 3× · correlate with exemplars + trace_id</div>
+  </div>
+  <div class="ts-panel a" style="left:990px;top:338px;width:820px;height:382px;--d:19.2s;border-color:var(--blue)">
+    <h2 class="t-blue">Wide structured events <span class="mono muted" style="font-size:22px">· o11y 2.0</span></h2>
+    <div style="font:500 23px 'IBM Plex Sans';color:var(--muted)">Keep rich context together in one canonical event per request hop.</div>
+    <div style="margin-top:22px;border:2.5px solid var(--blue);background:#e9f6dc;border-radius:20px 8px 20px 8px;padding:20px 24px">
+      <div style="font:700 25px 'IBM Plex Sans';color:var(--blue)">One columnar source of truth</div>
+      <div class="mono muted" style="font-size:20px;margin-top:8px">user_id · tenant_id · build_sha · duration_ms · error</div>
+    </div>
+    <div class="t-green" style="font:600 21px 'IBM Plex Mono';margin-top:20px">Store once · derive metrics &amp; traces as lenses</div>
+  </div>
+  <div class="ts-band a" style="--d:21.2s">
+    <div class="ts-band-title">Needed in either model</div>
+    <div class="ts-pill-row">
+      <div class="ts-badge"><span class="ts-num">1</span>Limits &amp; sampling per team</div>
+      <div class="ts-badge amber"><span class="ts-num" style="background:var(--amber)">2</span>Cost tied back to teams</div>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 2 of 9</div>
+  <h1>Metrics stay cheap by dropping context</h1>
+  <div class="ts-panel a" style="left:110px;top:290px;width:810px;height:580px;--d:.6s">
+    <h2>Traffic climbs, series stay flat</h2>
+    <div class="a" style="--d:1.4s;display:flex;gap:16px;align-items:center;margin-bottom:22px">
+      <span class="ts-badge green" style="font-size:24px;padding:10px 22px">10k req/s → 100k req/s</span>
+      <span class="muted" style="font:600 22px 'IBM Plex Sans'">rolled up in process</span>
+    </div>
+    <div class="a" style="--d:4.6s;font:600 22px 'IBM Plex Mono';color:var(--muted);margin-bottom:8px">http_requests_total{service="orders", status="200"}</div>
+    <div class="ts-meter a" style="--d:5.0s"><div class="ts-meter-fill" style="--w:22%;--d:5.4s"></div></div>
+    <div class="a" style="--d:9.2s;font:700 28px 'IBM Plex Sans';color:var(--blue);margin-top:10px">120 active series · cheap for months</div>
+    <div class="a" style="--d:11.6s;margin-top:46px;display:flex;gap:16px">
+      <span class="chip">Infra health</span>
+      <span class="chip">Dashboards &amp; alerts</span>
+    </div>
+  </div>
+  <div class="ts-panel a" style="left:970px;top:290px;width:840px;height:580px;--d:14.2s;border-color:var(--red)">
+    <h2 class="t-red">The trade-off: cardinality</h2>
+    <div class="a" style="--d:18.0s;font:600 24px 'IBM Plex Mono';background:#fbe4d9;color:var(--red);padding:12px 20px;border-radius:14px;display:inline-block">+ user_id="u_94821"</div>
+    <div class="ts-card-grid">
+      <i style="--d:18.8s"></i><i style="--d:18.84s"></i><i style="--d:18.88s"></i><i style="--d:18.92s"></i><i style="--d:18.96s"></i><i style="--d:19.0s"></i><i style="--d:19.04s"></i><i style="--d:19.08s"></i><i style="--d:19.12s"></i><i style="--d:19.16s"></i><i style="--d:19.2s"></i><i style="--d:19.24s"></i><i style="--d:19.28s"></i><i style="--d:19.32s"></i>
+      <i style="--d:19.0s"></i><i style="--d:19.04s"></i><i style="--d:19.08s"></i><i style="--d:19.12s"></i><i style="--d:19.16s"></i><i style="--d:19.2s"></i><i style="--d:19.24s"></i><i style="--d:19.28s"></i><i style="--d:19.32s"></i><i style="--d:19.36s"></i><i style="--d:19.4s"></i><i style="--d:19.44s"></i><i style="--d:19.48s"></i><i style="--d:19.52s"></i>
+      <i style="--d:19.2s"></i><i style="--d:19.24s"></i><i style="--d:19.28s"></i><i style="--d:19.32s"></i><i style="--d:19.36s"></i><i style="--d:19.4s"></i><i style="--d:19.44s"></i><i style="--d:19.48s"></i><i style="--d:19.52s"></i><i style="--d:19.56s"></i><i style="--d:19.6s"></i><i style="--d:19.64s"></i><i style="--d:19.68s"></i><i style="--d:19.72s"></i>
+      <i style="--d:19.4s"></i><i style="--d:19.44s"></i><i style="--d:19.48s"></i><i style="--d:19.52s"></i><i style="--d:19.56s"></i><i style="--d:19.6s"></i><i style="--d:19.64s"></i><i style="--d:19.68s"></i><i style="--d:19.72s"></i><i style="--d:19.76s"></i><i style="--d:19.8s"></i><i style="--d:19.84s"></i><i style="--d:19.88s"></i><i style="--d:19.92s"></i>
+      <i style="--d:19.6s"></i><i style="--d:19.64s"></i><i style="--d:19.68s"></i><i style="--d:19.72s"></i><i style="--d:19.76s"></i><i style="--d:19.8s"></i><i style="--d:19.84s"></i><i style="--d:19.88s"></i><i style="--d:19.92s"></i><i style="--d:19.96s"></i><i style="--d:20.0s"></i><i style="--d:20.04s"></i><i style="--d:20.08s"></i><i style="--d:20.12s"></i>
+    </div>
+    <div class="ts-badge red a" style="--d:20.8s;margin-top:34px">120 × 100,000 = 12M series</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 3 of 9</div>
+  <h1>Logs grow with volume, and split context</h1>
+  <div class="ts-panel a" style="left:110px;top:290px;width:810px;height:560px;--d:.6s">
+    <h2>Cost scales with volume &amp; verbosity</h2>
+    <div class="a" style="--d:1.2s;font:700 24px 'IBM Plex Mono';color:var(--blue);margin-top:16px">INFO · normal traffic</div>
+    <div class="ts-meter a" style="--d:1.4s"><div class="ts-meter-fill" style="--w:16%;--d:1.8s"></div></div>
+    <div class="a" style="--d:2.8s;font:700 24px 'IBM Plex Mono';color:var(--red);margin-top:38px">DEBUG · noisy output per request</div>
+    <div class="ts-meter a" style="--d:3.0s"><div class="ts-meter-fill" style="--w:96%;--d:3.4s;background:var(--red)"></div></div>
+    <div class="ts-badge red a" style="--d:5.0s;margin-top:32px">10× log lines → 10× bill</div>
+  </div>
+  <div class="ts-panel a" style="left:970px;top:290px;width:840px;height:560px;--d:6.4s">
+    <h2>Loki cuts indexing, not fragmentation</h2>
+    <div class="a" style="--d:8.6s;border:2.5px solid var(--green);background:#e9f6dc;border-radius:20px 8px 20px 8px;padding:18px 24px;margin-top:10px">
+      <div style="font:700 23px 'IBM Plex Sans';color:var(--blue)">1. Index only stream labels</div>
+      <div class="mono" style="font-size:20px;color:var(--muted);margin-top:6px">{service="checkout", env="prod"}</div>
+    </div>
+    <div class="a" style="--d:10.6s;position:relative;overflow:hidden;border:2.5px solid var(--rule);background:#fff;border-radius:20px 8px 20px 8px;padding:18px 24px;margin-top:18px">
+      <div class="ts-scan"></div>
+      <div style="font:700 23px 'IBM Plex Sans';color:var(--fg)">2. Scan text at query time</div>
+      <div class="mono" style="font-size:19px;color:var(--muted);margin-top:8px;line-height:1.55">level=info msg="order created"<br>level=error msg="timeout db-02" trace_id=9f3a</div>
+    </div>
+    <div class="ts-badge amber a" style="--d:13.6s;margin-top:24px;font-size:22px;padding:10px 22px">20 scattered lines = context stitched by hand</div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 4 of 9</div>
+  <h1>Traces follow the request, so sample</h1>
+  <div class="ts-panel a" style="left:110px;top:290px;width:780px;height:580px;--d:.6s">
+    <h2>One request, five spans</h2>
+    <div class="ts-wf-row a" style="--d:1.0s"><span class="ts-wf-name">gateway</span><div class="ts-wf-track"><div class="ts-wf-bar" style="left:0%;width:92%;--d:1.2s"></div></div><span>240ms</span></div>
+    <div class="ts-wf-row a" style="--d:1.6s"><span class="ts-wf-name">auth</span><div class="ts-wf-track"><div class="ts-wf-bar" style="left:6%;width:14%;--d:1.8s"></div></div><span>18ms</span></div>
+    <div class="ts-wf-row a" style="--d:2.2s"><span class="ts-wf-name">orders</span><div class="ts-wf-track"><div class="ts-wf-bar amber" style="left:22%;width:66%;--d:2.4s"></div></div><span>195ms</span></div>
+    <div class="ts-wf-row a" style="--d:2.8s"><span class="ts-wf-name">inventory</span><div class="ts-wf-track"><div class="ts-wf-bar" style="left:28%;width:22%;--d:3.0s"></div></div><span>62ms</span></div>
+    <div class="ts-wf-row a" style="--d:3.4s"><span class="ts-wf-name">postgres</span><div class="ts-wf-track"><div class="ts-wf-bar red" style="left:52%;width:34%;--d:3.6s"></div></div><span>118ms</span></div>
+    <div class="ts-badge amber a" style="--d:8.6s;margin-top:40px;font-size:24px">~1,000 traces/sec → start sampling</div>
+  </div>
+  <div class="ts-panel a" style="left:940px;top:290px;width:870px;height:580px;--d:13.4s">
+    <h2>Fleet default: two sampling tiers</h2>
+    <div class="a" style="--d:14.8s;border:2.5px solid var(--blue);background:#dff0d3;border-radius:22px 8px 22px 8px;padding:22px 28px;margin-top:12px">
+      <div style="font:800 28px 'Archivo';color:var(--blue)">Tier 1 · Head sampling</div>
+      <div style="font:500 24px 'IBM Plex Sans';color:var(--fg);margin-top:8px">Built into every service template to trim routine traffic early.</div>
+    </div>
+    <div class="a" style="--d:19.0s;border:2.5px solid var(--amber);background:#fbefd0;border-radius:22px 8px 22px 8px;padding:22px 28px;margin-top:28px">
+      <div style="font:800 28px 'Archivo';color:#9a6a0c">Tier 2 · Shared tail tier</div>
+      <div style="font:500 24px 'IBM Plex Sans';color:var(--fg);margin-top:8px">Buffers full traces and keeps the ones you actually debug:</div>
+      <div style="display:flex;gap:16px;margin-top:18px">
+        <span class="ts-badge red a" style="--d:20.4s;font-size:22px;padding:8px 20px">500 Errors · kept</span>
+        <span class="ts-badge amber a" style="--d:21.1s;font-size:22px;padding:8px 20px">Slow p99 · kept</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 5 of 9</div>
+  <h1>Wide events: keep context together</h1>
+  <div class="a" style="--d:6.4s;position:absolute;left:110px;top:248px;font:600 24px 'IBM Plex Sans';color:var(--muted)">
+    Instead of <span class="strike">3 disconnected stores + exemplar / trace_id glue</span> → <b class="t-blue">Observability 2.0</b>
+  </div>
+  <div class="ts-panel a" style="left:110px;top:314px;width:850px;height:560px;--d:12.2s;border-color:var(--blue)">
+    <h2>One canonical wide event per hop</h2>
+    <div class="ts-code" style="font-size:21px;line-height:1.58">
+      <div>{</div>
+      <div>&nbsp;&nbsp;<span class="k">"service"</span>: <span class="v">"checkout"</span>, <span class="k">"status"</span>: <span class="e">500</span>,</div>
+      <div class="ts-hi">&nbsp;&nbsp;<span class="k">"user_id"</span>: <span class="v">"u_94821"</span>, <span class="k">"tenant_id"</span>: <span class="v">"acme"</span>,</div>
+      <div class="ts-hi">&nbsp;&nbsp;<span class="k">"build_sha"</span>: <span class="v">"a8c4f19"</span>, <span class="k">"flag_v2"</span>: <span class="v">true</span>,</div>
+      <div>&nbsp;&nbsp;<span class="k">"trace_id"</span>: <span class="v">"9f3a..."</span>, <span class="k">"duration_ms"</span>: <span class="e">1840</span>,</div>
+      <div>&nbsp;&nbsp;<span class="k">"error"</span>: <span class="e">"stripe_timeout"</span></div>
+      <div>}</div>
+    </div>
+    <div class="ts-badge green a" style="--d:21.0s;margin-top:24px;font-size:23px">Context compounds combinatorially</div>
+  </div>
+  <svg>
+    <path class="line a" style="--d:24.8s;stroke:var(--blue);stroke-width:5" d="M960 560 H1022"/>
+    <path class="a" style="--d:24.8s;fill:var(--blue)" d="M1008 546 L1030 560 L1008 574 Z"/>
+  </svg>
+  <div class="ts-panel a" style="left:1032px;top:314px;width:778px;height:560px;--d:25.0s;border-color:var(--green)">
+    <h2>Store once in a columnar engine</h2>
+    <div class="ts-badge amber a" style="--d:26.3s;font-size:22px;padding:8px 20px;margin-bottom:14px">Dynamic sampling controls volume</div>
+    <div class="ts-lens a" style="--d:28.1s"><span>SLIs &amp; dashboards</span><small>derived metrics</small></div>
+    <div class="ts-lens a" style="--d:28.8s"><span>Distributed traces</span><small>same spans</small></div>
+    <div class="ts-lens a" style="--d:29.6s"><span>Arbitrary drill-down</span><small>any field combo</small></div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 6 of 9</div>
+  <h1>Write the org rule on one page</h1>
+  <div class="ts-policy a" style="--d:4.8s">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+      <div style="font:800 32px 'Archivo';color:var(--blue)">ORG TELEMETRY POLICY</div>
+      <div class="mono muted" style="font-size:22px">1 page · default retention per signal</div>
+    </div>
+    <div class="ts-policy-row a" style="--d:9.6s">
+      <div>Infra health &amp; fleet alerts</div>
+      <div><span class="ts-badge green" style="font-size:22px;padding:8px 20px">Metrics</span></div>
+      <div class="ts-ret-track"><div class="ts-ret-fill" style="background:var(--green);--w:92%;--d:10.2s"></div></div>
+      <div class="t-green" style="font-weight:700">Kept long</div>
+    </div>
+    <div class="ts-policy-row a" style="--d:14.0s">
+      <div>Request debugging &amp; context</div>
+      <div><span class="ts-badge amber" style="font-size:22px;padding:8px 20px">Wide events / Traces</span></div>
+      <div class="ts-ret-track"><div class="ts-ret-fill dashed" style="--w:54%;--d:14.6s"></div></div>
+      <div style="color:#9a6a0c;font-weight:700">Sampled</div>
+    </div>
+    <div class="ts-policy-row a" style="--d:19.0s">
+      <div>Raw unstructured logs</div>
+      <div><span class="ts-badge red" style="font-size:22px;padding:8px 20px">Logs</span></div>
+      <div class="ts-ret-track"><div class="ts-ret-fill" style="background:var(--red);--w:20%;--d:19.4s"></div></div>
+      <div class="t-red" style="font-weight:700">Kept short</div>
+    </div>
+    <div class="a" style="--d:7.0s;margin-top:26px;display:flex;justify-content:flex-end">
+      <span class="ts-badge green" style="font-size:25px">✓ Checked on every new service</span>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 7 of 9</div>
+  <h1>Limits make the rule real</h1>
+  <div class="ts-panel a" style="left:110px;top:290px;width:820px;height:580px;--d:3.6s">
+    <h2>Prometheus <span class="mono t-blue">sample_limit</span></h2>
+    <div style="position:relative;margin-top:34px">
+      <div class="ts-limit-line"></div>
+      <div style="position:absolute;left:62%;top:-34px;transform:translateX(-50%);font:700 20px 'IBM Plex Mono';color:var(--red)">sample_limit</div>
+      <div class="ts-meter" style="height:54px;border-radius:27px"><div class="ts-meter-fill" style="--w:86%;--d:4.8s;background:var(--red)"></div></div>
+    </div>
+    <div class="ts-flip a" style="--d:5.4s">Scrape fails whole → target goes dark</div>
+    <div class="ts-badge amber a" style="--d:10.4s;margin-top:34px;font-size:24px">Alert on scrape failures when enabling limits</div>
+  </div>
+  <div class="ts-panel a" style="left:990px;top:290px;width:820px;height:580px;--d:13.2s">
+    <h2>Loki per-tenant limits</h2>
+    <div class="ts-code a" style="--d:14.4s;margin-top:12px">
+      <div><span class="k">limits_config</span>:</div>
+      <div>&nbsp;&nbsp;<span class="k">ingestion_rate_mb</span>: <span class="v">16</span></div>
+      <div>&nbsp;&nbsp;<span class="k">max_streams_per_user</span>: <span class="v">10000</span></div>
+    </div>
+    <div class="a" style="--d:19.6s;margin-top:34px">
+      <div style="font:700 24px 'IBM Plex Sans';margin-bottom:14px">Count limit hits per team every week</div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap">
+        <span class="ts-badge green" style="font-size:22px;padding:8px 18px">auth: 0</span>
+        <span class="ts-badge amber" style="font-size:22px;padding:8px 18px">search: 3</span>
+        <span class="ts-badge red" style="font-size:22px;padding:8px 18px">payments: 14</span>
+      </div>
+      <div class="muted" style="font-size:19px;margin-top:12px">(Illustrative example.)</div>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="kick">Step 8 of 9</div>
+  <h1>Tie every byte to an owning team</h1>
+  <div class="a" style="--d:.7s"><div class="box green" style="left:110px;top:286px;width:530px;height:130px;font-size:32px">team=checkout<small>tenant + team label</small></div></div>
+  <div class="a" style="--d:1.3s"><div class="box green" style="left:695px;top:286px;width:530px;height:130px;font-size:32px">team=payments<small>tenant + team label</small></div></div>
+  <div class="a" style="--d:1.9s"><div class="box green" style="left:1280px;top:286px;width:530px;height:130px;font-size:32px">team=search<small>tenant + team label</small></div></div>
+  <div class="ts-panel a" style="left:110px;top:460px;width:820px;height:184px;--d:5.4s;border-color:var(--blue)">
+    <h2 style="font-size:28px;margin-bottom:10px">Mimir custom trackers</h2>
+    <div style="font:500 24px 'IBM Plex Sans';color:var(--muted)">Count active series per label matcher so every team sees its own footprint.</div>
+  </div>
+  <div class="ts-panel a" style="left:990px;top:460px;width:820px;height:184px;--d:9.0s;border-color:var(--blue)">
+    <h2 style="font-size:28px;margin-bottom:10px">Loki overrides exporter</h2>
+    <div style="font:500 24px 'IBM Plex Sans';color:var(--muted)">Publishes each tenant's configured limits as Prometheus metrics.</div>
+  </div>
+  <div class="ts-panel a" style="left:110px;top:690px;width:1700px;height:186px;--d:13.0s">
+    <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <h2 style="font-size:28px;margin:0">Unowned telemetry spend</h2>
+      <span class="mono t-green" style="font-size:26px;font-weight:700">target → 0%</span>
+    </div>
+    <div class="ts-shrink-track"><div class="ts-shrink-fill"></div></div>
+  </div>
+</section>
+
+<section class="scene" style="--egg:17.8s">
+  <div class="kick">Step 9 of 9</div>
+  <h1>Publish the bill and track growth</h1>
+  <div class="ts-panel a" style="left:110px;top:284px;width:1700px;height:282px;--d:2.6s;padding:22px 32px">
+    <table class="ts-table">
+      <thead><tr><th>Team</th><th>Active series</th><th>Log GB / mo</th><th>Events &amp; spans / mo</th><th>Status (illustrative)</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">checkout</td><td>42k</td><td>180 GB</td><td>1.2M</td><td class="t-green">On budget</td></tr>
+        <tr class="over"><td class="mono">payments</td><td>190k</td><td>640 GB</td><td>4.1M</td><td class="t-red" style="font-weight:700">2 mo over → Review</td></tr>
+        <tr><td class="mono">search</td><td>28k</td><td>95 GB</td><td>0.8M</td><td class="t-green">On budget</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="position:absolute;left:110px;top:594px;display:flex;gap:14px;flex-wrap:wrap">
+    <span class="chip a" style="--d:12.4s">Drop unused series</span>
+    <span class="chip a" style="--d:14.0s">Tighten sampling</span>
+    <span class="chip a" style="--d:15.0s">Trim retention</span>
+    <span class="chip a" style="--d:16.2s">Raise the budget</span>
+  </div>
+  <div class="ts-panel a" style="left:110px;top:694px;width:1700px;height:200px;--d:17.6s;padding:22px 36px;display:flex;align-items:center;justify-content:space-between;gap:40px">
+    <div>
+      <h2 style="font-size:28px;margin:0 0 8px">Fleet-wide health check</h2>
+      <div style="font:500 24px 'IBM Plex Sans';color:var(--muted)">Compare <b class="t-amber">telemetry spend growth</b> against <b class="t-green">traffic growth</b>.</div>
+    </div>
+    <svg style="position:static;width:720px;height:140px;flex:none" viewBox="0 0 720 140">
+      <line x1="20" y1="120" x2="700" y2="120" stroke="#c4d9b3" stroke-width="2"/>
+      <path d="M20 110 C180 100 360 80 700 44" fill="none" stroke="#3f9a4f" stroke-width="5" stroke-linecap="round"/>
+      <path d="M20 108 C180 70 340 24 700 52" fill="none" stroke="#d9981e" stroke-width="5" stroke-dasharray="12 8" stroke-linecap="round"/>
+      <text x="530" y="26" fill="#3f9a4f" font-family="IBM Plex Mono" font-size="18" font-weight="600">traffic growth</text>
+      <text x="520" y="96" fill="#d9981e" font-family="IBM Plex Mono" font-size="18" font-weight="600">spend growth</text>
+    </svg>
+  </div>
+  <div class="critter"><div id="critter"></div></div>
+</section>
+
+<div class="canopy"><svg viewBox="0 0 300 230" style="right:-30px;top:0;width:520px;height:400px;transform:scaleX(-1)"><defs><path id="lf" d="M0,0 C10,-8 26,-8 34,0 C26,8 10,8 0,0 Z"/></defs>
+<g class="sway"><path d="M40,0 C46,60 30,110 42,170" fill="none" stroke="#24563a" stroke-width="3"/><use href="#lf" fill="#3f9a4f" transform="translate(44,30) rotate(30)"/><use href="#lf" fill="#2d7a3c" transform="translate(40,62) rotate(150)"/><use href="#lf" fill="#3f9a4f" transform="translate(37,96) rotate(25)"/><use href="#lf" fill="#2d7a3c" transform="translate(36,130) rotate(160)"/><use href="#lf" fill="#3f9a4f" transform="translate(42,160) rotate(60)"/><circle cx="42" cy="172" r="5" fill="#d9481e"/></g>
+<g class="sway b"><path d="M110,0 C100,40 118,80 108,120" fill="none" stroke="#24563a" stroke-width="2.5"/><use href="#lf" fill="#2d7a3c" transform="translate(106,22) rotate(140)"/><use href="#lf" fill="#3f9a4f" transform="translate(112,52) rotate(35)"/><use href="#lf" fill="#2d7a3c" transform="translate(110,86) rotate(155)"/><use href="#lf" fill="#3f9a4f" transform="translate(108,114) rotate(70)"/></g>
+<g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(60,0) scale(1.8) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.6) rotate(10)"/><use href="#lf" transform="translate(205,0) scale(1.3) rotate(-25)"/></g></svg>
+<svg viewBox="0 0 300 60" style="left:-20px;top:0;width:420px;height:84px"><g fill="#2d7a3c"><use href="#lf" transform="translate(0,6) scale(2.2) rotate(20)"/><use href="#lf" transform="translate(70,0) scale(1.7) rotate(-15)"/><use href="#lf" transform="translate(150,2) scale(1.4) rotate(10)"/></g></svg></div>
+<div id="bar"></div><div id="foot">SRE LAB</div>
+    </div>
+    <button type="button" id="poster" aria-label="Play the film"><span>▶ Play · 3.5 min, with sound</span></button>
+  </div>
+  <div class="film-controls">
+    <button type="button" id="f-play">Play</button>
+    <button type="button" id="f-prev">← Back</button>
+    <button type="button" id="f-next">Next →</button>
+    <span class="count" id="f-count"></span>
+    <button type="button" id="f-cc" aria-pressed="true">Captions</button>
+  </div>
+  <p id="caption" aria-live="off"></p>
+  <p class="film-note">Narration is a synthetic voice reading a shortened version of the chapter's steps. Anything on screen marked as an example is made up. The <a href="../../observability/#three-signals">chapter itself</a> has the sources and is updated more often than this film.</p>
+</div>
+<script type="application/json" id="film-data">{"narration": ["Telemetry strategy and budget. Metrics, logs, and traces are data types, not separate worlds. Across hundreds of teams, the real question isn't just which store gets which signal. It's whether you split every request across three disconnected tools, or keep rich context together in wide structured events, while tying the bill back to the teams creating it.", "Pre-aggregated metrics roll numbers up inside the process, so cost tracks unique label combinations, called series, rather than traffic. That makes them cheap to keep for months, and great for infrastructure health and dashboards. The trade-off is cardinality. Put a high-value debugging field like user I D into a metric label, and your series count explodes.", "Traditional logs charge per event, so noisy debug output multiplies the bill fast. Tools like Loki keep indexing small by indexing only stream labels and scanning text at query time. Still, scattering twenty unstructured log lines per request forces engineers to stitch context back together during an outage.", "Traces capture spans across every hop, so volume grows with call depth. Open Telemetry suggests sampling once you pass roughly a thousand traces per second. At fleet scale, the standard pattern is two tiers: head sampling in every service template to trim routine traffic, plus a shared tail tier that keeps errors and slow requests.", "Here is the shift behind observability 2.0, argued by Charity Majors and others. Instead of paying three times and gluing separate stores together with exemplars and trace IDs, emit one wide structured event per request per service, packed with high-cardinality context like user ID, build, and feature flags. Context compounds combinatorially: store the rich event once in a columnar engine, sample dynamically, and derive your metrics and traces as lenses on the same data.", "Whether you run a three-store stack, wide events, or a hybrid, write the org rule on one page and check every new service against it. Keep infrastructure health on pre-aggregated metrics with long retention. Put request-level debugging in wide structured events or sampled traces with full context, and keep raw unstructured logs short.", "A policy without guardrails is just a wish. In Prometheus, sample limit fails the entire scrape when a target emits too many series, so always alert on scrape failures when you enable it. In Loki, enforce per-tenant limits like ingestion rate and max streams. And across every stack, count limit hits per team every week.", "Make every team a tenant, or enforce a team label on every signal. Mimir custom trackers count active series per team, and Loki's overrides exporter turns tenant limits into metrics. Unowned telemetry is the spend nobody ever cleans up, so drive unattributed bytes as close to zero as you can.", "Finally, make the bill visible. Every month, publish each team's series, log gigabytes, and event or span volume right next to its owners. Two months over budget triggers a calm review: drop unused series, tighten sampling, trim retention, or raise the budget. Across the whole fleet, the healthiest number to watch is telemetry spend growth compared to traffic growth."], "seconds": [23.4, 22.15, 20.11, 22.18, 31.25, 21.02, 22.08, 20.23, 23.86]}</script>
+<script src="../film.js"></script>
+</body>
+</html>
