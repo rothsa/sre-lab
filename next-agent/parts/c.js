@@ -125,7 +125,7 @@ export const CHAPTERS = [
     ],
     say30: "I put seams where slow-moving things meet fast-moving ones. Frontier models change every few weeks, so every agent talks to them through one adapter with a pinned model ID. Each internal system gets one MCP server, listed in a reviewed internal registry and reused by every agent and model, with the spec version pinned and deprecations inventoried. Tools stay few and namespaced, with actionable errors. Structured outputs replace repair parsers, with validation kept. Instructions live in AGENTS.md and skills, and traces in one schema with the model ID as an attribute, so a new model drops in and the evals judge it.",
     gotchas: [
-      "Provider-agnostic is not behavior-agnostic. The Agents SDK warns that other providers may lack structured outputs or hosted tools, and the same prompt can behave differently; the eval suite, not the adapter, makes a swap safe.",
+      "Provider-agnostic is not behavior-agnostic. The Agents SDK warns that other providers may lack structured outputs or hosted tools, and the same prompt can behave differently; the eval suite, not the adapter, makes a swap safe. That makes a fallback model a weak outage plan, so teams now design what each feature does with no model at all. incident.io and Skyscanner (Oct 2026): \"Give every AI feature a floor.\" In GitHub's October 2026 Copilot model outage, features built on one model with no alternative were hit hardest.",
       "Structured outputs guarantee shape, not truth. A schema-valid answer can still be wrong, and refusals or token limits can break the schema, so check `stop_reason` and validate values.",
     ],
     quiz: [
@@ -155,6 +155,8 @@ export const CHAPTERS = [
       { title: "OpenAI Agents SDK: Models", url: "https://openai.github.io/openai-agents-python/models/" },
       { title: "Vercel AI SDK: Providers and models", url: "https://ai-sdk.dev/docs/foundations/providers-and-models" },
       { title: "LiteLLM docs", url: "https://docs.litellm.ai/docs/" },
+      { title: "incident.io: Degrade gracefully: designing AI features that keep working when the model doesn't (29 Oct 2026)", url: "https://incident.io/blog/degrade-gracefully-designing-ai-features-that-keep-working-when-the-model-doesnt" },
+      { title: "GitHub Availability Report: October 2026 (12 Nov 2026)", url: "https://github.blog/news-insights/company-news/github-availability-report-october-2026/" },
       { title: "OpenAI: Structured outputs guide", url: "https://developers.openai.com/api/docs/guides/structured-outputs" },
       { title: "Anthropic: Structured outputs on the Claude Developer Platform (2025-11-14, GA 2026-02-04)", url: "https://claude.com/resources/articles/structured-outputs-on-the-claude-developer-platform" },
       { title: "Claude docs: Structured outputs", url: "https://platform.claude.com/docs/en/build-with-claude/structured-outputs" },

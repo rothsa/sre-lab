@@ -365,9 +365,10 @@ count by (project) (
     say30: "I run Argo CD as a control system for hundreds of clusters. Git is desired state, Argo CD diffs it against live state, Synced and Healthy are separate, and rollback is a git revert. ApplicationSets give every new cluster the standard set, and fleet-wide changes go out in waves by cluster label. Production defaults are auto-sync with prune and selfHeal. Drift is a fleet metric from `argocd_app_info`: OutOfSync apps by project and cluster, and how long they've been out. Break-glass is written policy: a scoped deny window, a fix, the same change in Git, sync back on. I count those events and watch p99 reconcile time.",
     gotchas: [
       "`Synced` only means live matches Git. An app can be Synced and Degraded, for example a new image that crashloops. Gate on health.",
+      "Synced and Healthy doesn't prove a Sync hook ran. A CNCF write-up (20 Nov 2026) shows that when a deny window closes, `selfHeal` can apply a waiting release as a partial sync, which skips hooks, so the migration never runs. Ship migrations as a per-release Job in an earlier sync wave.",
       "Automated sync doesn't prune by default. Deleting a manifest leaves the object running, and turning prune on later can delete more than you expected.",
       "Fields other controllers own (replicas under an HPA, an injected `caBundle`) keep an app OutOfSync forever. Use `ignoreDifferences`, or the drift metric fills with noise.",
-      "A sync window matches `applications` OR `clusters` by default, so a break-glass window for one app on one cluster pauses more than you meant. Set `andOperator: true`. Cluster patterns match the Application's destination name or server URL.",
+      "A sync window matches `applications` OR `clusters` by default, so a break-glass window for one app on one cluster pauses more than you meant. Set `andOperator: true`.",
       "Rendered manifests are cached in plaintext in Redis, so Secrets stay out of Git and come from a secret operator on each cluster. Count Secret objects found in config repos; the target is zero.",
     ],
     agentic: [
@@ -386,6 +387,7 @@ count by (project) (
       { title: "OpenGitOps principles", url: "https://opengitops.dev/" },
       { title: "Argo CD: Metrics", url: "https://argo-cd.readthedocs.io/en/stable/operator-manual/metrics/" },
       { title: "Argo CD: Sync windows", url: "https://argo-cd.readthedocs.io/en/stable/user-guide/sync_windows/" },
+      { title: "CNCF blog: When a sync window closes: how Argo CD self-heal skipped the migration hook (20 Nov 2026)", url: "https://www.cncf.io/blog/2026/11/20/when-a-sync-window-closes-how-argo-cd-self-heal-skipped-the-migration-hook/" },
       { title: "Argo CD advisory GHSA-9v9p-x54c-58gc: a Kustomize remote ref can run commands in the repo-server (7 Oct 2026)", url: "https://github.com/argoproj/argo-cd/security/advisories/GHSA-9v9p-x54c-58gc" },
       { title: "Argo CD: Core concepts", url: "https://argo-cd.readthedocs.io/en/stable/core_concepts/" },
       { title: "Argo CD: Architecture", url: "https://argo-cd.readthedocs.io/en/stable/operator-manual/architecture/" },

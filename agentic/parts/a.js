@@ -181,7 +181,7 @@ export const CHAPTERS = [
       { title: "Shopify: Under the River (2026-05-28)", url: "https://shopify.engineering/under-the-river" },
       { title: "Spotify: Context engineering for background coding agents, Honk part 2 (2025-11-24)", url: "https://engineering.atspotify.com/2025/11/context-engineering-background-coding-agents-part-2" },
       { title: "Uber: Running a software factory efficiently (2026-08-27)", url: "https://www.uber.com/us/en/blog/efficient-software-factory/" },
-      { title: "Uber: Designing MCP Gateway (2026-10-01)", url: "https://www.uber.com/blog/designing-mcp-gateway/" },
+      { title: "Uber: Designing MCP Gateway (2026-10-01)", url: "https://www.uber.com/us/en/blog/designing-mcp-gateway/" },
       { title: "Stripe: Minions part 2 (2026-02-19)", url: "https://stripe.dev/blog/minions-stripes-one-shot-end-to-end-coding-agents-part-2" },
       { title: "Amazon: Correction on Amazon.com outages and AI (2026-03-11)", url: "https://www.aboutamazon.com/news/company-news/amazon-outage-ai-financial-times-correction" },
       { title: "Nubank: When AI skills become supply-chain dependencies (2026-09-02)", url: "https://building.nu.com/when-ai-skills-become-supply-chain-dependencies-2/" },
