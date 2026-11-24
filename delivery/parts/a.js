@@ -109,7 +109,7 @@ publish:
       "Blanket auto-retry turns flaky tests green and hides real failures too. Quarantine the test and give it an owner instead.",
       "A required check is only a name until you pin who may post it. GitHub: \"Any person or integration with write permissions to a repository can set the state of any status check\". The wfx-loot CI stealer (Nov 2026) carries code that posts passing statuses under a repo's required check names. Set the expected source app on every required check, through org rulesets.",
       "CI evidence expires. Since October 2026 GitHub's Actions retention setting also deletes checks, workflow runs and statuses, and raising it later won't restore them. Copy release evidence somewhere you control.",
-      "`runs-on: ubuntu-latest` is a moving dependency. GitHub moved it from Ubuntu 24.04 to 26.04 in a rollout due to finish on 19 November 2026, and some preinstalled tools changed, so the same commit can fail with no change in your repo. Pin `ubuntu-24.04` until you have tested `ubuntu-26.04`.",
+      "`runs-on: ubuntu-latest` is a moving dependency. GitHub moved it from Ubuntu 24.04 to 26.04 in autumn 2026 (its runner image list shows 26.04 since 24 November), and some preinstalled tools changed, so the same commit can fail with no change in your repo. Pin `ubuntu-24.04` until you have tested `ubuntu-26.04`.",
     ],
     agentic: [
       "Coding agents multiply pull requests, and every agent PR queues the same jobs on the same runner fleet, so queue time and CI minutes become the limit before human review does. Budget agent runs like any workload: the Claude Code GitHub Actions docs suggest `--max-turns`, workflow timeouts and concurrency limits, and the queue-time dashboard should split agent and human jobs.",
@@ -125,6 +125,7 @@ publish:
     sources: [
       { title: "GitHub Docs: Available rules for rulesets (require status checks, expected source)", url: "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#require-status-checks-to-pass-before-merging" },
       { title: "Aikido: wfx-loot campaign pushes CI secret stealer to tens of thousands of repositories (12 Nov 2026)", url: "https://www.aikido.dev/blog/compromised-github-accounts-push-ci-secret-stealer-to-tens-of-thousands-of-repositories" },
+      { title: "actions/runner-images README: ubuntu-latest is Ubuntu 26.04 (24 Nov 2026)", url: "https://github.com/actions/runner-images/blob/main/README.md" },
       { title: "GitHub changelog: Ubuntu 26 GA and ubuntu-latest migration (17 Sep 2026)", url: "https://github.blog/changelog/2026-09-17-ubuntu-26-generally-available-and-latest-migration/" },
       { title: "GitHub Docs: Caching dependencies to speed up workflows", url: "https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching" },
       { title: "GitHub Docs: Running variations of jobs in a workflow (matrix)", url: "https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/run-job-variations" },
