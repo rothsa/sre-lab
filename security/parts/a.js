@@ -205,7 +205,7 @@ export const CHAPTERS = [
       "In mutual TLS only the leaf certificate proves its sender holds the key. LXD trusted any certificate in the client's chain, so a trusted client's public cert sent as an intermediate logged an attacker in as that client (Canonical, 28 Oct 2026).",
       "A trust that checks only issuer and audience lets any workload from that issuer in. Pin the subject per repo and per cluster.",
       "A vendor's cross-account role is standing access until you delete it. In October 2026 an attacker with credentials from Qubole's AWS account assumed customers' integration roles: \"Every AssumeRole request we attributed to the threat actor included an External ID, and every one succeeded\" (Wiz, 9 Nov 2026). Sentra found the roles \"still in place long after companies had stopped using Qubole\". Inventory third-party trust policies across the org, delete the unused ones, and add a source IP condition to the rest.",
-      "MFA only guards the sign-in path it sits on. A stolen session cookie skips it, as CircleCI found in 2022. Device code phishing skips passkeys \"because the victim signs in on the real Microsoft page\" (Carlos Perez, Oct 2026). So does any other login method left on, as with SonicWall's SSL-VPN (CISA KEV, 6 Nov 2026). Turn off every sign-in path but the IdP, block device code flow outside documented exceptions, keep prod sessions short and ask for step-up on writes.",
+      "MFA only guards the sign-in path it sits on. A stolen session cookie skips it, as CircleCI found in 2022. Device code phishing skips passkeys \"because the victim signs in on the real Microsoft page\" (Carlos Perez, Oct 2026). A phone call skips it as well: Unit 42 (20 Nov 2026) saw vishing crews relay a login through a fake SSO page, then start \"enrolling an unauthorized MFA device within minutes of authenticating\". Turn off every sign-in path but the IdP, block device code flow outside documented exceptions, ask for a phishing-resistant factor before adding a factor, keep prod sessions short and ask for step-up on writes.",
     ],
     agentic: [
       "Agents are workloads: each gets its own federated identity and short-lived credentials, never a person's key, with the human who launched it recorded by the IdP or launcher, never by the agent.",
@@ -230,6 +230,7 @@ export const CHAPTERS = [
       { title: "MCP Python SDK: bearer auth accepts tokens for another resource server, GHSA-w4fh-qvv9-3v23 (27 Oct 2026)", url: "https://osv.dev/vulnerability/GHSA-w4fh-qvv9-3v23" },
       { title: "Wiz: Qubole cross-account access abused in the wild (9 Nov 2026)", url: "https://www.wiz.io/blog/qubole-cross-account-access-abused-in-the-wild" },
       { title: "Sentra: Inside the Qubole supply chain attack (9 Nov 2026)", url: "https://sentra.io/blog/breaches/inside-the-qubole-supply-chain-attack" },
+      { title: "Unit 42: Dialing for Data, inside the Com's vishing attacks (20 Nov 2026)", url: "https://unit42.paloaltonetworks.com/com-affiliate-vishing-attacks/" },
       { title: "SonicWall SNWLID-2026-0014: SSL-VPN SAML and MFA bypass, CVE-2026-19868 (in CISA KEV 6 Nov 2026)", url: "https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2026-0014" },
     ],
   },
