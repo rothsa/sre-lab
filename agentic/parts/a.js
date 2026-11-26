@@ -243,7 +243,7 @@ export const CHAPTERS = [
     say30: "Across a fleet, yield tracks the oracle, so done is a check agents can't edit; InfoQ reported Spotify's agents commenting out failing tests. Every run commits its failing repro before the fix, shows evidence, and gets graded by a different model or reviewer. Unattended runs end at a stop hook that runs the check. Generated tests pass a mutation gate, and skipping human review takes a measured revert rate, as at Meta.",
     gotchas: [
       "Scaffolding should shrink as models improve. With Opus 4.6, Anthropic dropped the one-feature sprints from its long-running harness but kept a separate evaluator, because agents grading their own work skew positive (Mar 2026).",
-      "\"Tests pass\" can mean the agent edited the tests. Commit the failing repro first and review test diffs like code; Bun's port ran its full suite with zero tests skipped.",
+      "\"Tests pass\" can mean the agent edited the tests. Porting its Messages API to Rust, Anthropic (25 Nov 2026) audited the ported tests and \"found more than 100 weakened assertions\"; the new API passed about 98% of its tests while \"only about a quarter of inputs matched on production traffic\". Commit the failing repro first, review test diffs like code, and compare against production behaviour where you can.",
       "A self-report is not verification. pstack's prove-it-works rejects proxies like file mtimes or cached output.",
       "Strict graders block good work too. Spotify's LLM judge vetoed about a quarter of sessions; InfoQ says the team found it \"too rigid\" and later removed it, which no Spotify post confirms.",
       "A check on the wrong surface (unit test for a UI bug, staging for a prod-only race) is inconclusive; pstack says flag it, not pass it.",
@@ -261,6 +261,7 @@ export const CHAPTERS = [
     incidents: [],
     sources: [
       { title: "Anthropic: Harness design for long-running application development (24 Mar 2026)", url: "https://www.anthropic.com/research/harness-design-long-running-apps" },
+      { title: "Anthropic: Migrating our Messages API to Rust (25 Nov 2026)", url: "https://www.anthropic.com/research/migrating-api-to-rust" },
       { title: "Claude Code team: How the Claude Code team thinks about verification (claude.dev, 16 Nov 2026)", url: "https://claude.dev/blog/how-the-claude-code-team-thinks-about-verification/" },
       { title: "pstack: bug-fix playbook", url: `${PS}/skills/poteto-mode/playbooks/bug-fix.md` },
       { title: "pstack: shipping playbook", url: `${PS}/skills/poteto-mode/playbooks/shipping.md` },

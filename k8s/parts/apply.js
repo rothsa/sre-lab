@@ -75,7 +75,7 @@ export const CHAPTERS = [
     ],
     quiz: [
       { q: "Which component decides which node a Pod runs on, and how does the node find out?", a: "The scheduler. It writes a binding to the API server, and the kubelet on that node, which watches for Pods assigned to it, picks it up." },
-      { q: "You want to block `:latest` image tags in 300 clusters without breaking anyone on day one. How?", a: "Write it as a ValidatingAdmissionPolicy and ship the policy and its binding to every cluster with `validationActions: [Warn, Audit]`. Count failures per policy in `apiserver_validating_admission_policy_check_total` and the audit log, get the owners to fix them, then switch the binding to `Deny`." },
+      { q: "You want to block `:latest` image tags in 300 clusters without breaking anyone on day one. How?", a: "Write it as a ValidatingAdmissionPolicy and ship the policy and its binding to every cluster with `validationActions: [Warn, Audit]`. Count failures per policy in `apiserver_validating_admission_policy_check_total` and the audit log, and scan what is already running, since admission only sees writes. Get the owners to fix both, then switch the binding to `Deny`." },
       { q: "Your Pod is Running but the Service sends it no traffic. What's the first thing to check?", a: "Readiness. If the Pod isn't Ready (usually a failing readiness probe, sometimes a readiness gate), it isn't a ready endpoint in the Service's EndpointSlice. Also check that the Service selector matches the Pod's labels." },
     ],
     incidents: [],

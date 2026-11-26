@@ -138,7 +138,7 @@ export const CHAPTERS = [
     ],
     steps: [
       { text: "Below: the pipeline every team's telemetry goes through. Top right: what the platform adds once hundreds of teams depend on it, which is SLOs, an owner with a pager, and fleet config control. Press Next." },
-      { text: "Apps export OTLP to an agent Collector on their node, gRPC on 4317 or HTTP on 4318. The agent adds host metadata and forwards to a gateway, usually one per cluster or region.", on: ["app", "agent", "recv"], flow: ["e-sdk", "e-ag"] },
+      { text: "Apps export OTLP to an agent Collector on their node, gRPC on 4317 or HTTP on 4318. The agent stamps the pod IP and host metadata, then forwards to a gateway, usually one per cluster or region.", on: ["app", "agent", "recv"], flow: ["e-sdk", "e-ag"] },
       { text: "`memory_limiter` goes first. Over its soft limit it refuses data with a retryable error and the sender backs off. A sender that doesn't retry loses that data.", on: ["recv", "mem"], flow: ["e-p1", "e-refuse"] },
       { text: "Then `k8sattributes` (before batching, which drops the context it needs), redaction in `attributes`, then `batch` (deprecated; batching moves into exporters). This is where org rules live: strip personal data and high-cardinality attributes once, for everyone.", on: ["mem", "k8s", "attr", "batch"], flow: ["e-p2", "e-p3", "e-p4"] },
       { text: "Each exporter gets its own copy. `loadbalancing` routes by trace ID so one tail sampler sees the whole trace. Scale that sampling tier only behind it, and watch `otelcol_loadbalancer_num_backends`: every change moves trace routes.", on: ["batch", "expo", "explb", "s1", "s2", "tback", "vback"], flow: ["e-fo1", "e-fo2", "e-v", "e-lb1", "e-lb2", "e-s1", "e-s2"] },
@@ -212,7 +212,7 @@ max by (exporter) (
   otelcol_exporter_queue_size
   / otelcol_exporter_queue_capacity)` },
     ],
-    codeNote: "A sketch, not a drop-in config: hostnames are placeholders and the thresholds are examples. `batch` is deprecated (Nov 2026); its replacement is `sending_queue: { batch: { enabled: true } }` on each exporter. Recent Collector releases renamed the `otlp` exporter to `otlp_grpc`, `k8sattributes` to `k8s_attributes` and `loadbalancing` to `load_balancing`; the old names still work as deprecated aliases. With two exporters, sent counts each copy, so compare per exporter in practice. Prometheus-scraped names may carry a `_total` suffix.",
+    codeNote: "A sketch, not a drop-in config. The gateway's `k8s_attributes` matches on the `k8s.pod.ip` that agents add in `passthrough` mode; without it every span looks like it came from the agent. `batch` is deprecated (Nov 2026); its replacement is `sending_queue: { batch: { enabled: true } }` on each exporter. Recent Collector releases renamed the `otlp` exporter to `otlp_grpc`, `k8sattributes` to `k8s_attributes` and `loadbalancing` to `load_balancing`; the old names still work as deprecated aliases. With two exporters, sent counts each copy, so compare per exporter in practice. Prometheus-scraped names may carry a `_total` suffix.",
     incidents: ["stackdriver-2013-cassandra-queue-coupling", "honeycomb-2019-ingest-memory-leak", "railway-2023-metrics-agent-cpu-softlock"],
     sources: [
       { title: "OpenTelemetry Collector: Internal telemetry", url: "https://opentelemetry.io/docs/collector/internal-telemetry/" },

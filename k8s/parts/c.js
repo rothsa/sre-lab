@@ -407,7 +407,7 @@ export const CHAPTERS = [
       { text: "Alert per cluster and zone against a baseline, and page platform on-call for fleet-wide shifts. When one team's Pods are the outlier, that team gets a ticket with the evidence attached.", on: ["fleet", "oncall", "team"], flow: ["e-oc", "e-team"] },
       { text: "The worked example: one team's Pod. Confirm the kubectl context first, since a scale command against the wrong cluster hits production. Then `kubectl get pods` picks the branch.", on: ["fleet", "pod"], flow: ["e-drill"] },
       { text: "Pending: `kubectl describe` Events give the scheduler's reason, such as requests, taints or an unbound PVC. CrashLoopBackOff: `kubectl logs --previous` shows the run that crashed, and Last State has the exit code.", on: ["pod", "q1", "q2"], flow: ["e-q1", "e-q2"] },
-      { text: "OOMKilled with exit 137: the container went over its memory limit. Pods fine but no traffic: the Service's EndpointSlices are empty when its selector matches nothing. Events expire after 1 hour (`--event-ttl`), so ship them to your log store.", on: ["pod", "q3", "q4"], flow: ["e-q3", "e-q4"] },
+      { text: "OOMKilled with exit 137: usually the container went over its memory limit, but a node-wide OOM kill looks the same. Pods fine but no traffic: the Service's EndpointSlices are empty when its selector matches nothing. Events expire after 1 hour (`--event-ttl`), so ship them out.", on: ["pod", "q3", "q4"], flow: ["e-q3", "e-q4"] },
     ],
     say30: "I watch the fleet before any team calls. The project's SLOs set the bar: mutating API calls under 1 second at p99, stateless Pod startup under 5 seconds. Around them: admission webhook latency and errors by name, APF rejections, unschedulable Pods, evictions and NotReady nodes per zone, image pull and crash-loop counts from kube-state-metrics, and CoreDNS errors. A jump in one zone or everywhere is mine; one namespace standing out goes to that team with the evidence. For a single Pod I confirm my context, then `kubectl get pods` picks the branch: describe Events for Pending, `logs --previous` for crash loops, Last State for OOMKilled, EndpointSlices when traffic fails.",
     gotchas: [
@@ -422,7 +422,7 @@ export const CHAPTERS = [
     ],
     quiz: [
       { q: "Pending Pods jump in every cluster in one zone at the same time. Where do you look first?", a: "At the zone: NotReady nodes in `node_collector_unhealthy_nodes_in_zone`, evictions there, and whether the node autoscaler can still get VMs in that zone. One team's manifests can't explain a jump that spans clusters." },
-      { q: "A container restarts with exit code 137 and reason OOMKilled. What happened?", a: "It used more memory than its limit and was killed with SIGKILL (128 + 9). Raise the limit or fix the memory use." },
+      { q: "A container restarts with exit code 137 and reason OOMKilled. What happened?", a: "The kernel OOM killer sent SIGKILL (128 + 9). If usage was at the limit, raise the limit or fix the memory use. If it was well under, the node ran out: fix requests and node headroom." },
       { q: "Pods are Running and Ready, but the Service gets no traffic. What do you check?", a: "Its EndpointSlices. If empty, the Service selector doesn't match the Pod labels. If present, check `port` and `targetPort`, then network policies." },
     ],
     incidents: ["psf-2026-kubectl-wrong-context-scale-zero", "wikimedia-2020-sessionstore-oom", "preply-2020-kubernetes-dns-conntrack"],

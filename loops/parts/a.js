@@ -14,7 +14,7 @@ export const CHAPTERS = [
     ],
     nodes: [
       { id: "slogan", label: "Where it started", sub: "Cherny, Jun 2026:\n\"write loops\"", x: 20, y: 20, w: 240, h: 56 },
-      { id: "s-sess", label: "Session loops", sub: "/loop, 7-day expiry", x: 20, y: 130, w: 240, h: 50 },
+      { id: "s-sess", label: "Session loops", sub: "/loop, 30-day expiry", x: 20, y: 130, w: 240, h: 50 },
       { id: "s-sched", label: "Scheduled tasks", sub: "cloud, one account", x: 20, y: 195, w: 240, h: 50 },
       { id: "s-wf", label: "Saved workflows", sub: "in repos, plugins", x: 20, y: 260, w: 240, h: 50 },
       { id: "s-ci", label: "CI and bots", sub: "on every PR", x: 20, y: 325, w: 240, h: 50 },
@@ -42,7 +42,7 @@ export const CHAPTERS = [
     steps: [
       { text: "Left: the places loops run. Middle: the registry that knows about each one, and the telemetry that prices it. Right: the numbers you look at every month. The questions are how many loops run, who owns each one, and what they cost." },
       { text: "Where it started. Boris Cherny on Acquired (aired 2 Jun 2026): \"My job is to write loops.\" The viral line about graphs and loops building the agents has no primary source, and the \"keep Graph\" quote pinned on Karpathy carries a Community Note saying there is no record he said it.", on: ["slogan"] },
-      { text: "Loops run in more places than anyone lists. Session loops (/loop) live in one terminal and expire after 7 days. Cloud scheduled tasks, formerly routines, run on Anthropic's cloud, or on your own self-hosted environment. Saved workflows sit in repos and plugins. CI bots run on every PR.", on: ["s-sess", "s-sched", "s-wf", "s-ci"] },
+      { text: "Loops run in more places than anyone lists. Session loops (/loop) live in one terminal and expire after 30 days (7 before Claude Code 2.1.330). Cloud scheduled tasks, formerly routines, run on Anthropic's cloud, or on your own self-hosted environment. Saved workflows sit in repos and plugins. CI bots run on every PR.", on: ["s-sess", "s-sched", "s-wf", "s-ci"] },
       { text: "Scheduled tasks belong to one person's claude.ai account. They aren't shared, their commits, PRs and Slack messages show up as that person, and they count against that account's cap of 100 scheduled runs an hour. Pile a team's loops onto one account and runs start waiting.", on: ["s-sched"] },
       { text: "So keep a registry: owning team, check, budget and how to stop it, for every loop. Move recurring team work into saved workflows or CI, where it is a reviewed file with an owner; `.claude/workflows/` can be scanned. Session loops can't be listed, so they shouldn't carry unattended work.", on: ["reg", "s-sess", "s-sched", "s-wf", "s-ci"], flow: ["e-s1", "e-s2", "e-s3", "e-s4"] },
       { text: "Cost comes from telemetry. Claude Code exports `claude_code.cost.usage` and token counts over OpenTelemetry, and managed settings can force it on with `team.id` and `cost_center` attributes, so every loop is tagged without asking each engineer. The cost figure is an estimate.", on: ["tel", "m-count", "m-cost"], flow: ["e-tel", "e-rm"] },
@@ -66,7 +66,7 @@ export const CHAPTERS = [
       { title: "Acquired Unplugged with Boris Cherny, presented by WorkOS (YouTube, published 2 Jun 2026)", url: "https://www.youtube.com/watch?v=RkQQ7WEor7w" },
       { title: "@zodchiii on X: the earliest close wording, credited to an unnamed engineer (9 Aug 2026)", url: "https://x.com/zodchiii/status/2086517266716483675" },
       { title: "X post with a Community Note: no record of the Karpathy quote (14 Aug 2026)", url: "https://x.com/Mahaximus_/status/2088328196127334401" },
-      { title: "Claude Code docs: Run prompts on a schedule (/loop, 7-day expiry)", url: "https://code.claude.com/docs/en/scheduled-tasks" },
+      { title: "Claude Code docs: Run prompts on a schedule (/loop, 30-day expiry)", url: "https://code.claude.com/docs/en/scheduled-tasks" },
       { title: "Claude Code docs: Automate work with scheduled tasks, formerly routines (research preview, fetched 2026-10-20)", url: "https://code.claude.com/docs/en/routines" },
       { title: "Claude Code docs: Orchestrate subagents at scale with dynamic workflows (fetched 2026-10-20)", url: "https://code.claude.com/docs/en/workflows" },
       { title: "Claude Code docs: Monitoring usage with OpenTelemetry (fetched 2026-10-20)", url: "https://code.claude.com/docs/en/monitoring-usage" },

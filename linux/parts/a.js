@@ -314,7 +314,7 @@ export const CHAPTERS = [
     ],
     quiz: [
       { q: "What is the difference between `memory.high` and `memory.max`?", a: "`memory.high` throttles the cgroup and forces reclaim when usage goes over it, but never invokes the OOM killer. `memory.max` is the hard limit: if reclaim can't keep usage under it, the OOM killer runs inside the cgroup." },
-      { q: "How do you tell a container OOM kill from a node-wide OOM?", a: "A container OOM increments `oom_kill` in that cgroup's `memory.events`, the Pod shows `OOMKilled`, and the kernel log says `Memory cgroup out of memory`. A node-wide OOM has no cgroup limit involved: the log reports a plain `Out of memory`, the `oom-kill:` line shows `constraint=CONSTRAINT_NONE` instead of `CONSTRAINT_MEMCG`, and the victim can come from any cgroup." },
+      { q: "How do you tell a container OOM kill from a node-wide OOM?", a: "Not by `oom_kill` or `OOMKilled`: both kinds increment `oom_kill` in the victim's `memory.events`, and both show `OOMKilled`. A container OOM also increments `oom`, and the kernel log says `Memory cgroup out of memory` with `constraint=CONSTRAINT_MEMCG`. A node-wide OOM logs a plain `Out of memory` with `CONSTRAINT_NONE`, and the victim can come from any cgroup." },
       { q: "A container's `memory.current` is at 95% of its limit, but the app's heap is a quarter of that. Is it about to be OOM-killed?", a: "Not necessarily. The rest is likely page cache, which is charged to the cgroup but reclaimed when usage hits `memory.max`. Check `memory.stat` (`anon` vs `file`) and `memory.events` for `oom_kill` before raising the limit." },
     ],
     incidents: ["wikimedia-2020-sessionstore-oom"],

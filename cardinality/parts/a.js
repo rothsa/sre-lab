@@ -208,7 +208,7 @@ export const CHAPTERS = [
     ],
     code: [
       { lang: "promql", label: "Find it", src: "# biggest metrics (expensive: touches every series)\ntopk(10, count by (__name__)({__name__=~\".+\"}))\n\n# distinct values of one label on one metric\ncount(count by (path) (http_requests_total))\n\n# jobs adding the most new series in the last hour\ntopk(10, sum by (job) (sum_over_time(scrape_series_added[1h])))" },
-      { lang: "promql", label: "Alert on it", src: "# head series grew more than 50% in an hour\nprometheus_tsdb_head_series\n  > 1.5 * (prometheus_tsdb_head_series offset 1h)\n\n# series creation rate (growth and churn)\nrate(prometheus_tsdb_head_series_created_total[15m])" },
+      { lang: "promql", label: "Alert on it", src: "# head series up more than 30% on this time yesterday\navg_over_time(prometheus_tsdb_head_series[2h])\n  > 1.3 * avg_over_time(prometheus_tsdb_head_series[2h] offset 1d)\n\n# series creation rate (growth and churn)\nrate(prometheus_tsdb_head_series_created_total[15m])" },
       { lang: "bash", label: "Same data as the status page", src: "curl -s localhost:9090/api/v1/status/tsdb \\\n  | jq '.data.seriesCountByMetricName'" },
     ],
     codeNote: "The status endpoint returns the top 10 of each list by default; its `limit` parameter raises that.",
