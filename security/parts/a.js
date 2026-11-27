@@ -220,6 +220,8 @@ export const CHAPTERS = [
     sources: [
       { title: "Carlos Perez: Enabling passkeys is not the same as enforcing them (22 Oct 2026)", url: "https://www.darkoperator.com/blog/2026/10/22/enabling-passkeys-is-not-the-same-as-enforcing-them" },
       { title: "Security best practices in IAM", url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html" },
+      { title: "AWS IAM: Revoke IAM role temporary security credentials", url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_revoke-sessions.html" },
+      { title: "GitHub: OpenID Connect reference", url: "https://docs.github.com/en/actions/reference/security/oidc" },
       { title: "Temporary elevated access (IAM Identity Center)", url: "https://docs.aws.amazon.com/singlesignon/latest/userguide/temporary-elevated-access.html" },
       { title: "SEC03-BP03 Establish emergency access process", url: "https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/sec_permissions_emergency_process.html" },
       { title: "AWS account root user: centrally manage root access", url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_root-user.html" },
@@ -359,7 +361,7 @@ export const CHAPTERS = [
     say30: "I treat CI as production and the build as the trust root. Repos have protected branches. Org policy sets the allowed actions, requires full SHA pins, and starts tokens read-only. Builds run on a hosted platform that signs provenance and an SBOM for every artifact, aiming for SLSA Build L2 everywhere and L3 for what ships to customers. Prod verifies provenance at admission and refuses anything our builders didn't make. All SBOMs go into an index and packages come through an internal mirror, so when something like the xz backdoor lands, finding it is a query and blocking it is one change.",
     gotchas: [
       "An attestation tells you where and how something was built. GitHub's own docs say it doesn't guarantee the artifact is secure.",
-      "One developer account can be the whole path to production. 1Password (25 Nov 2026) said an attacker with an employee's corporate GitHub account used it \"to access source code and push malicious code to backend services, which downloaded administrative data\", and reached its CI/CD system. Vaults were not affected. Check that no single account can both push and deploy: a second approver on the deploy path, and CI secrets that a pushed branch can't read.",
+      "One stolen developer credential can be the whole path to production. 1Password (25 Nov 2026) said an attacker with an employee's corporate GitHub account used it \"to access source code and push malicious code to backend services, which downloaded administrative data\". At Todoist (22 to 23 Nov 2026) a stolen version-control credential was used \"to modify automated workflows in three repositories and obtain additional credentials\", and one of those led to its cloud. Check that no single account can both push and deploy: a second approver on the deploy path, and CI secrets that a pushed branch or an edited workflow can't read.",
       "A tag can be moved to a different commit. Pin to the full SHA, and check it comes from the action's own repo and not a fork.",
       "From 2 December 2026 GitHub blocks `pull_request_target` by default in all public repos, \"unless an applicable Actions event policy explicitly allows them\". Find the workflows that use it and decide the allow list once at org level, not per repo.",
       "Vendor scripts on signed-in pages run with the user's session. In October 2026 a compromised performance-monitoring script on Polymarket \"used their active session to sell positions and move funds\". Pin or self-host them, sandbox them, and set a strict CSP.",
@@ -390,6 +392,8 @@ steps:
     incidents: ["eslint-2018-npm-account-takeover", "homebrew-2018-jenkins-github-token-leak", "bintray-2017-jcenter-impersonation-malware", "luarocks-2026-rockspec-bytecode-rce"],
     sources: [
       { title: "GitHub Changelog: pull_request_target blocked by default December 2 (2 Nov 2026)", url: "https://github.blog/changelog/2026-11-02-pull_request_target-blocked-by-default-december-2" },
+      { title: "1Password: Update on a security incident involving 1Password's backend systems (25 Nov 2026)", url: "https://1password.com/blog/update-on-nov-2026-security-incident" },
+      { title: "Todoist: Security incident in November 2026 (24 Nov 2026, updated 26 Nov)", url: "https://www.todoist.com/help/todoist/get-started/security-incident-in-november-2026-cG0EIACNU" },
       { title: "GitHub Changelog: package firewall in public preview (20 Oct 2026)", url: "https://github.blog/changelog/2026-10-20-github-package-firewall-in-public-preview/" },
       { title: "Cursor: Claude Code extension security notice (29 Oct 2026)", url: "https://cursor.com/blog/claude-code-extension-security-notice" },
       { title: "Polymarket: postmortem, compromised third-party script (30 Oct 2026)", url: "https://status.polymarket.com/cmvvek1i90eme14ruga1z6tuj" },

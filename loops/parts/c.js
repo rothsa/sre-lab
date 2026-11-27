@@ -71,7 +71,7 @@ export const CHAPTERS = [
       { title: "Claude Code docs: Orchestrate subagents at scale with dynamic workflows (fetched 2026-10-20)", url: "https://code.claude.com/docs/en/workflows" },
       { title: "GitHub docs: About code owners (fetched 2026-10-20)", url: "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners" },
       { title: "GitHub docs: Available rules for rulesets (Required reviewers, GA 2026-02-17)", url: "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#required-reviewers" },
-      { title: "LangGraph docs: Use the graph API (Visualize your graph)", url: "https://docs.langchain.com/oss/python/langgraph/use-graph-api" },
+      { title: "LangGraph docs: Visualize your graph", url: "https://docs.langchain.com/oss/python/langgraph/graph-api-visualize" },
       { title: "GitHub Blog: Include diagrams in your Markdown files with Mermaid (2022-02-14, updated 2024-07-23)", url: "https://github.blog/developer-skills/github/include-diagrams-markdown-files-mermaid/" },
       { title: "OpenAI docs: Deprecations (Agent Builder, announced 2026-06-03, fetched 2026-10-20)", url: "https://developers.openai.com/api/docs/deprecations" },
       { title: "OpenAI docs: Migrate from Agent Builder", url: "https://developers.openai.com/api/docs/guides/agent-builder/migrate-from-agent-builder" },

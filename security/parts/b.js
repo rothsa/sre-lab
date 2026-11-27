@@ -109,7 +109,7 @@ export const CHAPTERS = [
       { title: "nginx security advisories: CVE-2026-123007 and CVE-2026-123633 (fixed in 1.30.7 and 1.31.9)", url: "https://nginx.org/en/security_advisories.html" },
       { title: "Wiz: Critical RCE vulnerabilities in NGINX HTTP/2 (18 Nov 2026)", url: "https://www.wiz.io/blog/nginx-http2-rce-vulnerabilities" },
       { title: "Wiz: Microsoft agent-framework compromised on PyPI (17 Nov 2026, updated 18 Nov)", url: "https://www.wiz.io/blog/malicious-version-of-microsofts-agent-framework-published-to-pypi" },
-      { title: "CISA: KEV catalog JSON feed (catalog 2026.11.20)", url: "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json" },
+      { title: "CISA: KEV catalog JSON feed (catalog 2026.11.25)", url: "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json" },
       { title: "CISA alert: Critical Java vulnerability requires immediate patching (17 Nov 2026)", url: "https://www.cisa.gov/news-events/alerts/2026/11/17/critical-java-vulnerability-requires-immediate-patching" },
       { title: "Calif: Java4Shell, CVE-2026-114938 (17 Nov 2026)", url: "https://calif.io/java4shell" },
       { title: "AWS Security Blog: Chinese-nexus actor's Cairn AI agents found a zero-day on their own (20 Nov 2026)", url: "https://aws.amazon.com/blogs/security/chinese-nexus-actors-cairn-ai-agents-found-a-zero-day-on-their-own/" },

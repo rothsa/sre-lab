@@ -180,7 +180,7 @@ export const CHAPTERS = [
       { text: "Fan-out: one worker per item, in parallel. In a workflow script, `agent()` spawns one subagent, `pipeline()` runs one per item in a list, and `parallel()` runs a set at once and waits for all. Cherny (YC, Jul 2026) calls the design \"essentially an algebra for agents\": sequence and parallel.", on: ["orch", "w1", "w2", "w3"], flow: ["e-o1", "e-o2", "e-o3"] },
       { text: "Verify each branch before trusting it. The workflows docs describe independent agents that \"adversarially review each other's findings before they're reported\"; here each verifier tries to refute its worker's result.", on: ["w1", "w2", "w3", "v1", "v2", "v3"], flow: ["e-wv1", "e-wv2", "e-wv3"] },
       { text: "The join collects the branches: merge, dedupe, rank. The script keeps intermediate results in its own variables, \"so Claude's context holds only the final answer.\" A stopped or failed agent comes back as null, so count what the join dropped.", on: ["v1", "v2", "v3", "merge"], flow: ["e-vm1", "e-vm2", "e-vm3"] },
-      { text: "An evaluator decides: done, or round again. The back edge needs a rule and a cap. LangGraph ends a loop \"most commonly\" with a conditional edge to END, and stops runaways at the recursion limit: 10,007 steps by default since 1.1.4, then a GraphRecursionError.", on: ["merge", "judge", "orch"], flow: ["e-mj", "e-retry"] },
+      { text: "An evaluator decides: done, or round again. The back edge needs a rule and a cap. LangGraph's \"usual pattern\" is a conditional edge to END, and it stops runaways at the recursion limit: 10,007 steps by default since 1.1.4, then a GraphRecursionError.", on: ["merge", "judge", "orch"], flow: ["e-mj", "e-retry"] },
       { text: "Other frameworks spell the same exit: Google ADK's LoopAgent stops at max_iterations or when a sub-agent escalates, and the OpenAI Agents SDK loops until an evaluator says the output \"passes the required criteria\".", on: ["judge", "done"], flow: ["e-yes"] },
       { text: "Size has hard limits: up to 16 workflow agents at once by default (1 to 256), 4,096 items per `parallel()` or `pipeline()` call, and 1,000 agents per run. Claude Code flags a \"Large workflow\" past 25 agents or 1.5 million projected tokens, as advice. Split big jobs into several runs and pilot each on a small slice.", on: ["w1", "w2", "w3", "v1", "v2", "v3"] },
       { text: "The graph can be the to-do list itself, which also stops agents colliding on one plan. Beads gives them a ready queue: `bd ready` lists tasks with no open blockers, `bd update --claim` takes one atomically, and `bd close` releases what it blocked. Kiro groups independent tasks from tasks.md into waves.", on: ["orch", "w1", "w2", "w3"] },
@@ -195,7 +195,7 @@ export const CHAPTERS = [
     ],
     quiz: [
       { q: "Name Anthropic's five workflow patterns. Which one contains a loop?", a: "Prompt chaining, routing, parallelization, orchestrator-workers and evaluator-optimizer. Evaluator-optimizer loops: one call generates, another evaluates and gives feedback, until the output passes." },
-      { q: "In LangGraph, how does a loop end, and what is the backstop?", a: "Most commonly a conditional edge routes to END once a termination condition holds. If it never does, the recursion limit (10,007 super-steps by default since 1.1.4) raises GraphRecursionError." },
+      { q: "In LangGraph, how does a loop end, and what is the backstop?", a: "Usually a conditional edge routes to END once a termination condition holds. If it never does, the recursion limit (10,007 super-steps by default since 1.1.4) raises GraphRecursionError." },
       { q: "In a Claude Code dynamic workflow, who writes the graph, and where do intermediate results live?", a: "Claude writes the JavaScript script from your description. The script's variables hold the loop, the branching and the intermediate results, so Claude's context gets only the final answer." },
     ],
     code: [
@@ -276,7 +276,7 @@ export const CHAPTERS = [
       { title: "Boris Cherny at Y Combinator: \"algebra for agents\" (2026-07-27)", url: "https://www.youtube.com/watch?v=qyPCVqFUyDo" },
       { title: "Boris Cherny at @Scale, with Jesse Chen (2026-06-19)", url: "https://www.youtube.com/watch?v=Z47vatpsGPI" },
       { title: "LangGraph docs: Graph API overview (recursion limit)", url: "https://docs.langchain.com/oss/python/langgraph/graph-api" },
-      { title: "LangGraph docs: Use the graph API (loops, conditional edges, Mermaid)", url: "https://docs.langchain.com/oss/python/langgraph/use-graph-api" },
+      { title: "LangGraph docs: Build sequences, branches, and loops", url: "https://docs.langchain.com/oss/python/langgraph/graph-api-control-flow" },
       { title: "Google ADK docs: Template agent workflows (superseded in ADK 2.0)", url: "https://adk.dev/agents/workflow-agents/" },
       { title: "PyPI: google-adk 2.0.0 (released 2026-05-19)", url: "https://pypi.org/project/google-adk/2.0.0/" },
       { title: "Google ADK docs: Loop agents (max_iterations, escalation)", url: "https://adk.dev/agents/workflow-agents/loop-agents/" },

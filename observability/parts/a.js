@@ -223,6 +223,7 @@ max by (exporter) (
       { title: "OpenTelemetry Collector: Configuration", url: "https://opentelemetry.io/docs/collector/configuration/" },
       { title: "Collector deployment: Agent", url: "https://opentelemetry.io/docs/collector/deploy/agent/" },
       { title: "Collector deployment: Gateway", url: "https://opentelemetry.io/docs/collector/deploy/gateway/" },
+      { title: "Kubernetes attributes processor README", url: "https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/k8sattributesprocessor/README.md" },
       { title: "Collector resiliency", url: "https://opentelemetry.io/docs/collector/resiliency/" },
       { title: "OpenTelemetry blog: OTTL reaches v1 (27 Oct 2026)", url: "https://opentelemetry.io/blog/2026/ottl-v1/" },
       { title: "OpenTelemetry blog: Deprecating the Collector batch processor (11 Nov 2026)", url: "https://opentelemetry.io/blog/2026/collector-batching-migration/" },

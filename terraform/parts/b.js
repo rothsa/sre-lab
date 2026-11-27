@@ -432,7 +432,7 @@ terraform {
     say30: "A big state hurts everyone who shares it: one lock queues every team's change, every plan refreshes every object against shared API quotas, and a mistake can reach everything. `-refresh=false`, `-minimal-refresh` and `-target` are escape hatches. I split state by environment and component until plans take a few minutes, and keep network and IAM apart from fast-changing apps. Then the order between states needs orchestration. HCP Terraform Stacks provide it: components are modules, deployments are environments or regions with isolated state, and deferred changes let a plan proceed when values are unknown, replanning until it converges. A change goes to one region's deployment first.",
     gotchas: [
       "`-target` is for recovery, not routine work. Using it regularly lets state and configuration drift apart unnoticed.",
-      "Stacks are an HCP Terraform feature. Community Terraform has the `terraform stacks` command for talking to HCP Terraform, and deferral in plain `terraform plan` is still experimental.",
+      "Stacks run in HCP Terraform, and in Terraform Enterprise on resource-based pricing. Community Terraform has the `terraform stacks` command for talking to HCP Terraform, and deferral in plain `terraform plan` is still experimental.",
       "Splitting state does not remove dependencies. It moves them between states, where only your pipeline knows the order.",
     ],
     agentic: [
@@ -451,6 +451,7 @@ terraform {
       { title: "Terraform: State locking", url: "https://developer.hashicorp.com/terraform/language/state/locking" },
       { title: "Terraform: S3 backend", url: "https://developer.hashicorp.com/terraform/language/backend/s3" },
       { title: "Terraform: Stacks overview", url: "https://developer.hashicorp.com/terraform/language/stacks" },
+      { title: "Terraform Enterprise: Stacks", url: "https://developer.hashicorp.com/terraform/enterprise/stacks" },
       { title: "Terraform: component block", url: "https://developer.hashicorp.com/terraform/language/block/stack/tfcomponent/component" },
       { title: "HCP Terraform: Stacks deployment runs", url: "https://developer.hashicorp.com/terraform/cloud-docs/stacks/deploy/runs" },
       { title: "Terraform Stacks, explained", url: "https://www.hashicorp.com/en/blog/terraform-stacks-explained" },
